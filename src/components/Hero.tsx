@@ -19,7 +19,7 @@ const Hero = () => {
             {/* Badge */}
             <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
               <Star className="w-4 h-4" />
-              <span>Assistant familial #1 en Île-de-France</span>
+               <span>Assistant familial #1 en Île-de-France</span>
             </div>
 
             {/* Heading */}
@@ -32,7 +32,7 @@ const Hero = () => {
                 de confiance
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl">
-                Conciliez vie pro, vie familiale et obligations quotidiennes avec nos assistants familiaux. 
+                 Conciliez vie pro, vie familiale et obligations quotidiennes avec nos assistants familiaux.
                 Solutions humaines, personnalisées et fiables pour un foyer plus serein.
               </p>
             </div>
@@ -83,7 +83,7 @@ const Hero = () => {
             <div className="relative">
               <img
                 src={heroImage}
-                alt="Équipe support Assist Me"
+                alt="Équipe support Bikawo"
                 className="w-full h-auto rounded-2xl shadow-glow"
               />
               

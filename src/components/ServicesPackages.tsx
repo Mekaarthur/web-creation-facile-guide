@@ -29,7 +29,7 @@ const ServicesPackages = () => {
     {
       id: "kids",
       icon: Baby,
-      title: "Assist'Kids",
+      title: "Bika Kids",
       subtitle: "Enfants & Parentalité",
       description: "Garde, sorties éducatives, aide aux devoirs et organisation d'anniversaires pour vos enfants.",
       services: [
@@ -46,7 +46,7 @@ const ServicesPackages = () => {
     {
       id: "maison",
       icon: Home,
-      title: "Assist'Maison",
+      title: "Bika Maison",
       subtitle: "Logistique quotidienne",
       description: "Courses, récupération de colis, petits travaux et organisation pour alléger votre quotidien.",
       services: [
@@ -63,7 +63,7 @@ const ServicesPackages = () => {
     {
       id: "vie",
       icon: FileText,
-      title: "Assist'Vie",
+      title: "Bika Vie",
       subtitle: "Conciergerie & Administration",
       description: "Gestion de vos rendez-vous, démarches administratives et organisation d'événements familiaux.",
       services: [
@@ -80,7 +80,7 @@ const ServicesPackages = () => {
     {
       id: "travel",
       icon: Plane,
-      title: "Assist'Travel",
+      title: "Bika Travel",
       subtitle: "Assistance Voyageurs",
       description: "Accompagnement complet pour vos voyages : avant, pendant et après votre déplacement.",
       services: [
@@ -97,7 +97,7 @@ const ServicesPackages = () => {
     {
       id: "plus",
       icon: Crown,
-      title: "Assist'Plus",
+      title: "Bika Plus",
       subtitle: "Premium 7j/7",
       description: "Service haut de gamme avec Chef Family Officer dédié et assistance prioritaire.",
       services: [
@@ -114,7 +114,7 @@ const ServicesPackages = () => {
     {
       id: "pro",
       icon: Briefcase,
-      title: "Assist'Pro",
+      title: "Bika Pro",
       subtitle: "Assistance Entreprise",
       description: "Solutions d'assistance administrative et executive pour votre entreprise.",
       services: [
@@ -169,7 +169,7 @@ const ServicesPackages = () => {
         <div className="text-center space-y-4 mb-16 animate-fade-in-up">
           <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
             <Star className="w-4 h-4" />
-            <span>Nos services Assist</span>
+            <span>Nos services Bika</span>
           </div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
             Des solutions pour
@@ -258,62 +258,6 @@ const ServicesPackages = () => {
           })}
         </div>
 
-        {/* Pricing Section */}
-        <div className="space-y-12 mt-20">
-          <div className="text-center space-y-4 animate-fade-in-up">
-            <h3 className="text-2xl md:text-3xl font-bold text-foreground">
-              Nos formules tarifaires
-            </h3>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Choisissez la formule qui correspond le mieux à vos besoins et votre rythme de vie.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {pricingOptions.map((option, index) => (
-              <Card 
-                key={option.title}
-                className={`p-6 hover:shadow-glow transition-all duration-300 hover:scale-[1.02] ${
-                  option.popular ? 'border-accent ring-2 ring-accent/20' : ''
-                } animate-fade-in-up`}
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                {option.popular && (
-                  <div className="text-center mb-4">
-                    <span className="bg-accent text-accent-foreground px-3 py-1 rounded-full text-xs font-medium">
-                      Recommandé
-                    </span>
-                  </div>
-                )}
-                
-                <div className="text-center space-y-4">
-                  <div>
-                    <h4 className="text-lg font-bold text-foreground">{option.title}</h4>
-                    <div className="text-2xl font-bold text-primary mt-2">{option.price}</div>
-                  </div>
-                  
-                  <p className="text-sm text-muted-foreground">{option.description}</p>
-                  
-                  <ul className="space-y-2 text-sm">
-                    {option.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-center space-x-2">
-                        <div className="w-1.5 h-1.5 bg-accent rounded-full"></div>
-                        <span className="text-muted-foreground">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  
-                  <Button 
-                    variant={option.popular ? "accent" : option.color as any} 
-                    className="w-full"
-                  >
-                    Choisir cette formule
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
 
         {/* CTA Section */}
         <div className="text-center mt-16 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>

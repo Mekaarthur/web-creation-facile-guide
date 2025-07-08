@@ -3,14 +3,14 @@ import { MessageCircle, Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instag
 const Footer = () => {
   const footerSections = [
     {
-      title: "Services Assist",
+      title: "Services Bika",
       links: [
-        { name: "Assist'Kids", href: "#services" },
-        { name: "Assist'Maison", href: "#services" },
-        { name: "Assist'Vie", href: "#services" },
-        { name: "Assist'Travel", href: "#services" },
-        { name: "Assist'Plus", href: "#services" },
-        { name: "Assist'Pro", href: "#services" }
+        { name: "Bika Kids", href: "#services" },
+        { name: "Bika Maison", href: "#services" },
+        { name: "Bika Vie", href: "#services" },
+        { name: "Bika Travel", href: "#services" },
+        { name: "Bika Plus", href: "#services" },
+        { name: "Bika Pro", href: "#services" }
       ]
     },
     {
@@ -60,7 +60,7 @@ const Footer = () => {
               <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
                 <MessageCircle className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold">Assist'mw</span>
+              <span className="text-xl font-bold">Bikawo</span>
             </div>
             
             <p className="text-white/80 max-w-md">
@@ -154,7 +154,7 @@ const Footer = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6 text-white/70 text-sm">
-              <span>© 2024 Assist'mw. Tous droits réservés.</span>
+              <span>© 2024 Bikawo. Tous droits réservés.</span>
               <div className="flex space-x-4">
                 <a href="#" className="hover:text-white transition-colors">Politique de confidentialité</a>
                 <a href="#" className="hover:text-white transition-colors">Conditions d'utilisation</a>
