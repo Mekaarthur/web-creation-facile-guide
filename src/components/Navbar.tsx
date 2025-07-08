@@ -6,11 +6,13 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
-    { name: "Accueil", href: "#home" },
-    { name: "Services Assist", href: "#services" },
-    { name: "Public cible", href: "#target" },
-    { name: "À propos", href: "#about" },
-    { name: "Contact", href: "#contact" },
+    { name: "Accueil", href: "/" },
+    { name: "Services Assist", href: "/#services" },
+    { name: "Public cible", href: "/#target" },
+    { name: "À propos", href: "/#about" },
+    { name: "Espace personnel", href: "/espace-personnel" },
+    { name: "Nous recrutons", href: "/nous-recrutons" },
+    { name: "Contact", href: "/#contact" },
   ];
 
   return (
