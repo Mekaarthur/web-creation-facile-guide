@@ -10,6 +10,7 @@ const Navbar = () => {
     { name: "Services Assist", href: "/#services" },
     { name: "À propos", href: "/#about" },
     { name: "Espace personnel", href: "/espace-personnel" },
+    { name: "Espace prestataire", href: "/espace-prestataire" },
     { name: "Nous recrutons", href: "/nous-recrutons" },
     { name: "Contact", href: "/#contact" },
   ];
