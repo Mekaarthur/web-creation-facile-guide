@@ -259,6 +259,60 @@ const ServicesPackages = () => {
         </div>
 
 
+        {/* Nos formules */}
+        <div className="mt-16">
+          <div className="text-center space-y-4 mb-12">
+            <h3 className="text-2xl md:text-3xl font-bold text-foreground">
+              Nos formules
+            </h3>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Choisissez la formule qui correspond le mieux à vos besoins et votre rythme de vie.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+            <Card className="p-6 space-y-4">
+              <div className="space-y-2">
+                <h4 className="text-lg font-semibold text-foreground">À la carte</h4>
+                <div className="text-2xl font-bold text-primary">25-30€/h</div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Choisir n'importe quel service Zen selon vos besoins ponctuels.
+              </p>
+            </Card>
+
+            <Card className="p-6 space-y-4 border-accent">
+              <div className="space-y-2">
+                <h4 className="text-lg font-semibold text-foreground">Hebdo</h4>
+                <div className="text-2xl font-bold text-primary">10h - 240€</div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Panier libre d'heures (Kids + Maison + Travel, etc.).
+              </p>
+            </Card>
+
+            <Card className="p-6 space-y-4">
+              <div className="space-y-2">
+                <h4 className="text-lg font-semibold text-foreground">Mensuel</h4>
+                <div className="text-2xl font-bold text-primary">40h - 900€</div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Combinaisons illimitées + suivi mensuel personnalisé.
+              </p>
+            </Card>
+
+            <Card className="p-6 space-y-4">
+              <div className="space-y-2">
+                <h4 className="text-lg font-semibold text-foreground">Premium</h4>
+                <div className="text-2xl font-bold text-primary">≥ 1500€</div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Accès libre Zen'Plus & Zen'Travel prioritaire à adapter selon vos besoins.
+              </p>
+            </Card>
+          </div>
+        </div>
+
         {/* CTA Section */}
         <div className="text-center mt-16 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
           <div className="bg-gradient-subtle rounded-2xl p-8 md:p-12">
