@@ -83,7 +83,7 @@ const Hero = () => {
             <div className="relative">
               <img
                 src={heroImage}
-                alt="Équipe support Bikawo"
+                alt="Équipe support Bikawô"
                 className="w-full h-auto rounded-2xl shadow-glow"
               />
               

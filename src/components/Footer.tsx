@@ -60,7 +60,7 @@ const Footer = () => {
               <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
                 <MessageCircle className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold">Bikawo</span>
+              <span className="text-xl font-bold">Bikawô</span>
             </div>
             
             <p className="text-white/80 max-w-md">
@@ -154,7 +154,7 @@ const Footer = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6 text-white/70 text-sm">
-              <span>© 2024 Bikawo. Tous droits réservés.</span>
+              <span>© 2024 Bikawô. Tous droits réservés.</span>
               <div className="flex space-x-4">
                 <a href="#" className="hover:text-white transition-colors">Politique de confidentialité</a>
                 <a href="#" className="hover:text-white transition-colors">Conditions d'utilisation</a>
