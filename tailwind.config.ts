@@ -69,12 +69,14 @@ export default {
 				'gradient-primary': 'var(--gradient-primary)',
 				'gradient-accent': 'var(--gradient-accent)',
 				'gradient-hero': 'var(--gradient-hero)',
-				'gradient-subtle': 'var(--gradient-subtle)'
+				'gradient-subtle': 'var(--gradient-subtle)',
+				'gradient-cocon': 'var(--gradient-cocon)'
 			},
 			boxShadow: {
 				'soft': 'var(--shadow-soft)',
 				'glow': 'var(--shadow-glow)',
-				'accent': 'var(--shadow-accent)'
+				'accent': 'var(--shadow-accent)',
+				'cocon': 'var(--shadow-cocon)'
 			},
 			transitionTimingFunction: {
 				'smooth': 'var(--transition-smooth)'
