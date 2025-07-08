@@ -75,7 +75,7 @@ const ServicesPackages = () => {
       ],
       color: "primary",
       popular: false,
-      price: "À partir de 30€/h"
+      price: "À partir de 25€/h"
     },
     {
       id: "travel",
@@ -92,7 +92,7 @@ const ServicesPackages = () => {
       ],
       color: "accent",
       popular: false,
-      price: "À partir de 35€/h"
+      price: "À partir de 30€/h"
     },
     {
       id: "plus",
@@ -140,17 +140,17 @@ const ServicesPackages = () => {
     },
     {
       title: "Hebdo",
-      price: "10h ou 15h",
+      price: "10h - 240€",
       description: "Panier libre d'heures combinant Kids + Maison + Travel selon vos besoins",
-      features: ["Formule 10h ou 15h/semaine", "Combinaisons illimitées", "Suivi personnalisé"],
+      features: ["Formule 10h/semaine", "Combinaisons illimitées", "Suivi personnalisé"],
       color: "primary",
       popular: true
     },
     {
       title: "Mensuel", 
-      price: "40h ou 60h",
+      price: "40h - 900€",
       description: "Combinaisons illimitées avec suivi mensuel personnalisé",
-      features: ["40h ou 60h/mois", "Accès à tous les services", "Suivi mensuel dédié"],
+      features: ["40h/mois", "Accès à tous les services", "Suivi mensuel dédié"],
       color: "accent"
     },
     {

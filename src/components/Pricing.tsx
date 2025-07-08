@@ -42,7 +42,7 @@ const Pricing = () => {
       description: "La sérénité totale",
       price: { monthly: 99, annual: 990 },
       features: [
-        "Prestations illimitées",
+        "10 prestations par mois",
         "Support 24/7",
         "Chef Family Officer dédié",
         "Conciergerie premium",
@@ -59,28 +59,21 @@ const Pricing = () => {
     {
       name: "Garde d'urgence",
       description: "Intervention immédiate",
-      price: 45,
+      price: "Sur devis",
       duration: "4h minimum",
       icon: Clock
     },
     {
-      name: "Grand ménage",
-      description: "Nettoyage complet du domicile",
-      price: 120,
-      duration: "Une journée",
-      icon: Star
-    },
-    {
       name: "Organisation événement",
       description: "Anniversaire, fête familiale",
-      price: 200,
+      price: "Sur devis",
       duration: "Prestation complète",
       icon: Heart
     },
     {
       name: "Aide déménagement",
       description: "Support logistique complet",
-      price: 150,
+      price: "Sur devis",
       duration: "Demi-journée",
       icon: Users
     }
@@ -234,7 +227,7 @@ const Pricing = () => {
                     </p>
                     <div className="text-center">
                       <span className="text-2xl font-bold text-primary">
-                        {service.price}€
+                        {service.price}
                       </span>
                       <p className="text-xs text-muted-foreground">
                         {service.duration}

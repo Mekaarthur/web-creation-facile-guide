@@ -157,28 +157,6 @@ const About = () => {
           </div>
         </div>
 
-        {/* Team CTA */}
-        <div className="text-center animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
-          <Card className="p-8 md:p-12 bg-gradient-hero text-white">
-            <div className="max-w-3xl mx-auto space-y-6">
-              <h3 className="text-2xl md:text-3xl font-bold">
-                Rejoignez notre communauté
-              </h3>
-              <p className="text-white/90">
-                Plus de 10,000 utilisateurs nous font déjà confiance. 
-                Découvrez pourquoi Assist Me est le choix préféré des professionnels.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button variant="glass" size="lg">
-                  Commencer gratuitement
-                </Button>
-                <Button variant="outline" size="lg" className="bg-white text-primary hover:bg-white/90">
-                  Voir les témoignages
-                </Button>
-              </div>
-            </div>
-          </Card>
-        </div>
       </div>
     </section>
   );
