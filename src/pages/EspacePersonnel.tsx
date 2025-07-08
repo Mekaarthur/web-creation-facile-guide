@@ -79,7 +79,7 @@ const EspacePersonnel = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-4">Mon Espace Personnel</h1>
+            <h1 className="text-4xl font-bold text-foreground mb-4">Mon Espace Client</h1>
             <p className="text-muted-foreground text-lg">
               Gérez vos réservations, suivez vos prestations et accédez à vos factures
             </p>
@@ -118,7 +118,7 @@ const EspacePersonnel = () => {
                   </CardTitle>
                   <p className="text-muted-foreground">
                     {isLoginMode 
-                      ? "Accédez à votre espace personnel Assist'mw" 
+                      ? "Accédez à votre espace client Assist'mw" 
                       : "Créez votre compte pour profiter de nos services"
                     }
                   </p>

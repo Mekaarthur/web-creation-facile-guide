@@ -3,7 +3,7 @@ import { MessageCircle, Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instag
 const Footer = () => {
   const footerSections = [
     {
-      title: "Services Bika",
+      title: "Nos services",
       links: [
         { name: "Bika Kids", href: "#services" },
         { name: "Bika Maison", href: "#services" },

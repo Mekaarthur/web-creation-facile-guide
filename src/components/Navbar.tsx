@@ -11,9 +11,9 @@ const Navbar = () => {
 
   const navItems = [
     { name: "Accueil", href: "/" },
-    { name: "Services Bika", href: "/#services" },
+    { name: "Nos services", href: "/#services" },
     { name: "À propos", href: "/#about" },
-    { name: "Espace personnel", href: "/espace-personnel" },
+    { name: "Espace client", href: "/espace-personnel" },
     { name: "Espace prestataire", href: "/espace-prestataire" },
     { name: "Nous recrutons", href: "/nous-recrutons" },
     { name: "Contact", href: "/#contact" },

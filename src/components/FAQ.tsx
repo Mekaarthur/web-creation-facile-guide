@@ -70,7 +70,7 @@ const FAQ = () => {
         },
         {
           question: "Comment fonctionne la facturation ?",
-          answer: "Facturation automatique après chaque service. Récapitulatif mensuel disponible dans votre espace personnel. Export possible pour vos déclarations."
+          answer: "Facturation automatique après chaque service. Récapitulatif mensuel disponible dans votre espace client. Export possible pour vos déclarations."
         }
       ]
     }

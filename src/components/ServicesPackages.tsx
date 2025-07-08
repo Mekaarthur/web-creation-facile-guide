@@ -169,7 +169,7 @@ const ServicesPackages = () => {
         <div className="text-center space-y-4 mb-16 animate-fade-in-up">
           <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
             <Star className="w-4 h-4" />
-            <span>Nos services Bika</span>
+            <span>Nos services</span>
           </div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
             Des solutions pour
@@ -258,7 +258,158 @@ const ServicesPackages = () => {
           })}
         </div>
 
+        {/* Nos formules */}
+        <div className="mt-16">
+          <div className="text-center space-y-4 mb-12">
+            <h3 className="text-2xl md:text-3xl font-bold text-foreground">
+              Nos formules
+            </h3>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Choisissez la formule qui correspond le mieux à vos besoins et votre rythme de vie.
+            </p>
+          </div>
 
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+            <Card className="p-6 space-y-4">
+              <div className="space-y-2">
+                <h4 className="text-lg font-semibold text-foreground">À la carte</h4>
+                <div className="text-2xl font-bold text-primary">25-30€/h</div>
+              </div>
+              <p className="text-sm text-muted-foreground mb-3">
+                Choisir n'importe quel service Zen selon vos besoins ponctuels.
+              </p>
+              <div className="space-y-2">
+                <h5 className="text-sm font-medium text-foreground">Services inclus :</h5>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Zen Kids : garde ponctuelle, sorties éducatives, aide aux devoirs</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Zen Maison : courses, récupération colis, petits travaux</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Zen Vie : rendez-vous médicaux, démarches administratives</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Zen Travel : assistance voyages, vérification documents</span>
+                  </li>
+                </ul>
+              </div>
+            </Card>
+
+            <Card className="p-6 space-y-4 border-accent relative">
+              <div className="absolute -top-3 left-6 bg-accent text-accent-foreground px-3 py-1 rounded-full text-xs font-medium">
+                Le plus populaire
+              </div>
+              <div className="space-y-2">
+                <h4 className="text-lg font-semibold text-foreground">Hebdo</h4>
+                <div className="text-2xl font-bold text-primary">10h - 240€</div>
+              </div>
+              <p className="text-sm text-muted-foreground mb-3">
+                Panier libre d'heures (Kids + Maison + Travel, etc.).
+              </p>
+              <div className="space-y-2">
+                <h5 className="text-sm font-medium text-foreground">Services inclus :</h5>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-accent mt-1.5 flex-shrink-0"></div>
+                    <span>Combinaisons Zen Kids + Maison + Travel</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-accent mt-1.5 flex-shrink-0"></div>
+                    <span>Garde ponctuelle et de nuit</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-accent mt-1.5 flex-shrink-0"></div>
+                    <span>Sorties éducatives et accompagnements</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-accent mt-1.5 flex-shrink-0"></div>
+                    <span>Courses et récupération colis</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-accent mt-1.5 flex-shrink-0"></div>
+                    <span>Assistance voyages basique</span>
+                  </li>
+                </ul>
+              </div>
+            </Card>
+
+            <Card className="p-6 space-y-4">
+              <div className="space-y-2">
+                <h4 className="text-lg font-semibold text-foreground">Mensuel</h4>
+                <div className="text-2xl font-bold text-primary">40h - 900€</div>
+              </div>
+              <p className="text-sm text-muted-foreground mb-3">
+                Combinaisons illimitées + suivi mensuel personnalisé.
+              </p>
+              <div className="space-y-2">
+                <h5 className="text-sm font-medium text-foreground">Services inclus :</h5>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Tous les services Zen Kids, Maison, Vie</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Zen Travel complet avec priorité</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Organisation événements familiaux</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Suivi mensuel personnalisé</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Gestion administrative complète</span>
+                  </li>
+                </ul>
+              </div>
+            </Card>
+
+            <Card className="p-6 space-y-4">
+              <div className="space-y-2">
+                <h4 className="text-lg font-semibold text-foreground">Premium</h4>
+                <div className="text-2xl font-bold text-primary">≥ 1500€</div>
+              </div>
+              <p className="text-sm text-muted-foreground mb-3">
+                Accès libre Zen'Plus & Zen'Travel prioritaire à adapter selon vos besoins.
+              </p>
+              <div className="space-y-2">
+                <h5 className="text-sm font-medium text-foreground">Services inclus :</h5>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Chef Family Officer dédié</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Ligne prioritaire + WhatsApp instantané</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Accès à tous les services Zen</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Garde soir, week-end, nuit prioritaire</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Organisation planning familial complet</span>
+                  </li>
+                </ul>
+              </div>
+            </Card>
+          </div>
+        </div>
 
         {/* CTA Section */}
         <div className="text-center mt-16 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
