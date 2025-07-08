@@ -23,6 +23,7 @@ import {
   Luggage,
   Users
 } from "lucide-react";
+import assistanceImage from "@/assets/assistance-service.jpg";
 
 const ServicesPackages = () => {
   const packages = [
@@ -181,6 +182,15 @@ const ServicesPackages = () => {
             Découvrez nos 6 packages d'assistance conçus pour vous accompagner dans votre quotidien
             avec douceur, fiabilité et humanité.
           </p>
+          
+          {/* Image d'illustration */}
+          <div className="max-w-4xl mx-auto mt-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <img 
+              src={assistanceImage} 
+              alt="Services d'assistance et d'aide familiale" 
+              className="w-full h-48 md:h-64 object-cover rounded-2xl shadow-lg"
+            />
+          </div>
         </div>
 
         {/* Services Packages Grid */}
