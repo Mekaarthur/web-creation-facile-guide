@@ -385,7 +385,16 @@ const ServicesPackages = () => {
                 à vos besoins familiaux et professionnels.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button variant="hero" size="lg">
+                <Button 
+                  variant="hero" 
+                  size="lg"
+                  onClick={() => {
+                    const element = document.getElementById('demandes-personnalisees');
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                >
                   Demander un devis personnalisé
                 </Button>
                 <Button variant="outline" size="lg">
@@ -394,6 +403,82 @@ const ServicesPackages = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Demandes personnalisées */}
+        <div id="demandes-personnalisees" className="mt-20">
+          <Card className="max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-8 p-8">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-2xl font-bold text-foreground mb-4">
+                    Demandes personnalisées
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Vous avez des besoins spécifiques ? Décrivez-nous votre situation et nous 
+                    créerons une solution sur mesure adaptée à votre famille.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Clock className="w-5 h-5 text-primary" />
+                    <span className="text-sm text-muted-foreground">Réponse sous 24h</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Shield className="w-5 h-5 text-primary" />
+                    <span className="text-sm text-muted-foreground">Devis gratuit et sans engagement</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Heart className="w-5 h-5 text-primary" />
+                    <span className="text-sm text-muted-foreground">Solution 100% personnalisée</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">Nom complet</label>
+                  <input 
+                    type="text" 
+                    placeholder="Votre nom et prénom"
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">Email</label>
+                  <input 
+                    type="email" 
+                    placeholder="votre.email@exemple.com"
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">Téléphone</label>
+                  <input 
+                    type="tel" 
+                    placeholder="06 12 34 56 78"
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">Décrivez vos besoins</label>
+                  <textarea 
+                    rows={4}
+                    placeholder="Décrivez votre situation, vos besoins spécifiques, la fréquence souhaitée..."
+                    className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+                  ></textarea>
+                </div>
+
+                <Button variant="hero" className="w-full" size="lg">
+                  Envoyer ma demande
+                </Button>
+              </div>
+            </div>
+          </Card>
         </div>
       </div>
     </section>

@@ -89,7 +89,7 @@ const NousRecrutons = () => {
     },
     {
       step: 3,
-      title: "Formation Assist'me",
+      title: "Formation Assist'mw",
       description: "Formation aux méthodes et outils de la plateforme",
       icon: Star
     },
@@ -132,7 +132,7 @@ const NousRecrutons = () => {
               <span className="bg-gradient-primary bg-clip-text text-transparent"> prestataires</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-              Devenez partenaire Assist'me et accompagnez les familles d'Île-de-France 
+              Devenez partenaire Assist'mw et accompagnez les familles d'Île-de-France 
               dans leur quotidien avec flexibilité et autonomie
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

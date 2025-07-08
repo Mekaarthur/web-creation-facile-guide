@@ -73,7 +73,7 @@ const About = () => {
             </span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Assist'me vous accompagne dans votre quotidien avec douceur, fiabilité et humanité, 
+            Assist'mw vous accompagne dans votre quotidien avec douceur, fiabilité et humanité, 
             pour un foyer plus léger, plus serein et plus harmonieux.
           </p>
         </div>
@@ -114,7 +114,7 @@ const About = () => {
             <div className="space-y-4 text-muted-foreground">
               <p>
                 Dans un monde où les familles actives peinent à concilier vie professionnelle, vie familiale 
-                et obligations quotidiennes, Assist'me est né pour proposer une solution humaine, personnalisée et fiable.
+                et obligations quotidiennes, Assist'mw est né pour proposer une solution humaine, personnalisée et fiable.
               </p>
               <p>
                 Aujourd'hui, nous avons développé un réseau d'assistants familiaux couvrant la logistique, 

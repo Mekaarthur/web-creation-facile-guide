@@ -27,7 +27,7 @@ const Target = () => {
         "Organisation du planning familial"
       ],
       color: "primary",
-      testimonial: "Assist'me nous a sauvé la vie ! Plus de stress pour les sorties d'école."
+      testimonial: "Assist'mw nous a sauvé la vie ! Plus de stress pour les sorties d'école."
     },
     {
       icon: Heart,
@@ -116,7 +116,7 @@ const Target = () => {
             </span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Assist'me s'adresse à tous ceux qui cherchent à simplifier leur quotidien 
+            Assist'mw s'adresse à tous ceux qui cherchent à simplifier leur quotidien 
             et à retrouver du temps pour ce qui compte vraiment.
           </p>
         </div>
@@ -224,7 +224,7 @@ const Target = () => {
               </h3>
               <p className="text-white/90">
                 Que vous soyez parent débordé, senior actif, entrepreneur ambitieux ou grand voyageur, 
-                Assist'me a la solution qu'il vous faut.
+                Assist'mw a la solution qu'il vous faut.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button variant="glass" size="lg">
