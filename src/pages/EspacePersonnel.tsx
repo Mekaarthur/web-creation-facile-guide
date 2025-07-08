@@ -3,12 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, CreditCard, Bell, History, FileText } from "lucide-react";
+import { Calendar, Clock, CreditCard, Bell, History, FileText, UserRound, Lock } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const EspacePersonnel = () => {
-  const [selectedTab, setSelectedTab] = useState("reservations");
+  const [selectedTab, setSelectedTab] = useState("connexion");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoginMode, setIsLoginMode] = useState(true);
 
   const reservations = [
     {
@@ -83,7 +87,11 @@ const EspacePersonnel = () => {
 
           {/* Tabs Navigation */}
           <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-8">
+            <TabsList className="grid w-full grid-cols-5 mb-8">
+              <TabsTrigger value="connexion" className="flex items-center gap-2">
+                <Bell className="w-4 h-4" />
+                Connexion
+              </TabsTrigger>
               <TabsTrigger value="reservations" className="flex items-center gap-2">
                 <History className="w-4 h-4" />
                 Réservations
@@ -101,6 +109,76 @@ const EspacePersonnel = () => {
                 Calendrier
               </TabsTrigger>
             </TabsList>
+
+            {/* Connexion / Inscription */}
+            <TabsContent value="connexion" className="space-y-6">
+              <Card className="max-w-md mx-auto">
+                <CardHeader className="text-center">
+                  <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                    <UserRound className="w-8 h-8 text-white" />
+                  </div>
+                  <CardTitle className="text-2xl">
+                    {isLoginMode ? "Se connecter" : "S'inscrire"}
+                  </CardTitle>
+                  <p className="text-muted-foreground">
+                    {isLoginMode 
+                      ? "Accédez à votre espace personnel Assist'me" 
+                      : "Créez votre compte pour profiter de nos services"
+                    }
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {!isLoginMode && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="prenom">Prénom</Label>
+                        <Input id="prenom" placeholder="Votre prénom" />
+                      </div>
+                      <div>
+                        <Label htmlFor="nom">Nom</Label>
+                        <Input id="nom" placeholder="Votre nom" />
+                      </div>
+                    </div>
+                  )}
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" type="email" placeholder="votre.email@exemple.com" />
+                  </div>
+                  <div>
+                    <Label htmlFor="password">Mot de passe</Label>
+                    <Input id="password" type="password" placeholder="••••••••" />
+                  </div>
+                  {!isLoginMode && (
+                    <div>
+                      <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
+                      <Input id="confirm-password" type="password" placeholder="••••••••" />
+                    </div>
+                  )}
+                  <Button 
+                    variant="hero" 
+                    className="w-full"
+                    onClick={() => {
+                      setIsLoggedIn(true);
+                      setSelectedTab("reservations");
+                    }}
+                  >
+                    <Lock className="w-4 h-4 mr-2" />
+                    {isLoginMode ? "Se connecter" : "Créer mon compte"}
+                  </Button>
+                  <div className="text-center">
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => setIsLoginMode(!isLoginMode)}
+                    >
+                      {isLoginMode 
+                        ? "Pas encore de compte ? S'inscrire" 
+                        : "Déjà un compte ? Se connecter"
+                      }
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
             {/* Historique des réservations */}
             <TabsContent value="reservations" className="space-y-6">

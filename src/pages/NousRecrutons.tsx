@@ -282,6 +282,16 @@ const NousRecrutons = () => {
                 />
               </div>
               
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">CV (PDF)</label>
+                <Input 
+                  type="file" 
+                  accept=".pdf"
+                  className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-accent-foreground hover:file:bg-accent/80"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Format PDF uniquement, taille maximale 5 Mo</p>
+              </div>
+              
               <Button variant="hero" className="w-full" size="lg">
                 Envoyer ma candidature
               </Button>
