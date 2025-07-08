@@ -25,10 +25,11 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-              <MessageCircle className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-foreground">Bikawo</span>
+            <img 
+              src="/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png" 
+              alt="Bikawô Logo" 
+              className="h-10 w-auto"
+            />
           </div>
 
           {/* Desktop Navigation */}
