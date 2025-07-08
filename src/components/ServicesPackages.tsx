@@ -248,70 +248,12 @@ const ServicesPackages = () => {
                   <Button 
                     variant={pkg.popular ? "accent" : "outline"} 
                     className="w-full group/btn"
-                    onClick={() => {
-                      const element = document.getElementById(`details-${pkg.id}`);
-                      if (element) {
-                        element.scrollIntoView({ behavior: 'smooth' });
-                      }
-                    }}
                   >
-                    Découvrir {pkg.title}
+                    Réserver {pkg.title}
                     <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
                   </Button>
                 </div>
               </Card>
-            );
-          })}
-        </div>
-
-        {/* Détails des services */}
-        <div className="space-y-16">
-          {packages.map((pkg) => {
-            const IconComponent = pkg.icon;
-            return (
-              <div key={pkg.id} id={`details-${pkg.id}`} className="bg-gradient-subtle rounded-2xl p-8 md:p-12">
-                <div className="max-w-4xl mx-auto">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className={`w-16 h-16 rounded-xl ${
-                      pkg.color === 'primary' ? 'bg-gradient-primary' : 'bg-gradient-accent'
-                    } flex items-center justify-center`}>
-                      <IconComponent className="w-8 h-8 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl md:text-3xl font-bold text-foreground">{pkg.title}</h3>
-                      <p className="text-lg text-accent font-medium">{pkg.subtitle}</p>
-                    </div>
-                  </div>
-                  
-                  <p className="text-muted-foreground mb-8 text-lg">{pkg.description}</p>
-                  
-                  <div className="grid md:grid-cols-2 gap-8">
-                    <div>
-                      <h4 className="text-xl font-semibold text-foreground mb-4">Services inclus :</h4>
-                      <ul className="space-y-3">
-                        {pkg.services.map((service, idx) => (
-                          <li key={idx} className="flex items-start space-x-3">
-                            <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                              pkg.color === 'primary' ? 'bg-primary' : 'bg-accent'
-                            }`}></div>
-                            <span className="text-muted-foreground">{service}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    
-                    <div>
-                      <h4 className="text-xl font-semibold text-foreground mb-4">Tarification :</h4>
-                      <div className="bg-background/50 rounded-lg p-4 mb-4">
-                        <span className="text-2xl font-bold text-primary">{pkg.price}</span>
-                      </div>
-                      <Button variant={pkg.color === 'primary' ? "hero" : "accent"} size="lg" className="w-full">
-                        Réserver {pkg.title}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
             );
           })}
         </div>
