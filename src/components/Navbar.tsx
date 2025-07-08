@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, MessageCircle, Phone } from "lucide-react";
+import { Menu, X, MessageCircle, Phone, LogOut, User } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   const navItems = [
     { name: "Accueil", href: "/" },
@@ -46,9 +50,22 @@ const Navbar = () => {
               <Phone className="w-4 h-4 mr-2" />
               Appeler
             </Button>
-            <Button variant="hero" size="sm">
-              Commencer
-            </Button>
+            {user ? (
+              <div className="flex items-center space-x-2">
+                <Button variant="ghost" size="sm">
+                  <User className="w-4 h-4 mr-2" />
+                  {user.email}
+                </Button>
+                <Button variant="outline" size="sm" onClick={signOut}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Déconnexion
+                </Button>
+              </div>
+            ) : (
+              <Button variant="hero" size="sm" onClick={() => navigate("/auth")}>
+                Connexion
+              </Button>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -83,9 +100,16 @@ const Navbar = () => {
                 <Phone className="w-4 h-4 mr-2" />
                 Appeler
               </Button>
-              <Button variant="hero" size="sm" className="w-full">
-                Commencer
-              </Button>
+              {user ? (
+                <Button variant="outline" size="sm" className="w-full" onClick={signOut}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Déconnexion
+                </Button>
+              ) : (
+                <Button variant="hero" size="sm" className="w-full" onClick={() => navigate("/auth")}>
+                  Connexion
+                </Button>
+              )}
             </div>
           </div>
         </div>
