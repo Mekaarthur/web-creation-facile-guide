@@ -32,7 +32,7 @@ const FAQ = () => {
         },
         {
           question: "Quels sont vos tarifs ?",
-          answer: "Nos tarifs démarrent à 25€/h selon le service. Nous proposons aussi des formules hebdomadaires (10h ou 15h) et mensuelles (40h ou 60h) plus avantageuses."
+          answer: "Nos tarifs démarrent à 25€/h selon le service. Nous proposons des formules à la carte, hebdomadaires et mensuelles plus avantageuses."
         },
         {
           question: "Puis-je annuler ou modifier ma réservation ?",
