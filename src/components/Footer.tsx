@@ -3,12 +3,14 @@ import { MessageCircle, Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instag
 const Footer = () => {
   const footerSections = [
     {
-      title: "Services",
+      title: "Services Assist",
       links: [
-        { name: "Chat en direct", href: "#" },
-        { name: "Support téléphonique", href: "#" },
-        { name: "Assistance technique", href: "#" },
-        { name: "Formation équipe", href: "#" }
+        { name: "Assist'Kids", href: "#services" },
+        { name: "Assist'Maison", href: "#services" },
+        { name: "Assist'Vie", href: "#services" },
+        { name: "Assist'Travel", href: "#services" },
+        { name: "Assist'Plus", href: "#services" },
+        { name: "Assist'Pro", href: "#services" }
       ]
     },
     {
@@ -58,12 +60,12 @@ const Footer = () => {
               <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
                 <MessageCircle className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold">Assist Me</span>
+              <span className="text-xl font-bold">Assist'me</span>
             </div>
             
             <p className="text-white/80 max-w-md">
-              Votre partenaire de confiance pour l'assistance technique. 
-              Nous transformons chaque problème en solution avec notre expertise et notre engagement.
+              Votre assistant familial de confiance en Île-de-France. 
+              Nous vous accompagnons avec humanité pour un quotidien plus serein et harmonieux.
             </p>
 
             {/* Contact Info */}
@@ -152,7 +154,7 @@ const Footer = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6 text-white/70 text-sm">
-              <span>© 2024 Assist Me. Tous droits réservés.</span>
+              <span>© 2024 Assist'me. Tous droits réservés.</span>
               <div className="flex space-x-4">
                 <a href="#" className="hover:text-white transition-colors">Politique de confidentialité</a>
                 <a href="#" className="hover:text-white transition-colors">Conditions d'utilisation</a>

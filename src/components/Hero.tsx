@@ -19,20 +19,21 @@ const Hero = () => {
             {/* Badge */}
             <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
               <Star className="w-4 h-4" />
-              <span>Support #1 en France</span>
+              <span>Assistant familial #1 en Île-de-France</span>
             </div>
 
             {/* Heading */}
             <div className="space-y-4">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
-                Assistance
+                Votre assistant
                 <span className="block bg-gradient-hero bg-clip-text text-transparent">
-                  experte
+                  familial
                 </span>
-                à votre service
+                de confiance
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl">
-                Obtenez de l'aide immédiate de nos experts. Support technique, conseils personnalisés et solutions sur mesure disponibles 24h/24.
+                Conciliez vie pro, vie familiale et obligations quotidiennes avec nos assistants familiaux. 
+                Solutions humaines, personnalisées et fiables pour un foyer plus serein.
               </p>
             </div>
 
@@ -40,15 +41,15 @@ const Hero = () => {
             <div className="flex flex-wrap gap-6 text-sm">
               <div className="flex items-center space-x-2">
                 <Users className="w-5 h-5 text-accent" />
-                <span className="text-muted-foreground">+10k clients satisfaits</span>
+                <span className="text-muted-foreground">+5k familles aidées</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Clock className="w-5 h-5 text-accent" />
-                <span className="text-muted-foreground">Réponse en &lt;5min</span>
+                <span className="text-muted-foreground">Service 7j/7</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Shield className="w-5 h-5 text-accent" />
-                <span className="text-muted-foreground">100% sécurisé</span>
+                <span className="text-muted-foreground">Assistants certifiés</span>
               </div>
             </div>
 

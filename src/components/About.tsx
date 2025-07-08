@@ -15,26 +15,26 @@ const About = () => {
   const stats = [
     {
       icon: Users,
-      number: "10,000+",
-      label: "Clients satisfaits",
+      number: "5,000+",
+      label: "Familles aidées",
       color: "primary"
     },
     {
       icon: Clock,
-      number: "24/7",
-      label: "Support disponible",
+      number: "7j/7",
+      label: "Service disponible",
       color: "accent"
     },
     {
       icon: Trophy,
-      number: "99.9%",
-      label: "Taux de résolution",
+      number: "98%",
+      label: "Satisfaction client",
       color: "primary"
     },
     {
       icon: Globe,
-      number: "50+",
-      label: "Pays couverts",
+      number: "95%",
+      label: "Île-de-France couverte",
       color: "accent"
     }
   ];
@@ -42,18 +42,18 @@ const About = () => {
   const values = [
     {
       icon: Heart,
-      title: "Bienveillance",
-      description: "Nous traitons chaque demande avec empathie et compréhension, car votre problème est notre priorité."
+      title: "Humanité",
+      description: "Nous privilégions l'approche humaine dans chaque interaction, avec empathie et compréhension de vos besoins familiaux."
     },
     {
       icon: Target,
-      title: "Excellence",
-      description: "Nous visons l'excellence dans chaque interaction, avec des solutions précises et efficaces."
+      title: "Fiabilité",
+      description: "Nos assistants sont rigoureusement sélectionnés et formés pour vous offrir un service de qualité constant."
     },
     {
       icon: Users,
-      title: "Collaboration",
-      description: "Nous travaillons en équipe pour vous offrir la meilleure expertise collective disponible."
+      title: "Personnalisation",
+      description: "Chaque famille est unique. Nous adaptons nos services à votre rythme de vie et vos besoins spécifiques."
     }
   ];
 
@@ -67,14 +67,14 @@ const About = () => {
             <span>À propos de nous</span>
           </div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
-            Votre partenaire de confiance
+            Votre partenaire familial
             <span className="block bg-gradient-hero bg-clip-text text-transparent">
-              depuis 2018
+              de confiance
             </span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Assist Me est né de la volonté de révolutionner l'assistance technique. 
-            Nous croyons que chaque problème a une solution, et nous mettons tout en œuvre pour la trouver.
+            Assist'me vous accompagne dans votre quotidien avec douceur, fiabilité et humanité, 
+            pour un foyer plus léger, plus serein et plus harmonieux.
           </p>
         </div>
 
@@ -113,16 +113,16 @@ const About = () => {
             </h3>
             <div className="space-y-4 text-muted-foreground">
               <p>
-                Tout a commencé en 2018 quand notre fondateur, frustré par la qualité du support technique traditionnel, 
-                a décidé de créer une alternative révolutionnaire.
+                Dans un monde où les familles actives peinent à concilier vie professionnelle, vie familiale 
+                et obligations quotidiennes, Assist'me est né pour proposer une solution humaine, personnalisée et fiable.
               </p>
               <p>
-                Aujourd'hui, Assist Me est devenue la référence en matière d'assistance technique en France, 
-                avec une équipe de 50+ experts passionnés et des milliers de clients satisfaits.
+                Aujourd'hui, nous avons développé un réseau d'assistants familiaux couvrant la logistique, 
+                la parentalité, la conciergerie et l'assistance voyageurs, via des formules modulables.
               </p>
               <p>
-                Notre mission est simple : transformer chaque interaction de support en une expérience positive 
-                qui dépasse vos attentes.
+                Notre mission est simple : vous accompagner dans votre quotidien avec douceur, fiabilité et humanité, 
+                pour un foyer plus léger, plus serein et plus harmonieux.
               </p>
             </div>
             <Button variant="hero" size="lg" className="group">

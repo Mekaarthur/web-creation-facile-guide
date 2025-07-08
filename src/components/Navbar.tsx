@@ -7,7 +7,8 @@ const Navbar = () => {
 
   const navItems = [
     { name: "Accueil", href: "#home" },
-    { name: "Services", href: "#services" },
+    { name: "Services Assist", href: "#services" },
+    { name: "Public cible", href: "#target" },
     { name: "À propos", href: "#about" },
     { name: "Contact", href: "#contact" },
   ];
@@ -21,7 +22,7 @@ const Navbar = () => {
             <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
               <MessageCircle className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-foreground">Assist Me</span>
+            <span className="text-xl font-bold text-foreground">Assist'me</span>
           </div>
 
           {/* Desktop Navigation */}
