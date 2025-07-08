@@ -136,7 +136,16 @@ const NousRecrutons = () => {
               dans leur quotidien avec flexibilité et autonomie
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="hero" size="xl">
+              <Button 
+                variant="hero" 
+                size="xl"
+                onClick={() => {
+                  const element = document.getElementById('formulaire-candidature');
+                  if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+              >
                 Postuler maintenant
               </Button>
               <Button variant="outline" size="xl">
@@ -224,9 +233,12 @@ const NousRecrutons = () => {
           </div>
 
           {/* Application Form */}
-          <Card className="max-w-2xl mx-auto">
+          <Card id="formulaire-candidature" className="max-w-2xl mx-auto">
             <CardHeader>
               <CardTitle className="text-2xl text-center">Formulaire de candidature</CardTitle>
+              <p className="text-center text-muted-foreground">
+                Remplissez ce formulaire pour rejoindre notre équipe de prestataires
+              </p>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid md:grid-cols-2 gap-4">
