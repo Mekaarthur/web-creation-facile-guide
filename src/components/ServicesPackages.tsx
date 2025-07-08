@@ -276,9 +276,30 @@ const ServicesPackages = () => {
                 <h4 className="text-lg font-semibold text-foreground">À la carte</h4>
                 <div className="text-2xl font-bold text-primary">25-30€/h</div>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground mb-3">
                 Choisir n'importe quel service Zen selon vos besoins ponctuels.
               </p>
+              <div className="space-y-2">
+                <h5 className="text-sm font-medium text-foreground">Services inclus :</h5>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Bika Kids : garde, sorties éducatives</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Bika Maison : courses, récupération colis</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Bika Vie : rendez-vous médicaux, démarches</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Bika Travel : assistance voyages</span>
+                  </li>
+                </ul>
+              </div>
             </Card>
 
             <Card className="p-6 space-y-4 border-accent">
@@ -286,9 +307,34 @@ const ServicesPackages = () => {
                 <h4 className="text-lg font-semibold text-foreground">Hebdo</h4>
                 <div className="text-2xl font-bold text-primary">10h - 240€</div>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground mb-3">
                 Panier libre d'heures (Kids + Maison + Travel, etc.).
               </p>
+              <div className="space-y-2">
+                <h5 className="text-sm font-medium text-foreground">Services inclus :</h5>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-accent mt-1.5 flex-shrink-0"></div>
+                    <span>Combinaisons Bika Kids + Maison + Travel</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-accent mt-1.5 flex-shrink-0"></div>
+                    <span>Garde ponctuelle et de nuit</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-accent mt-1.5 flex-shrink-0"></div>
+                    <span>Courses et récupération colis</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-accent mt-1.5 flex-shrink-0"></div>
+                    <span>Gestion agenda partagé</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-accent mt-1.5 flex-shrink-0"></div>
+                    <span>Assistance voyages basique</span>
+                  </li>
+                </ul>
+              </div>
             </Card>
 
             <Card className="p-6 space-y-4">
@@ -296,9 +342,34 @@ const ServicesPackages = () => {
                 <h4 className="text-lg font-semibold text-foreground">Mensuel</h4>
                 <div className="text-2xl font-bold text-primary">40h - 900€</div>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground mb-3">
                 Combinaisons illimitées + suivi mensuel personnalisé.
               </p>
+              <div className="space-y-2">
+                <h5 className="text-sm font-medium text-foreground">Services inclus :</h5>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Tous les services Bika Kids, Maison, Vie</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Bika Travel complet avec priorité</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Organisation événements familiaux</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Suivi mensuel personnalisé</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Gestion administrative complète</span>
+                  </li>
+                </ul>
+              </div>
             </Card>
 
             <Card className="p-6 space-y-4">
@@ -306,9 +377,34 @@ const ServicesPackages = () => {
                 <h4 className="text-lg font-semibold text-foreground">Premium</h4>
                 <div className="text-2xl font-bold text-primary">≥ 1500€</div>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground mb-3">
                 Accès libre Zen'Plus & Zen'Travel prioritaire à adapter selon vos besoins.
               </p>
+              <div className="space-y-2">
+                <h5 className="text-sm font-medium text-foreground">Services inclus :</h5>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Chef Family Officer dédié</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Ligne prioritaire + WhatsApp instantané</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Accès à tous les services Bika</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Garde soir, week-end, nuit prioritaire</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                    <span>Organisation planning familial complet</span>
+                  </li>
+                </ul>
+              </div>
             </Card>
           </div>
         </div>
