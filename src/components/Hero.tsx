@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Star, Users, Clock, Shield } from "lucide-react";
-import heroImage from "@/assets/hero-support.jpg";
+import heroImage from "@/assets/hero-support-team.jpg";
 
 const Hero = () => {
   return (
@@ -82,8 +82,8 @@ const Hero = () => {
           <div className="relative animate-fade-in" style={{animationDelay: '0.3s'}}>
             <div className="relative">
               <img
-                src="/lovable-uploads/1ac09068-74a1-4d44-bdc6-d342fcb10cd4.png"
-                alt="Assistant familial professionnel"
+                src={heroImage}
+                alt="Équipe d'assistants familiaux aidant une maman"
                 className="w-full h-auto rounded-2xl shadow-glow"
               />
               
