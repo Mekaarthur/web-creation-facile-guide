@@ -82,8 +82,8 @@ const Hero = () => {
           <div className="relative animate-fade-in" style={{animationDelay: '0.3s'}}>
             <div className="relative">
               <img
-                src={heroImage}
-                alt="Équipe d'assistants familiaux aidant une maman"
+                src="/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png"
+                alt="Famille organisée avec assistant familial"
                 className="w-full h-auto rounded-2xl shadow-glow"
               />
               
