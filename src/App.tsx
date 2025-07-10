@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import EspacePersonnel from "./pages/EspacePersonnel";
 import EspacePrestataire from "./pages/EspacePrestataire";
 import NousRecrutons from "./pages/NousRecrutons";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/espace-personnel" element={<EspacePersonnel />} />
             <Route path="/espace-prestataire" element={<EspacePrestataire />} />
             <Route path="/nous-recrutons" element={<NousRecrutons />} />
+            <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

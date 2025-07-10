@@ -9,13 +9,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Clock, MapPin, Star, Euro, Filter, Zap } from "lucide-react";
+import { CalendarIcon, Clock, MapPin, Star, Euro, Filter, Zap, Navigation } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { sendBookingConfirmation } from "@/utils/notifications";
 import { useProviderMatching } from "@/hooks/useProviderMatching";
+import { MapView } from "@/components/MapView";
+import { ReviewSystem } from "@/components/ReviewSystem";
 
 interface Provider {
   id: string;
@@ -40,6 +42,12 @@ interface Provider {
     end_time: string;
     is_available: boolean;
   }[];
+  provider_locations?: {
+    latitude: number;
+    longitude: number;
+    address: string;
+    city: string;
+  }[];
 }
 
 const ServicesBooking = () => {
@@ -54,6 +62,7 @@ const ServicesBooking = () => {
   const [minRating, setMinRating] = useState<number>(0);
   const [maxPrice, setMaxPrice] = useState<number>(0);
   const [showFilters, setShowFilters] = useState(false);
+  const [showMap, setShowMap] = useState(false);
   const { toast } = useToast();
   
   const {
@@ -270,14 +279,24 @@ const ServicesBooking = () => {
                              <Zap className="w-4 h-4 text-primary" />
                              Matching automatique activé
                            </Label>
-                           <Button
-                             variant="outline" 
-                             size="sm"
-                             onClick={() => setShowFilters(!showFilters)}
-                           >
-                             <Filter className="w-4 h-4 mr-1" />
-                             Filtres
-                           </Button>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => setShowFilters(!showFilters)}
+                              >
+                                <Filter className="w-4 h-4 mr-1" />
+                                Filtres
+                              </Button>
+                              <Button
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => setShowMap(!showMap)}
+                              >
+                                <Navigation className="w-4 h-4 mr-1" />
+                                Carte
+                              </Button>
+                            </div>
                          </div>
                          
                          {showFilters && (
@@ -316,77 +335,96 @@ const ServicesBooking = () => {
                          )}
                        </div>
 
-                       {/* Sélection du prestataire avec matching score */}
-                       <div className="space-y-2">
-                         <Label>Prestataires recommandés</Label>
-                         <div className="space-y-2 max-h-60 overflow-y-auto">
-                           {providers.length === 0 ? (
-                             <div className="text-center py-4 text-muted-foreground">
-                               Aucun prestataire disponible pour ce service
-                             </div>
+                        {/* Sélection du prestataire avec matching score */}
+                        <div className="space-y-2">
+                          <Label>Prestataires recommandés</Label>
+                          
+                           {showMap ? (
+                             <MapView
+                               providers={providers}
+                               selectedServiceId={selectedService?.id}
+                               onProviderSelect={(provider) => setSelectedProvider(provider)}
+                             />
                            ) : (
-                             providers.map((provider, index) => {
-                               const price = getProviderPrice(provider, selectedService?.id || '');
-                               const isAvailable = date && timeSlot ? 
-                                 isProviderAvailable(provider, new Date(`${format(date, 'yyyy-MM-dd')}T${timeSlot}:00`)) : 
-                                 true;
-                               
-                               return (
-                                 <Card 
-                                   key={provider.id} 
-                                   className={`cursor-pointer transition-all hover:shadow-md ${
-                                     selectedProvider?.id === provider.id ? 'ring-2 ring-primary' : ''
-                                   } ${index === 0 ? 'bg-primary/5 border-primary/20' : ''}`}
-                                   onClick={() => setSelectedProvider(provider)}
-                                 >
-                                   <CardContent className="p-4">
-                                     <div className="flex items-center justify-between">
-                                       <div className="flex-1">
-                                         <div className="flex items-center gap-2">
-                                           <span className="font-medium">{getProviderDisplayName(provider)}</span>
-                                           {index === 0 && (
-                                             <Badge variant="secondary" className="text-xs">
-                                               <Zap className="w-3 h-3 mr-1" />
-                                               Recommandé
-                                             </Badge>
-                                           )}
-                                         </div>
-                                         
-                                         <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                                           {provider.rating && (
-                                             <div className="flex items-center gap-1">
-                                               <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                                               <span>{provider.rating}</span>
-                                             </div>
-                                           )}
-                                           
-                                           <div className="flex items-center gap-1">
-                                             <Euro className="w-3 h-3" />
-                                             <span className="font-medium">{price}€/h</span>
-                                           </div>
-                                           
-                                           {provider.location && (
-                                             <div className="flex items-center gap-1">
-                                               <MapPin className="w-3 h-3" />
-                                               <span className="truncate max-w-24">{provider.location}</span>
-                                             </div>
-                                           )}
-                                         </div>
-                                         
-                                         {!isAvailable && date && timeSlot && (
-                                           <Badge variant="destructive" className="text-xs mt-1">
-                                             Non disponible à cette heure
-                                           </Badge>
-                                         )}
-                                       </div>
-                                     </div>
-                                   </CardContent>
-                                 </Card>
-                               );
-                             })
-                           )}
-                         </div>
-                       </div>
+                            <div className="space-y-2 max-h-60 overflow-y-auto">
+                              {providers.length === 0 ? (
+                                <div className="text-center py-4 text-muted-foreground">
+                                  Aucun prestataire disponible pour ce service
+                                </div>
+                              ) : (
+                                providers.map((provider, index) => {
+                                  const price = getProviderPrice(provider, selectedService?.id || '');
+                                  const isAvailable = date && timeSlot ? 
+                                    isProviderAvailable(provider, new Date(`${format(date, 'yyyy-MM-dd')}T${timeSlot}:00`)) : 
+                                    true;
+                                  
+                                  return (
+                                    <Card 
+                                      key={provider.id} 
+                                      className={`cursor-pointer transition-all hover:shadow-md ${
+                                        selectedProvider?.id === provider.id ? 'ring-2 ring-primary' : ''
+                                      } ${index === 0 ? 'bg-primary/5 border-primary/20' : ''}`}
+                                      onClick={() => setSelectedProvider(provider)}
+                                    >
+                                      <CardContent className="p-4">
+                                        <div className="flex items-center justify-between">
+                                          <div className="flex-1">
+                                            <div className="flex items-center gap-2">
+                                              <span className="font-medium">{getProviderDisplayName(provider)}</span>
+                                              {index === 0 && (
+                                                <Badge variant="secondary" className="text-xs">
+                                                  <Zap className="w-3 h-3 mr-1" />
+                                                  Recommandé
+                                                </Badge>
+                                              )}
+                                            </div>
+                                            
+                                            <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                                              {provider.rating && (
+                                                <div className="flex items-center gap-1">
+                                                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                                  <span>{provider.rating}</span>
+                                                </div>
+                                              )}
+                                              
+                                              <div className="flex items-center gap-1">
+                                                <Euro className="w-3 h-3" />
+                                                <span className="font-medium">{price}€/h</span>
+                                              </div>
+                                              
+                                              {provider.location && (
+                                                <div className="flex items-center gap-1">
+                                                  <MapPin className="w-3 h-3" />
+                                                  <span className="truncate max-w-24">{provider.location}</span>
+                                                </div>
+                                              )}
+                                            </div>
+                                            
+                                            {!isAvailable && date && timeSlot && (
+                                              <Badge variant="destructive" className="text-xs mt-1">
+                                                Non disponible à cette heure
+                                              </Badge>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </CardContent>
+                                    </Card>
+                                  );
+                                })
+                              )}
+                            </div>
+                          )}
+                          
+                          {/* Avis du prestataire sélectionné */}
+                          {selectedProvider && (
+                            <div className="mt-4">
+                              <ReviewSystem 
+                                providerId={selectedProvider.id}
+                                mode="display"
+                              />
+                            </div>
+                          )}
+                        </div>
 
                       {/* Sélection de la date */}
                       <div className="space-y-2">

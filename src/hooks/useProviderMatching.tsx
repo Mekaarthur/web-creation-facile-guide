@@ -24,6 +24,12 @@ interface Provider {
     end_time: string;
     is_available: boolean;
   }[];
+  provider_locations?: {
+    latitude: number;
+    longitude: number;
+    address: string;
+    city: string;
+  }[];
   distance?: number;
 }
 
@@ -80,7 +86,8 @@ export const useProviderMatching = () => {
           *,
           profiles(first_name, last_name),
           provider_services(service_id, price_override),
-          provider_availability(day_of_week, start_time, end_time, is_available)
+          provider_availability(day_of_week, start_time, end_time, is_available),
+          provider_locations(latitude, longitude, address, city)
         `)
         .eq('is_verified', true);
 
