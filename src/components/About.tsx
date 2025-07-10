@@ -34,7 +34,7 @@ const About = () => {
     {
       icon: Globe,
       number: "95%",
-      label: "Île-de-France couverte",
+      label: "France couverte",
       color: "accent"
     }
   ];

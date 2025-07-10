@@ -60,7 +60,7 @@ const Target = () => {
     {
       icon: Plane,
       title: "Voyageurs fréquents",
-      subtitle: "Déplacements pro & perso en Île-de-France",
+      subtitle: "Déplacements pro & perso en France",
       description: "Personnes en déplacement régulier qui ont besoin d'assistance avant, pendant et après leurs voyages.",
       needs: [
         "Assistance aéroport et transferts",
@@ -75,25 +75,25 @@ const Target = () => {
 
   const coverage = [
     {
-      zone: "Paris intra-muros",
+      zone: "Grandes métropoles",
       coverage: "100%",
       response: "< 2h",
       color: "primary"
     },
     {
-      zone: "Petite couronne",
+      zone: "Villes moyennes",
       coverage: "95%",
-      response: "< 3h",
+      response: "< 4h",
       color: "accent"
     },
     {
-      zone: "Grande couronne",
-      coverage: "80%",
-      response: "< 4h",
+      zone: "Zones rurales",
+      coverage: "85%",
+      response: "< 6h",
       color: "primary"
     },
     {
-      zone: "Aéroports IDF",
+      zone: "Aéroports France",
       coverage: "100%",
       response: "24h/7j",
       color: "accent"
@@ -179,10 +179,10 @@ const Target = () => {
         <div className="space-y-12">
           <div className="text-center space-y-4 animate-fade-in-up">
             <h3 className="text-2xl md:text-3xl font-bold text-foreground">
-              Notre couverture en Île-de-France
+              Notre couverture en France
             </h3>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Un service de proximité adapté à chaque zone géographique avec des temps de réponse optimisés.
+              Un service de proximité adapté à toutes les régions françaises avec des temps de réponse optimisés.
             </p>
           </div>
 

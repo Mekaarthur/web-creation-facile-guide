@@ -132,7 +132,7 @@ const NousRecrutons = () => {
               <span className="bg-gradient-primary bg-clip-text text-transparent"> prestataires</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-              Devenez partenaire Assist'mw et accompagnez les familles d'Île-de-France 
+              Devenez partenaire Assist'mw et accompagnez les familles de toute la France 
               dans leur quotidien avec flexibilité et autonomie
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

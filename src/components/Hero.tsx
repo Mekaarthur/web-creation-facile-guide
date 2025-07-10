@@ -19,7 +19,7 @@ const Hero = () => {
             {/* Badge */}
             <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
               <Star className="w-4 h-4" />
-               <span>Assistant familial #1 en Île-de-France</span>
+               <span>Assistant familial #1 en France</span>
             </div>
 
             {/* Heading */}

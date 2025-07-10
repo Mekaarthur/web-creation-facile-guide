@@ -15,7 +15,7 @@ const FAQ = () => {
         },
         {
           question: "Dans quelles zones géographiques intervenez-vous ?",
-          answer: "Nous couvrons actuellement l'Île-de-France : Paris et petite couronne (92, 93, 94). Extension progressive vers la grande couronne selon la demande."
+          answer: "Nous couvrons toute la France métropolitaine. Nos services sont disponibles dans toutes les régions avec des prestataires locaux qualifiés."
         },
         {
           question: "Vos prestataires sont-ils vérifiés ?",
