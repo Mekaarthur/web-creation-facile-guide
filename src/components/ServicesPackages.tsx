@@ -21,7 +21,9 @@ import {
   Phone,
   MapPin,
   Luggage,
-  Users
+  Users,
+  PawPrint,
+  UserCheck
 } from "lucide-react";
 
 const ServicesPackages = () => {
@@ -112,6 +114,40 @@ const ServicesPackages = () => {
       price: "À partir de 1500€/mois"
     },
     {
+      id: "animals",
+      icon: PawPrint,
+      title: "Bika Animals",
+      subtitle: "Services pour animaux",
+      description: "Promenade, soins et accompagnement pour vos compagnons à quatre pattes.",
+      services: [
+        "Balade matinale et du soir",
+        "Accompagnement chez le vétérinaire",
+        "Courses pour animaux (nourriture, accessoires)",
+        "Garde ponctuelle d'animaux",
+        "Toilettage et soins de base"
+      ],
+      color: "primary",
+      popular: false,
+      price: "À partir de 20€/h"
+    },
+    {
+      id: "seniors",
+      icon: UserCheck,
+      title: "Bika Personnes Âgées",
+      subtitle: "Assistance seniors",
+      description: "Accompagnement bienveillant et aide quotidienne pour nos aînés.",
+      services: [
+        "Aide aux activités quotidiennes",
+        "Accompagnement aux rendez-vous médicaux",
+        "Courses et commissions",
+        "Compagnie et conversation",
+        "Aide à la mobilité et aux repas"
+      ],
+      color: "accent",
+      popular: false,
+      price: "À partir de 22€/h"
+    },
+    {
       id: "pro",
       icon: Briefcase,
       title: "Bika Pro",
@@ -178,7 +214,7 @@ const ServicesPackages = () => {
             </span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Découvrez nos 6 packages d'assistance conçus pour vous accompagner dans votre quotidien
+            Découvrez nos 8 packages d'assistance conçus pour vous accompagner dans votre quotidien
             avec douceur, fiabilité et humanité.
           </p>
         </div>
