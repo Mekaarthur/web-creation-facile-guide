@@ -10,16 +10,16 @@ const FAQ = () => {
       category: "Général",
       questions: [
         {
-          question: "Comment fonctionne Assist'mw ?",
-          answer: "Assist'mw vous met en relation avec des assistants familiaux vérifiés et formés. Vous réservez en ligne selon vos besoins, et nous nous occupons de tout : matching, planning, suivi qualité."
+          question: "Comment fonctionne BIKAWO ?",
+          answer: "BIKAWO vous met en relation avec des assistants familiaux vérifiés. Vous réservez en ligne selon vos besoins parmi nos 8 services BIKA, et nous nous occupons de tout : matching, planning, suivi qualité."
         },
         {
           question: "Dans quelles zones géographiques intervenez-vous ?",
-          answer: "Nous couvrons toute la France métropolitaine. Nos services sont disponibles dans toutes les régions avec des prestataires locaux qualifiés."
+          answer: "Nous couvrons toute la France métropolitaine. Nos services BIKA sont disponibles dans toutes les régions avec des prestataires locaux qualifiés."
         },
         {
           question: "Vos prestataires sont-ils vérifiés ?",
-          answer: "Absolument ! Tous nos assistants passent par une vérification complète : vérification d'identité, casier judiciaire, références, entretien personnel et formation Assist'mw."
+          answer: "Absolument ! Tous nos prestataires BIKA passent par une vérification complète : casier judiciaire vierge, vérification d'identité, références, entretien personnel et formation BIKAWO."
         }
       ]
     },
@@ -31,8 +31,8 @@ const FAQ = () => {
           answer: "Très simple : créez votre compte, choisissez votre service et créneau, validez votre réservation. Vous recevez immédiatement la confirmation avec les détails de votre assistant."
         },
         {
-          question: "Quels sont vos tarifs ?",
-          answer: "Nos tarifs démarrent à 25€/h selon le service. Nous proposons aussi des formules hebdomadaires (10h ou 15h) et mensuelles (40h ou 60h) plus avantageuses."
+          question: "Quels sont vos tarifs BIKA ?",
+          answer: "Nos tarifs démarrent à 15€/h pour BIKA Kids et Animals, 20€/h pour BIKA Maison/Vie, 22€/h pour BIKA Seniors, 25€/h pour BIKA Travel. BIKA Plus à partir de 1500€/mois. Formules hebdo et mensuelles disponibles."
         },
         {
           question: "Puis-je annuler ou modifier ma réservation ?",
@@ -41,19 +41,19 @@ const FAQ = () => {
       ]
     },
     {
-      category: "Services",
+      category: "Services BIKA",
       questions: [
         {
-          question: "Quelle est la différence entre vos packages ?",
-          answer: "Assist'Kids (garde d'enfants), Assist'Maison (logistique quotidienne), Assist'Vie (conciergerie), Assist'Travel (voyages), Assist'Plus (service premium 7j/7), Assist'Pro (entreprises)."
+          question: "Quels sont vos 8 services BIKA ?",
+          answer: "BIKA Kids (garde enfants), BIKA Maison (logistique quotidienne), BIKA Vie (conciergerie), BIKA Travel (voyages), BIKA Plus (premium 7j/7), BIKA Animals (soins animaux), BIKA Personnes Âgées (assistance seniors), BIKA Pro (entreprises)."
         },
         {
-          question: "Puis-je avoir toujours le même assistant ?",
-          answer: "Nous privilégions la continuité relationnelle. Avec nos formules régulières, vous pouvez demander le même assistant. Pour Assist'Plus, vous avez un Chef Family Officer dédié."
+          question: "Puis-je avoir toujours le même prestataire BIKA ?",
+          answer: "Nous privilégions la continuité relationnelle. Avec nos formules régulières, vous pouvez demander le même prestataire. Pour BIKA Plus, vous avez un Chef Family Officer dédié."
         },
         {
           question: "Que se passe-t-il en cas d'urgence ?",
-          answer: "Nous avons une ligne d'urgence 7j/7. Pour Assist'Plus, assistance prioritaire immédiate. Pour les autres formules, intervention sous 2h selon disponibilité."
+          answer: "Nous avons une ligne d'urgence 7j/7. Pour BIKA Plus, assistance prioritaire immédiate. Pour les autres formules, intervention sous 2h selon disponibilité des prestataires."
         }
       ]
     },
@@ -89,12 +89,12 @@ const FAQ = () => {
         <div className="text-center space-y-4 mb-16 animate-fade-in-up">
           <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
             <HelpCircle className="w-4 h-4" />
-            <span>Questions fréquentes</span>
+            <span>Tout savoir sur BIKAWO</span>
           </div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
-            Tout savoir sur
+            Questions fréquentes
             <span className="block bg-gradient-hero bg-clip-text text-transparent">
-              Assist'mw
+              sur nos services
             </span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
