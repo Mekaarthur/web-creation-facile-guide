@@ -27,64 +27,64 @@ const NousRecrutons = () => {
 
   const categories = [
     {
-      id: "assist-kids",
-      title: "Assist'Kids",
+      id: "bika-kids",
+      title: "BIKA Kids",
       description: "Spécialistes enfance et parentalité",
       requirements: ["Expérience garde d'enfants", "Formation premiers secours", "Casier judiciaire vierge"],
       icon: Users,
       color: "bg-blue-500"
     },
     {
-      id: "assist-maison",
-      title: "Assist'Maison", 
+      id: "bika-maison",
+      title: "BIKA Maison", 
       description: "Logisticiens du quotidien",
-      requirements: ["Permis de conduire", "Ponctualité exemplaire", "Sens du service"],
+      requirements: ["Permis de conduire", "Ponctualité exemplaire", "Sens du service", "Casier judiciaire vierge"],
       icon: Shield,
       color: "bg-green-500"
     },
     {
-      id: "assist-vie",
-      title: "Assist'Vie",
+      id: "bika-vie",
+      title: "BIKA Vie",
       description: "Concierges administratifs",
-      requirements: ["Maîtrise bureautique", "Relationnel client", "Discrétion absolue"],
+      requirements: ["Maîtrise bureautique", "Relationnel client", "Discrétion absolue", "Casier judiciaire vierge"],
       icon: FileCheck,
       color: "bg-purple-500"
     },
     {
-      id: "assist-travel",
-      title: "Assist'Travel",
+      id: "bika-travel",
+      title: "BIKA Travel",
       description: "Agents aéroport et travel planners",
-      requirements: ["Connaissance aéroportuaire", "Langues étrangères", "Disponibilité horaires variables"],
+      requirements: ["Connaissance aéroportuaire", "Langues étrangères", "Disponibilité horaires variables", "Casier judiciaire vierge"],
       icon: MapPin,
       color: "bg-orange-500"
     },
     {
-      id: "assist-plus",
-      title: "Assist'Plus",
+      id: "bika-plus",
+      title: "BIKA Plus",
       description: "Majordomes et gouvernantes haut de gamme",
-      requirements: ["5 ans d'expérience ou Bac+3 en administration", "Références vérifiées", "Polyvalence exceptionnelle"],
+      requirements: ["5 ans d'expérience ou Bac+3 en administration", "Références vérifiées", "Polyvalence exceptionnelle", "Casier judiciaire vierge"],
       icon: Award,
       color: "bg-yellow-500"
     },
     {
-      id: "assist-pro",
-      title: "Assist'Pro",
+      id: "bika-pro",
+      title: "BIKA Pro",
       description: "Assistants administratifs / direction",
-      requirements: ["Bac avec 2 ans d'expérience", "Expérience corporate", "Confidentialité"],
+      requirements: ["Bac avec 2 ans d'expérience", "Expérience corporate", "Confidentialité", "Casier judiciaire vierge"],
       icon: UserCheck,
       color: "bg-red-500"
     },
     {
-      id: "assist-animals",
-      title: "Assist'Animals",
+      id: "bika-animals",
+      title: "BIKA Animals",
       description: "Spécialistes soins et garde d'animaux",
-      requirements: ["Formation animalière", "Expérience garde animaux", "Patience et douceur"],
+      requirements: ["Formation animalière", "Expérience garde animaux", "Patience et douceur", "Casier judiciaire vierge"],
       icon: PawPrint,
       color: "bg-emerald-500"
     },
     {
-      id: "assist-seniors",
-      title: "Assist'Personnes âgées",
+      id: "bika-seniors",
+      title: "BIKA Personnes âgées",
       description: "Accompagnants seniors et aide à domicile",
       requirements: ["Formation gériatrie ou aide à la personne", "Empathie et bienveillance", "Casier judiciaire vierge"],
       icon: Heart,
