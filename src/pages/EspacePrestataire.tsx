@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { BookingManagement } from '@/components/BookingManagement';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -125,9 +126,13 @@ const EspacePrestataire = () => {
                 <Bell className="w-4 h-4" />
                 Connexion
               </TabsTrigger>
+              <TabsTrigger value="reservations" className="flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Réservations
+              </TabsTrigger>
               <TabsTrigger value="prestations" className="flex items-center gap-2">
                 <History className="w-4 h-4" />
-                Mes Prestations
+                Historique
               </TabsTrigger>
               <TabsTrigger value="revenus" className="flex items-center gap-2">
                 <Euro className="w-4 h-4" />
@@ -140,10 +145,6 @@ const EspacePrestataire = () => {
               <TabsTrigger value="profil" className="flex items-center gap-2">
                 <User className="w-4 h-4" />
                 Mon Profil
-              </TabsTrigger>
-              <TabsTrigger value="planning" className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Planning
               </TabsTrigger>
             </TabsList>
 
@@ -227,6 +228,11 @@ const EspacePrestataire = () => {
               </Card>
             </TabsContent>
 
+            {/* Gestion des réservations en temps réel */}
+            <TabsContent value="reservations" className="space-y-6">
+              <BookingManagement />
+            </TabsContent>
+
             {/* Prestations */}
             <TabsContent value="prestations" className="space-y-6">
               <div className="space-y-6">
@@ -234,7 +240,7 @@ const EspacePrestataire = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <History className="w-5 h-5 text-primary" />
-                      Mes prestations
+                      Historique des prestations
                     </CardTitle>
                   </CardHeader>
                   <CardContent>

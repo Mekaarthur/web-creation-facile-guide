@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { NotificationCenter } from "@/components/NotificationCenter";
 import { Button } from "@/components/ui/button";
 import { Menu, X, MessageCircle, Phone, LogOut, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -53,6 +54,7 @@ const Navbar = () => {
             </Button>
             {user ? (
               <div className="flex items-center space-x-2">
+                <NotificationCenter />
                 <Button variant="ghost" size="sm">
                   <User className="w-4 h-4 mr-2" />
                   {user.email}
