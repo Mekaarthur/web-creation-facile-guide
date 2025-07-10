@@ -3,12 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, CreditCard, Bell, History, FileText, UserRound, Lock } from "lucide-react";
+import { Calendar, Clock, CreditCard, Bell, History, FileText, UserRound, Lock, User, Settings } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BookingsList from "@/components/BookingsList";
+import FileUpload from "@/components/FileUpload";
 
 const EspacePersonnel = () => {
   const [selectedTab, setSelectedTab] = useState("connexion");
@@ -88,7 +89,7 @@ const EspacePersonnel = () => {
 
           {/* Tabs Navigation */}
           <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-8">
+            <TabsList className="grid w-full grid-cols-5 mb-8">
               <TabsTrigger value="connexion" className="flex items-center gap-2">
                 <Bell className="w-4 h-4" />
                 Connexion
@@ -100,6 +101,10 @@ const EspacePersonnel = () => {
               <TabsTrigger value="factures" className="flex items-center gap-2">
                 <FileText className="w-4 h-4" />
                 Factures
+              </TabsTrigger>
+              <TabsTrigger value="profil" className="flex items-center gap-2">
+                <User className="w-4 h-4" />
+                Mon Profil
               </TabsTrigger>
               <TabsTrigger value="calendrier" className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
@@ -248,6 +253,84 @@ const EspacePersonnel = () => {
                     </Button>
                   </CardContent>
                 </Card>
+              </div>
+            </TabsContent>
+
+            {/* Profil utilisateur */}
+            <TabsContent value="profil" className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <User className="w-5 h-5 text-primary" />
+                      Informations personnelles
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="prenom-profil">Prénom</Label>
+                        <Input id="prenom-profil" defaultValue="Jean" />
+                      </div>
+                      <div>
+                        <Label htmlFor="nom-profil">Nom</Label>
+                        <Input id="nom-profil" defaultValue="Dupont" />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="email-profil">Email</Label>
+                      <Input id="email-profil" type="email" defaultValue="jean.dupont@exemple.com" />
+                    </div>
+                    <div>
+                      <Label htmlFor="telephone-profil">Téléphone</Label>
+                      <Input id="telephone-profil" defaultValue="06 12 34 56 78" />
+                    </div>
+                    <div>
+                      <Label htmlFor="adresse-profil">Adresse</Label>
+                      <Input id="adresse-profil" defaultValue="123 rue de la Paix, 75001 Paris" />
+                    </div>
+                    <Button className="w-full">
+                      <Settings className="w-4 h-4 mr-2" />
+                      Mettre à jour mes informations
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <div className="space-y-6">
+                  <FileUpload
+                    bucketName="profiles"
+                    path="avatars"
+                    acceptedTypes="image/*"
+                    maxSize={2}
+                    title="Photo de profil"
+                    description="Téléchargez votre photo de profil (JPEG, PNG, max 2MB)"
+                    onUploadComplete={(url) => {
+                      console.log('Avatar uploadé:', url);
+                    }}
+                  />
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Préférences</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">Notifications par email</p>
+                          <p className="text-sm text-muted-foreground">Recevoir les confirmations de réservation</p>
+                        </div>
+                        <Button variant="outline" size="sm">Activé</Button>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">Notifications SMS</p>
+                          <p className="text-sm text-muted-foreground">Rappels de rendez-vous</p>
+                        </div>
+                        <Button variant="outline" size="sm">Désactivé</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </TabsContent>
 

@@ -3,12 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, CreditCard, Bell, History, FileText, UserRound, Lock, MapPin, Star, Euro } from "lucide-react";
+import { Calendar, Clock, CreditCard, Bell, History, FileText, UserRound, Lock, MapPin, Star, Euro, User, Settings, Shield } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BookingsList from "@/components/BookingsList";
+import FileUpload from "@/components/FileUpload";
 
 const EspacePrestataire = () => {
   const [selectedTab, setSelectedTab] = useState("connexion");
@@ -119,7 +120,7 @@ const EspacePrestataire = () => {
 
           {/* Tabs Navigation */}
           <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-5 mb-8">
+            <TabsList className="grid w-full grid-cols-6 mb-8">
               <TabsTrigger value="connexion" className="flex items-center gap-2">
                 <Bell className="w-4 h-4" />
                 Connexion
@@ -135,6 +136,10 @@ const EspacePrestataire = () => {
               <TabsTrigger value="evaluations" className="flex items-center gap-2">
                 <Star className="w-4 h-4" />
                 Évaluations
+              </TabsTrigger>
+              <TabsTrigger value="profil" className="flex items-center gap-2">
+                <User className="w-4 h-4" />
+                Mon Profil
               </TabsTrigger>
               <TabsTrigger value="planning" className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
@@ -326,6 +331,104 @@ const EspacePrestataire = () => {
                   ))}
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* Profil prestataire */}
+            <TabsContent value="profil" className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <User className="w-5 h-5 text-primary" />
+                      Informations personnelles
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="prenom-profil">Prénom</Label>
+                        <Input id="prenom-profil" defaultValue="Marie" />
+                      </div>
+                      <div>
+                        <Label htmlFor="nom-profil">Nom</Label>
+                        <Input id="nom-profil" defaultValue="Martin" />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="email-profil">Email</Label>
+                      <Input id="email-profil" type="email" defaultValue="marie.martin@exemple.com" />
+                    </div>
+                    <div>
+                      <Label htmlFor="telephone-profil">Téléphone</Label>
+                      <Input id="telephone-profil" defaultValue="06 98 76 54 32" />
+                    </div>
+                    <div>
+                      <Label htmlFor="adresse-profil">Adresse</Label>
+                      <Input id="adresse-profil" defaultValue="45 avenue de la République, 75011 Paris" />
+                    </div>
+                    <div>
+                      <Label htmlFor="business-name">Nom commercial (optionnel)</Label>
+                      <Input id="business-name" defaultValue="Marie Services+" />
+                    </div>
+                    <div>
+                      <Label htmlFor="description-profil">Description de vos services</Label>
+                      <Input id="description-profil" defaultValue="Prestataire expérimentée en garde d'enfants et services domestiques" />
+                    </div>
+                    <Button className="w-full">
+                      <Settings className="w-4 h-4 mr-2" />
+                      Mettre à jour mes informations
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <div className="space-y-6">
+                  <FileUpload
+                    bucketName="profiles"
+                    path="avatars"
+                    acceptedTypes="image/*"
+                    maxSize={2}
+                    title="Photo de profil"
+                    description="Téléchargez votre photo de profil (JPEG, PNG, max 2MB)"
+                    onUploadComplete={(url) => {
+                      console.log('Avatar uploadé:', url);
+                    }}
+                  />
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Shield className="w-5 h-5 text-primary" />
+                        Documents de vérification
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <FileUpload
+                        bucketName="documents"
+                        path="identity"
+                        acceptedTypes=".pdf,.jpg,.jpeg,.png"
+                        maxSize={5}
+                        title="Pièce d'identité"
+                        description="Carte d'identité, passeport ou permis de conduire"
+                        onUploadComplete={(url) => {
+                          console.log('Document d\'identité uploadé:', url);
+                        }}
+                      />
+                      
+                      <FileUpload
+                        bucketName="documents"
+                        path="insurance"
+                        acceptedTypes=".pdf,.jpg,.jpeg,.png"
+                        maxSize={5}
+                        title="Assurance responsabilité civile"
+                        description="Attestation d'assurance en cours de validité"
+                        onUploadComplete={(url) => {
+                          console.log('Assurance uploadée:', url);
+                        }}
+                      />
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
             </TabsContent>
 
             {/* Planning */}
