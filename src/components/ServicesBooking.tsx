@@ -9,21 +9,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Clock, MapPin, Star, Euro } from "lucide-react";
+import { CalendarIcon, Clock, MapPin, Star, Euro, Filter, Zap } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { sendBookingConfirmation } from "@/utils/notifications";
-
-interface Service {
-  id: string;
-  name: string;
-  description: string;
-  price_per_hour: number;
-  category: string;
-  is_active: boolean;
-}
+import { useProviderMatching } from "@/hooks/useProviderMatching";
 
 interface Provider {
   id: string;
@@ -38,12 +30,20 @@ interface Provider {
     first_name: string | null;
     last_name: string | null;
   } | null;
+  provider_services: {
+    service_id: string;
+    price_override: number | null;
+  }[];
+  provider_availability: {
+    day_of_week: number;
+    start_time: string;
+    end_time: string;
+    is_available: boolean;
+  }[];
 }
 
 const ServicesBooking = () => {
-  const [services, setServices] = useState<Service[]>([]);
-  const [providers, setProviders] = useState<Provider[]>([]);
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [selectedService, setSelectedService] = useState<any>(null);
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
   const [date, setDate] = useState<Date>();
   const [timeSlot, setTimeSlot] = useState("");
@@ -51,53 +51,53 @@ const ServicesBooking = () => {
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [minRating, setMinRating] = useState<number>(0);
+  const [maxPrice, setMaxPrice] = useState<number>(0);
+  const [showFilters, setShowFilters] = useState(false);
   const { toast } = useToast();
+  
+  const {
+    providers,
+    services,
+    loading,
+    error,
+    findMatchingProviders,
+    getProviderPrice,
+    isProviderAvailable
+  } = useProviderMatching();
 
   useEffect(() => {
-    loadServices();
-    loadProviders();
+    // Charger tous les prestataires au démarrage
+    findMatchingProviders();
   }, []);
 
-  const loadServices = async () => {
-    try {
-      const { data, error } = await (supabase as any)
-        .from('services')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
-      
-      if (error) throw error;
-      setServices(data || []);
-    } catch (error) {
-      console.error('Erreur lors du chargement des services:', error);
-    }
-  };
-
-  const loadProviders = async () => {
-    try {
-      const { data, error } = await (supabase as any)
-        .from('providers')
-        .select(`
-          *,
-          profiles(first_name, last_name)
-        `)
-        .eq('is_verified', true)
-        .order('rating', { ascending: false });
-      
-      if (error) throw error;
-      setProviders(data || []);
-    } catch (error) {
-      console.error('Erreur lors du chargement des prestataires:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleServiceSelect = (service: Service) => {
+  const handleServiceSelect = (service: any) => {
     setSelectedService(service);
     setSelectedProvider(null);
     setIsBookingDialogOpen(true);
+    
+    // Faire le matching automatique pour ce service
+    const filters = {
+      serviceId: service.id,
+      minRating: minRating || undefined,
+      maxPrice: maxPrice || undefined,
+      dateTime: date && timeSlot ? new Date(`${format(date, 'yyyy-MM-dd')}T${timeSlot}:00`) : undefined
+    };
+    
+    findMatchingProviders(filters);
+  };
+
+  const handleFiltersChange = () => {
+    if (selectedService) {
+      const filters = {
+        serviceId: selectedService.id,
+        minRating: minRating || undefined,
+        maxPrice: maxPrice || undefined,
+        dateTime: date && timeSlot ? new Date(`${format(date, 'yyyy-MM-dd')}T${timeSlot}:00`) : undefined
+      };
+      
+      findMatchingProviders(filters);
+    }
   };
 
   const handleBooking = async () => {
@@ -131,7 +131,7 @@ const ServicesBooking = () => {
         duration_hours: parseInt(duration),
         location: location,
         notes: notes || null,
-        total_price: selectedService.price_per_hour * parseInt(duration),
+        total_price: getProviderPrice(selectedProvider, selectedService.id) * parseInt(duration),
         status: 'pending'
       };
 
@@ -151,7 +151,7 @@ const ServicesBooking = () => {
           date: format(date, 'yyyy-MM-dd'),
           time: timeSlot,
           location: location,
-          price: selectedService.price_per_hour * parseInt(duration)
+          price: getProviderPrice(selectedProvider, selectedService.id) * parseInt(duration)
         }
       );
 
@@ -239,10 +239,10 @@ const ServicesBooking = () => {
                 <p className="text-muted-foreground text-sm">{service.description}</p>
                 
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1 text-primary">
-                    <Euro className="w-4 h-4" />
-                    <span className="font-semibold">{service.price_per_hour}€/h</span>
-                  </div>
+                 <div className="flex items-center gap-1 text-primary">
+                     <Euro className="w-4 h-4" />
+                     <span className="font-semibold">À partir de {service.price_per_hour}€/h</span>
+                   </div>
                 </div>
 
                 <Dialog open={isBookingDialogOpen && selectedService?.id === service.id} onOpenChange={setIsBookingDialogOpen}>
@@ -263,40 +263,130 @@ const ServicesBooking = () => {
                     </DialogHeader>
 
                     <div className="grid gap-6 py-4">
-                      {/* Sélection du prestataire */}
-                      <div className="space-y-2">
-                        <Label>Choisir un prestataire</Label>
-                        <Select value={selectedProvider?.id || ""} onValueChange={(value) => {
-                          const provider = providers.find(p => p.id === value);
-                          setSelectedProvider(provider || null);
-                        }}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Sélectionner un prestataire" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {providers.map((provider) => (
-                              <SelectItem key={provider.id} value={provider.id}>
-                                <div className="flex items-center justify-between w-full">
-                                  <span>{getProviderDisplayName(provider)}</span>
-                                  <div className="flex items-center gap-2 ml-4">
-                                    {provider.rating && (
-                                      <div className="flex items-center gap-1">
-                                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                                        <span className="text-xs">{provider.rating}</span>
-                                      </div>
-                                    )}
-                                    {provider.hourly_rate && (
-                                      <span className="text-xs text-muted-foreground">
-                                        {provider.hourly_rate}€/h
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                       {/* Filtres de matching */}
+                       <div className="space-y-4">
+                         <div className="flex items-center justify-between">
+                           <Label className="text-base font-semibold flex items-center gap-2">
+                             <Zap className="w-4 h-4 text-primary" />
+                             Matching automatique activé
+                           </Label>
+                           <Button
+                             variant="outline" 
+                             size="sm"
+                             onClick={() => setShowFilters(!showFilters)}
+                           >
+                             <Filter className="w-4 h-4 mr-1" />
+                             Filtres
+                           </Button>
+                         </div>
+                         
+                         {showFilters && (
+                           <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
+                             <div className="space-y-2">
+                               <Label>Note minimum</Label>
+                               <Select value={minRating.toString()} onValueChange={(value) => {
+                                 setMinRating(parseFloat(value));
+                                 handleFiltersChange();
+                               }}>
+                                 <SelectTrigger>
+                                   <SelectValue placeholder="Toutes" />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                   <SelectItem value="0">Toutes les notes</SelectItem>
+                                   <SelectItem value="3">3+ étoiles</SelectItem>
+                                   <SelectItem value="4">4+ étoiles</SelectItem>
+                                   <SelectItem value="4.5">4.5+ étoiles</SelectItem>
+                                 </SelectContent>
+                               </Select>
+                             </div>
+                             
+                             <div className="space-y-2">
+                               <Label>Prix maximum (€/h)</Label>
+                               <Input
+                                 type="number"
+                                 value={maxPrice || ""}
+                                 onChange={(e) => {
+                                   setMaxPrice(parseFloat(e.target.value) || 0);
+                                   handleFiltersChange();
+                                 }}
+                                 placeholder="Sans limite"
+                               />
+                             </div>
+                           </div>
+                         )}
+                       </div>
+
+                       {/* Sélection du prestataire avec matching score */}
+                       <div className="space-y-2">
+                         <Label>Prestataires recommandés</Label>
+                         <div className="space-y-2 max-h-60 overflow-y-auto">
+                           {providers.length === 0 ? (
+                             <div className="text-center py-4 text-muted-foreground">
+                               Aucun prestataire disponible pour ce service
+                             </div>
+                           ) : (
+                             providers.map((provider, index) => {
+                               const price = getProviderPrice(provider, selectedService?.id || '');
+                               const isAvailable = date && timeSlot ? 
+                                 isProviderAvailable(provider, new Date(`${format(date, 'yyyy-MM-dd')}T${timeSlot}:00`)) : 
+                                 true;
+                               
+                               return (
+                                 <Card 
+                                   key={provider.id} 
+                                   className={`cursor-pointer transition-all hover:shadow-md ${
+                                     selectedProvider?.id === provider.id ? 'ring-2 ring-primary' : ''
+                                   } ${index === 0 ? 'bg-primary/5 border-primary/20' : ''}`}
+                                   onClick={() => setSelectedProvider(provider)}
+                                 >
+                                   <CardContent className="p-4">
+                                     <div className="flex items-center justify-between">
+                                       <div className="flex-1">
+                                         <div className="flex items-center gap-2">
+                                           <span className="font-medium">{getProviderDisplayName(provider)}</span>
+                                           {index === 0 && (
+                                             <Badge variant="secondary" className="text-xs">
+                                               <Zap className="w-3 h-3 mr-1" />
+                                               Recommandé
+                                             </Badge>
+                                           )}
+                                         </div>
+                                         
+                                         <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                                           {provider.rating && (
+                                             <div className="flex items-center gap-1">
+                                               <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                               <span>{provider.rating}</span>
+                                             </div>
+                                           )}
+                                           
+                                           <div className="flex items-center gap-1">
+                                             <Euro className="w-3 h-3" />
+                                             <span className="font-medium">{price}€/h</span>
+                                           </div>
+                                           
+                                           {provider.location && (
+                                             <div className="flex items-center gap-1">
+                                               <MapPin className="w-3 h-3" />
+                                               <span className="truncate max-w-24">{provider.location}</span>
+                                             </div>
+                                           )}
+                                         </div>
+                                         
+                                         {!isAvailable && date && timeSlot && (
+                                           <Badge variant="destructive" className="text-xs mt-1">
+                                             Non disponible à cette heure
+                                           </Badge>
+                                         )}
+                                       </div>
+                                     </div>
+                                   </CardContent>
+                                 </Card>
+                               );
+                             })
+                           )}
+                         </div>
+                       </div>
 
                       {/* Sélection de la date */}
                       <div className="space-y-2">
@@ -381,13 +471,16 @@ const ServicesBooking = () => {
                         <div className="p-4 bg-muted/50 rounded-lg">
                           <div className="flex justify-between items-center">
                             <span className="font-medium">Prix estimé :</span>
-                            <span className="text-xl font-bold text-primary">
-                              {selectedService.price_per_hour * parseInt(duration || "0")}€
-                            </span>
+                             <span className="text-xl font-bold text-primary">
+                               {selectedProvider && selectedService ? 
+                                 getProviderPrice(selectedProvider, selectedService.id) * parseInt(duration || "0") :
+                                 selectedService.price_per_hour * parseInt(duration || "0")
+                               }€
+                             </span>
                           </div>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {selectedService.price_per_hour}€/h × {duration}h
-                          </p>
+                           <p className="text-sm text-muted-foreground mt-1">
+                             {selectedProvider ? getProviderPrice(selectedProvider, selectedService.id) : selectedService.price_per_hour}€/h × {duration}h
+                           </p>
                         </div>
                       )}
                     </div>
