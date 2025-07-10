@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { sendBookingAccepted, sendBookingRejected } from "@/utils/notifications";
 
 interface Booking {
   id: string;
@@ -133,6 +134,35 @@ const BookingsList = ({ userType }: BookingsListProps) => {
         .eq('id', bookingId);
 
       if (error) throw error;
+
+      // Envoyer notification selon le statut
+      const booking = bookings.find(b => b.id === bookingId);
+      if (booking && userType === 'provider') {
+        const { data: { user } } = await supabase.auth.getUser();
+        const clientEmail = 'client@example.com'; // À récupérer depuis la DB
+        const clientName = 'Client'; // À récupérer depuis la DB
+
+        if (newStatus === 'confirmed') {
+          await sendBookingAccepted(clientEmail, clientName, {
+            id: booking.id,
+            serviceName: booking.services?.name || 'Service',
+            date: booking.booking_date,
+            time: booking.start_time,
+            location: booking.location,
+            providerName: booking.providers?.business_name || 'Prestataire',
+            price: booking.total_price
+          });
+        } else if (newStatus === 'cancelled') {
+          await sendBookingRejected(clientEmail, clientName, {
+            id: booking.id,
+            serviceName: booking.services?.name || 'Service',
+            date: booking.booking_date,
+            time: booking.start_time,
+            location: booking.location,
+            price: booking.total_price
+          });
+        }
+      }
 
       toast({
         title: "Statut mis à jour",

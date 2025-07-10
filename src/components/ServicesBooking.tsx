@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { sendBookingConfirmation } from "@/utils/notifications";
 
 interface Service {
   id: string;
@@ -140,9 +141,23 @@ const ServicesBooking = () => {
 
       if (error) throw error;
 
+      // Envoyer notification de confirmation
+      await sendBookingConfirmation(
+        user.email,
+        user.user_metadata?.first_name || user.email,
+        {
+          id: 'temp-id', // Sera remplacé par l'ID réel de la DB
+          serviceName: selectedService.name,
+          date: format(date, 'yyyy-MM-dd'),
+          time: timeSlot,
+          location: location,
+          price: selectedService.price_per_hour * parseInt(duration)
+        }
+      );
+
       toast({
         title: "Réservation confirmée",
-        description: "Votre demande de réservation a été envoyée au prestataire",
+        description: "Votre demande de réservation a été envoyée au prestataire et vous recevrez un email de confirmation",
       });
 
       setIsBookingDialogOpen(false);
