@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -26,77 +25,8 @@ import {
   PawPrint,
   UserCheck
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-
-interface Service {
-  id: string;
-  name: string;
-  description: string | null;
-  price_per_hour: number;
-  category: string;
-  is_active: boolean;
-}
 
 const ServicesPackages = () => {
-  const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    fetchServices();
-  }, []);
-
-  const fetchServices = async () => {
-    try {
-      const { data, error } = await (supabase as any)
-        .from('services')
-        .select('*')
-        .eq('is_active', true)
-        .order('category', { ascending: true });
-
-      if (error) throw error;
-      setServices(data || []);
-    } catch (error) {
-      console.error('Erreur lors du chargement des services:', error);
-      toast({
-        title: "Erreur", 
-        description: "Impossible de charger les services",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getCategoryIcon = (category: string) => {
-    const iconMap: Record<string, any> = {
-      'BIKA Kids': Baby,
-      'BIKA Maison': Home,
-      'BIKA Vie': FileText,
-      'BIKA Travel': Plane,
-      'BIKA Plus': Crown,
-      'BIKA Animals': PawPrint,
-      'BIKA Personnes Âgées': UserCheck,
-      'BIKA Pro': Briefcase,
-    };
-    return iconMap[category] || Star;
-  };
-
-  const getCategoryColor = (category: string) => {
-    const colorMap: Record<string, string> = {
-      'BIKA Kids': 'primary',
-      'BIKA Maison': 'accent',
-      'BIKA Vie': 'primary',
-      'BIKA Travel': 'accent',
-      'BIKA Plus': 'primary',
-      'BIKA Animals': 'primary',
-      'BIKA Personnes Âgées': 'accent',
-      'BIKA Pro': 'accent',
-    };
-    return colorMap[category] || 'primary';
-  };
-
   const packages = [
     {
       id: "kids",
@@ -289,84 +219,8 @@ const ServicesPackages = () => {
           </p>
         </div>
 
-        {/* Services from Database */}
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Chargement des services...</p>
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
-            {services.map((service, index) => {
-              const IconComponent = getCategoryIcon(service.category);
-              const color = getCategoryColor(service.category);
-              const isPopular = service.category === 'BIKA Maison';
-              
-              return (
-                <Card 
-                  key={service.id} 
-                  className={`relative p-6 hover:shadow-glow transition-all duration-300 hover:scale-[1.02] group border ${
-                    isPopular ? 'border-accent' : 'border-border'
-                  } animate-fade-in-up`}
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  {isPopular && (
-                    <div className="absolute -top-3 left-6 bg-accent text-accent-foreground px-3 py-1 rounded-full text-xs font-medium">
-                      Le plus populaire
-                    </div>
-                  )}
-                  
-                  <div className="space-y-4">
-                    {/* Icon & Title */}
-                    <div className="space-y-3">
-                      <div className={`w-12 h-12 rounded-lg ${
-                        color === 'primary' ? 'bg-gradient-primary' : 'bg-gradient-accent'
-                      } flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                        <IconComponent className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
-                          {service.name}
-                        </h3>
-                        <p className="text-sm font-medium text-accent">{service.category}</p>
-                      </div>
-                    </div>
-
-                    {/* Description */}
-                    <p className="text-muted-foreground text-sm">
-                      {service.description}
-                    </p>
-
-                    {/* Price */}
-                    <div className="pt-2 border-t border-border">
-                      <span className="text-sm font-semibold text-foreground">
-                        À partir de {service.price_per_hour}€/h
-                      </span>
-                    </div>
-
-                    {/* CTA */}
-                    <Button 
-                      variant={isPopular ? "accent" : "outline"} 
-                      className="w-full group/btn"
-                      onClick={() => {
-                        const bookingSection = document.querySelector('#booking');
-                        if (bookingSection) {
-                          bookingSection.scrollIntoView({ behavior: 'smooth' });
-                        }
-                      }}
-                    >
-                      Réserver {service.name}
-                      <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
-                    </Button>
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Services Packages Grid (keep the original as reference) */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20" style={{ display: 'none' }}>
+        {/* Services Packages Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
           {packages.map((pkg, index) => {
             const IconComponent = pkg.icon;
             return (
