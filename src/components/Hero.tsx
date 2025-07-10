@@ -32,8 +32,8 @@ const Hero = () => {
                 pour toute la famille
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl">
-                De la garde d'enfants aux services seniors, en passant par la logistique maison et l'assistance voyage.
-                8 services BIKA pour simplifier chaque aspect de votre vie familiale.
+                Conciliez vie pro, vie familiale et obligations quotidiennes avec nos assistants familiaux. 
+                Solutions humaines, personnalisées et fiables pour une vie plus sereine.
               </p>
             </div>
 
