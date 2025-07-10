@@ -43,7 +43,7 @@ const ServicesPackages = () => {
       ],
       color: "primary",
       popular: false,
-      price: "À partir de 25€/h"
+      price: "À partir de 15€/h"
     },
     {
       id: "maison",
@@ -60,7 +60,7 @@ const ServicesPackages = () => {
       ],
       color: "accent",
       popular: true,
-      price: "À partir de 25€/h"
+      price: "À partir de 20€/h"
     },
     {
       id: "vie",
@@ -77,7 +77,7 @@ const ServicesPackages = () => {
       ],
       color: "primary",
       popular: false,
-      price: "À partir de 25€/h"
+      price: "À partir de 20€/h"
     },
     {
       id: "travel",
@@ -94,7 +94,7 @@ const ServicesPackages = () => {
       ],
       color: "accent",
       popular: false,
-      price: "À partir de 30€/h"
+      price: "À partir de 25€/h"
     },
     {
       id: "plus",
@@ -128,7 +128,7 @@ const ServicesPackages = () => {
       ],
       color: "primary",
       popular: false,
-      price: "À partir de 20€/h"
+      price: "À partir de 15€/h"
     },
     {
       id: "seniors",
