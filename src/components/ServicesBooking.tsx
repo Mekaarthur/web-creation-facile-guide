@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Clock, MapPin, Star, Euro, Filter, Zap, Navigation } from "lucide-react";
+import { CalendarIcon, MapPin, Star, Euro, Filter, Zap, Navigation } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,6 +53,7 @@ interface Provider {
 const ServicesBooking = () => {
   const [selectedService, setSelectedService] = useState<any>(null);
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
+  const [showBookingInterface, setShowBookingInterface] = useState(false);
   const [date, setDate] = useState<Date>();
   const [timeSlot, setTimeSlot] = useState("");
   const [duration, setDuration] = useState("");
@@ -78,23 +79,31 @@ const ServicesBooking = () => {
   useEffect(() => {
     // Charger tous les prestataires au démarrage
     findMatchingProviders();
-  }, []);
-
-  const handleServiceSelect = (service: any) => {
-    setSelectedService(service);
-    setSelectedProvider(null);
-    setIsBookingDialogOpen(true);
     
-    // Faire le matching automatique pour ce service
-    const filters = {
-      serviceId: service.id,
-      minRating: minRating || undefined,
-      maxPrice: maxPrice || undefined,
-      dateTime: date && timeSlot ? new Date(`${format(date, 'yyyy-MM-dd')}T${timeSlot}:00`) : undefined
+    // Écouter l'événement de sélection de service depuis les packages
+    const handleServiceSelection = (event: any) => {
+      const serviceData = event.detail;
+      setSelectedService(serviceData);
+      setShowBookingInterface(true);
+      setIsBookingDialogOpen(true);
+      
+      // Filtrer les prestataires pour ce service
+      const filters = {
+        serviceId: serviceData.id,
+        minRating: minRating || undefined,
+        maxPrice: maxPrice || undefined,
+        dateTime: date && timeSlot ? new Date(`${format(date, 'yyyy-MM-dd')}T${timeSlot}:00`) : undefined
+      };
+      
+      findMatchingProviders(filters);
     };
+
+    window.addEventListener('selectService', handleServiceSelection);
     
-    findMatchingProviders(filters);
-  };
+    return () => {
+      window.removeEventListener('selectService', handleServiceSelection);
+    };
+  }, [minRating, maxPrice, date, timeSlot]);
 
   const handleFiltersChange = () => {
     if (selectedService) {
@@ -217,6 +226,11 @@ const ServicesBooking = () => {
     );
   }
 
+  // Ne pas afficher la section si aucun service n'est sélectionné
+  if (!showBookingInterface) {
+    return null;
+  }
+
   return (
     <section className="py-20 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -227,315 +241,286 @@ const ServicesBooking = () => {
             <span>Réserver un service</span>
           </div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
-            Choisissez votre service
+            Finaliser votre réservation
             <span className="block bg-gradient-hero bg-clip-text text-transparent">
-              et réservez en quelques clics
+              {selectedService?.name} - {selectedService?.package}
             </span>
           </h2>
         </div>
 
-        {/* Services Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.map((service) => (
-            <Card key={service.id} className="hover:shadow-glow transition-all duration-300 hover:scale-[1.02] group">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span className="text-lg">{service.name}</span>
-                  <Badge variant="secondary">{service.category}</Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-muted-foreground text-sm">{service.description}</p>
-                
-                <div className="flex items-center justify-between">
-                 <div className="flex items-center gap-1 text-primary">
-                     <Euro className="w-4 h-4" />
-                     <span className="font-semibold">À partir de {service.price_per_hour}€/h</span>
-                   </div>
+        {/* Interface de réservation directe */}
+        <div className="max-w-2xl mx-auto">
+          <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Réserver - {selectedService?.name}</DialogTitle>
+                <DialogDescription>
+                  Remplissez les informations ci-dessous pour réserver votre prestation
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="grid gap-6 py-4">
+                {/* Filtres de matching */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-base font-semibold flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-primary" />
+                      Matching automatique activé
+                    </Label>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setShowFilters(!showFilters)}
+                      >
+                        <Filter className="w-4 h-4 mr-1" />
+                        Filtres
+                      </Button>
+                      <Button
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setShowMap(!showMap)}
+                      >
+                        <Navigation className="w-4 h-4 mr-1" />
+                        Carte
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {showFilters && (
+                    <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
+                      <div className="space-y-2">
+                        <Label>Note minimum</Label>
+                        <Select value={minRating.toString()} onValueChange={(value) => {
+                          setMinRating(parseFloat(value));
+                          handleFiltersChange();
+                        }}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Toutes" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="0">Toutes les notes</SelectItem>
+                            <SelectItem value="3">3+ étoiles</SelectItem>
+                            <SelectItem value="4">4+ étoiles</SelectItem>
+                            <SelectItem value="4.5">4.5+ étoiles</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label>Prix maximum (€/h)</Label>
+                        <Input
+                          type="number"
+                          value={maxPrice || ""}
+                          onChange={(e) => {
+                            setMaxPrice(parseFloat(e.target.value) || 0);
+                            handleFiltersChange();
+                          }}
+                          placeholder="Sans limite"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <Dialog open={isBookingDialogOpen && selectedService?.id === service.id} onOpenChange={setIsBookingDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button 
-                      className="w-full"
-                      onClick={() => handleServiceSelect(service)}
-                    >
-                      Réserver ce service
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>Réserver - {selectedService?.name}</DialogTitle>
-                      <DialogDescription>
-                        Remplissez les informations ci-dessous pour réserver votre prestation
-                      </DialogDescription>
-                    </DialogHeader>
-
-                    <div className="grid gap-6 py-4">
-                       {/* Filtres de matching */}
-                       <div className="space-y-4">
-                         <div className="flex items-center justify-between">
-                           <Label className="text-base font-semibold flex items-center gap-2">
-                             <Zap className="w-4 h-4 text-primary" />
-                             Matching automatique activé
-                           </Label>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => setShowFilters(!showFilters)}
-                              >
-                                <Filter className="w-4 h-4 mr-1" />
-                                Filtres
-                              </Button>
-                              <Button
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => setShowMap(!showMap)}
-                              >
-                                <Navigation className="w-4 h-4 mr-1" />
-                                Carte
-                              </Button>
-                            </div>
-                         </div>
-                         
-                         {showFilters && (
-                           <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
-                             <div className="space-y-2">
-                               <Label>Note minimum</Label>
-                               <Select value={minRating.toString()} onValueChange={(value) => {
-                                 setMinRating(parseFloat(value));
-                                 handleFiltersChange();
-                               }}>
-                                 <SelectTrigger>
-                                   <SelectValue placeholder="Toutes" />
-                                 </SelectTrigger>
-                                 <SelectContent>
-                                   <SelectItem value="0">Toutes les notes</SelectItem>
-                                   <SelectItem value="3">3+ étoiles</SelectItem>
-                                   <SelectItem value="4">4+ étoiles</SelectItem>
-                                   <SelectItem value="4.5">4.5+ étoiles</SelectItem>
-                                 </SelectContent>
-                               </Select>
-                             </div>
-                             
-                             <div className="space-y-2">
-                               <Label>Prix maximum (€/h)</Label>
-                               <Input
-                                 type="number"
-                                 value={maxPrice || ""}
-                                 onChange={(e) => {
-                                   setMaxPrice(parseFloat(e.target.value) || 0);
-                                   handleFiltersChange();
-                                 }}
-                                 placeholder="Sans limite"
-                               />
-                             </div>
-                           </div>
-                         )}
-                       </div>
-
-                        {/* Sélection du prestataire avec matching score */}
-                        <div className="space-y-2">
-                          <Label>Prestataires recommandés</Label>
+                {/* Sélection du prestataire avec matching score */}
+                <div className="space-y-2">
+                  <Label>Prestataires recommandés</Label>
+                  
+                  {showMap ? (
+                    <MapView
+                      providers={providers}
+                      selectedServiceId={selectedService?.id}
+                      onProviderSelect={(provider) => setSelectedProvider(provider)}
+                    />
+                  ) : (
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {providers.length === 0 ? (
+                        <div className="text-center py-4 text-muted-foreground">
+                          Aucun prestataire disponible pour ce service
+                        </div>
+                      ) : (
+                        providers.map((provider, index) => {
+                          const price = getProviderPrice(provider, selectedService?.id || '');
+                          const isAvailable = date && timeSlot ? 
+                            isProviderAvailable(provider, new Date(`${format(date, 'yyyy-MM-dd')}T${timeSlot}:00`)) : 
+                            true;
                           
-                           {showMap ? (
-                             <MapView
-                               providers={providers}
-                               selectedServiceId={selectedService?.id}
-                               onProviderSelect={(provider) => setSelectedProvider(provider)}
-                             />
-                           ) : (
-                            <div className="space-y-2 max-h-60 overflow-y-auto">
-                              {providers.length === 0 ? (
-                                <div className="text-center py-4 text-muted-foreground">
-                                  Aucun prestataire disponible pour ce service
-                                </div>
-                              ) : (
-                                providers.map((provider, index) => {
-                                  const price = getProviderPrice(provider, selectedService?.id || '');
-                                  const isAvailable = date && timeSlot ? 
-                                    isProviderAvailable(provider, new Date(`${format(date, 'yyyy-MM-dd')}T${timeSlot}:00`)) : 
-                                    true;
-                                  
-                                  return (
-                                    <Card 
-                                      key={provider.id} 
-                                      className={`cursor-pointer transition-all hover:shadow-md ${
-                                        selectedProvider?.id === provider.id ? 'ring-2 ring-primary' : ''
-                                      } ${index === 0 ? 'bg-primary/5 border-primary/20' : ''}`}
-                                      onClick={() => setSelectedProvider(provider)}
-                                    >
-                                      <CardContent className="p-4">
-                                        <div className="flex items-center justify-between">
-                                          <div className="flex-1">
-                                            <div className="flex items-center gap-2">
-                                              <span className="font-medium">{getProviderDisplayName(provider)}</span>
-                                              {index === 0 && (
-                                                <Badge variant="secondary" className="text-xs">
-                                                  <Zap className="w-3 h-3 mr-1" />
-                                                  Recommandé
-                                                </Badge>
-                                              )}
-                                            </div>
-                                            
-                                            <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                                              {provider.rating && (
-                                                <div className="flex items-center gap-1">
-                                                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                                                  <span>{provider.rating}</span>
-                                                </div>
-                                              )}
-                                              
-                                              <div className="flex items-center gap-1">
-                                                <Euro className="w-3 h-3" />
-                                                <span className="font-medium">{price}€/h</span>
-                                              </div>
-                                              
-                                              {provider.location && (
-                                                <div className="flex items-center gap-1">
-                                                  <MapPin className="w-3 h-3" />
-                                                  <span className="truncate max-w-24">{provider.location}</span>
-                                                </div>
-                                              )}
-                                            </div>
-                                            
-                                            {!isAvailable && date && timeSlot && (
-                                              <Badge variant="destructive" className="text-xs mt-1">
-                                                Non disponible à cette heure
-                                              </Badge>
-                                            )}
-                                          </div>
+                          return (
+                            <Card 
+                              key={provider.id} 
+                              className={`cursor-pointer transition-all hover:shadow-md ${
+                                selectedProvider?.id === provider.id ? 'ring-2 ring-primary' : ''
+                              } ${index === 0 ? 'bg-primary/5 border-primary/20' : ''}`}
+                              onClick={() => setSelectedProvider(provider)}
+                            >
+                              <CardContent className="p-4">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-medium">{getProviderDisplayName(provider)}</span>
+                                      {index === 0 && (
+                                        <Badge variant="secondary" className="text-xs">
+                                          <Zap className="w-3 h-3 mr-1" />
+                                          Recommandé
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                                      {provider.rating && (
+                                        <div className="flex items-center gap-1">
+                                          <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                          <span>{provider.rating}</span>
                                         </div>
-                                      </CardContent>
-                                    </Card>
-                                  );
-                                })
-                              )}
-                            </div>
-                          )}
-                          
-                          {/* Avis du prestataire sélectionné */}
-                          {selectedProvider && (
-                            <div className="mt-4">
-                              <ReviewSystem 
-                                providerId={selectedProvider.id}
-                                mode="display"
-                              />
-                            </div>
-                          )}
-                        </div>
-
-                      {/* Sélection de la date */}
-                      <div className="space-y-2">
-                        <Label>Date de la prestation</Label>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start text-left font-normal">
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {date ? format(date, "PPP", { locale: fr }) : "Choisir une date"}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0">
-                            <Calendar
-                              mode="single"
-                              selected={date}
-                              onSelect={setDate}
-                              disabled={(date) => date < new Date()}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-
-                      {/* Créneau horaire */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Heure de début</Label>
-                          <Select value={timeSlot} onValueChange={setTimeSlot}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Heure" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {timeSlots.map((time) => (
-                                <SelectItem key={time} value={time}>{time}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label>Durée (heures)</Label>
-                          <Select value={duration} onValueChange={setDuration}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Durée" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {[1, 2, 3, 4, 5, 6, 7, 8].map((hours) => (
-                                <SelectItem key={hours} value={hours.toString()}>
-                                  {hours}h
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      {/* Adresse */}
-                      <div className="space-y-2">
-                        <Label htmlFor="location">Adresse de la prestation</Label>
-                        <Input
-                          id="location"
-                          value={location}
-                          onChange={(e) => setLocation(e.target.value)}
-                          placeholder="Adresse complète"
-                        />
-                      </div>
-
-                      {/* Notes */}
-                      <div className="space-y-2">
-                        <Label htmlFor="notes">Instructions particulières (optionnel)</Label>
-                        <Textarea
-                          id="notes"
-                          value={notes}
-                          onChange={(e) => setNotes(e.target.value)}
-                          placeholder="Précisions, codes d'accès, instructions spéciales..."
-                          rows={3}
-                        />
-                      </div>
-
-                      {/* Récapitulatif prix */}
-                      {selectedService && duration && (
-                        <div className="p-4 bg-muted/50 rounded-lg">
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium">Prix estimé :</span>
-                             <span className="text-xl font-bold text-primary">
-                               {selectedProvider && selectedService ? 
-                                 getProviderPrice(selectedProvider, selectedService.id) * parseInt(duration || "0") :
-                                 selectedService.price_per_hour * parseInt(duration || "0")
-                               }€
-                             </span>
-                          </div>
-                           <p className="text-sm text-muted-foreground mt-1">
-                             {selectedProvider ? getProviderPrice(selectedProvider, selectedService.id) : selectedService.price_per_hour}€/h × {duration}h
-                           </p>
-                        </div>
+                                      )}
+                                      
+                                      <div className="flex items-center gap-1">
+                                        <Euro className="w-3 h-3" />
+                                        <span className="font-medium">{price}€/h</span>
+                                      </div>
+                                      
+                                      {provider.location && (
+                                        <div className="flex items-center gap-1">
+                                          <MapPin className="w-3 h-3" />
+                                          <span className="truncate max-w-24">{provider.location}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                    
+                                    {!isAvailable && date && timeSlot && (
+                                      <Badge variant="destructive" className="text-xs mt-1">
+                                        Non disponible à cette heure
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })
                       )}
                     </div>
+                  )}
+                  
+                  {/* Avis du prestataire sélectionné */}
+                  {selectedProvider && (
+                    <div className="mt-4">
+                      <ReviewSystem 
+                        providerId={selectedProvider.id}
+                        mode="display"
+                      />
+                    </div>
+                  )}
+                </div>
 
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsBookingDialogOpen(false)}>
-                        Annuler
+                {/* Sélection de la date */}
+                <div className="space-y-2">
+                  <Label>Date de la prestation</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start text-left font-normal">
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {date ? format(date, "PPP", { locale: fr }) : "Choisir une date"}
                       </Button>
-                      <Button onClick={handleBooking}>
-                        Confirmer la réservation
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </CardContent>
-            </Card>
-          ))}
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={setDate}
+                        disabled={(date) => date < new Date()}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                {/* Créneau horaire */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Heure de début</Label>
+                    <Select value={timeSlot} onValueChange={setTimeSlot}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Heure" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timeSlots.map((time) => (
+                          <SelectItem key={time} value={time}>{time}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Durée (heures)</Label>
+                    <Select value={duration} onValueChange={setDuration}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Durée" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map((hours) => (
+                          <SelectItem key={hours} value={hours.toString()}>
+                            {hours}h
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Adresse */}
+                <div className="space-y-2">
+                  <Label htmlFor="location">Adresse de la prestation</Label>
+                  <Input
+                    id="location"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="Adresse complète"
+                  />
+                </div>
+
+                {/* Notes */}
+                <div className="space-y-2">
+                  <Label htmlFor="notes">Instructions particulières (optionnel)</Label>
+                  <Textarea
+                    id="notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Précisions, codes d'accès, instructions spéciales..."
+                    rows={3}
+                  />
+                </div>
+
+                {/* Récapitulatif prix */}
+                {selectedService && duration && (
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium">Prix estimé :</span>
+                      <span className="text-xl font-bold text-primary">
+                        {selectedProvider && selectedService ? 
+                          getProviderPrice(selectedProvider, selectedService.id) * parseInt(duration || "0") :
+                          selectedService.price_per_hour * parseInt(duration || "0")
+                        }€
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {selectedProvider ? getProviderPrice(selectedProvider, selectedService.id) : selectedService.price_per_hour}€/h × {duration}h
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsBookingDialogOpen(false)}>
+                  Annuler
+                </Button>
+                <Button onClick={handleBooking}>
+                  Confirmer la réservation
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </section>

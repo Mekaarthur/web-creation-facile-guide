@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { 
   Baby, 
   Home, 
@@ -23,10 +26,16 @@ import {
   Luggage,
   Users,
   PawPrint,
-  UserCheck
+  UserCheck,
+  Euro,
+  Check
 } from "lucide-react";
+import ServicesBooking from "@/components/ServicesBooking";
 
 const ServicesPackages = () => {
+  const [selectedPackage, setSelectedPackage] = useState<any>(null);
+  const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
+  
   const packages = [
     {
       id: "kids",
@@ -35,11 +44,13 @@ const ServicesPackages = () => {
       subtitle: "Enfants & Parentalité",
       description: "Garde, sorties éducatives, aide aux devoirs et organisation d'anniversaires pour vos enfants.",
       services: [
-        "Garde ponctuelle / de nuit / urgence",
-        "Sorties éducatives (musée, médiathèque)",
-        "Accompagnement école-maison-activités", 
-        "Aide aux devoirs, préparation cartable",
-        "Pré-organisation d'anniversaire enfant"
+        { name: "Garde ponctuelle", description: "Garde d'enfant à domicile pour quelques heures", price: 15 },
+        { name: "Garde de nuit", description: "Garde d'enfant toute la nuit", price: 18 },
+        { name: "Garde d'urgence", description: "Garde d'enfant en cas d'urgence", price: 20 },
+        { name: "Sorties éducatives", description: "Accompagnement au musée, médiathèque, etc.", price: 17 },
+        { name: "Accompagnement scolaire", description: "Trajet école-maison-activités", price: 16 },
+        { name: "Aide aux devoirs", description: "Aide aux devoirs et préparation cartable", price: 18 },
+        { name: "Organisation anniversaire", description: "Pré-organisation d'anniversaire enfant", price: 25 }
       ],
       color: "primary",
       popular: false,
@@ -52,11 +63,12 @@ const ServicesPackages = () => {
       subtitle: "Logistique quotidienne",
       description: "Courses, récupération de colis, petits travaux et organisation pour alléger votre quotidien.",
       services: [
-        "Courses planifiées ou express",
-        "Récupération colis / pressing / cordonnerie",
-        "Montage meuble simple, changement d'ampoule",
-        "Garde courte d'animaux",
-        "Rangement dressing, tri jouets"
+        { name: "Courses planifiées", description: "Courses hebdomadaires selon votre liste", price: 20 },
+        { name: "Courses express", description: "Courses urgentes en moins de 2h", price: 25 },
+        { name: "Récupération colis", description: "Récupération colis, pressing, cordonnerie", price: 18 },
+        { name: "Petits travaux", description: "Montage meuble simple, changement d'ampoule", price: 22 },
+        { name: "Garde d'animaux", description: "Garde courte d'animaux domestiques", price: 16 },
+        { name: "Rangement", description: "Rangement dressing, tri jouets", price: 20 }
       ],
       color: "accent",
       popular: true,
@@ -69,11 +81,11 @@ const ServicesPackages = () => {
       subtitle: "Conciergerie & Administration",
       description: "Gestion de vos rendez-vous, démarches administratives et organisation d'événements familiaux.",
       services: [
-        "Prise / report de rendez-vous médicaux",
-        "Constitution et dépôt de dossiers CAF, CPAM",
-        "Gestion d'agenda partagé, rappels vaccins",
-        "Organisation fête familiale, baby-shower",
-        "Gestion administrative complète"
+        { name: "Rendez-vous médicaux", description: "Prise et report de rendez-vous médicaux", price: 20 },
+        { name: "Dossiers administratifs", description: "Constitution et dépôt de dossiers CAF, CPAM", price: 25 },
+        { name: "Gestion d'agenda", description: "Gestion d'agenda partagé, rappels vaccins", price: 22 },
+        { name: "Organisation événements", description: "Organisation fête familiale, baby-shower", price: 30 },
+        { name: "Assistance administrative", description: "Gestion administrative complète", price: 28 }
       ],
       color: "primary",
       popular: false,
@@ -86,11 +98,11 @@ const ServicesPackages = () => {
       subtitle: "Assistance Voyageurs",
       description: "Accompagnement complet pour vos voyages : avant, pendant et après votre déplacement.",
       services: [
-        "Vérification documents, check-in en ligne",
-        "Transfert domicile-aéroport, Fast-Track",
-        "Veille vols, rebooking imprévu",
-        "Service Travel-Kids : kit enfant, poussette",
-        "Récupération courses avant retour"
+        { name: "Assistance pré-voyage", description: "Vérification documents, check-in en ligne", price: 25 },
+        { name: "Transfert aéroport", description: "Transfert domicile-aéroport, Fast-Track", price: 30 },
+        { name: "Veille de vols", description: "Veille vols, rebooking imprévu", price: 35 },
+        { name: "Travel-Kids", description: "Service Travel-Kids : kit enfant, poussette", price: 28 },
+        { name: "Préparation retour", description: "Récupération courses avant retour", price: 22 }
       ],
       color: "accent",
       popular: false,
@@ -103,11 +115,11 @@ const ServicesPackages = () => {
       subtitle: "Premium 7j/7",
       description: "Service haut de gamme avec Chef Family Officer dédié et assistance prioritaire.",
       services: [
-        "Chef Family Officer dédié",
-        "Ligne prioritaire + WhatsApp instantané",
-        "Organisation complète planning familial",
-        "Garde soir, week-end, nuit",
-        "Accès à tous les autres services"
+        { name: "Chef Family Officer", description: "Chef Family Officer dédié", price: 0 },
+        { name: "Ligne prioritaire", description: "Ligne prioritaire + WhatsApp instantané", price: 0 },
+        { name: "Planning familial", description: "Organisation complète planning familial", price: 0 },
+        { name: "Garde premium", description: "Garde soir, week-end, nuit", price: 0 },
+        { name: "Accès illimité", description: "Accès à tous les autres services", price: 0 }
       ],
       color: "primary",
       popular: false,
@@ -120,11 +132,11 @@ const ServicesPackages = () => {
       subtitle: "Services pour animaux",
       description: "Promenade, soins et accompagnement pour vos compagnons à quatre pattes.",
       services: [
-        "Balade matinale et du soir",
-        "Accompagnement chez le vétérinaire",
-        "Courses pour animaux (nourriture, accessoires)",
-        "Garde ponctuelle d'animaux",
-        "Toilettage et soins de base"
+        { name: "Promenade animaux", description: "Balade matinale et du soir", price: 15 },
+        { name: "Visite vétérinaire", description: "Accompagnement chez le vétérinaire", price: 25 },
+        { name: "Courses animaux", description: "Courses pour animaux (nourriture, accessoires)", price: 18 },
+        { name: "Garde d'animaux", description: "Garde ponctuelle d'animaux", price: 20 },
+        { name: "Toilettage", description: "Toilettage et soins de base", price: 30 }
       ],
       color: "primary",
       popular: false,
@@ -137,11 +149,11 @@ const ServicesPackages = () => {
       subtitle: "Assistance seniors",
       description: "Accompagnement bienveillant et aide quotidienne pour nos aînés.",
       services: [
-        "Aide aux activités quotidiennes",
-        "Accompagnement aux rendez-vous médicaux",
-        "Courses et commissions",
-        "Compagnie et conversation",
-        "Aide à la mobilité et aux repas"
+        { name: "Aide quotidienne", description: "Aide aux activités quotidiennes", price: 22 },
+        { name: "Accompagnement médical", description: "Accompagnement aux rendez-vous médicaux", price: 25 },
+        { name: "Courses seniors", description: "Courses et commissions", price: 20 },
+        { name: "Compagnie", description: "Compagnie et conversation", price: 18 },
+        { name: "Aide mobilité", description: "Aide à la mobilité et aux repas", price: 26 }
       ],
       color: "accent",
       popular: false,
@@ -154,11 +166,11 @@ const ServicesPackages = () => {
       subtitle: "Assistance Entreprise",
       description: "Solutions d'assistance administrative et executive pour votre entreprise.",
       services: [
-        "Assistants administratifs externalisés",
-        "Executive assistant à la carte",
-        "Organisation séminaires, boards",
-        "Gestion déplacements d'équipe",
-        "Support business personnalisé"
+        { name: "Assistant administratif", description: "Assistants administratifs externalisés", price: 35 },
+        { name: "Executive assistant", description: "Executive assistant à la carte", price: 45 },
+        { name: "Organisation événements", description: "Organisation séminaires, boards", price: 50 },
+        { name: "Gestion déplacements", description: "Gestion déplacements d'équipe", price: 40 },
+        { name: "Support business", description: "Support business personnalisé", price: 55 }
       ],
       color: "accent",
       popular: false,
@@ -258,36 +270,106 @@ const ServicesPackages = () => {
                     {pkg.description}
                   </p>
 
-                  {/* Services List */}
-                  <ul className="space-y-2">
-                    {pkg.services.slice(0, 3).map((service, idx) => (
-                      <li key={idx} className="flex items-start space-x-2 text-sm">
-                        <div className={`w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 ${
-                          pkg.color === 'primary' ? 'bg-primary' : 'bg-accent'
-                        }`}></div>
-                        <span className="text-muted-foreground">{service}</span>
-                      </li>
-                    ))}
-                    {pkg.services.length > 3 && (
-                      <li className="text-xs text-accent font-medium">
-                        +{pkg.services.length - 3} autres services
-                      </li>
-                    )}
-                  </ul>
+                   {/* Services List */}
+                   <ul className="space-y-2">
+                     {pkg.services.slice(0, 3).map((service, idx) => (
+                       <li key={idx} className="flex items-start space-x-2 text-sm">
+                         <div className={`w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 ${
+                           pkg.color === 'primary' ? 'bg-primary' : 'bg-accent'
+                         }`}></div>
+                         <span className="text-muted-foreground">{typeof service === 'string' ? service : service.name}</span>
+                       </li>
+                     ))}
+                     {pkg.services.length > 3 && (
+                       <li className="text-xs text-accent font-medium">
+                         +{pkg.services.length - 3} autres services
+                       </li>
+                     )}
+                   </ul>
 
                   {/* Price */}
                   <div className="pt-2 border-t border-border">
                     <span className="text-sm font-semibold text-foreground">{pkg.price}</span>
                   </div>
 
-                  {/* CTA */}
-                  <Button 
-                    variant={pkg.popular ? "accent" : "outline"} 
-                    className="w-full group/btn"
-                  >
-                    Réserver {pkg.title}
-                    <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
-                  </Button>
+                   {/* CTA */}
+                   <Dialog open={isBookingDialogOpen && selectedPackage?.id === pkg.id} onOpenChange={setIsBookingDialogOpen}>
+                     <DialogTrigger asChild>
+                       <Button 
+                         variant={pkg.popular ? "accent" : "outline"} 
+                         className="w-full group/btn"
+                         onClick={() => {
+                           setSelectedPackage(pkg);
+                           setIsBookingDialogOpen(true);
+                         }}
+                       >
+                         Réserver {pkg.title}
+                         <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                       </Button>
+                     </DialogTrigger>
+                     <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                       <DialogHeader>
+                         <DialogTitle className="flex items-center gap-2">
+                           <pkg.icon className="w-6 h-6 text-primary" />
+                           Réserver - {pkg.title}
+                         </DialogTitle>
+                         <DialogDescription>
+                           Choisissez le service spécifique que vous souhaitez réserver dans le package {pkg.title}
+                         </DialogDescription>
+                       </DialogHeader>
+
+                       <div className="grid gap-6 py-4">
+                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                           {pkg.services.map((service: any, idx: number) => (
+                             <Card key={idx} className="p-4 hover:shadow-md transition-all">
+                               <div className="space-y-3">
+                                 <div className="flex items-center justify-between">
+                                   <h4 className="font-semibold text-foreground">
+                                     {typeof service === 'string' ? service : service.name}
+                                   </h4>
+                                   {typeof service === 'object' && service.price > 0 && (
+                                     <Badge variant="secondary" className="flex items-center gap-1">
+                                       <Euro className="w-3 h-3" />
+                                       {service.price}€/h
+                                     </Badge>
+                                   )}
+                                 </div>
+                                 
+                                 {typeof service === 'object' && service.description && (
+                                   <p className="text-sm text-muted-foreground">
+                                     {service.description}
+                                   </p>
+                                 )}
+                                 
+                                 <Button size="sm" className="w-full" onClick={() => {
+                                   setIsBookingDialogOpen(false);
+                                   // Scroll to booking section with this specific service
+                                   const bookingSection = document.getElementById('booking');
+                                   if (bookingSection) {
+                                     bookingSection.scrollIntoView({ behavior: 'smooth' });
+                                     // Pass service data to booking component
+                                     window.dispatchEvent(new CustomEvent('selectService', {
+                                       detail: {
+                                         id: `${pkg.id}-${idx}`,
+                                         name: typeof service === 'string' ? service : service.name,
+                                         description: typeof service === 'object' ? service.description : '',
+                                         price_per_hour: typeof service === 'object' ? service.price : 25,
+                                         category: pkg.subtitle,
+                                         package: pkg.title
+                                       }
+                                     }));
+                                   }
+                                 }}>
+                                   <Check className="w-4 h-4 mr-1" />
+                                   Choisir ce service
+                                 </Button>
+                               </div>
+                             </Card>
+                           ))}
+                         </div>
+                       </div>
+                     </DialogContent>
+                   </Dialog>
                 </div>
               </Card>
             );
