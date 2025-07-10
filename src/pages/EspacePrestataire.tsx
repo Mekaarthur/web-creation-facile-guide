@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BookingsList from "@/components/BookingsList";
 
 const EspacePrestataire = () => {
   const [selectedTab, setSelectedTab] = useState("connexion");
@@ -223,91 +224,18 @@ const EspacePrestataire = () => {
 
             {/* Prestations */}
             <TabsContent value="prestations" className="space-y-6">
-              <div className="grid gap-6">
-                {/* Prestations en cours et à venir */}
+              <div className="space-y-6">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-primary" />
-                      Prestations en cours et à venir
+                      <History className="w-5 h-5 text-primary" />
+                      Mes prestations
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    {prestations.filter(p => p.statut !== "Terminé").map((prestation) => (
-                      <div key={prestation.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-foreground">{prestation.service}</h4>
-                          <p className="text-sm text-muted-foreground flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {prestation.date} à {prestation.heure.split(' - ')[0]}
-                          </p>
-                          <p className="text-sm text-muted-foreground flex items-center gap-1">
-                            <UserRound className="w-3 h-3" />
-                            Client: {prestation.client}
-                          </p>
-                          <p className="text-sm text-muted-foreground flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {prestation.adresse}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Badge className={getStatusColor(prestation.statut)}>
-                            {prestation.statut}
-                          </Badge>
-                          <div className="text-right">
-                            <p className="text-lg font-semibold text-foreground">
-                              {prestation.remuneration}
-                            </p>
-                            <Button variant="outline" size="sm">Voir détails</Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                  <CardContent>
+                    <BookingsList userType="provider" />
                   </CardContent>
                 </Card>
-
-                {/* Historique complet */}
-                <div>
-                  <h2 className="text-2xl font-semibold text-foreground mb-4">Historique des prestations</h2>
-                  <div className="grid gap-4">
-                    {prestations.map((prestation) => (
-                      <Card key={prestation.id} className="hover:shadow-soft transition-shadow">
-                        <CardContent className="p-6">
-                          <div className="flex justify-between items-start mb-4">
-                            <div>
-                              <h3 className="text-lg font-semibold text-foreground mb-2">
-                                {prestation.service}
-                              </h3>
-                              <p className="text-muted-foreground">
-                                {prestation.date} • {prestation.heure}
-                              </p>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                Client: {prestation.client}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                {prestation.adresse}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <Badge className={getStatusColor(prestation.statut)}>
-                                {prestation.statut}
-                              </Badge>
-                              <p className="text-lg font-semibold text-foreground mt-2">
-                                {prestation.remuneration}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="sm">Voir détails</Button>
-                            {prestation.statut === "À venir" && (
-                              <Button variant="ghost" size="sm">Contacter client</Button>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
               </div>
             </TabsContent>
 

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BookingsList from "@/components/BookingsList";
 
 const EspacePersonnel = () => {
   const [selectedTab, setSelectedTab] = useState("connexion");
@@ -178,82 +179,18 @@ const EspacePersonnel = () => {
 
             {/* Réservations et Prestations combinées */}
             <TabsContent value="reservations" className="space-y-6">
-              <div className="grid gap-6">
-                {/* Prestations en cours et à venir */}
+              <div className="space-y-6">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-primary" />
-                      Prestations en cours et à venir
+                      <History className="w-5 h-5 text-primary" />
+                      Mes réservations
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    {reservations.filter(r => r.statut !== "Terminé").map((prestation) => (
-                      <div key={prestation.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                        <div>
-                          <h4 className="font-medium text-foreground">{prestation.service}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {prestation.date} à {prestation.heure.split(' - ')[0]}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            Prestataire: {prestation.prestataire}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Badge className={getStatusColor(prestation.statut)}>
-                            {prestation.statut}
-                          </Badge>
-                          <div className="text-right">
-                            <p className="text-lg font-semibold text-foreground">
-                              {prestation.prix}
-                            </p>
-                            <Button variant="outline" size="sm">Suivre</Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                  <CardContent>
+                    <BookingsList userType="client" />
                   </CardContent>
                 </Card>
-
-                {/* Historique complet */}
-                <div>
-                  <h2 className="text-2xl font-semibold text-foreground mb-4">Historique des réservations</h2>
-                  <div className="grid gap-4">
-                    {reservations.map((reservation) => (
-                      <Card key={reservation.id} className="hover:shadow-soft transition-shadow">
-                        <CardContent className="p-6">
-                          <div className="flex justify-between items-start mb-4">
-                            <div>
-                              <h3 className="text-lg font-semibold text-foreground mb-2">
-                                {reservation.service}
-                              </h3>
-                              <p className="text-muted-foreground">
-                                {reservation.date} • {reservation.heure}
-                              </p>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                Prestataire: {reservation.prestataire}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <Badge className={getStatusColor(reservation.statut)}>
-                                {reservation.statut}
-                              </Badge>
-                              <p className="text-lg font-semibold text-foreground mt-2">
-                                {reservation.prix}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="sm">Voir détails</Button>
-                            {reservation.statut === "À venir" && (
-                              <Button variant="ghost" size="sm">Modifier</Button>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
               </div>
             </TabsContent>
 
