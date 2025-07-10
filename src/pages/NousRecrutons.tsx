@@ -15,7 +15,9 @@ import {
   Award,
   MessageCircle,
   Clock,
-  MapPin
+  MapPin,
+  PawPrint,
+  Heart
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -60,7 +62,7 @@ const NousRecrutons = () => {
       id: "assist-plus",
       title: "Assist'Plus",
       description: "Majordomes et gouvernantes haut de gamme",
-      requirements: ["10+ ans expérience", "Références vérifiées", "Polyvalence exceptionnelle"],
+      requirements: ["5 ans d'expérience ou Bac+3 en administration", "Références vérifiées", "Polyvalence exceptionnelle"],
       icon: Award,
       color: "bg-yellow-500"
     },
@@ -68,9 +70,25 @@ const NousRecrutons = () => {
       id: "assist-pro",
       title: "Assist'Pro",
       description: "Assistants administratifs / direction",
-      requirements: ["Bac+3 minimum", "Expérience corporate", "Confidentialité"],
+      requirements: ["Bac avec 2 ans d'expérience", "Expérience corporate", "Confidentialité"],
       icon: UserCheck,
       color: "bg-red-500"
+    },
+    {
+      id: "assist-animals",
+      title: "Assist'Animals",
+      description: "Spécialistes soins et garde d'animaux",
+      requirements: ["Formation animalière", "Expérience garde animaux", "Patience et douceur"],
+      icon: PawPrint,
+      color: "bg-emerald-500"
+    },
+    {
+      id: "assist-seniors",
+      title: "Assist'Personnes âgées",
+      description: "Accompagnants seniors et aide à domicile",
+      requirements: ["Formation gériatrie ou aide à la personne", "Empathie et bienveillance", "Casier judiciaire vierge"],
+      icon: Heart,
+      color: "bg-rose-500"
     }
   ];
 
