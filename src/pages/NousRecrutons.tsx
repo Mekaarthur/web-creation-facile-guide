@@ -38,7 +38,7 @@ const NousRecrutons = () => {
       id: "bika-maison",
       title: "BIKA Maison", 
       description: "Logisticiens du quotidien",
-      requirements: ["Permis de conduire", "Ponctualité exemplaire", "Sens du service", "Casier judiciaire vierge"],
+      requirements: ["Permis recommandé", "Ponctualité exemplaire", "Sens du service", "Casier judiciaire vierge"],
       icon: Shield,
       color: "bg-green-500"
     },
