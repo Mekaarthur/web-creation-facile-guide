@@ -19,21 +19,21 @@ const Hero = () => {
             {/* Badge */}
             <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
               <Star className="w-4 h-4" />
-               <span>Assistant familial #1 en France</span>
+               <span>Services BIKA #1 en France</span>
             </div>
 
             {/* Heading */}
             <div className="space-y-4">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
-                Votre assistant
+                Votre partenaire
                 <span className="block bg-gradient-hero bg-clip-text text-transparent">
-                  familial
+                  au quotidien
                 </span>
-                de confiance
+                pour toute la famille
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl">
-                 Conciliez vie pro, vie familiale et obligations quotidiennes avec nos assistants familiaux.
-                Solutions humaines, personnalisées et fiables pour un foyer plus serein.
+                De la garde d'enfants aux services seniors, en passant par la logistique maison et l'assistance voyage.
+                8 services BIKA pour simplifier chaque aspect de votre vie familiale.
               </p>
             </div>
 
