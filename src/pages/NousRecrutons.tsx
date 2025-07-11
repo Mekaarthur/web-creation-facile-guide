@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   Users, 
   Shield, 
@@ -24,6 +25,8 @@ import Footer from "@/components/Footer";
 
 const NousRecrutons = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategoryDetail, setSelectedCategoryDetail] = useState<any>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   const categories = [
     {
@@ -32,7 +35,22 @@ const NousRecrutons = () => {
       description: "Spécialistes enfance et parentalité",
       requirements: ["Expérience garde d'enfants", "Formation premiers secours", "Casier judiciaire vierge"],
       icon: Users,
-      color: "bg-blue-500"
+      color: "bg-blue-500",
+      activities: [
+        "Garde d'enfants à domicile (0-16 ans)",
+        "Accompagnement scolaire et aide aux devoirs",
+        "Activités créatives et ludiques",
+        "Sorties et accompagnements extérieurs",
+        "Baby-sitting ponctuel ou régulier",
+        "Préparation des repas adaptés aux enfants",
+        "Mise au lit et routines du soir"
+      ],
+      achievements: [
+        "Plus de 2500 familles accompagnées",
+        "98% de satisfaction client",
+        "Formation continue de nos prestataires",
+        "Suivi personnalisé de chaque enfant"
+      ]
     },
     {
       id: "bika-maison",
@@ -40,7 +58,22 @@ const NousRecrutons = () => {
       description: "Logisticiens du quotidien",
       requirements: ["Permis recommandé", "Ponctualité exemplaire", "Sens du service", "Casier judiciaire vierge"],
       icon: Shield,
-      color: "bg-green-500"
+      color: "bg-green-500",
+      activities: [
+        "Entretien ménager complet",
+        "Courses et approvisionnement",
+        "Livraisons et récupérations",
+        "Petit bricolage et maintenance",
+        "Organisation et rangement",
+        "Préparation de repas",
+        "Gestion du linge"
+      ],
+      achievements: [
+        "Plus de 5000 interventions par mois",
+        "Flexibilité 7j/7",
+        "Service d'urgence disponible",
+        "Équipement professionnel fourni"
+      ]
     },
     {
       id: "bika-vie",
@@ -48,7 +81,22 @@ const NousRecrutons = () => {
       description: "Concierges administratifs",
       requirements: ["Maîtrise bureautique", "Relationnel client", "Discrétion absolue", "Casier judiciaire vierge"],
       icon: FileCheck,
-      color: "bg-purple-500"
+      color: "bg-purple-500",
+      activities: [
+        "Gestion administrative et paperasse",
+        "Rendez-vous médicaux et administratifs",
+        "Démarches officielles et formalités",
+        "Gestion des assurances",
+        "Organisation d'événements familiaux",
+        "Suivi administratif régulier",
+        "Assistance numérique"
+      ],
+      achievements: [
+        "Plus de 1000 dossiers traités par mois",
+        "Expertise réglementaire",
+        "Confidentialité garantie",
+        "Gain de temps de 15h/semaine en moyenne"
+      ]
     },
     {
       id: "bika-travel",
@@ -56,7 +104,22 @@ const NousRecrutons = () => {
       description: "Agents aéroport et travel planners",
       requirements: ["Connaissance aéroportuaire", "Langues étrangères", "Disponibilité horaires variables", "Casier judiciaire vierge"],
       icon: MapPin,
-      color: "bg-orange-500"
+      color: "bg-orange-500",
+      activities: [
+        "Accompagnement aéroport VIP",
+        "Planification de voyages sur mesure",
+        "Gestion des transferts",
+        "Assistance aux formalités douanières",
+        "Réservations et modifications",
+        "Service de conciergerie voyage",
+        "Assistance multilingue"
+      ],
+      achievements: [
+        "Plus de 3000 voyages organisés",
+        "Partenariats avec 50+ compagnies",
+        "Service premium 24h/24",
+        "Taux de satisfaction 99%"
+      ]
     },
     {
       id: "bika-plus",
@@ -64,7 +127,22 @@ const NousRecrutons = () => {
       description: "Majordomes et gouvernantes haut de gamme",
       requirements: ["5 ans d'expérience ou Bac+3 en administration", "Références vérifiées", "Polyvalence exceptionnelle", "Casier judiciaire vierge"],
       icon: Award,
-      color: "bg-yellow-500"
+      color: "bg-yellow-500",
+      activities: [
+        "Gestion complète de propriété",
+        "Organisation d'événements privés",
+        "Coordination des équipes domestiques",
+        "Gestion des invités et protocole",
+        "Administration familiale complète",
+        "Conciergerie de luxe",
+        "Service personnalisé 24h/24"
+      ],
+      achievements: [
+        "Clientèle haut de gamme exclusive",
+        "Formation aux standards internationaux",
+        "Discrétion et professionnalisme absolus",
+        "Service sur-mesure garanti"
+      ]
     },
     {
       id: "bika-pro",
@@ -72,7 +150,22 @@ const NousRecrutons = () => {
       description: "Assistants administratifs / direction",
       requirements: ["Bac avec 2 ans d'expérience", "Expérience corporate", "Confidentialité", "Casier judiciaire vierge"],
       icon: UserCheck,
-      color: "bg-red-500"
+      color: "bg-red-500",
+      activities: [
+        "Assistance administrative dirigeants",
+        "Gestion d'agenda et planification",
+        "Organisation de réunions et événements",
+        "Gestion de la correspondance",
+        "Suivi des dossiers stratégiques",
+        "Interface avec les partenaires",
+        "Support aux équipes dirigeantes"
+      ],
+      achievements: [
+        "Plus de 200 dirigeants accompagnés",
+        "Expertise métiers spécialisés",
+        "Confidentialité niveau corporate",
+        "Optimisation productive +30%"
+      ]
     },
     {
       id: "bika-animals",
@@ -80,7 +173,22 @@ const NousRecrutons = () => {
       description: "Spécialistes soins et garde d'animaux",
       requirements: ["Formation animalière", "Expérience garde animaux", "Patience et douceur", "Casier judiciaire vierge"],
       icon: PawPrint,
-      color: "bg-emerald-500"
+      color: "bg-emerald-500",
+      activities: [
+        "Garde d'animaux à domicile",
+        "Promenades et exercices",
+        "Soins quotidiens et alimentation",
+        "Visites vétérinaires",
+        "Pet-sitting pendant les vacances",
+        "Éducation et dressage de base",
+        "Transport d'animaux"
+      ],
+      achievements: [
+        "Plus de 1500 animaux suivis",
+        "Vétérinaires partenaires",
+        "Service d'urgence vétérinaire",
+        "Bien-être animal garanti"
+      ]
     },
     {
       id: "bika-seniors",
@@ -88,7 +196,22 @@ const NousRecrutons = () => {
       description: "Accompagnants seniors et aide à domicile",
       requirements: ["Formation gériatrie ou aide à la personne", "Empathie et bienveillance", "Casier judiciaire vierge"],
       icon: Heart,
-      color: "bg-rose-500"
+      color: "bg-rose-500",
+      activities: [
+        "Aide à la vie quotidienne",
+        "Accompagnement médical",
+        "Soutien moral et social",
+        "Aide aux repas et à l'hygiène",
+        "Sorties et activités",
+        "Médiation familiale",
+        "Veille et sécurité"
+      ],
+      achievements: [
+        "Plus de 800 seniors accompagnés",
+        "Formation spécialisée continue",
+        "Partenariat avec structures médicales",
+        "Maintien à domicile favorisé"
+      ]
     }
   ];
 
@@ -192,14 +315,47 @@ const NousRecrutons = () => {
                       <p className="text-muted-foreground">{category.description}</p>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-2">
-                        <p className="font-medium text-foreground mb-2">Prérequis :</p>
-                        {category.requirements.map((req, index) => (
-                          <div key={index} className="flex items-center gap-2">
-                            <CheckCircle className="w-4 h-4 text-accent" />
-                            <span className="text-sm text-muted-foreground">{req}</span>
-                          </div>
-                        ))}
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <p className="font-medium text-foreground mb-2">Prérequis :</p>
+                          {category.requirements.slice(0, 2).map((req, index) => (
+                            <div key={index} className="flex items-center gap-2">
+                              <CheckCircle className="w-4 h-4 text-accent" />
+                              <span className="text-sm text-muted-foreground">{req}</span>
+                            </div>
+                          ))}
+                          {category.requirements.length > 2 && (
+                            <p className="text-xs text-muted-foreground">+{category.requirements.length - 2} autres prérequis</p>
+                          )}
+                        </div>
+                        
+                        <div className="flex flex-col gap-2 pt-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="w-full"
+                            onClick={() => {
+                              setSelectedCategoryDetail(category);
+                              setIsDetailModalOpen(true);
+                            }}
+                          >
+                            Découvrir plus
+                          </Button>
+                          <Button 
+                            variant="hero" 
+                            size="sm" 
+                            className="w-full"
+                            onClick={() => {
+                              setSelectedCategory(category.id);
+                              const element = document.getElementById('formulaire-candidature');
+                              if (element) {
+                                element.scrollIntoView({ behavior: 'smooth' });
+                              }
+                            }}
+                          >
+                            Candidater
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -331,6 +487,95 @@ const NousRecrutons = () => {
       </div>
 
       <Footer />
+      
+      {/* Detail Modal */}
+      <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          {selectedCategoryDetail && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className={`w-12 h-12 ${selectedCategoryDetail.color} rounded-lg flex items-center justify-center`}>
+                    <selectedCategoryDetail.icon className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <DialogTitle className="text-2xl">{selectedCategoryDetail.title}</DialogTitle>
+                    <p className="text-muted-foreground">{selectedCategoryDetail.description}</p>
+                  </div>
+                </div>
+              </DialogHeader>
+              
+              <div className="space-y-6">
+                {/* Activities Section */}
+                <div>
+                  <h3 className="text-xl font-semibold text-foreground mb-4">Activités réalisées</h3>
+                  <div className="grid md:grid-cols-2 gap-3">
+                    {selectedCategoryDetail.activities.map((activity: string, index: number) => (
+                      <div key={index} className="flex items-start gap-2">
+                        <CheckCircle className="w-5 h-5 text-accent mt-0.5 flex-shrink-0" />
+                        <span className="text-sm text-foreground">{activity}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Achievements Section */}
+                <div>
+                  <h3 className="text-xl font-semibold text-foreground mb-4">Nos réalisations</h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {selectedCategoryDetail.achievements.map((achievement: string, index: number) => (
+                      <Card key={index}>
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-2">
+                            <Star className="w-5 h-5 text-accent mt-0.5 flex-shrink-0" />
+                            <span className="text-sm text-foreground">{achievement}</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Requirements Section */}
+                <div>
+                  <h3 className="text-xl font-semibold text-foreground mb-4">Prérequis complets</h3>
+                  <div className="space-y-2">
+                    {selectedCategoryDetail.requirements.map((req: string, index: number) => (
+                      <div key={index} className="flex items-start gap-2">
+                        <CheckCircle className="w-5 h-5 text-accent mt-0.5 flex-shrink-0" />
+                        <span className="text-sm text-foreground">{req}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t">
+                  <Button 
+                    variant="hero" 
+                    className="flex-1"
+                    onClick={() => {
+                      setSelectedCategory(selectedCategoryDetail.id);
+                      setIsDetailModalOpen(false);
+                      setTimeout(() => {
+                        const element = document.getElementById('formulaire-candidature');
+                        if (element) {
+                          element.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }, 100);
+                    }}
+                  >
+                    Candidater pour ce poste
+                  </Button>
+                  <Button variant="outline" className="flex-1" onClick={() => setIsDetailModalOpen(false)}>
+                    Fermer
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
