@@ -1,498 +1,559 @@
-import { useState } from "react";
-import { BookingManagement } from '@/components/BookingManagement';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, CreditCard, Bell, History, FileText, UserRound, Lock, MapPin, Star, Euro, User, Settings, Shield } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import BookingsList from "@/components/BookingsList";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FileUpload from "@/components/FileUpload";
+import { Calendar, MapPin, Star, DollarSign, Clock, User, FileText, Settings, BarChart3, MessageSquare, Upload, CheckCircle, AlertCircle, XCircle } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const EspacePrestataire = () => {
-  const [selectedTab, setSelectedTab] = useState("connexion");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoginMode, setIsLoginMode] = useState(true);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [profile, setProfile] = useState({
+    business_name: "",
+    description: "",
+    hourly_rate: "",
+    location: "",
+    rating: 0,
+    is_verified: false,
+    siret_number: ""
+  });
+  const [documents, setDocuments] = useState<any[]>([]);
+  const [isUploadingDoc, setIsUploadingDoc] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const prestations = [
-    {
-      id: "PRES001",
-      client: "Marie L.",
-      service: "Assist'Kids - Garde ponctuelle",
-      date: "2024-01-15",
-      heure: "14:00 - 18:00",
-      statut: "Confirmé",
-      remuneration: "120€",
-      adresse: "15 rue des Lilas, Paris 15ème"
-    },
-    {
-      id: "PRES002", 
-      client: "Jean M.",
-      service: "Assist'Maison - Ménage",
-      date: "2024-01-18",
-      heure: "09:00 - 12:00",
-      statut: "En cours",
-      remuneration: "60€",
-      adresse: "8 avenue Victor Hugo, Paris 16ème"
-    },
-    {
-      id: "PRES003",
-      client: "Sophie D.",
-      service: "Assist'Vie - Accompagnement courses",
-      date: "2024-01-22",
-      heure: "15:00 - 17:00",
-      statut: "À venir",
-      remuneration: "45€",
-      adresse: "22 boulevard Saint-Germain, Paris 7ème"
+  useEffect(() => {
+    if (user) {
+      loadProviderProfile();
     }
-  ];
+  }, [user]);
 
-  const revenus = [
-    {
-      id: "REV001",
-      periode: "Janvier 2024",
-      montant: "1,240€",
-      prestations: 8,
-      statut: "Versé",
-      date_versement: "2024-02-01"
-    },
-    {
-      id: "REV002",
-      periode: "Décembre 2023", 
-      montant: "1,580€",
-      prestations: 12,
-      statut: "Versé",
-      date_versement: "2024-01-01"
-    }
-  ];
+  const loadProviderProfile = async () => {
+    if (!user) return;
 
-  const evaluations = [
-    {
-      client: "Marie L.",
-      service: "Garde d'enfant",
-      note: 5,
-      commentaire: "Excellente prestataire, très professionnelle avec les enfants",
-      date: "2024-01-16"
-    },
-    {
-      client: "Jean M.",
-      service: "Ménage",
-      note: 4,
-      commentaire: "Travail soigné et ponctuelle",
-      date: "2024-01-12"
-    }
-  ];
+    try {
+      const { data, error } = await supabase
+        .from('providers')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
 
-  const getStatusColor = (statut: string) => {
-    switch (statut) {
-      case "Confirmé": return "bg-accent text-accent-foreground";
-      case "En cours": return "bg-gradient-primary text-white";
-      case "À venir": return "bg-secondary text-secondary-foreground";
-      case "Versé": return "bg-accent text-accent-foreground";
-      default: return "bg-muted text-muted-foreground";
+      if (error && error.code !== 'PGRST116') {
+        console.error('Erreur lors du chargement du profil:', error);
+        return;
+      }
+
+      if (data) {
+        setProfile({
+          business_name: data.business_name || "",
+          description: data.description || "",
+          hourly_rate: data.hourly_rate?.toString() || "",
+          location: data.location || "",
+          rating: data.rating || 0,
+          is_verified: data.is_verified || false,
+          siret_number: data.siret_number || ""
+        });
+
+        // Charger les documents
+        const { data: documentsData } = await supabase
+          .from('provider_documents')
+          .select('*')
+          .eq('provider_id', data.id);
+        
+        if (documentsData) {
+          setDocuments(documentsData);
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement du profil:', error);
     }
   };
 
-  const renderStars = (note: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`w-4 h-4 ${i < note ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`}
-      />
-    ));
+  const saveProfile = async () => {
+    if (!user) return;
+
+    setIsLoading(true);
+    try {
+      const updateData = {
+        business_name: profile.business_name,
+        description: profile.description,
+        hourly_rate: profile.hourly_rate ? parseFloat(profile.hourly_rate) : null,
+        location: profile.location,
+        siret_number: profile.siret_number,
+        updated_at: new Date().toISOString()
+      };
+
+      const { data: existingProvider } = await supabase
+        .from('providers')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (existingProvider) {
+        const { error } = await supabase
+          .from('providers')
+          .update(updateData)
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('providers')
+          .insert([{
+            user_id: user.id,
+            ...updateData
+          }]);
+
+        if (error) throw error;
+      }
+
+      toast({
+        title: "Profil mis à jour",
+        description: "Vos informations ont été sauvegardées avec succès",
+      });
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la sauvegarde",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const uploadDocument = async (file: File, documentType: string) => {
+    if (!user) return;
+
+    setIsUploadingDoc(true);
+    try {
+      // Upload file to storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${documentType}_${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('provider-documents')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get provider ID
+      const { data: providerData } = await supabase
+        .from('providers')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!providerData) throw new Error('Provider not found');
+
+      // Save document record
+      const { error: docError } = await supabase
+        .from('provider_documents')
+        .insert({
+          provider_id: providerData.id,
+          document_type: documentType,
+          file_name: file.name,
+          file_url: fileName,
+          file_size: file.size
+        });
+
+      if (docError) throw docError;
+
+      toast({
+        title: "Document téléchargé",
+        description: "Votre document a été téléchargé avec succès",
+      });
+
+      // Reload documents
+      loadProviderProfile();
+
+    } catch (error) {
+      console.error('Erreur lors du téléchargement:', error);
+      toast({
+        title: "Erreur",
+        description: "Erreur lors du téléchargement du document",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingDoc(false);
+    }
+  };
+
+  const getDocumentIcon = (status: string) => {
+    switch (status) {
+      case 'approved': return <CheckCircle className="w-4 h-4 text-green-500" />;
+      case 'rejected': return <XCircle className="w-4 h-4 text-red-500" />;
+      default: return <AlertCircle className="w-4 h-4 text-yellow-500" />;
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Accès restreint</CardTitle>
+            <CardDescription>
+              Vous devez être connecté pour accéder à l'espace prestataire.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      
-      <div className="pt-20 pb-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-4">Mon Espace Prestataire</h1>
-            <p className="text-muted-foreground text-lg">
-              Gérez vos prestations, suivez vos revenus et consultez vos évaluations
-            </p>
+    <div className="min-h-screen bg-background pt-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="space-y-6 mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Espace Prestataire</h1>
+              <p className="text-muted-foreground">Gérez votre profil et vos prestations</p>
+            </div>
+            {profile.is_verified && (
+              <Badge className="bg-green-500 text-white">
+                <CheckCircle className="w-4 h-4 mr-1" />
+                Vérifié
+              </Badge>
+            )}
           </div>
 
-          {/* Tabs Navigation */}
-          <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-6 mb-8">
-              <TabsTrigger value="connexion" className="flex items-center gap-2">
-                <Bell className="w-4 h-4" />
-                Connexion
-              </TabsTrigger>
-              <TabsTrigger value="reservations" className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Réservations
-              </TabsTrigger>
-              <TabsTrigger value="prestations" className="flex items-center gap-2">
-                <History className="w-4 h-4" />
-                Historique
-              </TabsTrigger>
-              <TabsTrigger value="revenus" className="flex items-center gap-2">
-                <Euro className="w-4 h-4" />
-                Revenus
-              </TabsTrigger>
-              <TabsTrigger value="evaluations" className="flex items-center gap-2">
-                <Star className="w-4 h-4" />
-                Évaluations
-              </TabsTrigger>
-              <TabsTrigger value="profil" className="flex items-center gap-2">
-                <User className="w-4 h-4" />
-                Mon Profil
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Connexion / Inscription */}
-            <TabsContent value="connexion" className="space-y-6">
-              <Card className="max-w-md mx-auto">
-                <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                    <UserRound className="w-8 h-8 text-white" />
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2">
+                  <Star className="w-5 h-5 text-yellow-500" />
+                  <div>
+                    <p className="text-2xl font-bold">{profile.rating.toFixed(1)}</p>
+                    <p className="text-sm text-muted-foreground">Note moyenne</p>
                   </div>
-                  <CardTitle className="text-2xl">
-                    {isLoginMode ? "Espace Prestataire" : "Devenir Prestataire"}
-                  </CardTitle>
-                  <p className="text-muted-foreground">
-                    {isLoginMode 
-                      ? "Connectez-vous à votre espace prestataire Assist'mw" 
-                      : "Rejoignez notre équipe de prestataires qualifiés"
-                    }
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2">
+                  <DollarSign className="w-5 h-5 text-green-500" />
+                  <div>
+                    <p className="text-2xl font-bold">{profile.hourly_rate || 0}€</p>
+                    <p className="text-sm text-muted-foreground">Tarif/heure</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-5 h-5 text-blue-500" />
+                  <div>
+                    <p className="text-2xl font-bold">12</p>
+                    <p className="text-sm text-muted-foreground">Missions ce mois</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2">
+                  <Clock className="w-5 h-5 text-purple-500" />
+                  <div>
+                    <p className="text-2xl font-bold">48h</p>
+                    <p className="text-sm text-muted-foreground">Heures travaillées</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <Tabs defaultValue="profile" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="profile">Profil</TabsTrigger>
+            <TabsTrigger value="documents">Documents</TabsTrigger>
+            <TabsTrigger value="missions">Missions</TabsTrigger>
+            <TabsTrigger value="payments">Paiements</TabsTrigger>
+            <TabsTrigger value="settings">Paramètres</TabsTrigger>
+          </TabsList>
+
+          {/* Profile Tab */}
+          <TabsContent value="profile" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="w-5 h-5" />
+                  Informations personnelles
+                </CardTitle>
+                <CardDescription>
+                  Mettez à jour vos informations professionnelles
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="business_name">Nom de l'entreprise</Label>
+                    <Input
+                      id="business_name"
+                      value={profile.business_name}
+                      onChange={(e) => setProfile(prev => ({ ...prev, business_name: e.target.value }))}
+                      placeholder="Mon entreprise"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="siret_number">Numéro SIRET</Label>
+                    <Input
+                      id="siret_number"
+                      value={profile.siret_number}
+                      onChange={(e) => setProfile(prev => ({ ...prev, siret_number: e.target.value }))}
+                      placeholder="12345678901234"
+                      maxLength={14}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="hourly_rate">Tarif horaire (€)</Label>
+                    <Input
+                      id="hourly_rate"
+                      type="number"
+                      value={profile.hourly_rate}
+                      onChange={(e) => setProfile(prev => ({ ...prev, hourly_rate: e.target.value }))}
+                      placeholder="25"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Localisation</Label>
+                    <Input
+                      id="location"
+                      value={profile.location}
+                      onChange={(e) => setProfile(prev => ({ ...prev, location: e.target.value }))}
+                      placeholder="Paris, France"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description de vos services</Label>
+                  <Textarea
+                    id="description"
+                    value={profile.description}
+                    onChange={(e) => setProfile(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Décrivez votre expérience et vos spécialisations..."
+                    rows={4}
+                  />
+                </div>
+
+                <Button onClick={saveProfile} disabled={isLoading} className="w-full">
+                  {isLoading ? "Sauvegarde..." : "Sauvegarder le profil"}
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Documents Tab */}
+          <TabsContent value="documents" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  Gestion des documents
+                </CardTitle>
+                <CardDescription>
+                  Téléchargez vos documents professionnels et justificatifs
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {/* Documents existants */}
+                  {documents.length > 0 && (
+                    <div className="space-y-4">
+                      <Label className="text-base font-semibold">Documents téléchargés</Label>
+                      <div className="grid gap-3">
+                        {documents.map((doc) => (
+                          <div key={doc.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                              {getDocumentIcon(doc.status)}
+                              <div>
+                                <p className="font-medium">{doc.file_name}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {doc.document_type.replace('_', ' ').toUpperCase()} - {doc.status === 'pending' ? 'En attente' : doc.status === 'approved' ? 'Approuvé' : 'Rejeté'}
+                                </p>
+                              </div>
+                            </div>
+                            <Badge variant={doc.status === 'approved' ? 'default' : doc.status === 'rejected' ? 'destructive' : 'secondary'}>
+                              {doc.status === 'pending' ? 'En attente' : doc.status === 'approved' ? 'Approuvé' : 'Rejeté'}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Upload de nouveaux documents */}
+                  <div className="grid gap-6">
+                    <FileUpload 
+                      bucketName="provider-documents"
+                      path="auto_entrepreneur"
+                      title="Document d'auto-entrepreneur"
+                      description="Téléchargez votre document d'auto-entrepreneur (PDF, JPG, PNG)"
+                      acceptedTypes=".pdf,.jpg,.jpeg,.png"
+                      maxSize={10}
+                      onUploadComplete={(url) => {
+                        if (url) {
+                          loadProviderProfile();
+                          toast({
+                            title: "Document téléchargé",
+                            description: "Votre document d'auto-entrepreneur a été téléchargé avec succès",
+                          });
+                        }
+                      }}
+                    />
+                    
+                    <FileUpload 
+                      bucketName="provider-documents"
+                      path="casier_judiciaire"
+                      title="Casier judiciaire"
+                      description="Téléchargez votre casier judiciaire (PDF, JPG, PNG)"
+                      acceptedTypes=".pdf,.jpg,.jpeg,.png"
+                      maxSize={10}
+                      onUploadComplete={(url) => {
+                        if (url) {
+                          loadProviderProfile();
+                          toast({
+                            title: "Document téléchargé",
+                            description: "Votre casier judiciaire a été téléchargé avec succès",
+                          });
+                        }
+                      }}
+                    />
+                    
+                    <FileUpload 
+                      bucketName="provider-documents"
+                      path="autres_autorisations"
+                      title="Autres autorisations"
+                      description="Téléchargez vos autres autorisations professionnelles (PDF, JPG, PNG)"
+                      acceptedTypes=".pdf,.jpg,.jpeg,.png"
+                      maxSize={10}
+                      onUploadComplete={(url) => {
+                        if (url) {
+                          loadProviderProfile();
+                          toast({
+                            title: "Document téléchargé",
+                            description: "Votre document a été téléchargé avec succès",
+                          });
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Missions Tab */}
+          <TabsContent value="missions" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5" />
+                  Mes missions
+                </CardTitle>
+                <CardDescription>
+                  Consultez vos missions en cours et passées
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">Aucune mission pour le moment</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Les nouvelles missions apparaîtront ici une fois qu'elles vous seront assignées
                   </p>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {!isLoginMode && (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="prenom">Prénom</Label>
-                        <Input id="prenom" placeholder="Votre prénom" />
-                      </div>
-                      <div>
-                        <Label htmlFor="nom">Nom</Label>
-                        <Input id="nom" placeholder="Votre nom" />
-                      </div>
-                    </div>
-                  )}
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="votre.email@exemple.com" />
-                  </div>
-                  <div>
-                    <Label htmlFor="password">Mot de passe</Label>
-                    <Input id="password" type="password" placeholder="••••••••" />
-                  </div>
-                  {!isLoginMode && (
-                    <>
-                      <div>
-                        <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
-                        <Input id="confirm-password" type="password" placeholder="••••••••" />
-                      </div>
-                      <div>
-                        <Label htmlFor="telephone">Téléphone</Label>
-                        <Input id="telephone" placeholder="06 12 34 56 78" />
-                      </div>
-                      <div>
-                        <Label htmlFor="adresse">Adresse</Label>
-                        <Input id="adresse" placeholder="Votre adresse complète" />
-                      </div>
-                    </>
-                  )}
-                  <Button 
-                    variant="hero" 
-                    className="w-full"
-                    onClick={() => {
-                      setIsLoggedIn(true);
-                      setSelectedTab("prestations");
-                    }}
-                  >
-                    <Lock className="w-4 h-4 mr-2" />
-                    {isLoginMode ? "Se connecter" : "Créer mon profil prestataire"}
-                  </Button>
-                  <div className="text-center">
-                    <Button 
-                      variant="ghost" 
-                      onClick={() => setIsLoginMode(!isLoginMode)}
-                    >
-                      {isLoginMode 
-                        ? "Nouveau prestataire ? S'inscrire" 
-                        : "Déjà prestataire ? Se connecter"
-                      }
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-            {/* Gestion des réservations en temps réel */}
-            <TabsContent value="reservations" className="space-y-6">
-              <BookingManagement />
-            </TabsContent>
+          {/* Payments Tab */}
+          <TabsContent value="payments" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="w-5 h-5" />
+                  Paiements
+                </CardTitle>
+                <CardDescription>
+                  Gérez vos paiements et factures
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">Aucun paiement pour le moment</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Vos paiements et factures apparaîtront ici
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-            {/* Prestations */}
-            <TabsContent value="prestations" className="space-y-6">
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <History className="w-5 h-5 text-primary" />
-                      Historique des prestations
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <BookingsList userType="provider" />
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            {/* Revenus */}
-            <TabsContent value="revenus" className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Euro className="w-5 h-5 text-primary" />
-                      Mes revenus
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {revenus.map((revenu) => (
-                      <div key={revenu.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div>
-                          <p className="font-medium text-foreground">{revenu.periode}</p>
-                          <p className="text-sm text-muted-foreground">{revenu.prestations} prestations</p>
-                          <p className="text-sm text-muted-foreground">Versé le {revenu.date_versement}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-foreground text-lg">{revenu.montant}</p>
-                          <Badge className={getStatusColor(revenu.statut)}>{revenu.statut}</Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <CreditCard className="w-5 h-5 text-primary" />
-                      Informations de paiement
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-3">
-                      <div className="p-4 border rounded-lg">
-                        <p className="font-medium text-foreground">RIB principal</p>
-                        <p className="text-sm text-muted-foreground">IBAN: FR76 **** **** **** 1234</p>
-                      </div>
-                      <div className="p-4 border rounded-lg">
-                        <p className="font-medium text-foreground">Statut auto-entrepreneur</p>
-                        <p className="text-sm text-muted-foreground">SIRET: 123 456 789 00012</p>
-                      </div>
-                      <div className="p-4 border rounded-lg">
-                        <p className="font-medium text-foreground">Assurance responsabilité</p>
-                        <p className="text-sm text-muted-foreground">Valide jusqu'au 31/12/2024</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" className="w-full">
-                      Modifier mes informations
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            {/* Évaluations */}
-            <TabsContent value="evaluations" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Star className="w-5 h-5 text-primary" />
-                    Mes évaluations clients
-                    <Badge className="bg-gradient-primary text-white">4.5/5</Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {evaluations.map((evaluation, index) => (
-                    <div key={index} className="p-4 border rounded-lg">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <p className="font-medium text-foreground">{evaluation.client}</p>
-                          <p className="text-sm text-muted-foreground">{evaluation.service}</p>
-                          <p className="text-xs text-muted-foreground">{evaluation.date}</p>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          {renderStars(evaluation.note)}
-                        </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground italic">
-                        "{evaluation.commentaire}"
+          {/* Settings Tab */}
+          <TabsContent value="settings" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="w-5 h-5" />
+                  Paramètres
+                </CardTitle>
+                <CardDescription>
+                  Configurez vos préférences et notifications
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Notifications par email</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Recevoir des notifications pour les nouvelles missions
                       </p>
                     </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Profil prestataire */}
-            <TabsContent value="profil" className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <User className="w-5 h-5 text-primary" />
-                      Informations personnelles
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="prenom-profil">Prénom</Label>
-                        <Input id="prenom-profil" defaultValue="Marie" />
-                      </div>
-                      <div>
-                        <Label htmlFor="nom-profil">Nom</Label>
-                        <Input id="nom-profil" defaultValue="Martin" />
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="email-profil">Email</Label>
-                      <Input id="email-profil" type="email" defaultValue="marie.martin@exemple.com" />
-                    </div>
-                    <div>
-                      <Label htmlFor="telephone-profil">Téléphone</Label>
-                      <Input id="telephone-profil" defaultValue="06 98 76 54 32" />
-                    </div>
-                    <div>
-                      <Label htmlFor="adresse-profil">Adresse</Label>
-                      <Input id="adresse-profil" defaultValue="45 avenue de la République, 75011 Paris" />
-                    </div>
-                    <div>
-                      <Label htmlFor="business-name">Nom commercial (optionnel)</Label>
-                      <Input id="business-name" defaultValue="Marie Services+" />
-                    </div>
-                    <div>
-                      <Label htmlFor="description-profil">Description de vos services</Label>
-                      <Input id="description-profil" defaultValue="Prestataire expérimentée en garde d'enfants et services domestiques" />
-                    </div>
-                    <div>
-                      <Label htmlFor="siret-profil">Numéro SIRET</Label>
-                      <Input id="siret-profil" placeholder="123 456 789 00012" />
-                    </div>
-                    <Button className="w-full">
-                      <Settings className="w-4 h-4 mr-2" />
-                      Mettre à jour mes informations
+                    <Button variant="outline" size="sm">
+                      Configurer
                     </Button>
-                  </CardContent>
-                </Card>
-
-                <div className="space-y-6">
-                  <FileUpload
-                    bucketName="profiles"
-                    path="avatars"
-                    acceptedTypes="image/*"
-                    maxSize={2}
-                    title="Photo de profil"
-                    description="Téléchargez votre photo de profil (JPEG, PNG, max 2MB)"
-                    onUploadComplete={(url) => {
-                      console.log('Avatar uploadé:', url);
-                    }}
-                  />
-                  
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Shield className="w-5 h-5 text-primary" />
-                        Documents de vérification
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <FileUpload
-                        bucketName="documents"
-                        path="identity"
-                        acceptedTypes=".pdf,.jpg,.jpeg,.png"
-                        maxSize={5}
-                        title="Pièce d'identité"
-                        description="Carte d'identité, passeport ou permis de conduire"
-                        onUploadComplete={(url) => {
-                          console.log('Document d\'identité uploadé:', url);
-                        }}
-                      />
-                      
-                      <FileUpload
-                        bucketName="documents"
-                        path="insurance"
-                        acceptedTypes=".pdf,.jpg,.jpeg,.png"
-                        maxSize={5}
-                        title="Assurance responsabilité civile"
-                        description="Attestation d'assurance en cours de validité"
-                        onUploadComplete={(url) => {
-                          console.log('Assurance uploadée:', url);
-                        }}
-                      />
-                      
-                      <FileUpload
-                        bucketName="documents"
-                        path="auto-entrepreneur"
-                        acceptedTypes=".pdf,.jpg,.jpeg,.png"
-                        maxSize={5}
-                        title="Statut auto-entrepreneur"
-                        description="Attestation URSSAF ou déclaration auto-entrepreneur"
-                        onUploadComplete={(url) => {
-                          console.log('Document auto-entrepreneur uploadé:', url);
-                        }}
-                      />
-                      
-                      <FileUpload
-                        bucketName="documents"
-                        path="authorizations"
-                        acceptedTypes=".pdf,.jpg,.jpeg,.png"
-                        maxSize={5}
-                        title="Autres autorisations"
-                        description="Diplômes, certifications ou autres documents professionnels"
-                        onUploadComplete={(url) => {
-                          console.log('Autorisation uploadée:', url);
-                        }}
-                      />
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </TabsContent>
-
-            {/* Planning */}
-            <TabsContent value="planning" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-primary" />
-                    Mon planning de disponibilités
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
-                      Gérez vos disponibilités
-                    </h3>
-                    <p className="text-muted-foreground mb-4">
-                      Définissez vos créneaux de disponibilité pour recevoir des demandes de prestations
-                    </p>
-                    <Button variant="hero">Configurer mon planning</Button>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Disponibilité</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Définir vos créneaux de disponibilité
+                      </p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      Modifier
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
-
-      <Footer />
     </div>
   );
 };

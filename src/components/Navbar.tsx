@@ -48,7 +48,11 @@ const Navbar = () => {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" size="sm">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => window.open('tel:+33123456789', '_self')}
+            >
               <Phone className="w-4 h-4 mr-2" />
               Appeler
             </Button>
@@ -99,7 +103,12 @@ const Navbar = () => {
               </a>
             ))}
             <div className="pt-4 space-y-2">
-              <Button variant="ghost" size="sm" className="w-full">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="w-full"
+                onClick={() => window.open('tel:+33123456789', '_self')}
+              >
                 <Phone className="w-4 h-4 mr-2" />
                 Appeler
               </Button>

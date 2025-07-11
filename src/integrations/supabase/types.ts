@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      booking_slots: {
+        Row: {
+          booking_date: string
+          booking_id: string
+          created_at: string
+          end_time: string
+          id: string
+          start_time: string
+        }
+        Insert: {
+          booking_date: string
+          booking_id: string
+          created_at?: string
+          end_time: string
+          id?: string
+          start_time: string
+        }
+        Update: {
+          booking_date?: string
+          booking_id?: string
+          created_at?: string
+          end_time?: string
+          id?: string
+          start_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_slots_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           booking_date: string
@@ -104,6 +139,56 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_documents: {
+        Row: {
+          created_at: string
+          document_type: string
+          file_name: string
+          file_size: number | null
+          file_url: string
+          id: string
+          notes: string | null
+          provider_id: string
+          status: string
+          updated_at: string
+          upload_date: string
+        }
+        Insert: {
+          created_at?: string
+          document_type: string
+          file_name: string
+          file_size?: number | null
+          file_url: string
+          id?: string
+          notes?: string | null
+          provider_id: string
+          status?: string
+          updated_at?: string
+          upload_date?: string
+        }
+        Update: {
+          created_at?: string
+          document_type?: string
+          file_name?: string
+          file_size?: number | null
+          file_url?: string
+          id?: string
+          notes?: string | null
+          provider_id?: string
+          status?: string
+          updated_at?: string
+          upload_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_documents_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       providers: {
         Row: {
           business_name: string | null
@@ -114,6 +199,7 @@ export type Database = {
           is_verified: boolean
           location: string | null
           rating: number | null
+          siret_number: string | null
           updated_at: string
           user_id: string
         }
@@ -126,6 +212,7 @@ export type Database = {
           is_verified?: boolean
           location?: string | null
           rating?: number | null
+          siret_number?: string | null
           updated_at?: string
           user_id: string
         }
@@ -138,6 +225,7 @@ export type Database = {
           is_verified?: boolean
           location?: string | null
           rating?: number | null
+          siret_number?: string | null
           updated_at?: string
           user_id?: string
         }

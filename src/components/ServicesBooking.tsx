@@ -38,11 +38,18 @@ const ServicesBooking = () => {
   const [selectedService, setSelectedService] = useState<any>(null);
   const [selectedProvider, setSelectedProvider] = useState<LocalProvider | null>(null);
   const [showBookingInterface, setShowBookingInterface] = useState(false);
-  const [date, setDate] = useState<Date>();
-  const [timeSlot, setTimeSlot] = useState("");
-  const [duration, setDuration] = useState("");
+  const [timeSlots, setTimeSlots] = useState<Array<{
+    date: Date;
+    startTime: string;
+    duration: string;
+  }>>([]);
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
+  const [currentSlot, setCurrentSlot] = useState({
+    date: undefined as Date | undefined,
+    startTime: "",
+    duration: ""
+  });
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
   const [minRating, setMinRating] = useState<number>(0);
   const [maxPrice, setMaxPrice] = useState<number>(0);
@@ -76,7 +83,7 @@ const ServicesBooking = () => {
         serviceId: serviceData.id,
         minRating: minRating || undefined,
         maxPrice: maxPrice || undefined,
-        dateTime: date && timeSlot ? new Date(`${format(date, 'yyyy-MM-dd')}T${timeSlot}:00`) : undefined
+        dateTime: undefined
       };
       
       findMatchingProviders(filters);
@@ -87,7 +94,7 @@ const ServicesBooking = () => {
     return () => {
       window.removeEventListener('selectService', handleServiceSelection);
     };
-  }, [minRating, maxPrice, date, timeSlot]);
+  }, [minRating, maxPrice]);
 
   const handleFiltersChange = () => {
     if (selectedService) {
@@ -95,18 +102,52 @@ const ServicesBooking = () => {
         serviceId: selectedService.id,
         minRating: minRating || undefined,
         maxPrice: maxPrice || undefined,
-        dateTime: date && timeSlot ? new Date(`${format(date, 'yyyy-MM-dd')}T${timeSlot}:00`) : undefined
+        dateTime: undefined
       };
       
       findMatchingProviders(filters);
     }
   };
 
-  const handleBooking = async () => {
-    if (!selectedService || !date || !timeSlot || !duration || !location) {
+  const addTimeSlot = () => {
+    if (!currentSlot.date || !currentSlot.startTime || !currentSlot.duration) {
       toast({
         title: "Erreur",
-        description: "Veuillez remplir tous les champs requis",
+        description: "Veuillez remplir tous les champs du créneau",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setTimeSlots([...timeSlots, {
+      date: currentSlot.date,
+      startTime: currentSlot.startTime,
+      duration: currentSlot.duration
+    }]);
+
+    setCurrentSlot({
+      date: undefined,
+      startTime: "",
+      duration: ""
+    });
+  };
+
+  const removeTimeSlot = (index: number) => {
+    setTimeSlots(timeSlots.filter((_, i) => i !== index));
+  };
+
+  const getTotalPrice = () => {
+    if (!selectedService) return 0;
+    return timeSlots.reduce((total, slot) => {
+      return total + (selectedService.price_per_hour * parseInt(slot.duration));
+    }, 0);
+  };
+
+  const handleBooking = async () => {
+    if (!selectedService || timeSlots.length === 0 || !location) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez ajouter au moins un créneau et renseigner l'adresse",
         variant: "destructive",
       });
       return;
@@ -124,28 +165,45 @@ const ServicesBooking = () => {
         return;
       }
 
+      // Créer la réservation principale
       const bookingData = {
         client_id: user.id,
         provider_id: null, // Sera assigné par l'équipe
         service_id: selectedService.id,
-        booking_date: format(date, 'yyyy-MM-dd'),
-        start_time: timeSlot,
-        end_time: `${String(parseInt(timeSlot.split(':')[0]) + parseInt(duration)).padStart(2, '0')}:${timeSlot.split(':')[1]}`,
-        total_price: selectedService.price_per_hour * parseInt(duration),
+        booking_date: format(timeSlots[0].date, 'yyyy-MM-dd'),
+        start_time: timeSlots[0].startTime,
+        end_time: `${String(parseInt(timeSlots[0].startTime.split(':')[0]) + parseInt(timeSlots[0].duration)).padStart(2, '0')}:${timeSlots[0].startTime.split(':')[1]}`,
+        total_price: getTotalPrice(),
         location: location,
         notes: notes || null,
         status: 'pending'
       };
 
-      const { error } = await supabase
+      const { data: booking, error: bookingError } = await supabase
         .from('bookings')
-        .insert([bookingData]);
+        .insert([bookingData])
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (bookingError) throw bookingError;
+
+      // Créer les créneaux multiples
+      const slotsData = timeSlots.map(slot => ({
+        booking_id: booking.id,
+        booking_date: format(slot.date, 'yyyy-MM-dd'),
+        start_time: slot.startTime,
+        end_time: `${String(parseInt(slot.startTime.split(':')[0]) + parseInt(slot.duration)).padStart(2, '0')}:${slot.startTime.split(':')[1]}`
+      }));
+
+      const { error: slotsError } = await supabase
+        .from('booking_slots')
+        .insert(slotsData);
+
+      if (slotsError) throw slotsError;
 
       toast({
         title: "Demande envoyée",
-        description: "Votre demande de prestation a été envoyée. Notre équipe vous assignera un prestataire adapté et vous contactera rapidement.",
+        description: `Votre demande de prestation avec ${timeSlots.length} créneau(x) a été envoyée. Notre équipe vous assignera un prestataire adapté.`,
       });
 
       setIsBookingDialogOpen(false);
@@ -163,9 +221,12 @@ const ServicesBooking = () => {
   const resetForm = () => {
     setSelectedService(null);
     setSelectedProvider(null);
-    setDate(undefined);
-    setTimeSlot("");
-    setDuration("");
+    setTimeSlots([]);
+    setCurrentSlot({
+      date: undefined,
+      startTime: "",
+      duration: ""
+    });
     setLocation("");
     setNotes("");
   };
@@ -178,7 +239,7 @@ const ServicesBooking = () => {
     return "Prestataire";
   };
 
-  const timeSlots = [
+  const availableTimeSlots = [
     "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", 
     "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"
   ];
@@ -306,58 +367,118 @@ const ServicesBooking = () => {
                   </div>
                 </div>
 
-                {/* Sélection de la date */}
-                <div className="space-y-2">
-                  <Label>Date de la prestation</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-start text-left font-normal">
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {date ? format(date, "PPP", { locale: fr }) : "Choisir une date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={date}
-                        onSelect={setDate}
-                        disabled={(date) => date < new Date()}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                {/* Créneau horaire */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Heure de début</Label>
-                    <Select value={timeSlot} onValueChange={setTimeSlot}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Heure" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {timeSlots.map((time) => (
-                          <SelectItem key={time} value={time}>{time}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                {/* Créneaux multiples */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-base font-semibold">Créneaux de prestation</Label>
+                    <Badge variant="outline">{timeSlots.length} créneau(x)</Badge>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>Durée (heures)</Label>
-                    <Select value={duration} onValueChange={setDuration}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Durée" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {[1, 2, 3, 4, 5, 6, 7, 8].map((hours) => (
-                          <SelectItem key={hours} value={hours.toString()}>
-                            {hours}h
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  {/* Créneaux existants */}
+                  {timeSlots.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-muted-foreground">Créneaux ajoutés :</Label>
+                      {timeSlots.map((slot, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <Calendar className="w-4 h-4 text-primary" />
+                            <span className="font-medium">
+                              {format(slot.date, "EEEE dd MMMM", { locale: fr })}
+                            </span>
+                            <span className="text-muted-foreground">
+                              {slot.startTime} - {String(parseInt(slot.startTime.split(':')[0]) + parseInt(slot.duration)).padStart(2, '0')}:{slot.startTime.split(':')[1]}
+                            </span>
+                            <Badge variant="secondary">{slot.duration}h</Badge>
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => removeTimeSlot(index)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            ✕
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Ajouter un nouveau créneau */}
+                  <div className="p-4 border-2 border-dashed border-border rounded-lg space-y-4">
+                    <Label className="text-sm font-medium">Ajouter un créneau :</Label>
+                    
+                    <div className="grid gap-4">
+                      {/* Date */}
+                      <div className="space-y-2">
+                        <Label>Date</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-start text-left font-normal">
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {currentSlot.date ? format(currentSlot.date, "PPP", { locale: fr }) : "Choisir une date"}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0">
+                            <Calendar
+                              mode="single"
+                              selected={currentSlot.date}
+                              onSelect={(date) => setCurrentSlot({...currentSlot, date})}
+                              disabled={(date) => date < new Date()}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+
+                      {/* Heure et durée */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Heure de début</Label>
+                          <Select 
+                            value={currentSlot.startTime} 
+                            onValueChange={(value) => setCurrentSlot({...currentSlot, startTime: value})}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Heure" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {availableTimeSlots.map((time) => (
+                                <SelectItem key={time} value={time}>{time}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Durée (heures)</Label>
+                          <Select 
+                            value={currentSlot.duration} 
+                            onValueChange={(value) => setCurrentSlot({...currentSlot, duration: value})}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Durée" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[1, 2, 3, 4, 5, 6, 7, 8].map((hours) => (
+                                <SelectItem key={hours} value={hours.toString()}>
+                                  {hours}h
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={addTimeSlot}
+                        disabled={!currentSlot.date || !currentSlot.startTime || !currentSlot.duration}
+                        className="w-full"
+                      >
+                        + Ajouter ce créneau
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
@@ -385,17 +506,28 @@ const ServicesBooking = () => {
                 </div>
 
                 {/* Récapitulatif prix */}
-                {selectedService && duration && (
+                {selectedService && timeSlots.length > 0 && (
                   <div className="p-4 bg-muted/50 rounded-lg">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">Prix estimé :</span>
-                      <span className="text-xl font-bold text-primary">
-                        {selectedService.price_per_hour * parseInt(duration || "0")}€
-                      </span>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">Prix total estimé :</span>
+                        <span className="text-xl font-bold text-primary">
+                          {getTotalPrice()}€
+                        </span>
+                      </div>
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        {timeSlots.map((slot, index) => (
+                          <div key={index} className="flex justify-between">
+                            <span>Créneau {index + 1}: {slot.duration}h</span>
+                            <span>{selectedService.price_per_hour * parseInt(slot.duration)}€</span>
+                          </div>
+                        ))}
+                        <div className="border-t pt-1 flex justify-between font-medium">
+                          <span>Total: {timeSlots.reduce((sum, slot) => sum + parseInt(slot.duration), 0)}h</span>
+                          <span>{getTotalPrice()}€</span>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {selectedService.price_per_hour}€/h × {duration}h
-                    </p>
                   </div>
                 )}
               </div>
@@ -406,10 +538,10 @@ const ServicesBooking = () => {
                 </Button>
                 <Button 
                   onClick={handleBooking}
-                  disabled={!selectedService || !date || !timeSlot || !duration || !location}
+                  disabled={!selectedService || timeSlots.length === 0 || !location}
                   className="bg-gradient-hero text-white hover:opacity-90"
                 >
-                  Envoyer ma demande
+                  Envoyer ma demande ({timeSlots.length} créneau{timeSlots.length > 1 ? 'x' : ''})
                 </Button>
               </DialogFooter>
             </DialogContent>
