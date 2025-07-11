@@ -380,6 +380,10 @@ const EspacePrestataire = () => {
                       <Label htmlFor="description-profil">Description de vos services</Label>
                       <Input id="description-profil" defaultValue="Prestataire expérimentée en garde d'enfants et services domestiques" />
                     </div>
+                    <div>
+                      <Label htmlFor="siret-profil">Numéro SIRET</Label>
+                      <Input id="siret-profil" placeholder="123 456 789 00012" />
+                    </div>
                     <Button className="w-full">
                       <Settings className="w-4 h-4 mr-2" />
                       Mettre à jour mes informations
@@ -429,6 +433,30 @@ const EspacePrestataire = () => {
                         description="Attestation d'assurance en cours de validité"
                         onUploadComplete={(url) => {
                           console.log('Assurance uploadée:', url);
+                        }}
+                      />
+                      
+                      <FileUpload
+                        bucketName="documents"
+                        path="auto-entrepreneur"
+                        acceptedTypes=".pdf,.jpg,.jpeg,.png"
+                        maxSize={5}
+                        title="Statut auto-entrepreneur"
+                        description="Attestation URSSAF ou déclaration auto-entrepreneur"
+                        onUploadComplete={(url) => {
+                          console.log('Document auto-entrepreneur uploadé:', url);
+                        }}
+                      />
+                      
+                      <FileUpload
+                        bucketName="documents"
+                        path="authorizations"
+                        acceptedTypes=".pdf,.jpg,.jpeg,.png"
+                        maxSize={5}
+                        title="Autres autorisations"
+                        description="Diplômes, certifications ou autres documents professionnels"
+                        onUploadComplete={(url) => {
+                          console.log('Autorisation uploadée:', url);
                         }}
                       />
                     </CardContent>

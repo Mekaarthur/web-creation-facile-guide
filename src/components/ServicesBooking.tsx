@@ -103,7 +103,7 @@ const ServicesBooking = () => {
   };
 
   const handleBooking = async () => {
-    if (!selectedService || !selectedProvider || !date || !timeSlot || !duration || !location) {
+    if (!selectedService || !date || !timeSlot || !duration || !location) {
       toast({
         title: "Erreur",
         description: "Veuillez remplir tous les champs requis",
@@ -125,41 +125,27 @@ const ServicesBooking = () => {
       }
 
       const bookingData = {
-        user_id: user.id,
-        provider_id: selectedProvider.id,
+        client_id: user.id,
+        provider_id: null, // Sera assigné par l'équipe
         service_id: selectedService.id,
         booking_date: format(date, 'yyyy-MM-dd'),
         start_time: timeSlot,
-        duration_hours: parseInt(duration),
+        end_time: `${String(parseInt(timeSlot.split(':')[0]) + parseInt(duration)).padStart(2, '0')}:${timeSlot.split(':')[1]}`,
+        total_price: selectedService.price_per_hour * parseInt(duration),
         location: location,
         notes: notes || null,
-        total_price: getProviderPrice(selectedProvider, selectedService.id) * parseInt(duration),
         status: 'pending'
       };
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('bookings')
         .insert([bookingData]);
 
       if (error) throw error;
 
-      // Envoyer notification de confirmation
-      await sendBookingConfirmation(
-        user.email,
-        user.user_metadata?.first_name || user.email,
-        {
-          id: 'temp-id', // Sera remplacé par l'ID réel de la DB
-          serviceName: selectedService.name,
-          date: format(date, 'yyyy-MM-dd'),
-          time: timeSlot,
-          location: location,
-          price: getProviderPrice(selectedProvider, selectedService.id) * parseInt(duration)
-        }
-      );
-
       toast({
-        title: "Réservation confirmée",
-        description: "Votre demande de réservation a été envoyée au prestataire et vous recevrez un email de confirmation",
+        title: "Demande envoyée",
+        description: "Votre demande de prestation a été envoyée. Notre équipe vous assignera un prestataire adapté et vous contactera rapidement.",
       });
 
       setIsBookingDialogOpen(false);
@@ -168,7 +154,7 @@ const ServicesBooking = () => {
       console.error('Erreur lors de la réservation:', error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de la réservation",
+        description: "Une erreur est survenue lors de l'envoi de votre demande",
         variant: "destructive",
       });
     }
@@ -307,101 +293,17 @@ const ServicesBooking = () => {
                   )}
                 </div>
 
-                {/* Sélection du prestataire avec matching score */}
+                {/* Information sur l'attribution automatique */}
                 <div className="space-y-2">
-                  <Label>Prestataires recommandés</Label>
-                  
-                  {showMap ? (
-                    <MapView
-                      providers={providers.map(p => ({ 
-                        ...p, 
-                        profiles: p.profiles || null,
-                        provider_services: p.provider_services || [],
-                        provider_availability: p.provider_availability || [],
-                        provider_documents: p.provider_documents || []
-                      }))}
-                      selectedServiceId={selectedService?.id}
-                      onProviderSelect={(provider) => setSelectedProvider(provider)}
-                    />
-                  ) : (
-                    <div className="space-y-2 max-h-60 overflow-y-auto">
-                      {providers.length === 0 ? (
-                        <div className="text-center py-4 text-muted-foreground">
-                          Aucun prestataire disponible pour ce service
-                        </div>
-                      ) : (
-                        providers.map((provider, index) => {
-                          const price = getProviderPrice(provider, selectedService?.id || '');
-                          const isAvailable = date && timeSlot ? 
-                            isProviderAvailable(provider, new Date(`${format(date, 'yyyy-MM-dd')}T${timeSlot}:00`)) : 
-                            true;
-                          
-                          return (
-                            <Card 
-                              key={provider.id} 
-                              className={`cursor-pointer transition-all hover:shadow-md ${
-                                selectedProvider?.id === provider.id ? 'ring-2 ring-primary' : ''
-                              } ${index === 0 ? 'bg-primary/5 border-primary/20' : ''}`}
-                              onClick={() => setSelectedProvider(provider)}
-                            >
-                              <CardContent className="p-4">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-2">
-                                      <span className="font-medium">{getProviderDisplayName(provider)}</span>
-                                      {index === 0 && (
-                                        <Badge variant="secondary" className="text-xs">
-                                          <Zap className="w-3 h-3 mr-1" />
-                                          Recommandé
-                                        </Badge>
-                                      )}
-                                    </div>
-                                    
-                                    <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                                      {provider.rating && (
-                                        <div className="flex items-center gap-1">
-                                          <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                                          <span>{provider.rating}</span>
-                                        </div>
-                                      )}
-                                      
-                                      <div className="flex items-center gap-1">
-                                        <Euro className="w-3 h-3" />
-                                        <span className="font-medium">{price}€/h</span>
-                                      </div>
-                                      
-                                      {provider.location && (
-                                        <div className="flex items-center gap-1">
-                                          <MapPin className="w-3 h-3" />
-                                          <span className="truncate max-w-24">{provider.location}</span>
-                                        </div>
-                                      )}
-                                    </div>
-                                    
-                                    {!isAvailable && date && timeSlot && (
-                                      <Badge variant="destructive" className="text-xs mt-1">
-                                        Non disponible à cette heure
-                                      </Badge>
-                                    )}
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          );
-                        })
-                      )}
+                  <div className="flex items-center gap-2 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                    <Zap className="w-5 h-5 text-primary flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold text-primary">Attribution automatique</p>
+                      <p className="text-sm text-muted-foreground">
+                        Notre équipe vous assignera automatiquement le meilleur prestataire selon vos critères, votre localisation et les disponibilités.
+                      </p>
                     </div>
-                  )}
-                  
-                  {/* Avis du prestataire sélectionné */}
-                  {selectedProvider && (
-                    <div className="mt-4">
-                      <ReviewSystem 
-                        providerId={selectedProvider.id}
-                        mode="display"
-                      />
-                    </div>
-                  )}
+                  </div>
                 </div>
 
                 {/* Sélection de la date */}
@@ -488,14 +390,11 @@ const ServicesBooking = () => {
                     <div className="flex justify-between items-center">
                       <span className="font-medium">Prix estimé :</span>
                       <span className="text-xl font-bold text-primary">
-                        {selectedProvider && selectedService ? 
-                          getProviderPrice(selectedProvider, selectedService.id) * parseInt(duration || "0") :
-                          selectedService.price_per_hour * parseInt(duration || "0")
-                        }€
+                        {selectedService.price_per_hour * parseInt(duration || "0")}€
                       </span>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
-                      {selectedProvider ? getProviderPrice(selectedProvider, selectedService.id) : selectedService.price_per_hour}€/h × {duration}h
+                      {selectedService.price_per_hour}€/h × {duration}h
                     </p>
                   </div>
                 )}
@@ -505,8 +404,12 @@ const ServicesBooking = () => {
                 <Button variant="outline" onClick={() => setIsBookingDialogOpen(false)}>
                   Annuler
                 </Button>
-                <Button onClick={handleBooking}>
-                  Confirmer la réservation
+                <Button 
+                  onClick={handleBooking}
+                  disabled={!selectedService || !date || !timeSlot || !duration || !location}
+                  className="bg-gradient-hero text-white hover:opacity-90"
+                >
+                  Envoyer ma demande
                 </Button>
               </DialogFooter>
             </DialogContent>
