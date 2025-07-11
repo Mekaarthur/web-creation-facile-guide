@@ -51,6 +51,7 @@ export type Database = {
       }
       bookings: {
         Row: {
+          address: string | null
           booking_date: string
           client_id: string
           created_at: string
@@ -65,6 +66,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          address?: string | null
           booking_date: string
           client_id: string
           created_at?: string
@@ -79,6 +81,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          address?: string | null
           booking_date?: string
           client_id?: string
           created_at?: string
@@ -189,8 +192,57 @@ export type Database = {
           },
         ]
       }
+      provider_notifications: {
+        Row: {
+          booking_id: string | null
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message: string
+          provider_id: string
+          title: string
+          type: string
+        }
+        Insert: {
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          provider_id: string
+          title: string
+          type?: string
+        }
+        Update: {
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          provider_id?: string
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_notifications_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_notifications_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       providers: {
         Row: {
+          acceptance_rate: number | null
           business_name: string | null
           created_at: string
           description: string | null
@@ -198,12 +250,17 @@ export type Database = {
           id: string
           is_verified: boolean
           location: string | null
+          missions_accepted: number | null
+          missions_completed: number | null
+          monthly_earnings: number | null
           rating: number | null
           siret_number: string | null
+          total_earnings: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          acceptance_rate?: number | null
           business_name?: string | null
           created_at?: string
           description?: string | null
@@ -211,12 +268,17 @@ export type Database = {
           id?: string
           is_verified?: boolean
           location?: string | null
+          missions_accepted?: number | null
+          missions_completed?: number | null
+          monthly_earnings?: number | null
           rating?: number | null
           siret_number?: string | null
+          total_earnings?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          acceptance_rate?: number | null
           business_name?: string | null
           created_at?: string
           description?: string | null
@@ -224,10 +286,50 @@ export type Database = {
           id?: string
           is_verified?: boolean
           location?: string | null
+          missions_accepted?: number | null
+          missions_completed?: number | null
+          monthly_earnings?: number | null
           rating?: number | null
           siret_number?: string | null
+          total_earnings?: number | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          referral_code: string
+          referred_id: string | null
+          referrer_id: string
+          reward_amount: number | null
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          referral_code: string
+          referred_id?: string | null
+          referrer_id: string
+          reward_amount?: number | null
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          referral_code?: string
+          referred_id?: string | null
+          referrer_id?: string
+          reward_amount?: number | null
+          status?: string
         }
         Relationships: []
       }
@@ -269,7 +371,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_referral_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

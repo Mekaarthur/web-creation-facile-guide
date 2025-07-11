@@ -34,6 +34,9 @@ const EspacePrestataire = () => {
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [isUploadingDoc, setIsUploadingDoc] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [referralCode, setReferralCode] = useState("");
+  const [referralEarnings, setReferralEarnings] = useState(0);
+  const [notifications, setNotifications] = useState<any[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -94,25 +97,48 @@ const EspacePrestataire = () => {
         
         if (missionsData) {
           setMissions(missionsData);
-          
-          // Calculer les revenus
-          const total = missionsData
-            .filter(m => m.status === 'completed')
-            .reduce((sum, m) => sum + m.total_price, 0);
-          
-          const currentMonth = new Date().getMonth();
-          const currentYear = new Date().getFullYear();
-          const monthly = missionsData
-            .filter(m => {
-              const missionDate = new Date(m.booking_date);
-              return m.status === 'completed' && 
-                     missionDate.getMonth() === currentMonth && 
-                     missionDate.getFullYear() === currentYear;
-            })
-            .reduce((sum, m) => sum + m.total_price, 0);
-          
-          setTotalEarnings(total);
-          setMonthlyEarnings(monthly);
+        }
+
+        // Utiliser les earnings calculés automatiquement par la base de données
+        setTotalEarnings(data.total_earnings || 0);
+        setMonthlyEarnings(data.monthly_earnings || 0);
+
+        // Charger les notifications
+        const { data: notificationsData } = await supabase
+          .from('provider_notifications')
+          .select('*')
+          .eq('provider_id', data.id)
+          .order('created_at', { ascending: false })
+          .limit(5);
+        
+        if (notificationsData) {
+          setNotifications(notificationsData);
+        }
+
+        // Charger le code de parrainage
+        const { data: referralData } = await supabase
+          .from('referrals')
+          .select('*')
+          .eq('referrer_id', user.id)
+          .maybeSingle();
+        
+        if (referralData) {
+          setReferralCode(referralData.referral_code);
+        } else {
+          // Générer un nouveau code de parrainage
+          const { data: newCode } = await supabase.rpc('generate_referral_code');
+          if (newCode) {
+            const { error: insertError } = await supabase
+              .from('referrals')
+              .insert({
+                referrer_id: user.id,
+                referral_code: newCode
+              });
+            
+            if (!insertError) {
+              setReferralCode(newCode);
+            }
+          }
         }
       }
     } catch (error) {
@@ -389,11 +415,12 @@ const EspacePrestataire = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="profile">Profil</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="missions">Missions</TabsTrigger>
             <TabsTrigger value="payments">Paiements</TabsTrigger>
+            <TabsTrigger value="referral">Parrainage</TabsTrigger>
             <TabsTrigger value="settings">Paramètres</TabsTrigger>
           </TabsList>
 
@@ -749,47 +776,91 @@ const EspacePrestataire = () => {
             </Card>
           </TabsContent>
 
-          {/* Missions Tab */}
-          <TabsContent value="missions" className="space-y-6">
+          {/* Parrainage Tab */}
+          <TabsContent value="referral" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5" />
-                  Mes missions
+                  <MessageSquare className="w-5 h-5" />
+                  Programme de parrainage
                 </CardTitle>
                 <CardDescription>
-                  Consultez vos missions en cours et passées
+                  Parrainez de nouveaux prestataires et gagnez des récompenses
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">Aucune mission pour le moment</p>
+              <CardContent className="space-y-6">
+                <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                  <h4 className="font-semibold text-primary mb-2">Votre code de parrainage</h4>
+                  <div className="flex items-center gap-2">
+                    <Input 
+                      value={referralCode} 
+                      readOnly 
+                      className="font-mono font-bold text-lg bg-background"
+                    />
+                    <Button 
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(referralCode);
+                        toast({
+                          title: "Code copié",
+                          description: "Votre code de parrainage a été copié dans le presse-papiers",
+                        });
+                      }}
+                    >
+                      Copier
+                    </Button>
+                  </div>
                   <p className="text-sm text-muted-foreground mt-2">
-                    Les nouvelles missions apparaîtront ici une fois qu'elles vous seront assignées
+                    Partagez ce code avec vos contacts pour gagner 50€ par nouveau prestataire inscrit
                   </p>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
 
-          {/* Payments Tab */}
-          <TabsContent value="payments" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="w-5 h-5" />
-                  Paiements
-                </CardTitle>
-                <CardDescription>
-                  Gérez vos paiements et factures
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">Aucun paiement pour le moment</p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Vos paiements et factures apparaîtront ici
-                  </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <p className="text-2xl font-bold text-primary">0</p>
+                      <p className="text-sm text-muted-foreground">Parrainages actifs</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <p className="text-2xl font-bold text-green-600">0€</p>
+                      <p className="text-sm text-muted-foreground">Gains parrainage</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <p className="text-2xl font-bold text-blue-600">50€</p>
+                      <p className="text-sm text-muted-foreground">Par parrainage</p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="font-semibold">Comment ça marche ?</h4>
+                  <div className="grid gap-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">1</div>
+                      <div>
+                        <p className="font-medium">Partagez votre code</p>
+                        <p className="text-sm text-muted-foreground">Envoyez votre code de parrainage à vos contacts</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">2</div>
+                      <div>
+                        <p className="font-medium">Inscription du filleul</p>
+                        <p className="text-sm text-muted-foreground">Votre contact s'inscrit avec votre code</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">3</div>
+                      <div>
+                        <p className="font-medium">Recevez votre récompense</p>
+                        <p className="text-sm text-muted-foreground">Gagnez 50€ dès sa première mission validée</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>

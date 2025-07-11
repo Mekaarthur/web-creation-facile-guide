@@ -111,16 +111,7 @@ const ServicesBooking = () => {
     }
   };
 
-  const isDateOverlapping = (newSlot: any) => {
-    return timeSlots.some(existingSlot => {
-      const newStart = new Date(newSlot.startDate);
-      const newEnd = new Date(newSlot.endDate);
-      const existingStart = new Date(existingSlot.startDate);
-      const existingEnd = new Date(existingSlot.endDate);
-      
-      return (newStart <= existingEnd && newEnd >= existingStart);
-    });
-  };
+  // Suppression du système anti-superposition pour permettre la flexibilité
 
   const addTimeSlot = () => {
     if (!currentSlot.startDate || !currentSlot.endDate || !currentSlot.startTime || !currentSlot.endTime) {
@@ -150,14 +141,7 @@ const ServicesBooking = () => {
       return;
     }
 
-    if (isDateOverlapping(currentSlot)) {
-      toast({
-        title: "Conflit de dates",
-        description: "Cette plage de dates se superpose avec une plage existante. Veuillez choisir d'autres dates.",
-        variant: "destructive",
-      });
-      return;
-    }
+    // Autoriser les réservations multiples même pour le même service à des heures différentes
 
     setTimeSlots([...timeSlots, {
       startDate: currentSlot.startDate,
@@ -225,7 +209,7 @@ const ServicesBooking = () => {
         start_time: timeSlots[0].startTime,
         end_time: timeSlots[0].endTime,
         total_price: getTotalPrice(),
-        location: location,
+        address: location,
         notes: notes || null,
         status: 'pending'
       };
@@ -267,6 +251,7 @@ const ServicesBooking = () => {
       });
 
       setIsBookingDialogOpen(false);
+      setShowBookingInterface(false);
       resetForm();
     } catch (error) {
       console.error('Erreur lors de la réservation:', error);

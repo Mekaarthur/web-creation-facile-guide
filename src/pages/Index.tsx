@@ -8,6 +8,8 @@ import FAQ from "@/components/FAQ";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import ChatBot from "@/components/ChatBot";
+import ReferralProgram from "@/components/ReferralProgram";
+import InnovativeFeatures from "@/components/InnovativeFeatures";
 
 const Index = () => {
   return (
@@ -18,7 +20,9 @@ const Index = () => {
       <div id="booking">
         <ServicesBooking />
       </div>
+      <InnovativeFeatures />
       <About />
+      <ReferralProgram />
       <Testimonials />
       <FAQ />
       <Contact />
