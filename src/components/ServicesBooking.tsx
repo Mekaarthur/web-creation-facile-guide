@@ -39,16 +39,18 @@ const ServicesBooking = () => {
   const [selectedProvider, setSelectedProvider] = useState<LocalProvider | null>(null);
   const [showBookingInterface, setShowBookingInterface] = useState(false);
   const [timeSlots, setTimeSlots] = useState<Array<{
-    date: Date;
+    startDate: Date;
+    endDate: Date;
     startTime: string;
-    duration: string;
+    endTime: string;
   }>>([]);
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
   const [currentSlot, setCurrentSlot] = useState({
-    date: undefined as Date | undefined,
+    startDate: undefined as Date | undefined,
+    endDate: undefined as Date | undefined,
     startTime: "",
-    duration: ""
+    endTime: ""
   });
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
   const [minRating, setMinRating] = useState<number>(0);
@@ -110,25 +112,36 @@ const ServicesBooking = () => {
   };
 
   const addTimeSlot = () => {
-    if (!currentSlot.date || !currentSlot.startTime || !currentSlot.duration) {
+    if (!currentSlot.startDate || !currentSlot.endDate || !currentSlot.startTime || !currentSlot.endTime) {
       toast({
         title: "Erreur",
-        description: "Veuillez remplir tous les champs du créneau",
+        description: "Veuillez remplir tous les champs de la plage",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (currentSlot.endDate < currentSlot.startDate) {
+      toast({
+        title: "Erreur",
+        description: "La date de fin doit être postérieure à la date de début",
         variant: "destructive",
       });
       return;
     }
 
     setTimeSlots([...timeSlots, {
-      date: currentSlot.date,
+      startDate: currentSlot.startDate,
+      endDate: currentSlot.endDate,
       startTime: currentSlot.startTime,
-      duration: currentSlot.duration
+      endTime: currentSlot.endTime
     }]);
 
     setCurrentSlot({
-      date: undefined,
+      startDate: undefined,
+      endDate: undefined,
       startTime: "",
-      duration: ""
+      endTime: ""
     });
   };
 
@@ -139,7 +152,11 @@ const ServicesBooking = () => {
   const getTotalPrice = () => {
     if (!selectedService) return 0;
     return timeSlots.reduce((total, slot) => {
-      return total + (selectedService.price_per_hour * parseInt(slot.duration));
+      const startHour = parseInt(slot.startTime.split(':')[0]);
+      const endHour = parseInt(slot.endTime.split(':')[0]);
+      const hours = endHour - startHour;
+      const daysDiff = Math.ceil((slot.endDate.getTime() - slot.startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      return total + (selectedService.price_per_hour * hours * daysDiff);
     }, 0);
   };
 
@@ -170,9 +187,9 @@ const ServicesBooking = () => {
         client_id: user.id,
         provider_id: null, // Sera assigné par l'équipe
         service_id: selectedService.id,
-        booking_date: format(timeSlots[0].date, 'yyyy-MM-dd'),
+        booking_date: format(timeSlots[0].startDate, 'yyyy-MM-dd'),
         start_time: timeSlots[0].startTime,
-        end_time: `${String(parseInt(timeSlots[0].startTime.split(':')[0]) + parseInt(timeSlots[0].duration)).padStart(2, '0')}:${timeSlots[0].startTime.split(':')[1]}`,
+        end_time: timeSlots[0].endTime,
         total_price: getTotalPrice(),
         location: location,
         notes: notes || null,
@@ -187,13 +204,22 @@ const ServicesBooking = () => {
 
       if (bookingError) throw bookingError;
 
-      // Créer les créneaux multiples
-      const slotsData = timeSlots.map(slot => ({
-        booking_id: booking.id,
-        booking_date: format(slot.date, 'yyyy-MM-dd'),
-        start_time: slot.startTime,
-        end_time: `${String(parseInt(slot.startTime.split(':')[0]) + parseInt(slot.duration)).padStart(2, '0')}:${slot.startTime.split(':')[1]}`
-      }));
+      // Créer les créneaux multiples pour chaque jour de la plage
+      const slotsData: any[] = [];
+      timeSlots.forEach(slot => {
+        const current = new Date(slot.startDate);
+        const end = new Date(slot.endDate);
+        
+        while (current <= end) {
+          slotsData.push({
+            booking_id: booking.id,
+            booking_date: format(current, 'yyyy-MM-dd'),
+            start_time: slot.startTime,
+            end_time: slot.endTime
+          });
+          current.setDate(current.getDate() + 1);
+        }
+      });
 
       const { error: slotsError } = await supabase
         .from('booking_slots')
@@ -223,9 +249,10 @@ const ServicesBooking = () => {
     setSelectedProvider(null);
     setTimeSlots([]);
     setCurrentSlot({
-      date: undefined,
+      startDate: undefined,
+      endDate: undefined,
       startTime: "",
-      duration: ""
+      endTime: ""
     });
     setLocation("");
     setNotes("");
@@ -367,28 +394,29 @@ const ServicesBooking = () => {
                   </div>
                 </div>
 
-                {/* Créneaux multiples */}
+                  {/* Plages de réservation */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <Label className="text-base font-semibold">Créneaux de prestation</Label>
-                    <Badge variant="outline">{timeSlots.length} créneau(x)</Badge>
+                    <Label className="text-base font-semibold">Plages de prestation</Label>
+                    <Badge variant="outline">{timeSlots.length} plage(s)</Badge>
                   </div>
 
-                  {/* Créneaux existants */}
+                  {/* Plages existantes */}
                   {timeSlots.length > 0 && (
                     <div className="space-y-2">
-                      <Label className="text-sm font-medium text-muted-foreground">Créneaux ajoutés :</Label>
+                      <Label className="text-sm font-medium text-muted-foreground">Plages ajoutées :</Label>
                       {timeSlots.map((slot, index) => (
                         <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                           <div className="flex items-center gap-3">
                             <Calendar className="w-4 h-4 text-primary" />
-                            <span className="font-medium">
-                              {format(slot.date, "EEEE dd MMMM", { locale: fr })}
-                            </span>
-                            <span className="text-muted-foreground">
-                              {slot.startTime} - {String(parseInt(slot.startTime.split(':')[0]) + parseInt(slot.duration)).padStart(2, '0')}:{slot.startTime.split(':')[1]}
-                            </span>
-                            <Badge variant="secondary">{slot.duration}h</Badge>
+                            <div className="flex flex-col">
+                              <span className="font-medium">
+                                Du {format(slot.startDate, "dd/MM", { locale: fr })} au {format(slot.endDate, "dd/MM/yyyy", { locale: fr })}
+                              </span>
+                              <span className="text-sm text-muted-foreground">
+                                {slot.startTime} - {slot.endTime}
+                              </span>
+                            </div>
                           </div>
                           <Button 
                             variant="ghost" 
@@ -403,34 +431,57 @@ const ServicesBooking = () => {
                     </div>
                   )}
 
-                  {/* Ajouter un nouveau créneau */}
+                  {/* Ajouter une nouvelle plage */}
                   <div className="p-4 border-2 border-dashed border-border rounded-lg space-y-4">
-                    <Label className="text-sm font-medium">Ajouter un créneau :</Label>
+                    <Label className="text-sm font-medium">Ajouter une plage :</Label>
                     
                     <div className="grid gap-4">
-                      {/* Date */}
-                      <div className="space-y-2">
-                        <Label>Date</Label>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start text-left font-normal">
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {currentSlot.date ? format(currentSlot.date, "PPP", { locale: fr }) : "Choisir une date"}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0">
-                            <Calendar
-                              mode="single"
-                              selected={currentSlot.date}
-                              onSelect={(date) => setCurrentSlot({...currentSlot, date})}
-                              disabled={(date) => date < new Date()}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
+                      {/* Dates de début et fin */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Date de début</Label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button variant="outline" className="w-full justify-start text-left font-normal">
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {currentSlot.startDate ? format(currentSlot.startDate, "PPP", { locale: fr }) : "Date début"}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                              <Calendar
+                                mode="single"
+                                selected={currentSlot.startDate}
+                                onSelect={(date) => setCurrentSlot({...currentSlot, startDate: date})}
+                                disabled={(date) => date < new Date()}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Date de fin</Label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button variant="outline" className="w-full justify-start text-left font-normal">
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {currentSlot.endDate ? format(currentSlot.endDate, "PPP", { locale: fr }) : "Date fin"}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                              <Calendar
+                                mode="single"
+                                selected={currentSlot.endDate}
+                                onSelect={(date) => setCurrentSlot({...currentSlot, endDate: date})}
+                                disabled={(date) => date < new Date() || (currentSlot.startDate && date < currentSlot.startDate)}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
                       </div>
 
-                      {/* Heure et durée */}
+                      {/* Heures de début et fin */}
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label>Heure de début</Label>
@@ -439,7 +490,7 @@ const ServicesBooking = () => {
                             onValueChange={(value) => setCurrentSlot({...currentSlot, startTime: value})}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Heure" />
+                              <SelectValue placeholder="Heure début" />
                             </SelectTrigger>
                             <SelectContent>
                               {availableTimeSlots.map((time) => (
@@ -450,19 +501,17 @@ const ServicesBooking = () => {
                         </div>
 
                         <div className="space-y-2">
-                          <Label>Durée (heures)</Label>
+                          <Label>Heure de fin</Label>
                           <Select 
-                            value={currentSlot.duration} 
-                            onValueChange={(value) => setCurrentSlot({...currentSlot, duration: value})}
+                            value={currentSlot.endTime} 
+                            onValueChange={(value) => setCurrentSlot({...currentSlot, endTime: value})}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Durée" />
+                              <SelectValue placeholder="Heure fin" />
                             </SelectTrigger>
                             <SelectContent>
-                              {[1, 2, 3, 4, 5, 6, 7, 8].map((hours) => (
-                                <SelectItem key={hours} value={hours.toString()}>
-                                  {hours}h
-                                </SelectItem>
+                              {availableTimeSlots.map((time) => (
+                                <SelectItem key={time} value={time}>{time}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
@@ -470,13 +519,11 @@ const ServicesBooking = () => {
                       </div>
 
                       <Button 
-                        type="button" 
+                        onClick={addTimeSlot} 
                         variant="outline" 
-                        onClick={addTimeSlot}
-                        disabled={!currentSlot.date || !currentSlot.startTime || !currentSlot.duration}
                         className="w-full"
                       >
-                        + Ajouter ce créneau
+                        Ajouter cette plage
                       </Button>
                     </div>
                   </div>
@@ -515,18 +562,24 @@ const ServicesBooking = () => {
                           {getTotalPrice()}€
                         </span>
                       </div>
-                      <div className="text-sm text-muted-foreground space-y-1">
-                        {timeSlots.map((slot, index) => (
-                          <div key={index} className="flex justify-between">
-                            <span>Créneau {index + 1}: {slot.duration}h</span>
-                            <span>{selectedService.price_per_hour * parseInt(slot.duration)}€</span>
-                          </div>
-                        ))}
-                        <div className="border-t pt-1 flex justify-between font-medium">
-                          <span>Total: {timeSlots.reduce((sum, slot) => sum + parseInt(slot.duration), 0)}h</span>
-                          <span>{getTotalPrice()}€</span>
-                        </div>
-                      </div>
+                       <div className="text-sm text-muted-foreground space-y-1">
+                         {timeSlots.map((slot, index) => {
+                           const startHour = parseInt(slot.startTime.split(':')[0]);
+                           const endHour = parseInt(slot.endTime.split(':')[0]);
+                           const hours = endHour - startHour;
+                           const daysDiff = Math.ceil((slot.endDate.getTime() - slot.startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                           return (
+                             <div key={index} className="flex justify-between">
+                               <span>Plage {index + 1}: {hours}h x {daysDiff} jour(s)</span>
+                               <span>{selectedService.price_per_hour * hours * daysDiff}€</span>
+                             </div>
+                           );
+                         })}
+                         <div className="border-t pt-1 flex justify-between font-medium">
+                           <span>Total</span>
+                           <span>{getTotalPrice()}€</span>
+                         </div>
+                       </div>
                     </div>
                   </div>
                 )}

@@ -7,8 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import FileUpload from "@/components/FileUpload";
-import { Calendar, MapPin, Star, DollarSign, Clock, User, FileText, Settings, BarChart3, MessageSquare, Upload, CheckCircle, AlertCircle, XCircle } from "lucide-react";
+import { Calendar, MapPin, Star, DollarSign, Clock, User, FileText, Settings, BarChart3, MessageSquare, Upload, CheckCircle, AlertCircle, XCircle, Camera, Check, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -19,13 +20,18 @@ const EspacePrestataire = () => {
   const [profile, setProfile] = useState({
     business_name: "",
     description: "",
-    hourly_rate: "",
     location: "",
     rating: 0,
     is_verified: false,
-    siret_number: ""
+    siret_number: "",
+    first_name: "",
+    last_name: "",
+    avatar_url: ""
   });
   const [documents, setDocuments] = useState<any[]>([]);
+  const [missions, setMissions] = useState<any[]>([]);
+  const [monthlyEarnings, setMonthlyEarnings] = useState(0);
+  const [totalEarnings, setTotalEarnings] = useState(0);
   const [isUploadingDoc, setIsUploadingDoc] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -51,14 +57,23 @@ const EspacePrestataire = () => {
       }
 
       if (data) {
+        // Charger aussi le profil utilisateur
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
         setProfile({
           business_name: data.business_name || "",
           description: data.description || "",
-          hourly_rate: data.hourly_rate?.toString() || "",
           location: data.location || "",
           rating: data.rating || 0,
           is_verified: data.is_verified || false,
-          siret_number: data.siret_number || ""
+          siret_number: data.siret_number || "",
+          first_name: userProfile?.first_name || "",
+          last_name: userProfile?.last_name || "",
+          avatar_url: userProfile?.avatar_url || ""
         });
 
         // Charger les documents
@@ -69,6 +84,35 @@ const EspacePrestataire = () => {
         
         if (documentsData) {
           setDocuments(documentsData);
+        }
+
+        // Charger les missions
+        const { data: missionsData } = await supabase
+          .from('bookings')
+          .select('*')
+          .eq('provider_id', data.id);
+        
+        if (missionsData) {
+          setMissions(missionsData);
+          
+          // Calculer les revenus
+          const total = missionsData
+            .filter(m => m.status === 'completed')
+            .reduce((sum, m) => sum + m.total_price, 0);
+          
+          const currentMonth = new Date().getMonth();
+          const currentYear = new Date().getFullYear();
+          const monthly = missionsData
+            .filter(m => {
+              const missionDate = new Date(m.booking_date);
+              return m.status === 'completed' && 
+                     missionDate.getMonth() === currentMonth && 
+                     missionDate.getFullYear() === currentYear;
+            })
+            .reduce((sum, m) => sum + m.total_price, 0);
+          
+          setTotalEarnings(total);
+          setMonthlyEarnings(monthly);
         }
       }
     } catch (error) {
@@ -84,11 +128,21 @@ const EspacePrestataire = () => {
       const updateData = {
         business_name: profile.business_name,
         description: profile.description,
-        hourly_rate: profile.hourly_rate ? parseFloat(profile.hourly_rate) : null,
         location: profile.location,
         siret_number: profile.siret_number,
         updated_at: new Date().toISOString()
       };
+
+      // Mettre à jour aussi le profil utilisateur
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          avatar_url: profile.avatar_url,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id);
 
       const { data: existingProvider } = await supabase
         .from('providers')
@@ -127,6 +181,54 @@ const EspacePrestataire = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const acceptMission = async (missionId: string) => {
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .update({ status: 'accepted' })
+        .eq('id', missionId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Mission acceptée",
+        description: "Vous avez accepté cette mission",
+      });
+
+      loadProviderProfile();
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de l'acceptation de la mission",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const refuseMission = async (missionId: string) => {
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .update({ status: 'refused' })
+        .eq('id', missionId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Mission refusée",
+        description: "Vous avez refusé cette mission",
+      });
+
+      loadProviderProfile();
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Erreur lors du refus de la mission",
+        variant: "destructive",
+      });
     }
   };
 
@@ -247,8 +349,8 @@ const EspacePrestataire = () => {
                 <div className="flex items-center space-x-2">
                   <DollarSign className="w-5 h-5 text-green-500" />
                   <div>
-                    <p className="text-2xl font-bold">{profile.hourly_rate || 0}€</p>
-                    <p className="text-sm text-muted-foreground">Tarif/heure</p>
+                    <p className="text-2xl font-bold">{monthlyEarnings}€</p>
+                    <p className="text-sm text-muted-foreground">Revenus ce mois</p>
                   </div>
                 </div>
               </CardContent>
@@ -259,7 +361,12 @@ const EspacePrestataire = () => {
                 <div className="flex items-center space-x-2">
                   <Calendar className="w-5 h-5 text-blue-500" />
                   <div>
-                    <p className="text-2xl font-bold">12</p>
+                    <p className="text-2xl font-bold">{missions.filter(m => {
+                      const missionDate = new Date(m.booking_date);
+                      const currentMonth = new Date().getMonth();
+                      const currentYear = new Date().getFullYear();
+                      return missionDate.getMonth() === currentMonth && missionDate.getFullYear() === currentYear;
+                    }).length}</p>
                     <p className="text-sm text-muted-foreground">Missions ce mois</p>
                   </div>
                 </div>
@@ -271,8 +378,8 @@ const EspacePrestataire = () => {
                 <div className="flex items-center space-x-2">
                   <Clock className="w-5 h-5 text-purple-500" />
                   <div>
-                    <p className="text-2xl font-bold">48h</p>
-                    <p className="text-sm text-muted-foreground">Heures travaillées</p>
+                    <p className="text-2xl font-bold">{totalEarnings}€</p>
+                    <p className="text-sm text-muted-foreground">Revenus total</p>
                   </div>
                 </div>
               </CardContent>
@@ -303,7 +410,57 @@ const EspacePrestataire = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
+                {/* Photo de profil */}
+                <div className="flex items-center space-x-6">
+                  <Avatar className="w-24 h-24">
+                    <AvatarImage src={profile.avatar_url} />
+                    <AvatarFallback className="text-lg">
+                      {profile.first_name?.charAt(0)}{profile.last_name?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-2">
+                    <Label>Photo de profil</Label>
+                    <FileUpload 
+                      bucketName="provider-documents"
+                      path="avatar"
+                      title="Changer la photo"
+                      description="JPG, PNG jusqu'à 2MB"
+                      acceptedTypes=".jpg,.jpeg,.png"
+                      maxSize={2}
+                      onUploadComplete={(url) => {
+                        if (url) {
+                          setProfile(prev => ({ ...prev, avatar_url: url }));
+                          toast({
+                            title: "Photo mise à jour",
+                            description: "Votre photo de profil a été mise à jour",
+                          });
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="first_name">Prénom</Label>
+                    <Input
+                      id="first_name"
+                      value={profile.first_name}
+                      onChange={(e) => setProfile(prev => ({ ...prev, first_name: e.target.value }))}
+                      placeholder="Votre prénom"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="last_name">Nom</Label>
+                    <Input
+                      id="last_name"
+                      value={profile.last_name}
+                      onChange={(e) => setProfile(prev => ({ ...prev, last_name: e.target.value }))}
+                      placeholder="Votre nom"
+                    />
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="business_name">Nom de l'entreprise</Label>
                     <Input
@@ -325,18 +482,7 @@ const EspacePrestataire = () => {
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="hourly_rate">Tarif horaire (€)</Label>
-                    <Input
-                      id="hourly_rate"
-                      type="number"
-                      value={profile.hourly_rate}
-                      onChange={(e) => setProfile(prev => ({ ...prev, hourly_rate: e.target.value }))}
-                      placeholder="25"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
+                  <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="location">Localisation</Label>
                     <Input
                       id="location"
@@ -460,6 +606,144 @@ const EspacePrestataire = () => {
                       }}
                     />
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Missions Tab */}
+          <TabsContent value="missions" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  Gestion des missions
+                </CardTitle>
+                <CardDescription>
+                  Visualisez et gérez vos missions assignées
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {missions.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">
+                      Aucune mission assignée pour le moment
+                    </p>
+                  ) : (
+                    missions.map((mission) => (
+                      <div key={mission.id} className="p-4 border rounded-lg space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-semibold">Mission #{mission.id.slice(0, 8)}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {new Date(mission.booking_date).toLocaleDateString()} - {mission.start_time}
+                            </p>
+                          </div>
+                          <Badge variant={
+                            mission.status === 'pending' ? 'secondary' :
+                            mission.status === 'accepted' ? 'default' :
+                            mission.status === 'completed' ? 'default' :
+                            'destructive'
+                          }>
+                            {mission.status === 'pending' ? 'En attente' :
+                             mission.status === 'accepted' ? 'Acceptée' :
+                             mission.status === 'completed' ? 'Terminée' :
+                             'Refusée'}
+                          </Badge>
+                        </div>
+                        
+                        <div className="text-sm space-y-1">
+                          <p><strong>Adresse:</strong> {mission.location}</p>
+                          <p><strong>Prix:</strong> {mission.total_price}€</p>
+                          {mission.notes && <p><strong>Notes:</strong> {mission.notes}</p>}
+                        </div>
+
+                        {mission.status === 'pending' && (
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm" 
+                              onClick={() => acceptMission(mission.id)}
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              <Check className="w-4 h-4 mr-1" />
+                              Accepter
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="destructive" 
+                              onClick={() => refuseMission(mission.id)}
+                            >
+                              <X className="w-4 h-4 mr-1" />
+                              Refuser
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Paiements Tab */}
+          <TabsContent value="payments" className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5" />
+                    Revenus mensuels
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-green-600">{monthlyEarnings}€</p>
+                    <p className="text-muted-foreground">Ce mois-ci</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Revenus totaux</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-primary">{totalEarnings}€</p>
+                    <p className="text-muted-foreground">Total gagné</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Historique des paiements</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {missions
+                    .filter(m => m.status === 'completed')
+                    .map((mission) => (
+                      <div key={mission.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <p className="font-medium">Mission #{mission.id.slice(0, 8)}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(mission.booking_date).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-green-600">+{mission.total_price}€</p>
+                          <p className="text-xs text-muted-foreground">Payé</p>
+                        </div>
+                      </div>
+                    ))}
+                  {missions.filter(m => m.status === 'completed').length === 0 && (
+                    <p className="text-center text-muted-foreground py-8">
+                      Aucun paiement reçu pour le moment
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
