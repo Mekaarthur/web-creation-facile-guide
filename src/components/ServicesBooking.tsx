@@ -313,7 +313,13 @@ const ServicesBooking = () => {
                   
                   {showMap ? (
                     <MapView
-                      providers={providers.map(p => ({ ...p, profiles: p.profiles || null }))}
+                      providers={providers.map(p => ({ 
+                        ...p, 
+                        profiles: p.profiles || null,
+                        provider_services: p.provider_services || [],
+                        provider_availability: p.provider_availability || [],
+                        provider_documents: p.provider_documents || []
+                      }))}
                       selectedServiceId={selectedService?.id}
                       onProviderSelect={(provider) => setSelectedProvider(provider)}
                     />
