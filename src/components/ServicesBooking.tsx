@@ -111,6 +111,17 @@ const ServicesBooking = () => {
     }
   };
 
+  const isDateOverlapping = (newSlot: any) => {
+    return timeSlots.some(existingSlot => {
+      const newStart = new Date(newSlot.startDate);
+      const newEnd = new Date(newSlot.endDate);
+      const existingStart = new Date(existingSlot.startDate);
+      const existingEnd = new Date(existingSlot.endDate);
+      
+      return (newStart <= existingEnd && newEnd >= existingStart);
+    });
+  };
+
   const addTimeSlot = () => {
     if (!currentSlot.startDate || !currentSlot.endDate || !currentSlot.startTime || !currentSlot.endTime) {
       toast({
@@ -130,6 +141,24 @@ const ServicesBooking = () => {
       return;
     }
 
+    if (currentSlot.startTime >= currentSlot.endTime) {
+      toast({
+        title: "Erreur",
+        description: "L'heure de fin doit être postérieure à l'heure de début",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isDateOverlapping(currentSlot)) {
+      toast({
+        title: "Conflit de dates",
+        description: "Cette plage de dates se superpose avec une plage existante. Veuillez choisir d'autres dates.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setTimeSlots([...timeSlots, {
       startDate: currentSlot.startDate,
       endDate: currentSlot.endDate,
@@ -142,6 +171,11 @@ const ServicesBooking = () => {
       endDate: undefined,
       startTime: "",
       endTime: ""
+    });
+
+    toast({
+      title: "Plage ajoutée",
+      description: "La plage de dates a été ajoutée avec succès",
     });
   };
 

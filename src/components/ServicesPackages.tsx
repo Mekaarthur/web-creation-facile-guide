@@ -43,6 +43,7 @@ const ServicesPackages = () => {
       title: "Bika Kids",
       subtitle: "Enfants & Parentalité",
       description: "Garde, sorties éducatives, aide aux devoirs et organisation d'anniversaires pour vos enfants.",
+      image: "/src/assets/service-childcare-education.jpg",
       services: [
         { name: "Garde ponctuelle", description: "Garde d'enfant à domicile pour quelques heures", price: 15 },
         { name: "Garde de nuit", description: "Garde d'enfant toute la nuit", price: 18 },
@@ -62,6 +63,7 @@ const ServicesPackages = () => {
       title: "Bika Maison",
       subtitle: "Logistique quotidienne",
       description: "Courses, récupération de colis, petits travaux et organisation pour alléger votre quotidien.",
+      image: "/src/assets/service-house-logistics.jpg",
       services: [
         { name: "Courses planifiées", description: "Courses hebdomadaires selon votre liste", price: 20 },
         { name: "Courses express", description: "Courses urgentes en moins de 2h", price: 25 },
@@ -80,6 +82,7 @@ const ServicesPackages = () => {
       title: "Bika Vie",
       subtitle: "Conciergerie & Administration",
       description: "Gestion de vos rendez-vous, démarches administratives et organisation d'événements familiaux.",
+      image: "/src/assets/service-admin-support.jpg",
       services: [
         { name: "Rendez-vous médicaux", description: "Prise et report de rendez-vous médicaux", price: 20 },
         { name: "Dossiers administratifs", description: "Constitution et dépôt de dossiers CAF, CPAM", price: 25 },
@@ -97,6 +100,7 @@ const ServicesPackages = () => {
       title: "Bika Travel",
       subtitle: "Assistance Voyageurs",
       description: "Accompagnement complet pour vos voyages : avant, pendant et après votre déplacement.",
+      image: "/src/assets/service-travel-assistance.jpg",
       services: [
         { name: "Assistance pré-voyage", description: "Vérification documents, check-in en ligne", price: 25 },
         { name: "Transfert aéroport", description: "Transfert domicile-aéroport, Fast-Track", price: 30 },
@@ -114,6 +118,7 @@ const ServicesPackages = () => {
       title: "Bika Plus",
       subtitle: "Premium 7j/7",
       description: "Service haut de gamme avec Chef Family Officer dédié et assistance prioritaire.",
+      image: "/src/assets/service-premium-concierge.jpg",
       services: [
         { name: "Chef Family Officer", description: "Chef Family Officer dédié", price: 0 },
         { name: "Ligne prioritaire", description: "Ligne prioritaire + WhatsApp instantané", price: 0 },
@@ -131,6 +136,7 @@ const ServicesPackages = () => {
       title: "Bika Animals",
       subtitle: "Services pour animaux",
       description: "Promenade, soins et accompagnement pour vos compagnons à quatre pattes.",
+      image: "/src/assets/service-pet-care.jpg",
       services: [
         { name: "Promenade animaux", description: "Balade matinale et du soir", price: 15 },
         { name: "Visite vétérinaire", description: "Accompagnement chez le vétérinaire", price: 25 },
@@ -148,6 +154,7 @@ const ServicesPackages = () => {
       title: "Bika Personnes Âgées",
       subtitle: "Assistance seniors",
       description: "Accompagnement bienveillant et aide quotidienne pour nos aînés.",
+      image: "/src/assets/service-seniors-assistance.jpg",
       services: [
         { name: "Aide quotidienne", description: "Aide aux activités quotidiennes", price: 22 },
         { name: "Accompagnement médical", description: "Accompagnement aux rendez-vous médicaux", price: 25 },
@@ -165,6 +172,7 @@ const ServicesPackages = () => {
       title: "Bika Pro",
       subtitle: "Assistance Entreprise",
       description: "Solutions d'assistance administrative et executive pour votre entreprise.",
+      image: "/src/assets/service-business-executive.jpg",
       services: [
         { name: "Assistant administratif", description: "Assistants administratifs externalisés", price: 35 },
         { name: "Executive assistant", description: "Executive assistant à la carte", price: 45 },
@@ -250,6 +258,17 @@ const ServicesPackages = () => {
                 )}
                 
                 <div className="space-y-4">
+                  {/* Service Image */}
+                  {pkg.image && (
+                    <div className="w-full h-32 rounded-lg overflow-hidden">
+                      <img 
+                        src={pkg.image} 
+                        alt={pkg.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  )}
+                  
                   {/* Icon & Title */}
                   <div className="space-y-3">
                     <div className={`w-12 h-12 rounded-lg ${
