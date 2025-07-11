@@ -19,7 +19,7 @@ import { useProviderMatching } from "@/hooks/useProviderMatching";
 import { MapView } from "@/components/MapView";
 import { ReviewSystem } from "@/components/ReviewSystem";
 
-interface Provider {
+interface LocalProvider {
   id: string;
   user_id: string;
   business_name: string | null;
@@ -28,31 +28,15 @@ interface Provider {
   rating: number | null;
   location: string | null;
   is_verified: boolean;
-  profiles: {
+  profiles?: {
     first_name: string | null;
     last_name: string | null;
   } | null;
-  provider_services: {
-    service_id: string;
-    price_override: number | null;
-  }[];
-  provider_availability: {
-    day_of_week: number;
-    start_time: string;
-    end_time: string;
-    is_available: boolean;
-  }[];
-  provider_locations?: {
-    latitude: number;
-    longitude: number;
-    address: string;
-    city: string;
-  }[];
 }
 
 const ServicesBooking = () => {
   const [selectedService, setSelectedService] = useState<any>(null);
-  const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<LocalProvider | null>(null);
   const [showBookingInterface, setShowBookingInterface] = useState(false);
   const [date, setDate] = useState<Date>();
   const [timeSlot, setTimeSlot] = useState("");
@@ -200,7 +184,7 @@ const ServicesBooking = () => {
     setNotes("");
   };
 
-  const getProviderDisplayName = (provider: Provider) => {
+  const getProviderDisplayName = (provider: LocalProvider) => {
     if (provider.business_name) return provider.business_name;
     if (provider.profiles?.first_name && provider.profiles?.last_name) {
       return `${provider.profiles.first_name} ${provider.profiles.last_name}`;
@@ -329,7 +313,7 @@ const ServicesBooking = () => {
                   
                   {showMap ? (
                     <MapView
-                      providers={providers}
+                      providers={providers.map(p => ({ ...p, profiles: p.profiles || null }))}
                       selectedServiceId={selectedService?.id}
                       onProviderSelect={(provider) => setSelectedProvider(provider)}
                     />

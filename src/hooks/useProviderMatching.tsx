@@ -1,55 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-
-interface Provider {
-  id: string;
-  user_id: string;
-  business_name: string | null;
-  description: string | null;
-  hourly_rate: number | null;
-  rating: number | null;
-  location: string | null;
-  is_verified: boolean;
-  profiles: {
-    first_name: string | null;
-    last_name: string | null;
-  } | null;
-  provider_services: {
-    service_id: string;
-    price_override: number | null;
-  }[];
-  provider_availability: {
-    day_of_week: number;
-    start_time: string;
-    end_time: string;
-    is_available: boolean;
-  }[];
-  provider_locations?: {
-    latitude: number;
-    longitude: number;
-    address: string;
-    city: string;
-  }[];
-  distance?: number;
-}
-
-interface Service {
-  id: string;
-  name: string;
-  description: string;
-  price_per_hour: number;
-  category: string;
-  is_active: boolean;
-}
-
-interface MatchingFilters {
-  serviceId?: string;
-  location?: string;
-  maxDistance?: number;
-  minRating?: number;
-  maxPrice?: number;
-  dateTime?: Date;
-}
+import type { Provider, Service, MatchingFilters } from '@/types/provider';
 
 export const useProviderMatching = () => {
   const [providers, setProviders] = useState<Provider[]>([]);
@@ -84,10 +35,10 @@ export const useProviderMatching = () => {
         .from('providers')
         .select(`
           *,
-          profiles(first_name, last_name),
+          profiles(first_name, last_name, avatar_url),
           provider_services(service_id, price_override),
           provider_availability(day_of_week, start_time, end_time, is_available),
-          provider_locations(latitude, longitude, address, city)
+          provider_documents(document_type, file_name, is_verified)
         `)
         .eq('is_verified', true);
 
