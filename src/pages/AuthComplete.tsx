@@ -3,14 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Eye, EyeOff, Mail, Lock, User, UserPlus, LogIn } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
-const Auth = () => {
+const AuthComplete = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [civility, setCivility] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -19,20 +21,25 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
-    // Vérifier si l'utilisateur est déjà connecté
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate("/");
-      }
-    };
-    checkAuth();
-  }, [navigate]);
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!civility || !firstName || !lastName) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs obligatoires.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -44,6 +51,7 @@ const Auth = () => {
         options: {
           emailRedirectTo: redirectUrl,
           data: {
+            civility,
             first_name: firstName,
             last_name: lastName,
           }
@@ -111,13 +119,14 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-subtle px-4">
       <Card className="w-full max-w-md shadow-elegant">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center">
+          <CardTitle className="text-2xl text-center flex items-center justify-center gap-2">
+            {isLogin ? <LogIn className="w-6 h-6" /> : <UserPlus className="w-6 h-6" />}
             {isLogin ? "Connexion" : "Inscription"}
           </CardTitle>
           <CardDescription className="text-center">
             {isLogin
-              ? "Connectez-vous à votre compte"
-              : "Créez votre compte Assist'mw"}
+              ? "Connectez-vous à votre compte Assist'mw"
+              : "Créez votre compte pour accéder à nos services"}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -125,8 +134,8 @@ const Auth = () => {
             {!isLogin && (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="civility">Civilité</Label>
-                  <Select required={!isLogin}>
+                  <Label htmlFor="civility">Civilité *</Label>
+                  <Select value={civility} onValueChange={setCivility} required={!isLogin}>
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionnez votre civilité" />
                     </SelectTrigger>
@@ -138,7 +147,7 @@ const Auth = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="firstName">Prénom</Label>
+                    <Label htmlFor="firstName">Prénom *</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -153,7 +162,7 @@ const Auth = () => {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="lastName">Nom</Label>
+                    <Label htmlFor="lastName">Nom *</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -172,7 +181,7 @@ const Auth = () => {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email *</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -188,7 +197,7 @@ const Auth = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
+              <Label htmlFor="password">Mot de passe *</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -238,10 +247,23 @@ const Auth = () => {
                 : "Déjà un compte ? Connectez-vous"}
             </Button>
           </div>
+
+          {!isLogin && (
+            <div className="mt-4 text-xs text-muted-foreground text-center">
+              En vous inscrivant, vous acceptez nos{" "}
+              <Button variant="link" className="h-auto p-0 text-xs">
+                Conditions d'utilisation
+              </Button>{" "}
+              et notre{" "}
+              <Button variant="link" className="h-auto p-0 text-xs">
+                Politique de confidentialité
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
   );
 };
 
-export default Auth;
+export default AuthComplete;

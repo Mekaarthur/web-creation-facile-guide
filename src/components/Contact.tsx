@@ -13,6 +13,7 @@ import {
   Star,
   ArrowRight
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
 const Contact = () => {
@@ -175,35 +176,51 @@ const Contact = () => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-6">
                     <div className="space-y-2">
-                      <label htmlFor="name" className="text-sm font-medium text-foreground">
-                        Nom complet *
+                      <label htmlFor="civility" className="text-sm font-medium text-foreground">
+                        Civilité *
                       </label>
-                      <Input
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        placeholder="Votre nom"
-                        required
-                        className="h-12"
-                      />
+                      <Select required>
+                        <SelectTrigger className="h-12">
+                          <SelectValue placeholder="Sélectionnez votre civilité" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="mr">Monsieur</SelectItem>
+                          <SelectItem value="mrs">Madame</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <div className="space-y-2">
-                      <label htmlFor="email" className="text-sm font-medium text-foreground">
-                        Email *
-                      </label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        placeholder="votre@email.com"
-                        required
-                        className="h-12"
-                      />
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label htmlFor="name" className="text-sm font-medium text-foreground">
+                          Nom complet *
+                        </label>
+                        <Input
+                          id="name"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleChange}
+                          placeholder="Votre nom"
+                          required
+                          className="h-12"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="email" className="text-sm font-medium text-foreground">
+                          Email *
+                        </label>
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={handleChange}
+                          placeholder="votre@email.com"
+                          required
+                          className="h-12"
+                        />
+                      </div>
                     </div>
                   </div>
 
