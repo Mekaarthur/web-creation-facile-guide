@@ -111,24 +111,73 @@ const About = () => {
             <h3 className="text-2xl md:text-3xl font-bold text-foreground">
               Notre histoire
             </h3>
-            <div className="space-y-4 text-muted-foreground">
-              <p>
-                Dans un monde où les familles actives peinent à concilier vie professionnelle, vie familiale 
-                et obligations quotidiennes, Assist'mw est né pour proposer une solution humaine, personnalisée et fiable.
+            <div className="space-y-4 text-muted-foreground leading-relaxed">
+              <p className="text-lg font-medium text-foreground">
+                Je suis maman, et comme beaucoup… j'ai connu la galère.
               </p>
               <p>
-                Aujourd'hui, nous avons développé un réseau d'assistants familiaux couvrant la logistique, 
-                la parentalité, la conciergerie et l'assistance voyageurs, via des formules modulables.
+                En 2022, à la fin de mes études, j'ai accouché de ma fille. Pas de place en crèche, pas de solution simple, et pourtant il fallait s'organiser. Le papa faisait de son mieux, mais avec son travail, nous étions souvent débordés. Malgré tout, j'ai décroché un emploi — avec beaucoup de sacrifices, de larmes… et une charge mentale immense.
               </p>
               <p>
-                Notre mission est simple : vous accompagner dans votre quotidien avec douceur, fiabilité et humanité, 
-                pour un foyer plus léger, plus serein et plus harmonieux.
+                Un an plus tard, tout a basculé : je suis tombée en dépression. Une vraie. J'étais seule, sans aide, sans nounou, sans relais. Impossible de trouver une assistante maternelle en milieu d'année. Mon compagnon, à distance, m'accompagnait comme il pouvait. Mais ce n'était pas suffisant.
+              </p>
+              <p>
+                Et puis j'ai été licenciée.
+              </p>
+              <p>
+                Pendant 9 mois, au chômage, j'ai enfin soufflé… Et j'ai repensé à tout ce que j'avais traversé. Mais aussi à tous ceux autour de moi : les étudiants en galère, les jeunes parents à bout, les seniors isolés, les couples débordés, les indépendants noyés sous les tâches.
+              </p>
+              <p className="text-lg font-medium text-foreground">
+                C'est là qu'un déclic est né.
+              </p>
+              <p>
+                Un problème commun se dessinait clairement : <strong>la charge mentale</strong>. Ce poids invisible que chacun porte, parfois en silence, sans savoir comment demander de l'aide.
+              </p>
+              <p>
+                Alors avec mon compagnon, nous avons décidé de créer <strong>Bikawô</strong>. Un service pensé pour accompagner toutes les vies du quotidien — sans jugement, avec douceur, souplesse et humanité.
+              </p>
+              
+              <div className="bg-primary/5 border-l-4 border-primary p-6 rounded-r-lg space-y-3">
+                <h4 className="font-semibold text-foreground text-lg">Notre mission :</h4>
+                <div className="space-y-2">
+                  <p className="flex items-center space-x-2">
+                    <span className="text-primary">🎯</span>
+                    <span>Être un soutien réel, là où vous en avez besoin.</span>
+                  </p>
+                  <p className="flex items-center space-x-2">
+                    <span className="text-primary">🎯</span>
+                    <span>Simplifier votre quotidien pour vous permettre de souffler.</span>
+                  </p>
+                  <p className="flex items-center space-x-2">
+                    <span className="text-primary">🎯</span>
+                    <span>Offrir des services personnalisés pour alléger la logistique, la parentalité, les voyages, la maison ou l'administratif.</span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-gradient-primary bg-clip-text text-transparent space-y-2">
+                <p className="text-lg font-semibold">
+                  Bikawô, c'est plus qu'un service.
+                </p>
+                <p className="text-lg">
+                  C'est une respiration. Un coup de main. Un « je suis là pour toi ».
+                </p>
+              </div>
+
+              <p className="text-lg font-medium text-foreground text-center pt-4">
+                Et si aujourd'hui, c'était votre tour de souffler ?
               </p>
             </div>
-            <Button variant="hero" size="lg" className="group">
-              Découvrir notre équipe
-              <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-            </Button>
+            
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <Button variant="hero" size="lg" className="group">
+                Découvrir nos services
+                <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+              </Button>
+              <Button variant="outline" size="lg">
+                Notre équipe
+              </Button>
+            </div>
           </div>
 
           {/* Right - Values */}
