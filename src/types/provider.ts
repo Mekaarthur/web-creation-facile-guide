@@ -34,6 +34,12 @@ export interface Provider {
   is_verified: boolean;
   created_at: string;
   updated_at: string;
+  siret_number?: string | null;
+  total_earnings?: number;
+  monthly_earnings?: number;
+  missions_accepted?: number;
+  missions_completed?: number;
+  acceptance_rate?: number;
   profiles?: {
     first_name: string | null;
     last_name: string | null;
@@ -46,6 +52,29 @@ export interface Provider {
     price_override: number | null;
   }[];
   distance?: number;
+}
+
+export interface ProviderNotification {
+  id: string;
+  provider_id: string;
+  booking_id?: string;
+  title: string;
+  message: string;
+  type: string;
+  is_read: boolean;
+  created_at: string;
+}
+
+export interface Referral {
+  id: string;
+  referrer_id: string;
+  referred_id?: string;
+  referral_code: string;
+  status: 'pending' | 'completed' | 'expired';
+  reward_amount: number;
+  created_at: string;
+  completed_at?: string;
+  expires_at: string;
 }
 
 export interface Service {

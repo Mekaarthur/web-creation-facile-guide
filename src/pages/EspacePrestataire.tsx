@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import FileUpload from "@/components/FileUpload";
-import { Calendar, MapPin, Star, DollarSign, Clock, User, FileText, Settings, BarChart3, MessageSquare, Upload, CheckCircle, AlertCircle, XCircle, Camera, Check, X } from "lucide-react";
+import ProviderNotifications from "@/components/ProviderNotifications";
+import { Calendar, MapPin, Star, DollarSign, Clock, User, FileText, Settings, BarChart3, MessageSquare, Upload, CheckCircle, AlertCircle, XCircle, Camera, Check, X, Bell, Share2, Copy } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -36,6 +37,8 @@ const EspacePrestataire = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [referralCode, setReferralCode] = useState("");
   const [referralEarnings, setReferralEarnings] = useState(0);
+  const [activeReferrals, setActiveReferrals] = useState(0);
+  const [completedReferrals, setCompletedReferrals] = useState(0);
   const [notifications, setNotifications] = useState<any[]>([]);
 
   useEffect(() => {
@@ -115,15 +118,25 @@ const EspacePrestataire = () => {
           setNotifications(notificationsData);
         }
 
-        // Charger le code de parrainage
+        // Charger le code de parrainage et les statistiques
         const { data: referralData } = await supabase
           .from('referrals')
           .select('*')
-          .eq('referrer_id', user.id)
-          .maybeSingle();
+          .eq('referrer_id', user.id);
         
-        if (referralData) {
-          setReferralCode(referralData.referral_code);
+        if (referralData && referralData.length > 0) {
+          setReferralCode(referralData[0].referral_code);
+          
+          // Calculer les statistiques de parrainage
+          const activeReferrals = referralData.filter(r => r.status === 'pending').length;
+          const completedReferrals = referralData.filter(r => r.status === 'completed').length;
+          const totalEarnings = referralData
+            .filter(r => r.status === 'completed')
+            .reduce((sum, r) => sum + (r.reward_amount || 0), 0);
+          
+          setActiveReferrals(activeReferrals);
+          setCompletedReferrals(completedReferrals);
+          setReferralEarnings(totalEarnings);
         } else {
           // Générer un nouveau code de parrainage
           const { data: newCode } = await supabase.rpc('generate_referral_code');
@@ -415,12 +428,13 @@ const EspacePrestataire = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="profile">Profil</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="missions">Missions</TabsTrigger>
             <TabsTrigger value="payments">Paiements</TabsTrigger>
             <TabsTrigger value="referral">Parrainage</TabsTrigger>
+            <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="settings">Paramètres</TabsTrigger>
           </TabsList>
 
@@ -776,6 +790,11 @@ const EspacePrestataire = () => {
             </Card>
           </TabsContent>
 
+          {/* Notifications Tab */}
+          <TabsContent value="notifications" className="space-y-6">
+            <ProviderNotifications />
+          </TabsContent>
+
           {/* Parrainage Tab */}
           <TabsContent value="referral" className="space-y-6">
             <Card>
@@ -806,7 +825,9 @@ const EspacePrestataire = () => {
                           description: "Votre code de parrainage a été copié dans le presse-papiers",
                         });
                       }}
+                      className="flex items-center gap-2"
                     >
+                      <Copy className="w-4 h-4" />
                       Copier
                     </Button>
                   </div>
@@ -818,20 +839,20 @@ const EspacePrestataire = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Card>
                     <CardContent className="p-4 text-center">
-                      <p className="text-2xl font-bold text-primary">0</p>
+                      <p className="text-2xl font-bold text-primary">{activeReferrals}</p>
                       <p className="text-sm text-muted-foreground">Parrainages actifs</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="p-4 text-center">
-                      <p className="text-2xl font-bold text-green-600">0€</p>
+                      <p className="text-2xl font-bold text-green-600">{referralEarnings}€</p>
                       <p className="text-sm text-muted-foreground">Gains parrainage</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="p-4 text-center">
-                      <p className="text-2xl font-bold text-blue-600">50€</p>
-                      <p className="text-sm text-muted-foreground">Par parrainage</p>
+                      <p className="text-2xl font-bold text-blue-600">{completedReferrals}</p>
+                      <p className="text-sm text-muted-foreground">Parrainages validés</p>
                     </CardContent>
                   </Card>
                 </div>
