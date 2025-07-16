@@ -112,6 +112,66 @@ export type Database = {
           },
         ]
       }
+      client_requests: {
+        Row: {
+          additional_notes: string | null
+          assigned_provider_id: string | null
+          budget_range: string | null
+          client_email: string
+          client_name: string
+          client_phone: string | null
+          created_at: string
+          form_response_id: string
+          id: string
+          location: string
+          preferred_date: string | null
+          preferred_time: string | null
+          service_description: string
+          service_type: string
+          status: string
+          updated_at: string
+          urgency_level: string | null
+        }
+        Insert: {
+          additional_notes?: string | null
+          assigned_provider_id?: string | null
+          budget_range?: string | null
+          client_email: string
+          client_name: string
+          client_phone?: string | null
+          created_at?: string
+          form_response_id: string
+          id?: string
+          location: string
+          preferred_date?: string | null
+          preferred_time?: string | null
+          service_description: string
+          service_type: string
+          status?: string
+          updated_at?: string
+          urgency_level?: string | null
+        }
+        Update: {
+          additional_notes?: string | null
+          assigned_provider_id?: string | null
+          budget_range?: string | null
+          client_email?: string
+          client_name?: string
+          client_phone?: string | null
+          created_at?: string
+          form_response_id?: string
+          id?: string
+          location?: string
+          preferred_date?: string | null
+          preferred_time?: string | null
+          service_description?: string
+          service_type?: string
+          status?: string
+          updated_at?: string
+          urgency_level?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
