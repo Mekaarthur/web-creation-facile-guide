@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import FileUpload from "@/components/FileUpload";
 import ProviderNotifications from "@/components/ProviderNotifications";
+import { ProviderAvailabilityCalendar } from "@/components/ProviderAvailabilityCalendar";
 import { ClientRequestsList } from "@/components/ClientRequestsList";
 import { Calendar, MapPin, Star, DollarSign, Clock, User, FileText, Settings, BarChart3, MessageSquare, Upload, CheckCircle, AlertCircle, XCircle, Camera, Check, X, Bell, Share2, Copy } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -28,7 +29,8 @@ const EspacePrestataire = () => {
     siret_number: "",
     first_name: "",
     last_name: "",
-    avatar_url: ""
+    avatar_url: "",
+    provider_id: ""
   });
   const [documents, setDocuments] = useState<any[]>([]);
   const [missions, setMissions] = useState<any[]>([]);
@@ -80,7 +82,8 @@ const EspacePrestataire = () => {
           siret_number: data.siret_number || "",
           first_name: userProfile?.first_name || "",
           last_name: userProfile?.last_name || "",
-          avatar_url: userProfile?.avatar_url || ""
+          avatar_url: userProfile?.avatar_url || "",
+          provider_id: data.id
         });
 
         // Charger les documents
@@ -429,10 +432,11 @@ const EspacePrestataire = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-9">
             <TabsTrigger value="profile">Profil</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="missions">Missions</TabsTrigger>
+            <TabsTrigger value="calendar">Calendrier</TabsTrigger>
             <TabsTrigger value="client-requests">Demandes</TabsTrigger>
             <TabsTrigger value="payments">Paiements</TabsTrigger>
             <TabsTrigger value="referral">Parrainage</TabsTrigger>
@@ -727,6 +731,11 @@ const EspacePrestataire = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Calendar Tab */}
+          <TabsContent value="calendar" className="space-y-6">
+            <ProviderAvailabilityCalendar providerId={profile.provider_id || ''} />
           </TabsContent>
 
           {/* Client Requests Tab */}

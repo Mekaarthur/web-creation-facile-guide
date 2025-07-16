@@ -90,7 +90,9 @@ export interface Service {
 
 export interface MatchingFilters {
   serviceId?: string;
+  serviceType?: string;
   location?: string;
+  urgency?: string;
   maxDistance?: number;
   minRating?: number;
   maxPrice?: number;

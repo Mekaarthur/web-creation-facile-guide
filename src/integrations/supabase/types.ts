@@ -262,6 +262,47 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_availability: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          is_available: boolean
+          provider_id: string
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          is_available?: boolean
+          provider_id: string
+          start_time: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          is_available?: boolean
+          provider_id?: string
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_availability_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provider_documents: {
         Row: {
           created_at: string
@@ -360,6 +401,51 @@ export type Database = {
           },
         ]
       }
+      provider_services: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          price_override: number | null
+          provider_id: string
+          service_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          price_override?: number | null
+          provider_id: string
+          service_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          price_override?: number | null
+          provider_id?: string
+          service_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_services_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_services_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       providers: {
         Row: {
           acceptance_rate: number | null
@@ -369,6 +455,7 @@ export type Database = {
           hourly_rate: number | null
           id: string
           is_verified: boolean
+          last_activity_at: string | null
           location: string | null
           missions_accepted: number | null
           missions_completed: number | null
@@ -387,6 +474,7 @@ export type Database = {
           hourly_rate?: number | null
           id?: string
           is_verified?: boolean
+          last_activity_at?: string | null
           location?: string | null
           missions_accepted?: number | null
           missions_completed?: number | null
@@ -405,6 +493,7 @@ export type Database = {
           hourly_rate?: number | null
           id?: string
           is_verified?: boolean
+          last_activity_at?: string | null
           location?: string | null
           missions_accepted?: number | null
           missions_completed?: number | null
@@ -500,7 +589,14 @@ export type Database = {
         Returns: string
       }
       get_matching_providers: {
-        Args: { p_service_type: string; p_location: string; p_limit?: number }
+        Args:
+          | { p_service_type: string; p_location: string; p_limit?: number }
+          | {
+              p_service_type: string
+              p_location: string
+              p_limit?: number
+              p_date_time?: string
+            }
         Returns: {
           provider_id: string
           business_name: string

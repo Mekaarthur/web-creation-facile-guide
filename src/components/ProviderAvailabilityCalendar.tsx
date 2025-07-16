@@ -8,17 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/hooks/use-toast";
-import { Clock, Calendar as CalendarIcon, Plus, X, Save } from 'lucide-react';
+import { Clock, Calendar as CalendarIcon, Plus, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-
-interface TimeSlot {
-  id?: string;
-  day_of_week: number;
-  start_time: string;
-  end_time: string;
-  is_available: boolean;
-}
+import type { ProviderAvailability } from '@/types/provider';
 
 interface ProviderAvailabilityProps {
   providerId: string;
@@ -34,14 +27,13 @@ const DAYS_OF_WEEK = [
   { value: 0, label: 'Dimanche' }
 ];
 
-export function ProviderAvailability({ providerId }: ProviderAvailabilityProps) {
+export function ProviderAvailabilityCalendar({ providerId }: ProviderAvailabilityProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
-  const [newSlot, setNewSlot] = useState<Partial<TimeSlot>>({
+  const [timeSlots, setTimeSlots] = useState<ProviderAvailability[]>([]);
+  const [newSlot, setNewSlot] = useState({
     day_of_week: 1,
     start_time: '09:00',
-    end_time: '17:00',
-    is_available: true
+    end_time: '17:00'
   });
   const [loading, setLoading] = useState(false);
 
@@ -51,7 +43,8 @@ export function ProviderAvailability({ providerId }: ProviderAvailabilityProps) 
 
   const loadAvailability = async () => {
     try {
-      const { data, error } = await supabase
+      // Utilisation du client brut pour accéder aux nouvelles tables
+      const { data, error } = await (supabase as any)
         .from('provider_availability')
         .select('*')
         .eq('provider_id', providerId)
@@ -81,11 +74,14 @@ export function ProviderAvailability({ providerId }: ProviderAvailabilityProps) 
 
     setLoading(true);
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('provider_availability')
         .insert([{
           provider_id: providerId,
-          ...newSlot
+          day_of_week: newSlot.day_of_week,
+          start_time: newSlot.start_time,
+          end_time: newSlot.end_time,
+          is_available: true
         }]);
 
       if (error) throw error;
@@ -94,8 +90,7 @@ export function ProviderAvailability({ providerId }: ProviderAvailabilityProps) 
       setNewSlot({
         day_of_week: 1,
         start_time: '09:00',
-        end_time: '17:00',
-        is_available: true
+        end_time: '17:00'
       });
 
       toast({
@@ -116,7 +111,7 @@ export function ProviderAvailability({ providerId }: ProviderAvailabilityProps) 
 
   const removeTimeSlot = async (slotId: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('provider_availability')
         .delete()
         .eq('id', slotId);
@@ -140,7 +135,7 @@ export function ProviderAvailability({ providerId }: ProviderAvailabilityProps) 
 
   const toggleSlotAvailability = async (slotId: string, currentStatus: boolean) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('provider_availability')
         .update({ is_available: !currentStatus })
         .eq('id', slotId);
@@ -209,7 +204,7 @@ export function ProviderAvailability({ providerId }: ProviderAvailabilityProps) 
               <div className="space-y-2">
                 <Label>Jour de la semaine</Label>
                 <Select
-                  value={newSlot.day_of_week?.toString()}
+                  value={newSlot.day_of_week.toString()}
                   onValueChange={(value) => setNewSlot({ ...newSlot, day_of_week: parseInt(value) })}
                 >
                   <SelectTrigger>
@@ -279,14 +274,14 @@ export function ProviderAvailability({ providerId }: ProviderAvailabilityProps) 
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => toggleSlotAvailability(slot.id!, slot.is_available)}
+                            onClick={() => toggleSlotAvailability(slot.id, slot.is_available)}
                           >
                             {slot.is_available ? "Désactiver" : "Activer"}
                           </Button>
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => removeTimeSlot(slot.id!)}
+                            onClick={() => removeTimeSlot(slot.id)}
                           >
                             <X className="w-4 h-4" />
                           </Button>
