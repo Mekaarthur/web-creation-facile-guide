@@ -45,13 +45,13 @@ const ServicesPackages = () => {
       description: "Garde, sorties éducatives, aide aux devoirs et organisation d'anniversaires pour vos enfants.",
       image: "/src/assets/service-childcare-education.jpg",
       services: [
-        { name: "Garde ponctuelle", description: "Garde d'enfant à domicile pour quelques heures", price: 15 },
-        { name: "Garde de nuit", description: "Garde d'enfant toute la nuit", price: 18 },
-        { name: "Garde d'urgence", description: "Garde d'enfant en cas d'urgence", price: 20 },
-        { name: "Sorties éducatives", description: "Accompagnement au musée, médiathèque, etc.", price: 17 },
-        { name: "Accompagnement scolaire", description: "Trajet école-maison-activités", price: 16 },
-        { name: "Aide aux devoirs", description: "Aide aux devoirs et préparation cartable", price: 18 },
-        { name: "Organisation anniversaire", description: "Pré-organisation d'anniversaire enfant", price: 25 }
+        { name: "Garde ponctuelle", description: "Garde d'enfant à domicile pour quelques heures", price: 22 },
+        { name: "Garde de nuit", description: "Garde d'enfant toute la nuit", price: 25 },
+        { name: "Garde d'urgence", description: "Garde d'enfant en cas d'urgence", price: 27 },
+        { name: "Sorties éducatives", description: "Accompagnement au musée, médiathèque, etc.", price: 24 },
+        { name: "Accompagnement scolaire", description: "Trajet école-maison-activités", price: 23 },
+        { name: "Aide aux devoirs", description: "Aide aux devoirs et préparation cartable", price: 25 },
+        { name: "Organisation anniversaire", description: "Pré-organisation d'anniversaire enfant", price: 30 }
       ],
       color: "primary",
       popular: false,
@@ -65,12 +65,12 @@ const ServicesPackages = () => {
       description: "Courses, récupération de colis, petits travaux et organisation pour alléger votre quotidien.",
       image: "/src/assets/service-house-logistics.jpg",
       services: [
-        { name: "Courses planifiées", description: "Courses hebdomadaires selon votre liste", price: 20 },
-        { name: "Courses express", description: "Courses urgentes en moins de 2h", price: 25 },
-        { name: "Récupération colis", description: "Récupération colis, pressing, cordonnerie", price: 18 },
-        { name: "Petits travaux", description: "Montage meuble simple, changement d'ampoule", price: 22 },
-        { name: "Garde d'animaux", description: "Garde courte d'animaux domestiques", price: 16 },
-        { name: "Rangement", description: "Rangement dressing, tri jouets", price: 20 }
+        { name: "Courses planifiées", description: "Courses hebdomadaires selon votre liste", price: 22 },
+        { name: "Courses express", description: "Courses urgentes en moins de 2h", price: 27 },
+        { name: "Récupération colis", description: "Récupération colis, pressing, cordonnerie", price: 24 },
+        { name: "Petits travaux", description: "Montage meuble simple, changement d'ampoule", price: 28 },
+        { name: "Garde d'animaux", description: "Garde courte d'animaux domestiques", price: 23 },
+        { name: "Rangement", description: "Rangement dressing, tri jouets", price: 25 }
       ],
       color: "accent",
       popular: true,
@@ -84,11 +84,11 @@ const ServicesPackages = () => {
       description: "Gestion de vos rendez-vous, démarches administratives et organisation d'événements familiaux.",
       image: "/src/assets/service-admin-support.jpg",
       services: [
-        { name: "Rendez-vous médicaux", description: "Prise et report de rendez-vous médicaux", price: 20 },
-        { name: "Dossiers administratifs", description: "Constitution et dépôt de dossiers CAF, CPAM", price: 25 },
-        { name: "Gestion d'agenda", description: "Gestion d'agenda partagé, rappels vaccins", price: 22 },
-        { name: "Organisation événements", description: "Organisation fête familiale, baby-shower", price: 30 },
-        { name: "Assistance administrative", description: "Gestion administrative complète", price: 28 }
+        { name: "Rendez-vous médicaux", description: "Prise et report de rendez-vous médicaux", price: 24 },
+        { name: "Dossiers administratifs", description: "Constitution et dépôt de dossiers CAF, CPAM", price: 28 },
+        { name: "Gestion d'agenda", description: "Gestion d'agenda partagé, rappels vaccins", price: 26 },
+        { name: "Organisation événements", description: "Organisation fête familiale, baby-shower", price: 32 },
+        { name: "Assistance administrative", description: "Gestion administrative complète", price: 30 }
       ],
       color: "primary",
       popular: false,
@@ -103,10 +103,10 @@ const ServicesPackages = () => {
       image: "/src/assets/service-travel-assistance.jpg",
       services: [
         { name: "Assistance pré-voyage", description: "Vérification documents, check-in en ligne", price: 25 },
-        { name: "Transfert aéroport", description: "Transfert domicile-aéroport, Fast-Track", price: 30 },
+        { name: "Transfert aéroport", description: "Transfert domicile-aéroport, Fast-Track", price: 32 },
         { name: "Veille de vols", description: "Veille vols, rebooking imprévu", price: 35 },
-        { name: "Travel-Kids", description: "Service Travel-Kids : kit enfant, poussette", price: 28 },
-        { name: "Préparation retour", description: "Récupération courses avant retour", price: 22 }
+        { name: "Travel-Kids", description: "Service Travel-Kids : kit enfant, poussette", price: 30 },
+        { name: "Préparation retour", description: "Récupération courses avant retour", price: 27 }
       ],
       color: "accent",
       popular: false,
@@ -138,10 +138,10 @@ const ServicesPackages = () => {
       description: "Promenade, soins et accompagnement pour vos compagnons à quatre pattes.",
       image: "/src/assets/service-pet-care.jpg",
       services: [
-        { name: "Promenade animaux", description: "Balade matinale et du soir", price: 15 },
+        { name: "Promenade animaux", description: "Balade matinale et du soir", price: 20 },
         { name: "Visite vétérinaire", description: "Accompagnement chez le vétérinaire", price: 25 },
-        { name: "Courses animaux", description: "Courses pour animaux (nourriture, accessoires)", price: 18 },
-        { name: "Garde d'animaux", description: "Garde ponctuelle d'animaux", price: 20 },
+        { name: "Courses animaux", description: "Courses pour animaux (nourriture, accessoires)", price: 22 },
+        { name: "Garde d'animaux", description: "Garde ponctuelle d'animaux", price: 24 },
         { name: "Toilettage", description: "Toilettage et soins de base", price: 30 }
       ],
       color: "primary",
@@ -156,11 +156,11 @@ const ServicesPackages = () => {
       description: "Accompagnement bienveillant et aide quotidienne pour nos aînés.",
       image: "/src/assets/service-seniors-assistance.jpg",
       services: [
-        { name: "Aide quotidienne", description: "Aide aux activités quotidiennes", price: 22 },
-        { name: "Accompagnement médical", description: "Accompagnement aux rendez-vous médicaux", price: 25 },
-        { name: "Courses seniors", description: "Courses et commissions", price: 20 },
-        { name: "Compagnie", description: "Compagnie et conversation", price: 18 },
-        { name: "Aide mobilité", description: "Aide à la mobilité et aux repas", price: 26 }
+        { name: "Aide quotidienne", description: "Aide aux activités quotidiennes", price: 24 },
+        { name: "Accompagnement médical", description: "Accompagnement aux rendez-vous médicaux", price: 27 },
+        { name: "Courses seniors", description: "Courses et commissions", price: 26 },
+        { name: "Compagnie", description: "Compagnie et conversation", price: 24 },
+        { name: "Aide mobilité", description: "Aide à la mobilité et aux repas", price: 28 }
       ],
       color: "accent",
       popular: false,
