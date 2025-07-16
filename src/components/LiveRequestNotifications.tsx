@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Bell, X, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
 
 interface LiveNotification {
   id: string;
@@ -20,7 +19,6 @@ export const LiveRequestNotifications = () => {
   const [notifications, setNotifications] = useState<LiveNotification[]>([]);
   const [isVisible, setIsVisible] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Écouter les nouvelles demandes en temps réel
@@ -102,7 +100,8 @@ export const LiveRequestNotifications = () => {
   }, [toast]);
 
   const handleNotificationClick = (notification: LiveNotification) => {
-    navigate('/gestion-demandes');
+    // Rediriger vers la page de gestion des demandes via window.location
+    window.location.href = '/gestion-demandes';
     removeNotification(notification.id);
   };
 
