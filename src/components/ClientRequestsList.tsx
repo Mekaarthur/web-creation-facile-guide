@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, MapPin, Phone, Mail, DollarSign, AlertCircle } from "lucide-react";
+import { Calendar, Clock, MapPin, Phone, Mail, DollarSign, AlertCircle, Users, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ClientRequest {
   id: string;
@@ -26,6 +28,9 @@ interface ClientRequest {
 export const ClientRequestsList = () => {
   const [requests, setRequests] = useState<ClientRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [matchingProviders, setMatchingProviders] = useState<any[]>([]);
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+  const [services, setServices] = useState<any[]>([]);
   const { toast } = useToast();
 
   const fetchRequests = async () => {
@@ -49,8 +54,37 @@ export const ClientRequestsList = () => {
     }
   };
 
+  const fetchServices = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('services')
+        .select('*')
+        .eq('is_active', true);
+      
+      if (error) throw error;
+      setServices(data || []);
+    } catch (error) {
+      console.error('Error fetching services:', error);
+    }
+  };
+
+  const fetchMatchingProviders = async (serviceType: string, location: string, urgency: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('match-providers', {
+        body: { serviceType, location, urgency }
+      });
+      
+      if (error) throw error;
+      return data.providers || [];
+    } catch (error) {
+      console.error('Error matching providers:', error);
+      return [];
+    }
+  };
+
   useEffect(() => {
     fetchRequests();
+    fetchServices();
 
     // Subscribe to real-time updates
     const channel = supabase
@@ -91,6 +125,41 @@ export const ClientRequestsList = () => {
       case 'normal': return 'text-green-600';
       case 'low': return 'text-gray-600';
       default: return 'text-gray-600';
+    }
+  };
+
+  const handleViewProviders = async (request: ClientRequest) => {
+    setSelectedRequestId(request.id);
+    const providers = await fetchMatchingProviders(
+      request.service_type, 
+      request.location, 
+      request.urgency_level
+    );
+    setMatchingProviders(providers);
+  };
+
+  const handleConvertToBooking = async (requestId: string, providerId: string, serviceId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('convert-request-to-booking', {
+        body: { requestId, providerId, serviceId }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Mission créée",
+        description: "La demande a été convertie en mission avec succès",
+      });
+      
+      fetchRequests(); // Refresh the list
+      setSelectedRequestId(null); // Close dialog
+    } catch (error) {
+      console.error('Error converting request:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de créer la mission",
+        variant: "destructive",
+      });
     }
   };
 
@@ -226,14 +295,87 @@ export const ClientRequestsList = () => {
                     Reçu le {new Date(request.created_at).toLocaleDateString('fr-FR')} à {new Date(request.created_at).toLocaleTimeString('fr-FR')}
                   </span>
                   
-                  {request.status === 'new' && (
-                    <Button 
-                      onClick={() => handleAcceptRequest(request.id)}
-                      size="sm"
-                    >
-                      Accepter la demande
-                    </Button>
-                  )}
+                  <div className="flex gap-2">
+                    {request.status === 'new' && (
+                      <>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button 
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleViewProviders(request)}
+                            >
+                              <Users className="h-4 w-4 mr-1" />
+                              Voir prestataires
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-4xl">
+                            <DialogHeader>
+                              <DialogTitle>Prestataires disponibles</DialogTitle>
+                            </DialogHeader>
+                            
+                            <div className="max-h-96 overflow-y-auto space-y-4">
+                              {matchingProviders.length === 0 ? (
+                                <p className="text-center text-muted-foreground py-8">
+                                  Aucun prestataire trouvé pour cette demande
+                                </p>
+                              ) : (
+                                matchingProviders.map((provider) => (
+                                  <Card key={provider.provider_id} className="p-4">
+                                    <div className="flex justify-between items-start">
+                                      <div className="flex-1">
+                                        <h4 className="font-semibold">{provider.business_name || 'Prestataire'}</h4>
+                                        <div className="flex items-center gap-2 mt-1">
+                                          <Badge variant="outline">Note: {provider.rating}/5</Badge>
+                                          <Badge variant="secondary">Match: {provider.match_score}%</Badge>
+                                          {provider.recommended && (
+                                            <Badge className="bg-green-500">
+                                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                                              Recommandé
+                                            </Badge>
+                                          )}
+                                        </div>
+                                        <p className="text-sm text-muted-foreground mt-1">
+                                          <MapPin className="h-3 w-3 inline mr-1" />
+                                          {provider.location}
+                                        </p>
+                                      </div>
+                                      
+                                      <div className="flex flex-col gap-2">
+                                        <Select onValueChange={(serviceId) => {
+                                          if (serviceId && selectedRequestId) {
+                                            handleConvertToBooking(selectedRequestId, provider.provider_id, serviceId);
+                                          }
+                                        }}>
+                                          <SelectTrigger className="w-48">
+                                            <SelectValue placeholder="Créer mission" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            {services.map((service) => (
+                                              <SelectItem key={service.id} value={service.id}>
+                                                {service.name} - {service.price_per_hour}€/h
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                    </div>
+                                  </Card>
+                                ))
+                              )}
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                        
+                        <Button 
+                          onClick={() => handleAcceptRequest(request.id)}
+                          size="sm"
+                        >
+                          Accepter
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>

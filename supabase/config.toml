@@ -42,6 +42,12 @@ enabled = true
 [functions.google-forms-webhook]
 verify_jwt = false
 
+[functions.match-providers]
+verify_jwt = false
+
+[functions.convert-request-to-booking]
+verify_jwt = false
+
 [functions.send-notification]
 verify_jwt = false
 

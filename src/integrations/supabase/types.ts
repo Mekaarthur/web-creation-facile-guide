@@ -431,9 +431,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_booking_from_request: {
+        Args: { request_id: string; provider_id: string; service_id: string }
+        Returns: string
+      }
       generate_referral_code: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_matching_providers: {
+        Args: { p_service_type: string; p_location: string; p_limit?: number }
+        Returns: {
+          provider_id: string
+          business_name: string
+          rating: number
+          location: string
+          match_score: number
+        }[]
       }
     }
     Enums: {
