@@ -34,11 +34,7 @@ export const useProviderMatching = () => {
       let query = (supabase as any)
         .from('providers')
         .select(`
-          *,
-          profiles(first_name, last_name, avatar_url),
-          provider_services(service_id, price_override),
-          provider_availability(day_of_week, start_time, end_time, is_available),
-          provider_documents(document_type, file_name, is_verified)
+          *
         `)
         .eq('is_verified', true);
 

@@ -1,204 +1,178 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
+import { Eye, EyeOff, LogIn, UserPlus } from 'lucide-react';
 
-const Auth = () => {
+export const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    firstName: '',
+    lastName: ''
+  });
+  const [error, setError] = useState('');
+  
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     // Vérifier si l'utilisateur est déjà connecté
-    const checkAuth = async () => {
+    const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate("/");
+        navigate('/');
       }
     };
-    checkAuth();
+    checkUser();
   }, [navigate]);
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
     try {
-      const redirectUrl = `${window.location.origin}/`;
-      
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-          }
-        }
-      });
-
-      if (error) {
-        toast({
-          title: "Erreur d'inscription",
-          description: error.message,
-          variant: "destructive",
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
         });
+
+        if (error) throw error;
+
+        toast({
+          title: "Connexion réussie",
+          description: "Bienvenue sur Bikawô !",
+        });
+        navigate('/');
       } else {
+        const { error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              first_name: formData.firstName,
+              last_name: formData.lastName,
+            }
+          }
+        });
+
+        if (error) throw error;
+
         toast({
           title: "Inscription réussie",
           description: "Vérifiez votre email pour confirmer votre compte.",
         });
       }
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Une erreur inattendue s'est produite.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        toast({
-          title: "Erreur de connexion",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Connexion réussie",
-          description: "Vous êtes maintenant connecté.",
-        });
-        navigate("/");
-      }
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Une erreur inattendue s'est produite.",
-        variant: "destructive",
-      });
+    } catch (error: any) {
+      console.error('Erreur d\'authentification:', error);
+      setError(error.message || 'Une erreur est survenue');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-subtle px-4">
-      <Card className="w-full max-w-md shadow-elegant">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center">
-            {isLogin ? "Connexion" : "Inscription"}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold">
+            {isLogin ? 'Connexion' : 'Inscription'}
           </CardTitle>
-          <CardDescription className="text-center">
-            {isLogin
-              ? "Connectez-vous à votre compte"
-              : "Créez votre compte Assist'mw"}
+          <CardDescription>
+            {isLogin 
+              ? 'Connectez-vous à votre compte Bikawô' 
+              : 'Créez votre compte Bikawô'
+            }
           </CardDescription>
         </CardHeader>
+        
         <CardContent>
-          <form onSubmit={isLogin ? handleSignIn : handleSignUp} className="space-y-4">
+          <Tabs value={isLogin ? 'login' : 'signup'} className="mb-6">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger 
+                value="login" 
+                onClick={() => setIsLogin(true)}
+              >
+                Connexion
+              </TabsTrigger>
+              <TabsTrigger 
+                value="signup" 
+                onClick={() => setIsLogin(false)}
+              >
+                Inscription
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="civility">Civilité</Label>
-                  <Select required={!isLogin}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionnez votre civilité" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="mr">Monsieur</SelectItem>
-                      <SelectItem value="mrs">Madame</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="firstName">Prénom</Label>
+                  <Input
+                    id="firstName"
+                    type="text"
+                    value={formData.firstName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                    required={!isLogin}
+                    placeholder="Votre prénom"
+                  />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">Prénom</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="firstName"
-                        type="text"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="Prénom"
-                        className="pl-10"
-                        required={!isLogin}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Nom</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="lastName"
-                        type="text"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        placeholder="Nom"
-                        className="pl-10"
-                        required={!isLogin}
-                      />
-                    </div>
-                  </div>
+                <div>
+                  <Label htmlFor="lastName">Nom</Label>
+                  <Input
+                    id="lastName"
+                    type="text"
+                    value={formData.lastName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                    required={!isLogin}
+                    placeholder="Votre nom"
+                  />
                 </div>
               </div>
             )}
 
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="votre@email.com"
-                  className="pl-10"
-                  required
-                />
-              </div>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                required
+                placeholder="votre@email.com"
+              />
             </div>
 
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="password">Mot de passe</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="pl-10 pr-10"
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password}
+                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                   required
+                  placeholder="••••••••"
+                  minLength={6}
                 />
                 <Button
                   type="button"
@@ -207,35 +181,35 @@ const Auth = () => {
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
-                  )}
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
               </div>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              variant="hero"
-              size="lg"
-              disabled={loading}
-            >
-              {loading ? "Chargement..." : (isLogin ? "Se connecter" : "S'inscrire")}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? (
+                'Chargement...'
+              ) : isLogin ? (
+                <>
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Se connecter
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  S'inscrire
+                </>
+              )}
             </Button>
           </form>
 
           <div className="mt-6 text-center">
             <Button
               variant="link"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-sm"
+              onClick={() => navigate('/')}
+              className="text-sm text-muted-foreground"
             >
-              {isLogin
-                ? "Pas de compte ? Inscrivez-vous"
-                : "Déjà un compte ? Connectez-vous"}
+              Retour à l'accueil
             </Button>
           </div>
         </CardContent>
@@ -243,5 +217,3 @@ const Auth = () => {
     </div>
   );
 };
-
-export default Auth;
