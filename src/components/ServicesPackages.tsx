@@ -189,7 +189,7 @@ const ServicesPackages = () => {
   const pricingOptions = [
     {
       title: "À la carte",
-      price: "25€/h",
+      price: "25€",
       description: "Choisir n'importe quel service Assist selon vos besoins ponctuels",
       features: ["Facturation à l'heure", "Tous services Assist", "Réservation simple"],
       color: "outline"
@@ -204,7 +204,7 @@ const ServicesPackages = () => {
     },
     {
       title: "Mensuel", 
-      price: "40h - 880€",
+      price: "880€",
       description: "Combinaisons illimitées avec suivi mensuel personnalisé",
       features: ["40h/mois", "Accès à tous les services", "Suivi mensuel dédié"],
       color: "accent"
