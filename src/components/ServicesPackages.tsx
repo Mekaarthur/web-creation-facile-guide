@@ -55,7 +55,7 @@ const ServicesPackages = () => {
       ],
       color: "primary",
       popular: false,
-      price: "À partir de 15€/h"
+      price: "À partir de 22€/h"
     },
     {
       id: "maison",
@@ -74,7 +74,7 @@ const ServicesPackages = () => {
       ],
       color: "accent",
       popular: true,
-      price: "À partir de 20€/h"
+      price: "À partir de 22€/h"
     },
     {
       id: "vie",
@@ -92,7 +92,7 @@ const ServicesPackages = () => {
       ],
       color: "primary",
       popular: false,
-      price: "À partir de 20€/h"
+      price: "24€/h"
     },
     {
       id: "travel",
@@ -110,7 +110,7 @@ const ServicesPackages = () => {
       ],
       color: "accent",
       popular: false,
-      price: "À partir de 25€/h"
+      price: "25€/h"
     },
     {
       id: "plus",
@@ -146,7 +146,7 @@ const ServicesPackages = () => {
       ],
       color: "primary",
       popular: false,
-      price: "À partir de 15€/h"
+      price: "À partir de 20€/h"
     },
     {
       id: "seniors",
@@ -164,7 +164,7 @@ const ServicesPackages = () => {
       ],
       color: "accent",
       popular: false,
-      price: "À partir de 22€/h"
+      price: "24€/h"
     },
     {
       id: "pro",
@@ -189,14 +189,14 @@ const ServicesPackages = () => {
   const pricingOptions = [
     {
       title: "À la carte",
-      price: "25-30€/h",
+      price: "25€/h",
       description: "Choisir n'importe quel service Assist selon vos besoins ponctuels",
       features: ["Facturation à l'heure", "Tous services Assist", "Réservation simple"],
       color: "outline"
     },
     {
       title: "Hebdo",
-      price: "10h - 240€",
+      price: "10h - 220€",
       description: "Panier libre d'heures combinant Kids + Maison + Travel selon vos besoins",
       features: ["Formule 10h/semaine", "Combinaisons illimitées", "Suivi personnalisé"],
       color: "primary",
@@ -204,7 +204,7 @@ const ServicesPackages = () => {
     },
     {
       title: "Mensuel", 
-      price: "40h - 900€",
+      price: "40h - 880€",
       description: "Combinaisons illimitées avec suivi mensuel personnalisé",
       features: ["40h/mois", "Accès à tous les services", "Suivi mensuel dédié"],
       color: "accent"
