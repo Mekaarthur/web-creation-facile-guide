@@ -36,7 +36,7 @@ const Contact = () => {
     {
       icon: Mail,
       title: "Email",
-      content: "contact@assistme.fr",
+      content: "contact@bikawo.com",
       description: "Réponse sous 1h",
       color: "accent"
     },

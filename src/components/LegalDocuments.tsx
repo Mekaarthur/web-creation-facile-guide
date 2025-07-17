@@ -90,7 +90,7 @@ Conformément au RGPD, vous disposez des droits suivants :
 Nous mettons en place des mesures techniques et organisationnelles pour protéger vos données.
 
 6. CONTACT
-Pour toute question : contact@assistme.fr`,
+Pour toute question : contact@bikawo.com`,
       lastUpdate: "2024-01-15"
     },
     mentions: {
@@ -111,7 +111,7 @@ France
 
 CONTACT
 Téléphone : +33 1 23 45 67 89
-Email : contact@assistme.fr
+Email : contact@bikawo.com
 
 DIRECTEUR DE PUBLICATION
 Jean Dupont
