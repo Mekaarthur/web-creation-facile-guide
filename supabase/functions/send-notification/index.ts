@@ -57,9 +57,9 @@ const getEmailTemplate = (type: string, details: any) => {
               </p>
               
               <div style="text-align: center; margin-top: 30px;">
-                <p style="color: #999; font-size: 12px;">
-                  Cet email a été envoyé par Assist'mw<br>
-                  Si vous avez des questions, contactez-nous à contact@assistmw.com
+                 <p style="color: #999; font-size: 12px;">
+                   Cet email a été envoyé par Assist'mw<br>
+                   Si vous avez des questions, contactez-nous à contact@bikawo.com
                 </p>
               </div>
             </div>
@@ -219,7 +219,7 @@ const handler = async (req: Request): Promise<Response> => {
     const template = getEmailTemplate(type, bookingDetails);
 
     const emailResponse = await resend.emails.send({
-      from: "Assist'mw <notifications@assistmw.com>",
+      from: "Assist'mw <notifications@bikawo.com>",
       to: [recipientEmail],
       subject: template.subject,
       html: template.html,
