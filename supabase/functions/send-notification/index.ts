@@ -219,7 +219,7 @@ const handler = async (req: Request): Promise<Response> => {
     const template = getEmailTemplate(type, bookingDetails);
 
     const emailResponse = await resend.emails.send({
-      from: "Assist'mw <onboarding@resend.dev>",
+      from: "Assist'mw <notifications@assistmw.com>",
       to: [recipientEmail],
       subject: template.subject,
       html: template.html,
