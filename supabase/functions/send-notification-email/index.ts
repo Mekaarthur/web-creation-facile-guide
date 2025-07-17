@@ -150,7 +150,7 @@ serve(async (req) => {
     const emailTemplate = getEmailTemplate(type, data);
 
     const emailResponse = await resend.emails.send({
-      from: "Assist'mw <notifications@bikawo.com>",
+      from: "Assist'mw <contact@bikawo.com>",
       to: [to],
       subject: emailTemplate.subject,
       html: emailTemplate.html,
