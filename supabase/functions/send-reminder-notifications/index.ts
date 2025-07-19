@@ -198,15 +198,15 @@ const handler = async (req: Request): Promise<Response> => {
           .insert([
             {
               user_id: booking.client_id,
-              title: 'Rappel : Service demain',
-              message: `Votre service ${booking.services.name} est prévu demain à ${booking.start_time}`,
+              title: 'RAPPEL BIKAWO',
+              message: `RAPPEL : vous avez BIKAWO demain à ${booking.start_time} pour ${booking.services.name}.`,
               type: 'booking_reminder',
               booking_id: booking.id
             },
             {
               user_id: booking.provider_id,
-              title: 'Rappel : Mission demain',
-              message: `Votre mission ${booking.services.name} est prévue demain à ${booking.start_time}`,
+              title: 'RAPPEL BIKAWO',
+              message: `RAPPEL : vous avez BIKAWO demain à ${booking.start_time} pour ${booking.services.name}.`,
               type: 'booking_reminder',
               booking_id: booking.id
             }
