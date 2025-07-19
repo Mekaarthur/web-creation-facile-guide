@@ -110,7 +110,7 @@ SIÈGE SOCIAL
 France
 
 CONTACT
-Téléphone : +33 1 23 45 67 89
+Téléphone : 06 09 08 53 90
 Email : contact@bikawo.com
 
 DIRECTEUR DE PUBLICATION

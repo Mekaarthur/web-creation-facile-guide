@@ -29,7 +29,7 @@ const Contact = () => {
     {
       icon: Phone,
       title: "Téléphone",
-      content: "+33 1 23 45 67 89",
+      content: "06 09 08 53 90",
       description: "Lun-Dim, 24h/24",
       color: "primary"
     },

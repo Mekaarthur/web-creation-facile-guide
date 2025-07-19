@@ -52,7 +52,7 @@ const Navbar = () => {
             <Button 
               variant="ghost" 
               size="sm"
-              onClick={() => window.open('tel:+33123456789', '_self')}
+              onClick={() => window.open('tel:0609085390', '_self')}
             >
               <Phone className="w-4 h-4 mr-2" />
               Appeler
@@ -108,7 +108,7 @@ const Navbar = () => {
                 variant="ghost" 
                 size="sm" 
                 className="w-full"
-                onClick={() => window.open('tel:+33123456789', '_self')}
+                onClick={() => window.open('tel:0609085390', '_self')}
               >
                 <Phone className="w-4 h-4 mr-2" />
                 Appeler

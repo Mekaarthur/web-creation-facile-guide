@@ -39,7 +39,7 @@ const ChatBot = () => {
     setTimeout(() => {
       const botResponse = {
         id: messages.length + 2,
-        text: "Merci pour votre message ! Un de nos conseillers va vous recontacter dans les plus brefs délais. En attendant, vous pouvez nous appeler au 01 23 45 67 89.",
+        text: "Merci pour votre message ! Un de nos conseillers va vous recontacter dans les plus brefs délais. En attendant, vous pouvez nous appeler au 06 09 08 53 90.",
         isBot: true,
         timestamp: new Date()
       };
@@ -149,7 +149,7 @@ const ChatBot = () => {
               <div className="flex justify-between text-xs text-muted-foreground">
                 <div className="flex items-center space-x-1">
                   <Phone className="w-3 h-3" />
-                  <span>01 23 45 67 89</span>
+                  <span>06 09 08 53 90</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <Clock className="w-3 h-3" />
