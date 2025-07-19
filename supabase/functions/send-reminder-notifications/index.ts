@@ -199,14 +199,14 @@ const handler = async (req: Request): Promise<Response> => {
             {
               user_id: booking.client_id,
               title: 'RAPPEL BIKAWO',
-              message: `RAPPEL : vous avez BIKAWO demain à ${booking.start_time} pour ${booking.services.name}.`,
+              message: `RAPPEL : vous avez BIKAWO demain à ${booking.start_time} pour ${booking.services.name}. avec tout notre amour BIKALOVE.`,
               type: 'booking_reminder',
               booking_id: booking.id
             },
             {
               user_id: booking.provider_id,
               title: 'RAPPEL BIKAWO',
-              message: `RAPPEL : vous avez BIKAWO demain à ${booking.start_time} pour ${booking.services.name}.`,
+              message: `RAPPEL : vous avez BIKAWO demain à ${booking.start_time} pour ${booking.services.name}. avec tout notre amour BIKALOVE.`,
               type: 'booking_reminder',
               booking_id: booking.id
             }
