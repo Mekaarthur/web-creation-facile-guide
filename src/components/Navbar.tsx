@@ -1,9 +1,9 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { Button } from "@/components/ui/button";
 import { Menu, X, MessageCircle, Phone, LogOut, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -37,13 +37,23 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-10">
             {navItems.map((item) => (
-              <a
-                key={item.name}
-                href={item.href}
-                className="text-foreground hover:text-primary transition-all duration-300 font-semibold text-base tracking-wide hover:scale-105"
-              >
-                {item.name}
-              </a>
+              item.href.startsWith('/#') ? (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  className="text-foreground hover:text-primary transition-all duration-300 font-semibold text-base tracking-wide hover:scale-105"
+                >
+                  {item.name}
+                </a>
+              ) : (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className="text-foreground hover:text-primary transition-all duration-300 font-semibold text-base tracking-wide hover:scale-105"
+                >
+                  {item.name}
+                </Link>
+              )
             ))}
           </div>
 
@@ -94,14 +104,25 @@ const Navbar = () => {
         <div className="md:hidden bg-white border-t border-border animate-fade-in">
           <div className="px-4 pt-2 pb-3 space-y-1">
             {navItems.map((item) => (
-              <a
-                key={item.name}
-                href={item.href}
-                className="block px-3 py-2 text-foreground hover:text-primary hover:bg-muted rounded-md transition-colors duration-300"
-                onClick={() => setIsOpen(false)}
-              >
-                {item.name}
-              </a>
+              item.href.startsWith('/#') ? (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  className="block px-3 py-2 text-foreground hover:text-primary hover:bg-muted rounded-md transition-colors duration-300"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {item.name}
+                </a>
+              ) : (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className="block px-3 py-2 text-foreground hover:text-primary hover:bg-muted rounded-md transition-colors duration-300"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              )
             ))}
             <div className="pt-4 space-y-2">
               <Button 
