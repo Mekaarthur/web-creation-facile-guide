@@ -13,6 +13,7 @@ import NousRecrutons from "./pages/NousRecrutons";
 import Admin from "./pages/Admin";
 import { GestionDemandes } from "./pages/GestionDemandes";
 import ContactPage from "./pages/Contact";
+import ServicesPage from "./pages/Services";
 import Aide from "./pages/Aide";
 import AProposDeNous from "./pages/AProposDeNous";
 import NotFound from "./pages/NotFound";
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/espace-prestataire" element={<EspacePrestataire />} />
             <Route path="/nous-recrutons" element={<NousRecrutons />} />
             <Route path="/gestion-demandes" element={<GestionDemandes />} />
+            <Route path="/services" element={<ServicesPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/aide" element={<Aide />} />
             <Route path="/a-propos-de-nous" element={<AProposDeNous />} />
