@@ -25,7 +25,6 @@ const Index = () => {
       <ReferralProgram />
       <Testimonials />
       <FAQ />
-      <Contact />
       <Footer />
       <ChatBot />
     </div>
