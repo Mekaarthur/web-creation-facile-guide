@@ -3,6 +3,16 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+
+// Import des images
+import serviceChildcareEducation from "@/assets/service-childcare-education.jpg";
+import serviceHouseLogistics from "@/assets/service-house-logistics.jpg";
+import serviceAdminSupport from "@/assets/service-admin-support.jpg";
+import serviceTravelAssistance from "@/assets/service-travel-assistance.jpg";
+import servicePremiumConcierge from "@/assets/service-premium-concierge.jpg";
+import servicePetCare from "@/assets/service-pet-care.jpg";
+import serviceSeniorsAssistance from "@/assets/service-seniors-assistance.jpg";
+import serviceBusinessExecutive from "@/assets/service-business-executive.jpg";
 import { 
   Baby, 
   Home, 
@@ -43,7 +53,7 @@ const ServicesPackages = () => {
       title: "Bika Kids",
       subtitle: "Enfants & Parentalité",
       description: "Garde, sorties éducatives, aide aux devoirs et organisation d'anniversaires pour vos enfants.",
-      image: "/src/assets/service-childcare-education.jpg",
+      image: serviceChildcareEducation,
       services: [
         { name: "Garde ponctuelle", description: "Garde d'enfant à domicile pour quelques heures", price: 22 },
         { name: "Garde de nuit", description: "Garde d'enfant toute la nuit", price: 25 },
@@ -63,7 +73,7 @@ const ServicesPackages = () => {
       title: "Bika Maison",
       subtitle: "Logistique quotidienne",
       description: "Courses, récupération de colis, petits travaux et organisation pour alléger votre quotidien.",
-      image: "/src/assets/service-house-logistics.jpg",
+      image: serviceHouseLogistics,
       services: [
         { name: "Courses planifiées", description: "Courses hebdomadaires selon votre liste", price: 22 },
         { name: "Courses express", description: "Courses urgentes en moins de 2h", price: 27 },
@@ -82,7 +92,7 @@ const ServicesPackages = () => {
       title: "Bika Vie",
       subtitle: "Conciergerie & Administration",
       description: "Gestion de vos rendez-vous, démarches administratives et organisation d'événements familiaux.",
-      image: "/src/assets/service-admin-support.jpg",
+      image: serviceAdminSupport,
       services: [
         { name: "Rendez-vous médicaux", description: "Prise et report de rendez-vous médicaux", price: 24 },
         { name: "Dossiers administratifs", description: "Constitution et dépôt de dossiers CAF, CPAM", price: 28 },
@@ -100,7 +110,7 @@ const ServicesPackages = () => {
       title: "Bika Travel",
       subtitle: "Assistance Voyageurs",
       description: "Accompagnement complet pour vos voyages : avant, pendant et après votre déplacement.",
-      image: "/src/assets/service-travel-assistance.jpg",
+      image: serviceTravelAssistance,
       services: [
         { name: "Assistance pré-voyage", description: "Vérification documents, check-in en ligne", price: 25 },
         { name: "Transfert aéroport", description: "Transfert domicile-aéroport, Fast-Track", price: 32 },
@@ -118,7 +128,7 @@ const ServicesPackages = () => {
       title: "Bika Plus",
       subtitle: "Premium 7j/7",
       description: "Service haut de gamme avec Chef Family Officer dédié et assistance prioritaire.",
-      image: "/src/assets/service-premium-concierge.jpg",
+      image: servicePremiumConcierge,
       services: [
         { name: "Chef Family Officer", description: "Chef Family Officer dédié", price: 0 },
         { name: "Ligne prioritaire", description: "Ligne prioritaire + WhatsApp instantané", price: 0 },
@@ -136,7 +146,7 @@ const ServicesPackages = () => {
       title: "Bika Animals",
       subtitle: "Services pour animaux",
       description: "Promenade, soins et accompagnement pour vos compagnons à quatre pattes.",
-      image: "/src/assets/service-pet-care.jpg",
+      image: servicePetCare,
       services: [
         { name: "Promenade animaux", description: "Balade matinale et du soir", price: 20 },
         { name: "Visite vétérinaire", description: "Accompagnement chez le vétérinaire", price: 25 },
@@ -154,7 +164,7 @@ const ServicesPackages = () => {
       title: "Bika Personnes Âgées",
       subtitle: "Assistance seniors",
       description: "Accompagnement bienveillant et aide quotidienne pour nos aînés.",
-      image: "/src/assets/service-seniors-assistance.jpg",
+      image: serviceSeniorsAssistance,
       services: [
         { name: "Aide quotidienne", description: "Aide aux activités quotidiennes", price: 24 },
         { name: "Accompagnement médical", description: "Accompagnement aux rendez-vous médicaux", price: 27 },
@@ -172,7 +182,7 @@ const ServicesPackages = () => {
       title: "Bika Pro",
       subtitle: "Assistance Entreprise",
       description: "Solutions d'assistance administrative et executive pour votre entreprise.",
-      image: "/src/assets/service-business-executive.jpg",
+      image: serviceBusinessExecutive,
       services: [
         { name: "Assistant administratif", description: "Assistants administratifs externalisés", price: 35 },
         { name: "Executive assistant", description: "Executive assistant à la carte", price: 45 },
