@@ -1,11 +1,8 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
-import About from "@/components/About";
 import Testimonials from "@/components/Testimonials";
-import FAQ from "@/components/FAQ";
 import Footer from "@/components/Footer";
 import ChatBot from "@/components/ChatBot";
-import ReferralProgram from "@/components/ReferralProgram";
 import InnovativeFeatures from "@/components/InnovativeFeatures";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -53,10 +50,7 @@ const Index = () => {
       </section>
 
       <InnovativeFeatures />
-      <About />
-      <ReferralProgram />
       <Testimonials />
-      <FAQ />
       <Footer />
       <ChatBot />
     </div>

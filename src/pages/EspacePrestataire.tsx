@@ -12,7 +12,8 @@ import FileUpload from "@/components/FileUpload";
 import ProviderNotifications from "@/components/ProviderNotifications";
 import { ProviderAvailabilityCalendar } from "@/components/ProviderAvailabilityCalendar";
 import { ClientRequestsList } from "@/components/ClientRequestsList";
-import { Calendar, MapPin, Star, DollarSign, Clock, User, FileText, Settings, BarChart3, MessageSquare, Upload, CheckCircle, AlertCircle, XCircle, Camera, Check, X, Bell, Share2, Copy } from "lucide-react";
+import { Calendar, MapPin, Star, DollarSign, Clock, User, FileText, Settings, BarChart3, MessageSquare, Upload, CheckCircle, AlertCircle, XCircle, Camera, Check, X, Bell, Share2, Copy, UserPlus } from "lucide-react";
+import ReferralProgram from "@/components/ReferralProgram";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -813,94 +814,7 @@ const EspacePrestataire = () => {
 
           {/* Parrainage Tab */}
           <TabsContent value="referral" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5" />
-                  Programme de parrainage
-                </CardTitle>
-                <CardDescription>
-                  Parrainez de nouveaux prestataires et gagnez des récompenses
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                  <h4 className="font-semibold text-primary mb-2">Votre code de parrainage</h4>
-                  <div className="flex items-center gap-2">
-                    <Input 
-                      value={referralCode} 
-                      readOnly 
-                      className="font-mono font-bold text-lg bg-background"
-                    />
-                    <Button 
-                      size="sm"
-                      onClick={() => {
-                        navigator.clipboard.writeText(referralCode);
-                        toast({
-                          title: "Code copié",
-                          description: "Votre code de parrainage a été copié dans le presse-papiers",
-                        });
-                      }}
-                      className="flex items-center gap-2"
-                    >
-                      <Copy className="w-4 h-4" />
-                      Copier
-                    </Button>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Partagez ce code avec vos contacts pour gagner 50€ par nouveau prestataire inscrit
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <p className="text-2xl font-bold text-primary">{activeReferrals}</p>
-                      <p className="text-sm text-muted-foreground">Parrainages actifs</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <p className="text-2xl font-bold text-green-600">{referralEarnings}€</p>
-                      <p className="text-sm text-muted-foreground">Gains parrainage</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <p className="text-2xl font-bold text-blue-600">{completedReferrals}</p>
-                      <p className="text-sm text-muted-foreground">Parrainages validés</p>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                <div className="space-y-4">
-                  <h4 className="font-semibold">Comment ça marche ?</h4>
-                  <div className="grid gap-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">1</div>
-                      <div>
-                        <p className="font-medium">Partagez votre code</p>
-                        <p className="text-sm text-muted-foreground">Envoyez votre code de parrainage à vos contacts</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">2</div>
-                      <div>
-                        <p className="font-medium">Inscription du filleul</p>
-                        <p className="text-sm text-muted-foreground">Votre contact s'inscrit avec votre code</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">3</div>
-                      <div>
-                        <p className="font-medium">Recevez votre récompense</p>
-                        <p className="text-sm text-muted-foreground">Gagnez 50€ dès sa première mission validée</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <ReferralProgram />
           </TabsContent>
 
           {/* Settings Tab */}

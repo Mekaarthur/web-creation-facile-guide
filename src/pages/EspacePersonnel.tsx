@@ -3,13 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, CreditCard, Bell, History, FileText, UserRound, Lock, User, Settings } from "lucide-react";
+import { Calendar, Clock, CreditCard, Bell, History, FileText, UserRound, Lock, User, Settings, UserPlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BookingsList from "@/components/BookingsList";
 import FileUpload from "@/components/FileUpload";
+import ReferralProgram from "@/components/ReferralProgram";
 
 const EspacePersonnel = () => {
   const [selectedTab, setSelectedTab] = useState("connexion");
@@ -89,7 +90,7 @@ const EspacePersonnel = () => {
 
           {/* Tabs Navigation */}
           <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-5 mb-8">
+            <TabsList className="grid w-full grid-cols-6 mb-8">
               <TabsTrigger value="connexion" className="flex items-center gap-2">
                 <Bell className="w-4 h-4" />
                 Connexion
@@ -109,6 +110,10 @@ const EspacePersonnel = () => {
               <TabsTrigger value="calendrier" className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
                 Calendrier
+              </TabsTrigger>
+              <TabsTrigger value="parrainage" className="flex items-center gap-2">
+                <UserPlus className="w-4 h-4" />
+                Parrainage
               </TabsTrigger>
             </TabsList>
 
@@ -357,6 +362,11 @@ const EspacePersonnel = () => {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* Programme de parrainage */}
+            <TabsContent value="parrainage" className="space-y-6">
+              <ReferralProgram />
             </TabsContent>
           </Tabs>
         </div>

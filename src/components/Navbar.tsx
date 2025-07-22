@@ -13,7 +13,8 @@ const Navbar = () => {
   const navItems = [
     { name: "Accueil", href: "/" },
     { name: "Nos services", href: "/#services" },
-    { name: "À propos", href: "/#about" },
+    { name: "À propos", href: "/a-propos-de-nous" },
+    { name: "Aide", href: "/aide" },
     { name: "Espace client", href: "/espace-personnel" },
     { name: "Espace prestataire", href: "/espace-prestataire" },
     { name: "Gestion demandes", href: "/gestion-demandes" },
