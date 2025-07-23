@@ -8,7 +8,7 @@ const ChatBot = () => {
   const [messages, setMessages] = useState([
     {
       id: 1,
-      text: "Bonjour ! Je suis votre assistant virtuel Assist'mw. Comment puis-je vous aider aujourd'hui ?",
+      text: "Bonjour ! Je suis votre assistant virtuel Bikawo. Comment puis-je vous aider aujourd'hui ?",
       isBot: true,
       timestamp: new Date()
     }
@@ -76,7 +76,7 @@ const ChatBot = () => {
                     <MessageCircle className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">Assistant Assist'mw</h3>
+                    <h3 className="font-semibold">Assistant Bikawo</h3>
                     <p className="text-xs text-white/80 flex items-center">
                       <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
                       En ligne

@@ -64,7 +64,7 @@ const Footer = () => {
             </div>
             
             <p className="text-white/80 max-w-md">
-              Votre assistant familial de confiance dans toute la France. 
+              Votre partenaire familial de confiance dans toute la France. 
               Nous vous accompagnons avec humanité pour un quotidien plus serein et harmonieux.
             </p>
 

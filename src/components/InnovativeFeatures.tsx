@@ -176,14 +176,14 @@ const InnovativeFeatures = () => {
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { name: "Assist'Kids", image: serviceKids },
-              { name: "Assist'Maison", image: serviceMaison },
-              { name: "Assist'Seniors", image: serviceSeniors },
-              { name: "Assist'Business", image: serviceBusiness },
-              { name: "Assist'Animaux", image: serviceAnimals },
-              { name: "Assist'Travel", image: serviceTravel },
-              { name: "Assist'Premium", image: servicePremium },
-              { name: "Assist'Vie", image: serviceVie }
+              { name: "Bika'Kids", image: serviceKids },
+              { name: "Bika'Maison", image: serviceMaison },
+              { name: "Bika'Seniors", image: serviceSeniors },
+              { name: "Bika'Business", image: serviceBusiness },
+              { name: "Bika'Animaux", image: serviceAnimals },
+              { name: "Bika'Travel", image: serviceTravel },
+              { name: "Bika'Premium", image: servicePremium },
+              { name: "Bika'Vie", image: serviceVie }
             ].map((service, index) => (
               <div key={index} className="group cursor-pointer">
                 <div className="relative overflow-hidden rounded-xl bg-white shadow-md hover:shadow-lg transition-all duration-300">

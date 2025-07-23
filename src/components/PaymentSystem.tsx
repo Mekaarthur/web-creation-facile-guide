@@ -121,7 +121,7 @@ const PaymentSystem = ({ amount, onPaymentSuccess, onPaymentCancel }: PaymentSys
               <div className="text-sm space-y-1">
                 <p><strong>IBAN :</strong> FR76 1234 5678 9012 3456 7890 123</p>
                 <p><strong>BIC :</strong> ABNAFRPP</p>
-                <p><strong>Titulaire :</strong> Assist'mw SAS</p>
+                <p><strong>Titulaire :</strong> Bikawo SAS</p>
               </div>
             </div>
           )}
