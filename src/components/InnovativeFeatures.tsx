@@ -2,6 +2,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Brain, Shield, Zap, Users, Star, TrendingUp, MapPin, Clock, Award, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
+
+// Import service images
+import serviceKids from "@/assets/service-kids-full.jpg";
+import serviceMaison from "@/assets/service-maison-full.jpg";
+import serviceSeniors from "@/assets/service-seniors-full.jpg";
+import serviceBusiness from "@/assets/service-business-full.jpg";
+import serviceAnimals from "@/assets/service-animals-full.jpg";
+import serviceTravel from "@/assets/service-travel-full.jpg";
+import servicePremium from "@/assets/service-premium-full.jpg";
+import serviceVie from "@/assets/service-vie-full.jpg";
 
 const InnovativeFeatures = () => {
   const features = [
@@ -156,6 +167,43 @@ const InnovativeFeatures = () => {
           </Card>
         </div>
 
+        {/* Services Gallery */}
+        <div className="mb-16">
+          <div className="text-center space-y-4 mb-12">
+            <h3 className="text-2xl font-bold text-foreground">Tous nos services</h3>
+            <p className="text-muted-foreground">Découvrez la gamme complète de nos services professionnels</p>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {[
+              { name: "Assist'Kids", image: serviceKids },
+              { name: "Assist'Maison", image: serviceMaison },
+              { name: "Assist'Seniors", image: serviceSeniors },
+              { name: "Assist'Business", image: serviceBusiness },
+              { name: "Assist'Animaux", image: serviceAnimals },
+              { name: "Assist'Travel", image: serviceTravel },
+              { name: "Assist'Premium", image: servicePremium },
+              { name: "Assist'Vie", image: serviceVie }
+            ].map((service, index) => (
+              <div key={index} className="group cursor-pointer">
+                <div className="relative overflow-hidden rounded-xl bg-white shadow-md hover:shadow-lg transition-all duration-300">
+                  <img 
+                    src={service.image} 
+                    alt={service.name}
+                    className="w-full h-32 object-cover transition-transform duration-300 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute bottom-2 left-2 right-2">
+                    <h4 className="text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      {service.name}
+                    </h4>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* CTA */}
         <div className="text-center">
           <Card className="max-w-2xl mx-auto border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
@@ -164,10 +212,12 @@ const InnovativeFeatures = () => {
               <p className="text-muted-foreground mb-6">
                 Rejoignez des milliers de clients qui font déjà confiance à notre technologie de pointe
               </p>
-              <Button size="lg" className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary">
-                <Sparkles className="w-4 h-4 mr-2" />
-                Découvrir nos services
-              </Button>
+              <Link to="/services">
+                <Button size="lg" className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Découvrir nos services
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>
