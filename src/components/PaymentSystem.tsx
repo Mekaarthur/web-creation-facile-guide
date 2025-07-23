@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CreditCard, Shield, Lock, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PaymentSystemProps {
   amount: number;
@@ -27,15 +28,30 @@ const PaymentSystem = ({ amount, onPaymentSuccess, onPaymentCancel }: PaymentSys
   const handlePayment = async () => {
     setProcessing(true);
     
-    // Simulation du traitement de paiement
-    setTimeout(() => {
-      setProcessing(false);
-      toast({
-        title: "Paiement réussi",
-        description: `Votre paiement de ${amount.toFixed(2)}€ a été traité avec succès.`,
+    try {
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: { amount, bookingId: 'current-booking' }
       });
-      onPaymentSuccess();
-    }, 2000);
+
+      if (error) throw error;
+
+      // Rediriger vers Stripe Checkout
+      window.open(data.url, '_blank');
+      
+      toast({
+        title: "Redirection vers Stripe",
+        description: "Vous allez être redirigé vers la page de paiement sécurisée",
+      });
+    } catch (error) {
+      console.error('Erreur paiement:', error);
+      toast({
+        title: "Erreur de paiement",
+        description: "Impossible de traiter le paiement. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (

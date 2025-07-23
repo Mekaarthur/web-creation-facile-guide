@@ -11,6 +11,8 @@ import Footer from "@/components/Footer";
 import BookingsList from "@/components/BookingsList";
 import FileUpload from "@/components/FileUpload";
 import ReferralProgram from "@/components/ReferralProgram";
+import PaymentMethodsManager from "@/components/PaymentMethodsManager";
+import InvoiceManagement from "@/components/InvoiceManagement";
 
 const EspacePersonnel = () => {
   const [selectedTab, setSelectedTab] = useState("connexion");
@@ -206,58 +208,9 @@ const EspacePersonnel = () => {
 
             {/* Factures et paiements */}
             <TabsContent value="factures" className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="w-5 h-5 text-primary" />
-                      Mes factures
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {factures.map((facture) => (
-                      <div key={facture.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div>
-                          <p className="font-medium text-foreground">Facture {facture.id}</p>
-                          <p className="text-sm text-muted-foreground">{facture.date}</p>
-                          <p className="text-sm text-muted-foreground">{facture.services}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-foreground">{facture.montant}</p>
-                          <Badge className={getStatusColor(facture.statut)}>{facture.statut}</Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <CreditCard className="w-5 h-5 text-primary" />
-                      Méthodes de paiement
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-3">
-                      <div className="p-4 border rounded-lg">
-                        <p className="font-medium text-foreground">Carte bancaire</p>
-                        <p className="text-sm text-muted-foreground">**** **** **** 1234</p>
-                      </div>
-                      <div className="p-4 border rounded-lg">
-                        <p className="font-medium text-foreground">Prélèvement SEPA</p>
-                        <p className="text-sm text-muted-foreground">Compte principal</p>
-                      </div>
-                      <div className="p-4 border rounded-lg">
-                        <p className="font-medium text-foreground">CESU</p>
-                        <p className="text-sm text-muted-foreground">Chèques emploi service</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" className="w-full">
-                      Ajouter un moyen de paiement
-                    </Button>
-                  </CardContent>
-                </Card>
+              <div className="grid lg:grid-cols-2 gap-6">
+                <InvoiceManagement />
+                <PaymentMethodsManager />
               </div>
             </TabsContent>
 
