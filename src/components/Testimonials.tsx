@@ -120,9 +120,9 @@ const Testimonials = () => {
               <button className="px-6 py-3 bg-gradient-primary text-white rounded-lg font-medium hover:shadow-glow transition-all">
                 Commencer maintenant
               </button>
-              <button className="px-6 py-3 border border-primary text-primary rounded-lg font-medium hover:bg-primary/5 transition-all">
+              <a href="/services" className="inline-block px-6 py-3 border border-primary text-primary rounded-lg font-medium hover:bg-primary/5 transition-all">
                 Découvrir nos services
-              </button>
+              </a>
             </div>
           </div>
         </div>
