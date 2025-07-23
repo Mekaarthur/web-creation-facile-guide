@@ -15,10 +15,10 @@ const LegalDocuments = () => {
       content: `CONDITIONS GÉNÉRALES DE VENTE
 
 Article 1 - Objet
-Les présentes conditions générales de vente (CGV) régissent les relations contractuelles entre Assist'mw et ses clients.
+Les présentes conditions générales de vente (CGV) régissent les relations contractuelles entre Bikawo et ses clients.
 
 Article 2 - Services proposés
-Assist'mw propose des services d'assistance à domicile dans les domaines suivants :
+Bikawo propose des services d'assistance à domicile dans les domaines suivants :
 - Garde d'enfants et soutien scolaire
 - Assistance aux personnes âgées
 - Services de ménage et logistique domestique
@@ -40,7 +40,7 @@ Toute annulation doit être effectuée au moins 24h avant la prestation prévue.
       content: `CONDITIONS GÉNÉRALES D'UTILISATION
 
 Article 1 - Définitions
-La plateforme Assist'mw met en relation des particuliers avec des prestataires de services qualifiés.
+La plateforme Bikawo met en relation des particuliers avec des prestataires de services qualifiés.
 
 Article 2 - Accès au service
 L'accès aux services nécessite une inscription préalable et l'acceptation des présentes CGU.
@@ -49,7 +49,7 @@ Article 3 - Obligations de l'utilisateur
 L'utilisateur s'engage à fournir des informations exactes et à respecter les prestataires.
 
 Article 4 - Responsabilités
-Assist'mw agit en qualité d'intermédiaire et s'assure de la qualité des prestataires référencés.
+Bikawo agit en qualité d'intermédiaire et s'assure de la qualité des prestataires référencés.
 
 Article 5 - Protection des données
 Vos données personnelles sont protégées conformément au RGPD.`,
@@ -98,7 +98,7 @@ Pour toute question : contact@bikawo.com`,
       content: `MENTIONS LÉGALES
 
 ÉDITEUR DU SITE
-Assist'mw SAS
+Bikawo SAS
 Capital social : 50 000 €
 SIRET : 12345678901234
 RCS Paris B 123 456 789
@@ -123,7 +123,7 @@ OVH SAS
 France
 
 DONNÉES PERSONNELLES
-Responsable du traitement : Assist'mw SAS
+Responsable du traitement : Bikawo SAS
 DPO : dpo@assistme.fr
 
 PROPRIÉTÉ INTELLECTUELLE

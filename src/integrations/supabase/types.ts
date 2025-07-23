@@ -199,6 +199,62 @@ export type Database = {
         }
         Relationships: []
       }
+      invoices: {
+        Row: {
+          amount: number
+          booking_id: string | null
+          client_id: string
+          created_at: string
+          due_date: string
+          id: string
+          invoice_number: string
+          issued_date: string
+          notes: string | null
+          payment_date: string | null
+          service_description: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          booking_id?: string | null
+          client_id: string
+          created_at?: string
+          due_date?: string
+          id?: string
+          invoice_number: string
+          issued_date?: string
+          notes?: string | null
+          payment_date?: string | null
+          service_description?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          booking_id?: string | null
+          client_id?: string
+          created_at?: string
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          issued_date?: string
+          notes?: string | null
+          payment_date?: string | null
+          service_description?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -582,6 +638,10 @@ export type Database = {
     Functions: {
       create_booking_from_request: {
         Args: { request_id: string; provider_id: string; service_id: string }
+        Returns: string
+      }
+      generate_invoice_number: {
+        Args: Record<PropertyKey, never>
         Returns: string
       }
       generate_referral_code: {

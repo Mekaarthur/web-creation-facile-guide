@@ -73,7 +73,7 @@ const About = () => {
             </span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Assist'mw vous accompagne dans votre quotidien avec douceur, fiabilité et humanité, 
+            Bikawo vous accompagne dans votre quotidien avec douceur, fiabilité et humanité, 
             pour un foyer plus léger, plus serein et plus harmonieux.
           </p>
         </div>

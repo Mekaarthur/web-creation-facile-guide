@@ -39,20 +39,40 @@ const InvoiceManagement = () => {
 
   const fetchInvoices = async () => {
     try {
+      // Utiliser la table bookings pour simuler les factures en attendant la mise à jour des types
       const { data, error } = await supabase
-        .from('invoices')
+        .from('bookings')
         .select(`
-          *,
-          booking:bookings (
-            booking_date,
-            service:services (name)
-          )
+          id,
+          total_price,
+          status,
+          booking_date,
+          client_id,
+          service:services (name)
         `)
         .eq('client_id', user?.id)
-        .order('issued_date', { ascending: false });
+        .eq('status', 'completed')
+        .order('booking_date', { ascending: false });
 
       if (error) throw error;
-      setInvoices(data || []);
+      
+      // Transformer les bookings en format facture
+      const invoiceData = (data || []).map((booking, index) => ({
+        id: booking.id,
+        booking_id: booking.id,
+        invoice_number: `2025-${String(index + 1).padStart(6, '0')}`,
+        amount: booking.total_price || 0,
+        status: 'paid' as const,
+        issued_date: booking.booking_date,
+        due_date: booking.booking_date,
+        service_description: booking.service?.name || 'Service Bikawo',
+        booking: {
+          booking_date: booking.booking_date,
+          service: booking.service
+        }
+      }));
+      
+      setInvoices(invoiceData);
     } catch (error) {
       console.error('Error fetching invoices:', error);
       toast({
