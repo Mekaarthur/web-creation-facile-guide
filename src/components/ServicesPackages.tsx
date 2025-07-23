@@ -200,30 +200,30 @@ const ServicesPackages = () => {
     {
       title: "À la carte",
       price: "25€",
-      description: "Choisir n'importe quel service Assist selon vos besoins ponctuels",
-      features: ["Facturation à l'heure", "Tous services Assist", "Réservation simple"],
+      description: "Choisir n'importe quel service Bika selon vos besoins ponctuels",
+      features: ["Facturation à l'heure", "Tous services Bika", "Réservation simple"],
       color: "outline"
     },
     {
-      title: "Hebdo",
-      price: "10h - 220€",
-      description: "Panier libre d'heures combinant Kids + Maison + Travel selon vos besoins",
-      features: ["Formule 10h/semaine", "Combinaisons illimitées", "Suivi personnalisé"],
+      title: "Formule Hebdo avec engagement",
+      price: "10h - 210€",
+      description: "Panier libre d'heures combinant Kids + Maison + Travel selon vos besoins - À interrompre à n'importe quel moment",
+      features: ["Formule 10h/semaine", "Combinaisons illimitées", "Suivi personnalisé", "Résiliable à tout moment"],
       color: "primary",
       popular: true
     },
     {
-      title: "Mensuel", 
-      price: "880€",
-      description: "Combinaisons illimitées avec suivi mensuel personnalisé",
-      features: ["40h/mois", "Accès à tous les services", "Suivi mensuel dédié"],
+      title: "Formule Mensuel avec engagement", 
+      price: "40h - 840€",
+      description: "Combinaisons illimitées avec suivi mensuel personnalisé - À interrompre à n'importe quel moment",
+      features: ["40h/mois", "Accès à tous les services", "Suivi mensuel dédié", "Résiliable à tout moment"],
       color: "accent"
     },
     {
       title: "Premium",
       price: "≥ 1500€",
-      description: "Accès libre Assist'Plus & Assist'Travel prioritaire",
-      features: ["Accès libre Assist'Plus", "Travel prioritaire", "Concierge 24h/7j"],
+      description: "Accès libre Bikawo Plus & Bika Travel prioritaire",
+      features: ["Accès libre Bikawo Plus", "Travel prioritaire", "Concierge 24h/7j"],
       color: "hero"
     }
   ];
