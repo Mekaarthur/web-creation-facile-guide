@@ -140,8 +140,20 @@ const Footer = () => {
                 type="email"
                 placeholder="Votre adresse email"
                 className="flex-1 px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-primary"
+                id="newsletter-email"
               />
-              <button className="px-6 py-2 bg-gradient-primary rounded-lg hover:shadow-glow transition-all duration-300 font-medium">
+              <button 
+                onClick={() => {
+                  const email = (document.getElementById('newsletter-email') as HTMLInputElement)?.value;
+                  if (email && email.includes('@')) {
+                    alert('Merci pour votre inscription ! Vous recevrez bientôt nos newsletters.');
+                    (document.getElementById('newsletter-email') as HTMLInputElement).value = '';
+                  } else {
+                    alert('Veuillez saisir une adresse email valide.');
+                  }
+                }}
+                className="px-6 py-2 bg-gradient-primary rounded-lg hover:shadow-glow transition-all duration-300 font-medium"
+              >
                 S'abonner
               </button>
             </div>
