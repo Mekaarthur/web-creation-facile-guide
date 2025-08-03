@@ -351,6 +351,14 @@ const EspacePrestataire = () => {
               Vous devez être connecté pour accéder à l'espace prestataire.
             </CardDescription>
           </CardHeader>
+          <CardContent>
+            <Button 
+              onClick={() => window.location.href = '/auth'}
+              className="w-full"
+            >
+              Se connecter
+            </Button>
+          </CardContent>
         </Card>
       </div>
     );
