@@ -44,7 +44,6 @@ import ServicesBooking from "@/components/ServicesBooking";
 
 const ServicesPackages = () => {
   const [selectedPackage, setSelectedPackage] = useState<any>(null);
-  const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
   
   const packages = [
     {
@@ -322,14 +321,13 @@ const ServicesPackages = () => {
                   </div>
 
                    {/* CTA */}
-                   <Dialog open={isBookingDialogOpen && selectedPackage?.id === pkg.id} onOpenChange={setIsBookingDialogOpen}>
+                   <Dialog>
                      <DialogTrigger asChild>
                        <Button 
                          variant={pkg.popular ? "accent" : "outline"} 
                          className="w-full group/btn"
                          onClick={() => {
                            setSelectedPackage(pkg);
-                           setIsBookingDialogOpen(true);
                          }}
                        >
                          Réserver {pkg.title}
@@ -348,7 +346,7 @@ const ServicesPackages = () => {
                        </DialogHeader>
 
                        <div className="grid gap-6 py-4">
-                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 dialog-grid">
                            {pkg.services.map((service: any, idx: number) => (
                              <Card key={idx} className="p-4 hover:shadow-md transition-all">
                                <div className="space-y-3">
@@ -371,25 +369,8 @@ const ServicesPackages = () => {
                                  )}
                                  
                                  <Button size="sm" className="w-full" onClick={() => {
-                                   setIsBookingDialogOpen(false);
-                                   // Scroll to booking section with this specific service
-                                   const bookingSection = document.getElementById('booking');
-                                   if (bookingSection) {
-                                     bookingSection.scrollIntoView({ behavior: 'smooth' });
-                                     // Pass service data to booking component
-                                     window.dispatchEvent(new CustomEvent('selectService', {
-                                       detail: {
-                                         id: `${pkg.id}-${idx}`,
-                                         name: typeof service === 'string' ? service : service.name,
-                                         description: typeof service === 'object' ? service.description : '',
-                                         price_per_hour: typeof service === 'object' ? service.price : 25,
-                                         category: pkg.subtitle,
-                                         package: pkg.title
-                                       }
-                                     }));
-                                   }
+                                   window.location.href = '/espace-personnel';
                                  }}>
-                                   <Check className="w-4 h-4 mr-1" />
                                    Choisir ce service
                                  </Button>
                                </div>
@@ -399,10 +380,10 @@ const ServicesPackages = () => {
                        </div>
                      </DialogContent>
                    </Dialog>
-                </div>
-              </Card>
-            );
-          })}
+                 </div>
+               </Card>
+             );
+           })}
         </div>
 
         {/* Nos formules */}

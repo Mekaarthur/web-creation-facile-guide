@@ -60,10 +60,7 @@ const Hero = () => {
                 size="xl" 
                 className="group"
                 onClick={() => {
-                  const servicesSection = document.getElementById('services');
-                  if (servicesSection) {
-                    servicesSection.scrollIntoView({ behavior: 'smooth' });
-                  }
+                  window.location.href = '/services';
                 }}
               >
                 Démarrer maintenant

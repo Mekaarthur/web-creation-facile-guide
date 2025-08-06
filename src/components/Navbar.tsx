@@ -102,14 +102,14 @@ const Navbar = () => {
 
       {/* Mobile Navigation */}
       {isOpen && (
-        <div className="md:hidden bg-white border-t border-border animate-fade-in">
+        <div className="md:hidden mobile-menu bg-white border-t border-border animate-fade-in">
           <div className="px-4 pt-2 pb-3 space-y-1">
             {navItems.map((item) => (
               item.href.startsWith('/#') ? (
                 <a
                   key={item.name}
                   href={item.href}
-                  className="block px-3 py-2 text-foreground hover:text-primary hover:bg-muted rounded-md transition-colors duration-300"
+                  className="mobile-nav-item block px-3 py-3 text-foreground hover:text-primary hover:bg-muted rounded-md transition-colors duration-300"
                   onClick={() => setIsOpen(false)}
                 >
                   {item.name}
@@ -118,30 +118,30 @@ const Navbar = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className="block px-3 py-2 text-foreground hover:text-primary hover:bg-muted rounded-md transition-colors duration-300"
+                  className="mobile-nav-item block px-3 py-3 text-foreground hover:text-primary hover:bg-muted rounded-md transition-colors duration-300"
                   onClick={() => setIsOpen(false)}
                 >
                   {item.name}
                 </Link>
               )
             ))}
-            <div className="pt-4 space-y-2">
+            <div className="pt-4 space-y-3">
               <Button 
                 variant="ghost" 
-                size="sm" 
-                className="w-full"
+                size="lg" 
+                className="w-full min-h-[48px]"
                 onClick={() => window.open('tel:0609085390', '_self')}
               >
                 <Phone className="w-4 h-4 mr-2" />
                 Appeler
               </Button>
               {user ? (
-                <Button variant="outline" size="sm" className="w-full" onClick={signOut}>
+                <Button variant="outline" size="lg" className="w-full min-h-[48px]" onClick={signOut}>
                   <LogOut className="w-4 h-4 mr-2" />
                   Déconnexion
                 </Button>
               ) : (
-                <Button variant="hero" size="sm" className="w-full" onClick={() => navigate("/auth")}>
+                <Button variant="hero" size="lg" className="w-full min-h-[48px]" onClick={() => navigate("/auth")}>
                   Connexion
                 </Button>
               )}
