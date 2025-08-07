@@ -198,14 +198,14 @@ const ServicesPackages = () => {
   const pricingOptions = [
     {
       title: "À la carte",
-      price: "25€",
+      price: "22-25€",
       description: "Choisir n'importe quel service Bika selon vos besoins ponctuels",
       features: ["Facturation à l'heure", "Tous services Bika", "Réservation simple"],
       color: "outline"
     },
     {
       title: "Formule Hebdo avec engagement",
-      price: "10h - 210€",
+      price: "10h - 200€",
       description: "Panier libre d'heures combinant Kids + Maison + Travel selon vos besoins - À interrompre à n'importe quel moment",
       features: ["Formule 10h/semaine", "Combinaisons illimitées", "Suivi personnalisé", "Résiliable à tout moment"],
       color: "primary",
@@ -213,14 +213,14 @@ const ServicesPackages = () => {
     },
     {
       title: "Formule Mensuel avec engagement", 
-      price: "40h - 840€",
+      price: "40h - 800€",
       description: "Combinaisons illimitées avec suivi mensuel personnalisé - À interrompre à n'importe quel moment",
       features: ["40h/mois", "Accès à tous les services", "Suivi mensuel dédié", "Résiliable à tout moment"],
       color: "accent"
     },
     {
       title: "Premium",
-      price: "≥ 1500€",
+      price: "≥ 1400€",
       description: "Accès libre Bikawo Plus & Bika Travel prioritaire",
       features: ["Accès libre Bikawo Plus", "Travel prioritaire", "Concierge 24h/7j"],
       color: "hero"
@@ -401,7 +401,7 @@ const ServicesPackages = () => {
             <Card className="p-6 space-y-4">
               <div className="space-y-2">
                 <h4 className="text-lg font-semibold text-foreground">À la carte</h4>
-                <div className="text-2xl font-bold text-primary">25-30€/h</div>
+                <div className="text-2xl font-bold text-primary">22-25€/h</div>
               </div>
               <p className="text-sm text-muted-foreground mb-3">
                 Choisir n'importe quel service Zen selon vos besoins ponctuels.
@@ -435,7 +435,7 @@ const ServicesPackages = () => {
               </div>
               <div className="space-y-2">
                 <h4 className="text-lg font-semibold text-foreground">Hebdo</h4>
-                <div className="text-2xl font-bold text-primary">10h - 240€</div>
+                <div className="text-2xl font-bold text-primary">10h - 200€</div>
               </div>
               <p className="text-sm text-muted-foreground mb-3">
                 Panier libre d'heures (Kids + Maison + Travel, etc.).
@@ -470,7 +470,7 @@ const ServicesPackages = () => {
             <Card className="p-6 space-y-4">
               <div className="space-y-2">
                 <h4 className="text-lg font-semibold text-foreground">Mensuel</h4>
-                <div className="text-2xl font-bold text-primary">40h - 900€</div>
+                <div className="text-2xl font-bold text-primary">40h - 800€</div>
               </div>
               <p className="text-sm text-muted-foreground mb-3">
                 Combinaisons illimitées + suivi mensuel personnalisé.
@@ -505,7 +505,7 @@ const ServicesPackages = () => {
             <Card className="p-6 space-y-4">
               <div className="space-y-2">
                 <h4 className="text-lg font-semibold text-foreground">Premium</h4>
-                <div className="text-2xl font-bold text-primary">≥ 1500€</div>
+                <div className="text-2xl font-bold text-primary">≥ 1400€</div>
               </div>
               <p className="text-sm text-muted-foreground mb-3">
                 Accès libre Zen'Plus & Zen'Travel prioritaire à adapter selon vos besoins.
