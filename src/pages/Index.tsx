@@ -6,7 +6,7 @@ import ChatBot from "@/components/ChatBot";
 import InnovativeFeatures from "@/components/InnovativeFeatures";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Calendar, UserPlus, Heart, Users, Home } from "lucide-react";
+import { Calendar, UserPlus, Heart, Users, Home, Play } from "lucide-react";
 import activityChildcare from "@/assets/activity-childcare.jpg";
 import activityHomeHelp from "@/assets/activity-home-help.jpg";
 import activitySeniorHelp from "@/assets/activity-senior-help.jpg";
@@ -19,11 +19,11 @@ const Index = () => {
       
       {/* Section d'actions rapides */}
       <section className="py-16 bg-gradient-to-br from-primary/5 to-secondary/5">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-foreground mb-8">
             Commencez dès maintenant
           </h2>
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-card p-8 rounded-xl shadow-elegant border border-border">
               <Calendar className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-4">Réserver un service</h3>
@@ -36,6 +36,20 @@ const Index = () => {
                 </Button>
               </Link>
             </div>
+            
+            <div className="bg-card p-8 rounded-xl shadow-elegant border border-border">
+              <Play className="w-12 h-12 text-accent mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-4">Notre histoire</h3>
+              <p className="text-muted-foreground mb-6">
+                Découvrez la vidéo émouvante qui raconte notre parcours
+              </p>
+              <Link to="/notre-histoire">
+                <Button variant="default" size="lg" className="w-full bg-gradient-accent hover:opacity-90">
+                  Voir la vidéo
+                </Button>
+              </Link>
+            </div>
+            
             <div className="bg-card p-8 rounded-xl shadow-elegant border border-border">
               <UserPlus className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-4">Postuler</h3>
