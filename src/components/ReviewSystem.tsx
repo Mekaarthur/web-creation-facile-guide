@@ -1,79 +1,72 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Star, ThumbsUp, ThumbsDown, Flag, User } from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Star, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/components/ui/use-toast';
 
 interface Review {
   id: string;
+  booking_id: string;
+  client_id: string;
+  provider_id: string;
   rating: number;
-  comment: string | null;
+  comment: string;
   created_at: string;
-  is_verified: boolean;
-  helpful_count: number;
-  is_flagged: boolean;
-  booking: {
-    id: string;
-    service: {
-      name: string;
-    };
-  };
-  client: {
-    first_name: string | null;
-    last_name: string | null;
+  client?: {
+    first_name: string;
+    last_name: string;
   };
 }
 
 interface ReviewSystemProps {
-  providerId?: string;
   bookingId?: string;
-  mode: 'display' | 'create';
+  providerId?: string;
+  clientId?: string;
+  mode: 'create' | 'view';
+  onReviewSubmitted?: () => void;
 }
 
-export const ReviewSystem = ({ providerId, bookingId, mode }: ReviewSystemProps) => {
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [rating, setRating] = useState(5);
+const ReviewSystem: React.FC<ReviewSystemProps> = ({
+  bookingId,
+  providerId,
+  clientId,
+  mode,
+  onReviewSubmitted
+}) => {
+  const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const { user } = useAuth();
   const { toast } = useToast();
 
-  // Charger les avis pour un prestataire
   useEffect(() => {
-    if (providerId && mode === 'display') {
+    if (mode === 'view' && providerId) {
       loadReviews();
     }
-  }, [providerId, mode]);
+  }, [mode, providerId]);
 
   const loadReviews = async () => {
     if (!providerId) return;
     
     setLoading(true);
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('reviews')
-        .select(`
-          *,
-          booking:bookings(
-            id,
-            service:services(name)
-          ),
-          client:profiles!reviews_client_id_fkey(first_name, last_name)
-        `)
+        .select('*')
         .eq('provider_id', providerId)
-        .eq('is_moderated', true)
+        .eq('is_approved', true)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       setReviews(data || []);
     } catch (error) {
-      console.error('Erreur lors du chargement des avis:', error);
+      console.error('Error loading reviews:', error);
       toast({
         title: "Erreur",
         description: "Impossible de charger les avis",
@@ -85,272 +78,180 @@ export const ReviewSystem = ({ providerId, bookingId, mode }: ReviewSystemProps)
   };
 
   const submitReview = async () => {
-    if (!bookingId || !comment.trim()) {
+    if (!user || !bookingId || !providerId || !clientId) return;
+    if (rating === 0) {
       toast({
         title: "Erreur",
-        description: "Veuillez remplir tous les champs",
+        description: "Veuillez sélectionner une note",
         variant: "destructive",
       });
       return;
     }
 
-    setLoading(true);
+    setSubmitting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Utilisateur non connecté');
-
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('reviews')
-        .insert([{
+        .insert({
           booking_id: bookingId,
+          client_id: clientId,
+          provider_id: providerId,
           rating,
-          comment: comment.trim(),
-          client_id: user.id,
-          provider_id: providerId
-        }]);
+          comment: comment.trim() || null,
+        });
 
       if (error) throw error;
 
       toast({
-        title: "Avis envoyé",
-        description: "Votre avis a été envoyé et sera modéré avant publication",
+        title: "Succès",
+        description: "Votre avis a été publié",
       });
 
-      setIsDialogOpen(false);
+      setRating(0);
       setComment('');
-      setRating(5);
-    } catch (error) {
-      console.error('Erreur lors de l\'envoi de l\'avis:', error);
+      onReviewSubmitted?.();
+
+    } catch (error: any) {
+      console.error('Error submitting review:', error);
       toast({
         title: "Erreur",
-        description: "Impossible d'envoyer l'avis",
+        description: error.message || "Impossible de publier l'avis",
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-  const markAsHelpful = async (reviewId: string) => {
-    try {
-      const { error } = await (supabase as any)
-        .rpc('increment_helpful_count', { review_id: reviewId });
-
-      if (error) throw error;
-      
-      // Recharger les avis
-      loadReviews();
-    } catch (error) {
-      console.error('Erreur:', error);
-    }
-  };
-
-  const flagReview = async (reviewId: string) => {
-    try {
-      const { error } = await (supabase as any)
-        .from('reviews')
-        .update({ is_flagged: true })
-        .eq('id', reviewId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Signalement envoyé",
-        description: "Ce commentaire a été signalé pour modération",
-      });
-    } catch (error) {
-      console.error('Erreur:', error);
-    }
-  };
-
-  const renderStars = (rating: number, interactive = false, onStarClick?: (rating: number) => void) => {
+  const renderStars = (rating: number, interactive = false, size = 'w-5 h-5') => {
     return (
-      <div className="flex">
+      <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
-            className={`w-4 h-4 ${
-              star <= rating 
-                ? 'fill-yellow-400 text-yellow-400' 
-                : 'text-gray-300'
-            } ${interactive ? 'cursor-pointer hover:text-yellow-400' : ''}`}
-            onClick={() => interactive && onStarClick?.(star)}
+            className={`${size} cursor-pointer transition-colors ${
+              star <= rating
+                ? 'fill-yellow-400 text-yellow-400'
+                : 'text-gray-300 hover:text-yellow-400'
+            }`}
+            onClick={interactive ? () => setRating(star) : undefined}
           />
         ))}
       </div>
     );
   };
 
-  const getClientDisplayName = (client: any) => {
-    if (client?.first_name && client?.last_name) {
-      return `${client.first_name} ${client.last_name.charAt(0)}.`;
-    }
-    return "Client anonyme";
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('fr-FR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const getAverageRating = () => {
+    if (reviews.length === 0) return 0;
+    const total = reviews.reduce((sum, review) => sum + review.rating, 0);
+    return (total / reviews.length).toFixed(1);
   };
 
   if (mode === 'create') {
     return (
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogTrigger asChild>
-          <Button>
-            <Star className="w-4 h-4 mr-2" />
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MessageSquare className="w-5 h-5" />
             Laisser un avis
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Évaluer cette prestation</DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Note</label>
-              {renderStars(rating, true, setRating)}
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Commentaire</label>
-              <Textarea
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Partagez votre expérience..."
-                rows={4}
-              />
-            </div>
-            
-            <Button 
-              onClick={submitReview} 
-              disabled={loading}
-              className="w-full"
-            >
-              {loading ? 'Envoi...' : 'Publier l\'avis'}
-            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <label className="text-sm font-medium mb-2 block">
+              Note (obligatoire)
+            </label>
+            {renderStars(rating, true, 'w-8 h-8')}
           </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
 
-  // Mode affichage
-  const averageRating = reviews.length > 0 
-    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
-    : 0;
+          <div>
+            <label className="text-sm font-medium mb-2 block">
+              Commentaire (optionnel)
+            </label>
+            <Textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Partagez votre expérience..."
+              rows={4}
+            />
+          </div>
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        {[1, 2, 3].map(i => (
-          <Card key={i}>
-            <CardContent className="p-4">
-              <div className="animate-pulse space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+          <Button 
+            onClick={submitReview}
+            disabled={submitting || rating === 0}
+            className="w-full"
+          >
+            {submitting ? 'Publication...' : 'Publier l\'avis'}
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {/* Résumé des avis */}
-      {reviews.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Avis clients</span>
-              <div className="flex items-center gap-2">
-                {renderStars(Math.round(averageRating))}
-                <span className="font-semibold">{averageRating.toFixed(1)}</span>
-                <Badge variant="secondary">{reviews.length} avis</Badge>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Star className="w-5 h-5" />
+            Avis clients
+          </div>
+          {reviews.length > 0 && (
+            <Badge variant="secondary">
+              {getAverageRating()}/5 ({reviews.length} avis)
+            </Badge>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="animate-pulse space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="space-y-2">
+                <div className="h-4 bg-muted rounded w-1/4"></div>
+                <div className="h-16 bg-muted rounded"></div>
               </div>
-            </CardTitle>
-          </CardHeader>
-        </Card>
-      )}
-
-      {/* Liste des avis */}
-      <div className="space-y-3">
-        {reviews.length === 0 ? (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <Star className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">Aucun avis pour le moment</p>
-            </CardContent>
-          </Card>
+            ))}
+          </div>
+        ) : reviews.length === 0 ? (
+          <div className="text-center text-muted-foreground py-8">
+            Aucun avis pour le moment
+          </div>
         ) : (
-          reviews.map((review) => (
-            <Card key={review.id}>
-              <CardContent className="p-4">
-                <div className="space-y-3">
-                  {/* Header de l'avis */}
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <User className="w-4 h-4 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm">{getClientDisplayName(review.client)}</p>
-                        <div className="flex items-center gap-2">
-                          {renderStars(review.rating)}
-                          {review.is_verified && (
-                            <Badge variant="secondary" className="text-xs">
-                              Avis vérifié
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(review.created_at), 'dd MMM yyyy', { locale: fr })}
-                    </p>
+          <div className="space-y-6">
+            {reviews.map((review) => (
+              <div key={review.id} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {renderStars(review.rating)}
+                    <span className="text-sm font-medium">
+                      Client
+                    </span>
                   </div>
-
-                  {/* Service concerné */}
-                  {review.booking?.service && (
-                    <Badge variant="outline" className="text-xs">
-                      {review.booking.service.name}
-                    </Badge>
-                  )}
-
-                  {/* Commentaire */}
-                  {review.comment && (
-                    <p className="text-sm text-muted-foreground">
-                      {review.comment}
-                    </p>
-                  )}
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-2 pt-2 border-t">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => markAsHelpful(review.id)}
-                      className="text-xs"
-                    >
-                      <ThumbsUp className="w-3 h-3 mr-1" />
-                      Utile ({review.helpful_count})
-                    </Button>
-                    
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => flagReview(review.id)}
-                      className="text-xs text-muted-foreground hover:text-destructive"
-                    >
-                      <Flag className="w-3 h-3 mr-1" />
-                      Signaler
-                    </Button>
-                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {formatDate(review.created_at)}
+                  </span>
                 </div>
-              </CardContent>
-            </Card>
-          ))
+                {review.comment && (
+                  <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+                    {review.comment}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
+
+export default ReviewSystem;

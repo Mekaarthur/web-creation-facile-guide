@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { sendBookingConfirmation } from "@/utils/notifications";
 import { useProviderMatching } from "@/hooks/useProviderMatching";
 import { MapView } from "@/components/MapView";
-import { ReviewSystem } from "@/components/ReviewSystem";
+import ReviewSystem from "@/components/ReviewSystem";
 
 interface LocalProvider {
   id: string;

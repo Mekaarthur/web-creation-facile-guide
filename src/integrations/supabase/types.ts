@@ -139,6 +139,50 @@ export type Database = {
           },
         ]
       }
+      chat_messages: {
+        Row: {
+          booking_id: string
+          created_at: string
+          file_url: string | null
+          id: string
+          is_read: boolean
+          message: string
+          message_type: string
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          is_read?: boolean
+          message: string
+          message_type?: string
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          is_read?: boolean
+          message?: string
+          message_type?: string
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_requests: {
         Row: {
           additional_notes: string | null
@@ -409,6 +453,56 @@ export type Database = {
           },
         ]
       }
+      provider_locations: {
+        Row: {
+          address: string
+          city: string
+          country: string
+          created_at: string
+          id: string
+          latitude: number
+          longitude: number
+          postal_code: string | null
+          provider_id: string
+          service_radius: number
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          city: string
+          country?: string
+          created_at?: string
+          id?: string
+          latitude: number
+          longitude: number
+          postal_code?: string | null
+          provider_id: string
+          service_radius?: number
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          city?: string
+          country?: string
+          created_at?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+          postal_code?: string | null
+          provider_id?: string
+          service_radius?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_locations_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: true
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provider_notifications: {
         Row: {
           booking_id: string | null
@@ -598,6 +692,50 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          booking_id: string
+          client_id: string
+          comment: string | null
+          created_at: string
+          id: string
+          is_approved: boolean
+          provider_id: string
+          rating: number
+          updated_at: string
+        }
+        Insert: {
+          booking_id: string
+          client_id: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          is_approved?: boolean
+          provider_id: string
+          rating: number
+          updated_at?: string
+        }
+        Update: {
+          booking_id?: string
+          client_id?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          is_approved?: boolean
+          provider_id?: string
+          rating?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       services: {
         Row: {
           category: string
@@ -636,6 +774,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_distance: {
+        Args: { lat1: number; lon1: number; lat2: number; lon2: number }
+        Returns: number
+      }
       create_booking_from_request: {
         Args: { request_id: string; provider_id: string; service_id: string }
         Returns: string

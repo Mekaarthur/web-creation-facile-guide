@@ -12,7 +12,7 @@ const corsHeaders = {
 
 interface NotificationRequest {
   to: string;
-  type: 'booking_request' | 'booking_accepted' | 'booking_rejected' | 'payment_processed';
+  type: 'booking_request' | 'booking_accepted' | 'booking_rejected' | 'payment_processed' | 'review_request' | 'chat_message';
   data: {
     clientName?: string;
     providerName?: string;
@@ -22,11 +22,13 @@ interface NotificationRequest {
     location: string;
     price: number;
     bookingId: string;
+    message?: string;
+    rating?: number;
   };
 }
 
 const getEmailTemplate = (type: string, data: any) => {
-  const { clientName, providerName, serviceName, bookingDate, bookingTime, location, price } = data;
+  const { clientName, providerName, serviceName, bookingDate, bookingTime, location, price, message, rating } = data;
 
   switch (type) {
     case 'booking_request':
@@ -128,9 +130,55 @@ const getEmailTemplate = (type: string, data: any) => {
         `
       };
 
+    case 'review_request':
+      return {
+        subject: `Laissez votre avis - ${serviceName}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #2563eb;">Comment s'est passée votre prestation ?</h1>
+            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <h2 style="color: #1e293b; margin-top: 0;">Votre avis compte pour nous</h2>
+              <p><strong>Service :</strong> ${serviceName}</p>
+              <p><strong>Prestataire :</strong> ${providerName}</p>
+              <p><strong>Date :</strong> ${bookingDate}</p>
+            </div>
+            <p>Aidez les autres clients en partageant votre expérience avec ce prestataire.</p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${Deno.env.get('SITE_URL')}/espace-personnel" 
+                 style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">
+                Laisser un avis
+              </a>
+            </div>
+          </div>
+        `
+      };
+
+    case 'chat_message':
+      return {
+        subject: `Nouveau message - ${serviceName}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #2563eb;">Nouveau message reçu</h1>
+            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <h2 style="color: #1e293b; margin-top: 0;">Message concernant votre réservation</h2>
+              <p><strong>Service :</strong> ${serviceName}</p>
+              <p><strong>De :</strong> ${clientName || providerName}</p>
+              <p><strong>Message :</strong> ${message}</p>
+            </div>
+            <p>Connectez-vous pour voir tous les messages et répondre.</p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${Deno.env.get('SITE_URL')}/espace-personnel" 
+                 style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">
+                Voir les messages
+              </a>
+            </div>
+          </div>
+        `
+      };
+
     default:
       return {
-        subject: 'Notification',
+        subject: 'Notification Bikawo',
         html: '<p>Vous avez une nouvelle notification.</p>'
       };
   }
@@ -150,7 +198,7 @@ serve(async (req) => {
     const emailTemplate = getEmailTemplate(type, data);
 
     const emailResponse = await resend.emails.send({
-      from: "Assist'mw <contact@bikawo.com>",
+      from: "Bikawo <contact@bikawo.com>",
       to: [to],
       subject: emailTemplate.subject,
       html: emailTemplate.html,
