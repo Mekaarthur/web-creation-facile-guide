@@ -62,87 +62,51 @@ const StorytellingVideo = () => {
     }
   ];
 
-  const generateSpeech = async (text: string): Promise<string> => {
-    try {
-      const { data, error } = await supabase.functions.invoke('generate-speech', {
-        body: { text }
-      });
-
-      if (error) {
-        throw new Error(error.message);
+  const generateSpeech = async (text: string): Promise<void> => {
+    return new Promise((resolve) => {
+      if ('speechSynthesis' in window && !isMuted) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'fr-FR';
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        
+        utterance.onend = () => resolve();
+        utterance.onerror = () => resolve();
+        
+        speechSynthesis.speak(utterance);
+      } else {
+        resolve();
       }
-
-      if (data?.audioContent) {
-        const binaryString = atob(data.audioContent);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-        const blob = new Blob([bytes], { type: 'audio/mpeg' });
-        return URL.createObjectURL(blob);
-      }
-
-      return "";
-    } catch (error) {
-      console.error('Erreur génération audio:', error);
-      toast({
-        title: "Narration désactivée",
-        description: "La vidéo continuera en mode silencieux.",
-      });
-      return "";
-    }
+    });
   };
 
   const playScene = async (sceneIndex: number) => {
-    if (currentAudio) {
-      currentAudio.pause();
-      setCurrentAudio(null);
+    // Arrêter la synthèse vocale précédente
+    if ('speechSynthesis' in window) {
+      speechSynthesis.cancel();
     }
 
     setCurrentScene(sceneIndex);
     setIsPlaying(true);
 
     if (!isMuted) {
-      const audioUrl = await generateSpeech(scenes[sceneIndex].voiceText);
-      if (audioUrl) {
-        const audio = new Audio(audioUrl);
-        setCurrentAudio(audio);
-        audio.play();
-        
-        audio.onended = () => {
-          if (sceneIndex < scenes.length - 1) {
-            setTimeout(() => playScene(sceneIndex + 1), 1000);
-          } else {
-            setIsPlaying(false);
-          }
-        };
-      } else {
-        // Fallback sans audio
-        setTimeout(() => {
-          if (sceneIndex < scenes.length - 1) {
-            playScene(sceneIndex + 1);
-          } else {
-            setIsPlaying(false);
-          }
-        }, scenes[sceneIndex].duration);
-      }
-    } else {
-      // Mode silencieux
-      setTimeout(() => {
-        if (sceneIndex < scenes.length - 1) {
-          playScene(sceneIndex + 1);
-        } else {
-          setIsPlaying(false);
-        }
-      }, scenes[sceneIndex].duration);
+      await generateSpeech(scenes[sceneIndex].voiceText);
     }
+
+    // Passer à la scène suivante après la durée définie
+    setTimeout(() => {
+      if (sceneIndex < scenes.length - 1) {
+        playScene(sceneIndex + 1);
+      } else {
+        setIsPlaying(false);
+      }
+    }, scenes[sceneIndex].duration);
   };
 
   const stopVideo = () => {
     setIsPlaying(false);
-    if (currentAudio) {
-      currentAudio.pause();
-      setCurrentAudio(null);
+    if ('speechSynthesis' in window) {
+      speechSynthesis.cancel();
     }
   };
 
