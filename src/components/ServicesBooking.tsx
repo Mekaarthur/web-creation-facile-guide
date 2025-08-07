@@ -466,13 +466,14 @@ const ServicesBooking = () => {
                                 {currentSlot.startDate ? format(currentSlot.startDate, "PPP", { locale: fr }) : "Date début"}
                               </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
+                            <PopoverContent className="w-auto p-0" align="start">
                               <Calendar
                                 mode="single"
                                 selected={currentSlot.startDate}
                                 onSelect={(date) => setCurrentSlot({...currentSlot, startDate: date})}
                                 disabled={(date) => date < new Date()}
                                 initialFocus
+                                className="border-0"
                               />
                             </PopoverContent>
                           </Popover>
@@ -487,13 +488,14 @@ const ServicesBooking = () => {
                                 {currentSlot.endDate ? format(currentSlot.endDate, "PPP", { locale: fr }) : "Date fin"}
                               </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
+                            <PopoverContent className="w-auto p-0" align="start">
                               <Calendar
                                 mode="single"
                                 selected={currentSlot.endDate}
                                 onSelect={(date) => setCurrentSlot({...currentSlot, endDate: date})}
                                 disabled={(date) => date < new Date() || (currentSlot.startDate && date < currentSlot.startDate)}
                                 initialFocus
+                                className="border-0"
                               />
                             </PopoverContent>
                           </Popover>

@@ -24,16 +24,16 @@ const Hero = () => {
 
             {/* Heading */}
             <div className="space-y-4">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
-                Votre partenaire
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
+                Votre assistant personnel
                 <span className="block bg-gradient-hero bg-clip-text text-transparent">
                   au quotidien
                 </span>
-                pour toute la famille
+                pour tous vos besoins
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl">
-                Conciliez vie pro, vie familiale et obligations quotidiennes avec Bikawo. 
-                Solutions humaines, personnalisées et fiables pour une vie plus sereine.
+                Services à domicile professionnels pour particuliers et entreprises. 
+                Ménage, jardinage, bricolage, garde d'enfants, assistance seniors et bien plus.
               </p>
             </div>
 
@@ -41,7 +41,7 @@ const Hero = () => {
             <div className="flex flex-wrap gap-6 text-sm">
               <div className="flex items-center space-x-2">
                 <Users className="w-5 h-5 text-accent" />
-                <span className="text-muted-foreground">+5k familles aidées</span>
+                <span className="text-muted-foreground">+5k clients satisfaits</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Clock className="w-5 h-5 text-accent" />
