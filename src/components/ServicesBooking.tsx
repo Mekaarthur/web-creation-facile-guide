@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -294,9 +295,17 @@ const ServicesBooking = () => {
     return (
       <div className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Chargement des services...</p>
+          <div className="text-center space-y-6">
+            <div className="flex items-center justify-center">
+              <div className="relative">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+                <div className="absolute inset-0 rounded-full border-2 border-primary/20"></div>
+              </div>
+            </div>
+            <div className="space-y-2 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+              <h3 className="text-lg font-semibold">Chargement des services</h3>
+              <p className="text-muted-foreground">Recherche des meilleurs prestataires...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -461,19 +470,26 @@ const ServicesBooking = () => {
                           <Label>Date de début</Label>
                           <Popover>
                             <PopoverTrigger asChild>
-                              <Button variant="outline" className="w-full justify-start text-left font-normal">
+                              <Button 
+                                variant="outline" 
+                                className={cn(
+                                  "w-full justify-start text-left font-normal transition-all duration-200",
+                                  !currentSlot.startDate && "text-muted-foreground",
+                                  "hover:border-primary/50 focus:border-primary"
+                                )}
+                              >
                                 <CalendarIcon className="mr-2 h-4 w-4" />
                                 {currentSlot.startDate ? format(currentSlot.startDate, "PPP", { locale: fr }) : "Date début"}
                               </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
+                            <PopoverContent className="w-auto p-0" align="start" sideOffset={4}>
                               <Calendar
                                 mode="single"
                                 selected={currentSlot.startDate}
                                 onSelect={(date) => setCurrentSlot({...currentSlot, startDate: date})}
                                 disabled={(date) => date < new Date()}
                                 initialFocus
-                                className="border-0"
+                                className="rounded-md border-0 animate-scale-in"
                               />
                             </PopoverContent>
                           </Popover>
@@ -483,19 +499,26 @@ const ServicesBooking = () => {
                           <Label>Date de fin</Label>
                           <Popover>
                             <PopoverTrigger asChild>
-                              <Button variant="outline" className="w-full justify-start text-left font-normal">
+                              <Button 
+                                variant="outline" 
+                                className={cn(
+                                  "w-full justify-start text-left font-normal transition-all duration-200",
+                                  !currentSlot.endDate && "text-muted-foreground",
+                                  "hover:border-primary/50 focus:border-primary"
+                                )}
+                              >
                                 <CalendarIcon className="mr-2 h-4 w-4" />
                                 {currentSlot.endDate ? format(currentSlot.endDate, "PPP", { locale: fr }) : "Date fin"}
                               </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
+                            <PopoverContent className="w-auto p-0" align="start" sideOffset={4}>
                               <Calendar
                                 mode="single"
                                 selected={currentSlot.endDate}
                                 onSelect={(date) => setCurrentSlot({...currentSlot, endDate: date})}
                                 disabled={(date) => date < new Date() || (currentSlot.startDate && date < currentSlot.startDate)}
                                 initialFocus
-                                className="border-0"
+                                className="rounded-md border-0 animate-scale-in"
                               />
                             </PopoverContent>
                           </Popover>

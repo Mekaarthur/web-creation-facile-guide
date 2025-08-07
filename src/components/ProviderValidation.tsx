@@ -166,13 +166,25 @@ const ProviderValidation = () => {
         </div>
         <div className="grid gap-4">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse">
+            <Card key={i} className="animate-pulse-soft border-l-4 border-l-orange-500/20" style={{ animationDelay: `${i * 100}ms` }}>
               <CardHeader>
-                <div className="h-4 bg-muted rounded w-1/4"></div>
-                <div className="h-3 bg-muted rounded w-1/2"></div>
+                <div className="flex items-start justify-between">
+                  <div className="space-y-2 flex-1">
+                    <div className="h-4 bg-muted rounded w-1/3 animate-pulse"></div>
+                    <div className="h-3 bg-muted rounded w-1/2 animate-pulse"></div>
+                  </div>
+                  <div className="h-8 w-20 bg-muted rounded animate-pulse"></div>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="h-3 bg-muted rounded w-3/4"></div>
+                <div className="space-y-3">
+                  <div className="h-3 bg-muted rounded w-3/4 animate-pulse"></div>
+                  <div className="h-3 bg-muted rounded w-1/2 animate-pulse"></div>
+                  <div className="flex gap-2 pt-2">
+                    <div className="h-8 w-20 bg-muted rounded animate-pulse"></div>
+                    <div className="h-8 w-16 bg-muted rounded animate-pulse"></div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -216,8 +228,8 @@ const ProviderValidation = () => {
 
       {/* Liste des prestataires */}
       <div className="grid gap-6">
-        {providers.map((provider) => (
-          <Card key={provider.id} className="border-l-4 border-l-orange-500">
+        {providers.map((provider, index) => (
+          <Card key={provider.id} className="border-l-4 border-l-orange-500 transition-all duration-300 hover:shadow-lg animate-fade-in-up" style={{ animationDelay: `${index * 100}ms` }}>
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div>
