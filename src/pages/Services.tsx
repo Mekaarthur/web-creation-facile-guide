@@ -2,10 +2,12 @@ import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import ServicesPackages from "@/components/ServicesPackages";
 import ServicesBooking from "@/components/ServicesBooking";
+import HourlyBooking from "@/components/HourlyBooking";
 import Footer from "@/components/Footer";
 import ChatBot from "@/components/ChatBot";
 import Cart from "@/components/Cart";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/components/Cart";
 
@@ -17,8 +19,23 @@ const ServicesPage = () => {
     <div className="min-h-screen">
       <Navbar />
       <div className="pt-20">
-        <ServicesPackages />
-        <ServicesBooking />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <Tabs defaultValue="packages" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-8">
+              <TabsTrigger value="packages">Nos packages</TabsTrigger>
+              <TabsTrigger value="hourly">Réservation par heures</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="packages" className="space-y-8">
+              <ServicesPackages />
+              <ServicesBooking />
+            </TabsContent>
+            
+            <TabsContent value="hourly">
+              <HourlyBooking />
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
       
       {/* Floating Cart Button */}

@@ -13,6 +13,13 @@ export interface CartItem {
   price: number;
   quantity: number;
   description?: string;
+  customBooking?: {
+    date: Date;
+    time: string;
+    hours: number;
+    address: string;
+    notes?: string;
+  };
 }
 
 interface CartProps {
