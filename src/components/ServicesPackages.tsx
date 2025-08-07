@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import Cart, { useCart } from "@/components/Cart";
 
 // Import des images
 import serviceChildcareEducation from "@/assets/service-childcare-education.jpg";
@@ -44,6 +45,8 @@ import ServicesBooking from "@/components/ServicesBooking";
 
 const ServicesPackages = () => {
   const [selectedPackage, setSelectedPackage] = useState<any>(null);
+  const [showCart, setShowCart] = useState(false);
+  const { addToCart, getCartItemsCount } = useCart();
   
   const packages = [
     {
@@ -368,11 +371,16 @@ const ServicesPackages = () => {
                                    </p>
                                  )}
                                  
-                                 <Button size="sm" className="w-full" onClick={() => {
-                                   window.location.href = '/espace-personnel';
-                                 }}>
-                                   Choisir ce service
-                                 </Button>
+                                  <Button size="sm" className="w-full" onClick={() => {
+                                    addToCart({
+                                      serviceName: typeof service === 'string' ? service : service.name,
+                                      packageTitle: pkg.title,
+                                      price: typeof service === 'object' && service.price ? service.price : 25,
+                                      description: typeof service === 'object' ? service.description : undefined,
+                                    });
+                                  }}>
+                                    Ajouter au panier
+                                  </Button>
                                </div>
                              </Card>
                            ))}
