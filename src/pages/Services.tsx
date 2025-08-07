@@ -18,20 +18,45 @@ const ServicesPage = () => {
   return (
     <div className="min-h-screen">
       <Navbar />
-      <div className="pt-20">
+      <div className="pt-20 bg-background">
+        {/* Header de la section */}
+        <div className="text-center space-y-4 py-16 bg-gradient-to-b from-primary/5 to-background">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+              Nos Services
+              <span className="block bg-gradient-hero bg-clip-text text-transparent">
+                BIKAWO
+              </span>
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Découvrez nos solutions personnalisées pour vous accompagner au quotidien
+            </p>
+          </div>
+        </div>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <Tabs defaultValue="packages" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-8">
-              <TabsTrigger value="packages">Nos packages</TabsTrigger>
-              <TabsTrigger value="hourly">Réservation par heures</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 mb-8 h-12 bg-muted/50 p-1">
+              <TabsTrigger 
+                value="packages" 
+                className="text-lg font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                📦 Nos packages
+              </TabsTrigger>
+              <TabsTrigger 
+                value="hourly" 
+                className="text-lg font-semibold data-[state=active]:bg-accent data-[state=active]:text-accent-foreground"
+              >
+                ⏰ Réservation par heures
+              </TabsTrigger>
             </TabsList>
             
-            <TabsContent value="packages" className="space-y-8">
+            <TabsContent value="packages" className="space-y-8 mt-8">
               <ServicesPackages />
               <ServicesBooking />
             </TabsContent>
             
-            <TabsContent value="hourly">
+            <TabsContent value="hourly" className="mt-8">
               <HourlyBooking />
             </TabsContent>
           </Tabs>
