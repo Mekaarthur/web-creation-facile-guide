@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface Provider {
   id: string;
+  user_id: string;
   business_name: string | null;
   description: string | null;
   location: string | null;
@@ -51,10 +52,7 @@ const ProviderValidation = () => {
           location,
           is_verified,
           siret_number,
-          profiles (
-            first_name,
-            last_name
-          ),
+          user_id,
           provider_documents (
             id,
             document_type,
@@ -68,7 +66,24 @@ const ProviderValidation = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProviders(data || []);
+      
+      // Récupérer les profils séparément pour chaque provider
+      const providersWithProfiles = await Promise.all(
+        (data || []).map(async (provider) => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('first_name, last_name')
+            .eq('user_id', provider.user_id)
+            .single();
+            
+          return {
+            ...provider,
+            profiles: profile
+          };
+        })
+      );
+      
+      setProviders(providersWithProfiles);
     } catch (error) {
       console.error('Error fetching providers:', error);
       toast({
