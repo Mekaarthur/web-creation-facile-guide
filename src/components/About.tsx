@@ -48,7 +48,7 @@ const About = () => {
     {
       icon: Target,
       title: "Fiabilité",
-      description: "Nos assistants sont rigoureusement sélectionnés et formés pour vous offrir un service de qualité constant."
+      description: "Nos experts Bika sont rigoureusement sélectionnés et formés pour vous offrir un service de qualité constant."
     },
     {
       icon: Users,
@@ -119,7 +119,7 @@ const About = () => {
                 En 2022, à la fin de mes études, j'ai accouché de ma fille. Pas de place en crèche, pas de solution simple, et pourtant il fallait s'organiser. Le papa faisait de son mieux, mais avec son travail, nous étions souvent débordés. Malgré tout, j'ai décroché un emploi — avec beaucoup de sacrifices, de larmes… et une charge mentale immense.
               </p>
               <p>
-                Un an plus tard, tout a basculé : je suis tombée en dépression. Une vraie. J'étais seule, sans aide, sans nounou, sans relais. Impossible de trouver une assistante maternelle en milieu d'année. Mon compagnon, à distance, m'accompagnait comme il pouvait. Mais ce n'était pas suffisant.
+                Un an plus tard, tout a basculé : je suis tombée en dépression. Une vraie. J'étais seule, sans aide, sans nounou, sans relais. Impossible de trouver une aide familiale en milieu d'année. Mon compagnon, à distance, m'accompagnait comme il pouvait. Mais ce n'était pas suffisant.
               </p>
               <p>
                 Et puis j'ai été licenciée.

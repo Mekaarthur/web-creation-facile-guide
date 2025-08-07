@@ -11,7 +11,7 @@ const FAQ = () => {
       questions: [
         {
           question: "Comment fonctionne BIKAWO ?",
-          answer: "BIKAWO vous met en relation avec des assistants familiaux vérifiés. Vous réservez en ligne selon vos besoins parmi nos 8 services BIKA, et nous nous occupons de tout : matching, planning, suivi qualité."
+          answer: "BIKAWO vous met en relation avec des experts familiaux vérifiés. Vous réservez en ligne selon vos besoins parmi nos 8 services BIKA, et nous nous occupons de tout : matching, planning, suivi qualité."
         },
         {
           question: "Dans quelles zones géographiques intervenez-vous ?",
@@ -28,7 +28,7 @@ const FAQ = () => {
       questions: [
         {
           question: "Comment réserver un service ?",
-          answer: "Très simple : créez votre compte, choisissez votre service et créneau, validez votre réservation. Vous recevez immédiatement la confirmation avec les détails de votre assistant."
+          answer: "Très simple : créez votre compte, choisissez votre service et créneau, validez votre réservation. Vous recevez immédiatement la confirmation avec les détails de votre expert."
         },
         {
           question: "Quels sont vos tarifs BIKA ?",
@@ -45,7 +45,7 @@ const FAQ = () => {
       questions: [
         {
           question: "Quels sont vos 8 services BIKA ?",
-          answer: "BIKA Kids (garde enfants), BIKA Maison (logistique quotidienne), BIKA Vie (conciergerie), BIKA Travel (voyages), BIKA Plus (premium 7j/7), BIKA Animals (soins animaux), BIKA Personnes Âgées (assistance seniors), BIKA Pro (entreprises)."
+          answer: "BIKA Kids (garde enfants), BIKA Maison (logistique quotidienne), BIKA Vie (conciergerie), BIKA Travel (voyages), BIKA Plus (premium 7j/7), BIKA Animals (soins animaux), BIKA Personnes Âgées (aide seniors), BIKA Pro (entreprises)."
         },
         {
           question: "Puis-je avoir toujours le même prestataire BIKA ?",
@@ -53,7 +53,7 @@ const FAQ = () => {
         },
         {
           question: "Que se passe-t-il en cas d'urgence ?",
-          answer: "Nous avons une ligne d'urgence 7j/7. Pour BIKA Plus, assistance prioritaire immédiate. Pour les autres formules, intervention sous 2h selon disponibilité des prestataires."
+          answer: "Nous avons une ligne d'urgence 7j/7. Pour BIKA Plus, aide prioritaire immédiate. Pour les autres formules, intervention sous 2h selon disponibilité des prestataires."
         }
       ]
     },

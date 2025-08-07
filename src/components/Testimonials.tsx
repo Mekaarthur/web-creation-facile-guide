@@ -6,44 +6,44 @@ const Testimonials = () => {
     {
       name: "Marie C.",
       role: "Maman de 2 enfants",
-      content: "Assist'mw nous a sauvé la vie ! Plus de stress pour les sorties d'école. Notre assistante familiale est devenue indispensable.",
+      content: "Bikawo nous a sauvé la vie ! Plus de stress pour les sorties d'école. Notre experte familiale est devenue indispensable.",
       rating: 5,
-      service: "Assist'Kids"
+      service: "BIKA Kids"
     },
     {
       name: "Jean-Pierre L.",
       role: "Senior, Paris 16e",
       content: "Enfin un service qui comprend mes besoins. L'aide administrative et les courses sont parfaitement gérées. Je recommande vivement !",
       rating: 5,
-      service: "Assist'Vie"
+      service: "BIKA Vie"
     },
     {
       name: "Sophie & Thomas",
       role: "Couple actif",
       content: "Le service Travel nous a permis de voyager sereinement. Tout était organisé, même avec les enfants. Un vrai cocon de sérénité.",
       rating: 5,
-      service: "Assist'Travel"
+      service: "BIKA Travel"
     },
     {
       name: "Claire M.",
       role: "Entrepreneure",
-      content: "Grâce à Assist'mw, j'ai retrouvé du temps pour ma famille. L'équipe est douce, fiable et comprend parfaitement nos besoins.",
+      content: "Grâce à Bikawo, j'ai retrouvé du temps pour ma famille. L'équipe est douce, fiable et comprend parfaitement nos besoins.",
       rating: 5,
-      service: "Assist'Maison"
+      service: "BIKA Maison"
     },
     {
       name: "Famille Dubois",
       role: "Famille nombreuse",
       content: "Le service Premium nous offre une tranquillité d'esprit inestimable. Notre Chef Family Officer anticipe tous nos besoins.",
       rating: 5,
-      service: "Assist'Plus"
+      service: "BIKA Plus"
     },
     {
       name: "Agnès R.",
       role: "Maman solo",
       content: "Ils comprennent vraiment les défis des parents. Le service est humain, personnalisé et d'une douceur remarquable.",
       rating: 5,
-      service: "Assist'Kids"
+      service: "BIKA Kids"
     }
   ];
 
@@ -64,7 +64,7 @@ const Testimonials = () => {
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
             Découvrez les témoignages de familles qui ont retrouvé sérénité et harmonie 
-            grâce à nos services d'assistance familiale.
+            grâce à nos services d'aide familiale.
           </p>
         </div>
 

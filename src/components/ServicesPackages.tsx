@@ -97,7 +97,7 @@ const ServicesPackages = () => {
         { name: "Dossiers administratifs", description: "Constitution et dépôt de dossiers CAF, CPAM", price: 28 },
         { name: "Gestion d'agenda", description: "Gestion d'agenda partagé, rappels vaccins", price: 26 },
         { name: "Organisation événements", description: "Organisation fête familiale, baby-shower", price: 32 },
-        { name: "Assistance administrative", description: "Gestion administrative complète", price: 30 }
+        { name: "Aide administrative", description: "Gestion administrative complète", price: 30 }
       ],
       color: "primary",
       popular: false,
@@ -107,11 +107,11 @@ const ServicesPackages = () => {
       id: "travel",
       icon: Plane,
       title: "Bika Travel",
-      subtitle: "Assistance Voyageurs",
+      subtitle: "Aide Voyageurs",
       description: "Accompagnement complet pour vos voyages : avant, pendant et après votre déplacement.",
       image: serviceTravelAssistance,
       services: [
-        { name: "Assistance pré-voyage", description: "Vérification documents, check-in en ligne", price: 25 },
+        { name: "Aide pré-voyage", description: "Vérification documents, check-in en ligne", price: 25 },
         { name: "Transfert aéroport", description: "Transfert domicile-aéroport, Fast-Track", price: 32 },
         { name: "Veille de vols", description: "Veille vols, rebooking imprévu", price: 35 },
         { name: "Travel-Kids", description: "Service Travel-Kids : kit enfant, poussette", price: 30 },
@@ -126,7 +126,7 @@ const ServicesPackages = () => {
       icon: Crown,
       title: "Bika Plus",
       subtitle: "Premium 7j/7",
-      description: "Service haut de gamme avec Chef Family Officer dédié et assistance prioritaire.",
+      description: "Service haut de gamme avec Chef Family Officer dédié et aide prioritaire.",
       image: servicePremiumConcierge,
       services: [
         { name: "Chef Family Officer", description: "Chef Family Officer dédié", price: 0 },
@@ -161,7 +161,7 @@ const ServicesPackages = () => {
       id: "seniors",
       icon: UserCheck,
       title: "Bika Personnes Âgées",
-      subtitle: "Assistance seniors",
+      subtitle: "Aide seniors",
       description: "Accompagnement bienveillant et aide quotidienne pour nos aînés.",
       image: serviceSeniorsAssistance,
       services: [
@@ -179,12 +179,12 @@ const ServicesPackages = () => {
       id: "pro",
       icon: Briefcase,
       title: "Bika Pro",
-      subtitle: "Assistance Entreprise",
-      description: "Solutions d'assistance administrative et executive pour votre entreprise.",
+      subtitle: "Aide Entreprise",
+      description: "Solutions d'aide administrative et executive pour votre entreprise.",
       image: serviceBusinessExecutive,
       services: [
-        { name: "Assistant administratif", description: "Assistants administratifs externalisés", price: 35 },
-        { name: "Executive assistant", description: "Executive assistant à la carte", price: 45 },
+        { name: "Expert administratif", description: "Experts administratifs externalisés", price: 35 },
+        { name: "Executive expert", description: "Executive expert à la carte", price: 45 },
         { name: "Organisation événements", description: "Organisation séminaires, boards", price: 50 },
         { name: "Gestion déplacements", description: "Gestion déplacements d'équipe", price: 40 },
         { name: "Support business", description: "Support business personnalisé", price: 55 }
@@ -243,7 +243,7 @@ const ServicesPackages = () => {
             </span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Découvrez nos 8 packages d'assistance conçus pour vous accompagner dans votre quotidien
+            Découvrez nos 8 packages d'aide conçus pour vous accompagner dans votre quotidien
             avec douceur, fiabilité et humanité.
           </p>
         </div>

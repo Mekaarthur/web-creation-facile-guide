@@ -100,7 +100,7 @@ const Hero = () => {
             <div className="relative">
               <img
                 src="/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png"
-                alt="Famille organisée avec assistant familial"
+                alt="Famille organisée avec expert familial"
                 className="w-full h-auto rounded-2xl shadow-glow"
               />
               

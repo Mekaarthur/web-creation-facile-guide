@@ -10,13 +10,16 @@ const Navbar = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
+  // Fonction pour vérifier si l'utilisateur est admin
+  const isAdmin = user?.email === 'admin@bikawo.com' || user?.email === 'admin@assistme.fr';
+
   const navItems = [
     { name: "Accueil", href: "/" },
     { name: "Nos services", href: "/services" },
     { name: "À propos", href: "/a-propos-de-nous" },
     { name: "Espace client", href: "/espace-personnel" },
     { name: "Espace prestataire", href: "/espace-prestataire" },
-    { name: "Gestion demandes", href: "/gestion-demandes" },
+    ...(isAdmin ? [{ name: "Gestion demandes", href: "/gestion-demandes" }] : []),
     { name: "Nous recrutons", href: "/nous-recrutons" },
     { name: "Aide", href: "/aide" },
     { name: "Contact", href: "/contact" },

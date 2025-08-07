@@ -27,7 +27,7 @@ const Target = () => {
         "Organisation du planning familial"
       ],
       color: "primary",
-      testimonial: "Assist'mw nous a sauvé la vie ! Plus de stress pour les sorties d'école."
+      testimonial: "Bikawo nous a sauvé la vie ! Plus de stress pour les sorties d'école."
     },
     {
       icon: Heart,
@@ -49,7 +49,7 @@ const Target = () => {
       subtitle: "TPE, start-ups & professions libérales",
       description: "Entrepreneurs et indépendants qui ont besoin de déléguer pour se concentrer sur leur activité.",
       needs: [
-        "Assistance administrative externalisée",
+        "Aide administrative externalisée",
         "Gestion de planning professionnel",
         "Organisation d'événements business",
         "Support logistique quotidien"
@@ -61,9 +61,9 @@ const Target = () => {
       icon: Plane,
       title: "Voyageurs fréquents",
       subtitle: "Déplacements pro & perso en France",
-      description: "Personnes en déplacement régulier qui ont besoin d'assistance avant, pendant et après leurs voyages.",
+      description: "Personnes en déplacement régulier qui ont besoin d'aide avant, pendant et après leurs voyages.",
       needs: [
-        "Assistance aéroport et transferts",
+        "Aide aéroport et transferts",
         "Gestion des documents de voyage",
         "Veille des vols et rebooking",
         "Service Travel-Kids pour familles"
@@ -116,7 +116,7 @@ const Target = () => {
             </span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Assist'mw s'adresse à tous ceux qui cherchent à simplifier leur quotidien 
+            Bikawo s'adresse à tous ceux qui cherchent à simplifier leur quotidien 
             et à retrouver du temps pour ce qui compte vraiment.
           </p>
         </div>
@@ -224,7 +224,7 @@ const Target = () => {
               </h3>
               <p className="text-white/90">
                 Que vous soyez parent débordé, senior actif, entrepreneur ambitieux ou grand voyageur, 
-                Assist'mw a la solution qu'il vous faut.
+                Bikawo a la solution qu'il vous faut.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button variant="glass" size="lg">
