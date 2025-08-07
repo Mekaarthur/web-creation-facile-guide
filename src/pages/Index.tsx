@@ -38,14 +38,14 @@ const Index = () => {
             </div>
             
             <div className="bg-card p-8 rounded-xl shadow-elegant border border-border">
-              <Play className="w-12 h-12 text-accent mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-4">Notre histoire</h3>
+              <UserPlus className="w-12 h-12 text-accent mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-4">Devenir prestataire</h3>
               <p className="text-muted-foreground mb-6">
-                Découvrez la vidéo émouvante qui raconte notre parcours
+                Rejoignez notre réseau de prestataires qualifiés
               </p>
-              <Link to="/notre-histoire">
-                <Button variant="default" size="lg" className="w-full bg-gradient-accent hover:opacity-90">
-                  Voir la vidéo
+              <Link to="/espace-prestataire">
+                <Button variant="outline" size="lg" className="w-full">
+                  Rejoindre l'équipe
                 </Button>
               </Link>
             </div>
