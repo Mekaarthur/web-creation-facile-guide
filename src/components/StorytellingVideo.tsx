@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Play, Pause, Volume2, VolumeX, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 // Importation des images de storytelling
 import storytellingIntro from "@/assets/storytelling-intro.jpg";
@@ -23,8 +24,6 @@ const StorytellingVideo = () => {
   const [currentScene, setCurrentScene] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [apiKey, setApiKey] = useState("");
-  const [showApiInput, setShowApiInput] = useState(true);
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
   const { toast } = useToast();
 
@@ -64,47 +63,31 @@ const StorytellingVideo = () => {
   ];
 
   const generateSpeech = async (text: string): Promise<string> => {
-    if (!apiKey) {
-      toast({
-        title: "Clé API manquante",
-        description: "Veuillez entrer votre clé API ElevenLabs pour activer la narration.",
-        variant: "destructive"
-      });
-      return "";
-    }
-
     try {
-      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/FGY2WhTYpPnrIDTdsKH5`, {
-        method: 'POST',
-        headers: {
-          'Accept': 'audio/mpeg',
-          'Content-Type': 'application/json',
-          'xi-api-key': apiKey
-        },
-        body: JSON.stringify({
-          text,
-          model_id: 'eleven_multilingual_v2',
-          voice_settings: {
-            stability: 0.5,
-            similarity_boost: 0.8,
-            style: 0.2,
-            use_speaker_boost: true
-          }
-        })
+      const { data, error } = await supabase.functions.invoke('generate-speech', {
+        body: { text }
       });
 
-      if (!response.ok) {
-        throw new Error('Erreur lors de la génération audio');
+      if (error) {
+        throw new Error(error.message);
       }
 
-      const audioBlob = await response.blob();
-      return URL.createObjectURL(audioBlob);
+      if (data?.audioContent) {
+        const binaryString = atob(data.audioContent);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: 'audio/mpeg' });
+        return URL.createObjectURL(blob);
+      }
+
+      return "";
     } catch (error) {
       console.error('Erreur génération audio:', error);
       toast({
-        title: "Erreur audio",
-        description: "Impossible de générer la narration. Vérifiez votre clé API.",
-        variant: "destructive"
+        title: "Narration désactivée",
+        description: "La vidéo continuera en mode silencieux.",
       });
       return "";
     }
@@ -119,7 +102,7 @@ const StorytellingVideo = () => {
     setCurrentScene(sceneIndex);
     setIsPlaying(true);
 
-    if (!isMuted && apiKey) {
+    if (!isMuted) {
       const audioUrl = await generateSpeech(scenes[sceneIndex].voiceText);
       if (audioUrl) {
         const audio = new Audio(audioUrl);
@@ -176,74 +159,8 @@ const StorytellingVideo = () => {
   };
 
   const startVideo = () => {
-    if (apiKey || isMuted) {
-      setShowApiInput(false);
-      playScene(0);
-    } else {
-      toast({
-        title: "Configuration requise",
-        description: "Entrez votre clé API ElevenLabs ou activez le mode silencieux.",
-        variant: "destructive"
-      });
-    }
+    playScene(0);
   };
-
-  if (showApiInput) {
-    return (
-      <div className="max-w-2xl mx-auto p-6">
-        <Card className="p-8 text-center space-y-6">
-          <div className="space-y-2">
-            <h3 className="text-2xl font-bold text-foreground">
-              Vidéo Storytelling Bikawô
-            </h3>
-            <p className="text-muted-foreground">
-              Une histoire émotionnelle avec narration audio pour donner de l'espoir
-            </p>
-          </div>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2 text-left">
-                Clé API ElevenLabs (pour la narration audio)
-              </label>
-              <input
-                type="password"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder="Entrez votre clé API ElevenLabs"
-                className="w-full p-3 border border-border rounded-lg bg-background"
-              />
-              <p className="text-xs text-muted-foreground mt-1 text-left">
-                Optionnel - Vous pouvez également regarder en mode silencieux
-              </p>
-            </div>
-            
-            <div className="flex gap-3">
-              <Button 
-                onClick={startVideo}
-                className="flex-1"
-                disabled={!apiKey && !isMuted}
-              >
-                <Play className="w-4 h-4 mr-2" />
-                Lancer avec audio
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setIsMuted(true);
-                  startVideo();
-                }}
-                className="flex-1"
-              >
-                <VolumeX className="w-4 h-4 mr-2" />
-                Mode silencieux
-              </Button>
-            </div>
-          </div>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-4xl mx-auto">
