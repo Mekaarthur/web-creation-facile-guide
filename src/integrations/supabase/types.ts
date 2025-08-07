@@ -139,39 +139,92 @@ export type Database = {
           },
         ]
       }
+      chat_conversations: {
+        Row: {
+          booking_id: string | null
+          client_id: string
+          created_at: string
+          id: string
+          last_message_at: string | null
+          provider_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          booking_id?: string | null
+          client_id: string
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          provider_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          booking_id?: string | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          provider_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_conversations_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           booking_id: string
+          conversation_id: string | null
           created_at: string
+          edited_at: string | null
           file_url: string | null
           id: string
           is_read: boolean
           message: string
           message_type: string
           receiver_id: string
+          reply_to_id: string | null
           sender_id: string
+          status: string | null
         }
         Insert: {
           booking_id: string
+          conversation_id?: string | null
           created_at?: string
+          edited_at?: string | null
           file_url?: string | null
           id?: string
           is_read?: boolean
           message: string
           message_type?: string
           receiver_id: string
+          reply_to_id?: string | null
           sender_id: string
+          status?: string | null
         }
         Update: {
           booking_id?: string
+          conversation_id?: string | null
           created_at?: string
+          edited_at?: string | null
           file_url?: string | null
           id?: string
           is_read?: boolean
           message?: string
           message_type?: string
           receiver_id?: string
+          reply_to_id?: string | null
           sender_id?: string
+          status?: string | null
         }
         Relationships: [
           {
@@ -179,6 +232,20 @@ export type Database = {
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
             referencedColumns: ["id"]
           },
         ]
@@ -656,6 +723,45 @@ export type Database = {
         }
         Relationships: []
       }
+      realtime_notifications: {
+        Row: {
+          created_at: string
+          data: Json | null
+          expires_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          priority: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          priority?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          priority?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       referrals: {
         Row: {
           completed_at: string | null
@@ -766,6 +872,39 @@ export type Database = {
           name?: string
           price_per_hour?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      user_presence: {
+        Row: {
+          created_at: string
+          current_page: string | null
+          device_info: Json | null
+          id: string
+          last_seen: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_page?: string | null
+          device_info?: Json | null
+          id?: string
+          last_seen?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_page?: string | null
+          device_info?: Json | null
+          id?: string
+          last_seen?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
