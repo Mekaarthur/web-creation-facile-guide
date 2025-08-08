@@ -82,7 +82,10 @@ export type Database = {
           booking_date: string
           client_id: string
           created_at: string
+          custom_duration: number | null
           end_time: string
+          flexible_hours: boolean | null
+          hourly_rate: number | null
           id: string
           notes: string | null
           provider_id: string
@@ -97,7 +100,10 @@ export type Database = {
           booking_date: string
           client_id: string
           created_at?: string
+          custom_duration?: number | null
           end_time: string
+          flexible_hours?: boolean | null
+          hourly_rate?: number | null
           id?: string
           notes?: string | null
           provider_id: string
@@ -112,7 +118,10 @@ export type Database = {
           booking_date?: string
           client_id?: string
           created_at?: string
+          custom_duration?: number | null
           end_time?: string
+          flexible_hours?: boolean | null
+          hourly_rate?: number | null
           id?: string
           notes?: string | null
           provider_id?: string
@@ -309,6 +318,47 @@ export type Database = {
           urgency_level?: string | null
         }
         Relationships: []
+      }
+      custom_booking_preferences: {
+        Row: {
+          booking_id: string
+          created_at: string
+          duration_hours: number
+          id: string
+          preferred_dates: string[] | null
+          preferred_times: string[] | null
+          special_requirements: string | null
+          updated_at: string
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string
+          duration_hours: number
+          id?: string
+          preferred_dates?: string[] | null
+          preferred_times?: string[] | null
+          special_requirements?: string | null
+          updated_at?: string
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string
+          duration_hours?: number
+          id?: string
+          preferred_dates?: string[] | null
+          preferred_times?: string[] | null
+          special_requirements?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_booking_preferences_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invoices: {
         Row: {
