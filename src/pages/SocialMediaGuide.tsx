@@ -1,6 +1,8 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEOComponent from "@/components/SEOComponent";
+import PostExamples from "@/components/PostExamples";
+import ImageGenerator from "@/components/ImageGenerator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -200,14 +202,23 @@ Et vous, prêt(e) à retrouver du temps pour l'essentiel ?
             </p>
           </div>
 
-          <Tabs defaultValue="strategy" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
+          <Tabs defaultValue="examples" className="w-full">
+            <TabsList className="grid w-full grid-cols-6">
+              <TabsTrigger value="examples">Exemples</TabsTrigger>
+              <TabsTrigger value="generator">Images</TabsTrigger>
               <TabsTrigger value="strategy">Stratégie</TabsTrigger>
               <TabsTrigger value="linkedin">LinkedIn</TabsTrigger>
               <TabsTrigger value="instagram">Instagram</TabsTrigger>
               <TabsTrigger value="calendar">Planning</TabsTrigger>
-              <TabsTrigger value="tools">Outils</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="examples" className="space-y-6">
+              <PostExamples />
+            </TabsContent>
+
+            <TabsContent value="generator" className="space-y-6">
+              <ImageGenerator />
+            </TabsContent>
 
             <TabsContent value="strategy" className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
