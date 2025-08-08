@@ -857,6 +857,8 @@ export type Database = {
           id: string
           is_approved: boolean
           provider_id: string
+          punctuality_rating: number | null
+          quality_rating: number | null
           rating: number
           updated_at: string
         }
@@ -868,6 +870,8 @@ export type Database = {
           id?: string
           is_approved?: boolean
           provider_id: string
+          punctuality_rating?: number | null
+          quality_rating?: number | null
           rating: number
           updated_at?: string
         }
@@ -879,6 +883,8 @@ export type Database = {
           id?: string
           is_approved?: boolean
           provider_id?: string
+          punctuality_rating?: number | null
+          quality_rating?: number | null
           rating?: number
           updated_at?: string
         }
@@ -963,6 +969,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_detailed_rating: {
+        Args: {
+          general_rating: number
+          punctuality_rating: number
+          quality_rating: number
+        }
+        Returns: number
+      }
       calculate_distance: {
         Args: { lat1: number; lon1: number; lat2: number; lon2: number }
         Returns: number
