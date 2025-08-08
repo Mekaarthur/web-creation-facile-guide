@@ -19,6 +19,11 @@ export interface CartItem {
     hours: number;
     address: string;
     notes?: string;
+    slots?: Array<{
+      date: Date;
+      startTime: string;
+      hours: number;
+    }>;
   };
 }
 
@@ -139,6 +144,14 @@ const Cart = ({ isOpen = false, onClose }: CartProps) => {
                     <p className="text-xs text-muted-foreground">{item.packageTitle}</p>
                     {item.description && (
                       <p className="text-xs text-muted-foreground mt-1">{item.description}</p>
+                    )}
+                    {item.customBooking && (
+                      <div className="text-xs text-muted-foreground mt-1 space-y-1">
+                        <p>📅 {item.customBooking.hours}h total - {item.customBooking.address}</p>
+                        {item.customBooking.slots && item.customBooking.slots.length > 1 && (
+                          <p>🕒 {item.customBooking.slots.length} créneaux programmés</p>
+                        )}
+                      </div>
                     )}
                     <div className="flex items-center justify-between mt-2">
                       <Badge variant="secondary">{item.price}€/h</Badge>

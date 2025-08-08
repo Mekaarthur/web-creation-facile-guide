@@ -42,6 +42,7 @@ import {
   Check
 } from "lucide-react";
 import ServicesBooking from "@/components/ServicesBooking";
+import ServiceBookingForm from "@/components/ServiceBookingForm";
 
 const ServicesPackages = () => {
   const [selectedPackage, setSelectedPackage] = useState<any>(null);
@@ -371,16 +372,34 @@ const ServicesPackages = () => {
                                    </p>
                                  )}
                                  
-                                  <Button size="sm" className="w-full" onClick={() => {
-                                    addToCart({
-                                      serviceName: typeof service === 'string' ? service : service.name,
-                                      packageTitle: pkg.title,
-                                      price: typeof service === 'object' && service.price ? service.price : 25,
-                                      description: typeof service === 'object' ? service.description : undefined,
-                                    });
-                                  }}>
-                                    Ajouter au panier
-                                  </Button>
+                                   <Dialog>
+                                     <DialogTrigger asChild>
+                                       <Button size="sm" className="w-full">
+                                         Réserver ce service
+                                       </Button>
+                                     </DialogTrigger>
+                                     <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                                       <DialogHeader>
+                                         <DialogTitle>Réservation flexible - {typeof service === 'string' ? service : service.name}</DialogTitle>
+                                         <DialogDescription>
+                                           Configurez vos créneaux de réservation selon vos besoins
+                                         </DialogDescription>
+                                       </DialogHeader>
+                                       <ServiceBookingForm
+                                         service={{
+                                           name: typeof service === 'string' ? service : service.name,
+                                           description: typeof service === 'object' ? service.description : undefined,
+                                           price: typeof service === 'object' && service.price ? service.price : 25
+                                         }}
+                                         packageTitle={pkg.title}
+                                         onClose={() => {
+                                           // Close the dialog by finding and clicking the close button
+                                           const closeButtons = document.querySelectorAll('[data-dialog-close]');
+                                           closeButtons.forEach(btn => (btn as HTMLElement).click());
+                                         }}
+                                       />
+                                     </DialogContent>
+                                   </Dialog>
                                </div>
                              </Card>
                            ))}
