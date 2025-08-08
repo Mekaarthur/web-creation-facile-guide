@@ -35,8 +35,8 @@ const Navbar = () => {
     { name: "Espace prestataire", href: "/espace-prestataire" },
     ...(isAdmin ? [{ name: "Gestion demandes", href: "/gestion-demandes" }] : []),
     { name: "Nous recrutons", href: "/nous-recrutons" },
-    { name: "Aide", href: "/aide" },
     { name: "Contact", href: "/contact" },
+    { name: "Aide", href: "/aide" },
   ];
 
   return (
