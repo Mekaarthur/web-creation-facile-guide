@@ -20,7 +20,7 @@ export default {
 		extend: {
 			fontFamily: {
 				'sans': ['Inter', 'system-ui', 'sans-serif'],
-				'heading': ['Poppins', 'Inter', 'sans-serif'],
+				'heading': ['Montserrat', 'Inter', 'sans-serif'],
 				'body': ['Inter', 'system-ui', 'sans-serif']
 			},
 			fontSize: {
