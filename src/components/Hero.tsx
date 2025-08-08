@@ -24,7 +24,10 @@ const Hero = () => {
 
             {/* Heading */}
             <div className="space-y-4">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
+              <div className="text-xl md:text-2xl font-medium text-accent mb-2">
+                "La charge mentale en moins, la sérénité en plus"
+              </div>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
                 Votre assistant personnel
                 <span className="block bg-gradient-hero bg-clip-text text-transparent">
                   au quotidien
@@ -32,24 +35,28 @@ const Hero = () => {
                 pour tous vos besoins
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl">
-                Services à domicile professionnels pour particuliers et entreprises. 
-                Ménage, jardinage, bricolage, garde d'enfants, assistance seniors et bien plus.
+                Services combinés avec le même prestataire de confiance. 
+                Ménage + garde d'enfants + aide administrative. Réactivité et flexibilité garanties.
               </p>
             </div>
 
-            {/* Stats */}
-            <div className="flex flex-wrap gap-6 text-sm">
+            {/* Value Props */}
+            <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="flex items-center space-x-2">
                 <Users className="w-5 h-5 text-accent" />
-                <span className="text-muted-foreground">+5k clients satisfaits</span>
+                <span className="text-muted-foreground">Même prestataire</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Clock className="w-5 h-5 text-accent" />
-                <span className="text-muted-foreground">Service 7j/7</span>
+                <span className="text-muted-foreground">Réactivité 24h</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Shield className="w-5 h-5 text-accent" />
-                <span className="text-muted-foreground">Partenaires certifiés</span>
+                <span className="text-muted-foreground">Services combinés</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Star className="w-5 h-5 text-accent" />
+                <span className="text-muted-foreground">Flexibilité totale</span>
               </div>
             </div>
 
