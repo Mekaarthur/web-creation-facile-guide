@@ -29,7 +29,7 @@ interface BookingSlot {
   id: string;
   date: Date;
   startTime: string;
-  hours: number;
+  endTime: string;
 }
 
 const ServiceBookingForm = ({ service, packageTitle, onClose }: ServiceBookingFormProps) => {
@@ -52,7 +52,7 @@ const ServiceBookingForm = ({ service, packageTitle, onClose }: ServiceBookingFo
       id: Date.now().toString(),
       date: new Date(),
       startTime: "09:00",
-      hours: 2
+      endTime: "11:00"
     };
     setBookingSlots([...bookingSlots, newSlot]);
   };
@@ -68,7 +68,12 @@ const ServiceBookingForm = ({ service, packageTitle, onClose }: ServiceBookingFo
   };
 
   const getTotalHours = () => {
-    return bookingSlots.reduce((total, slot) => total + slot.hours, 0);
+    return bookingSlots.reduce((total, slot) => {
+      const start = new Date(`2000-01-01T${slot.startTime}:00`);
+      const end = new Date(`2000-01-01T${slot.endTime}:00`);
+      const hours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+      return total + Math.max(0, hours);
+    }, 0);
   };
 
   const getTotalPrice = () => {
@@ -109,7 +114,7 @@ const ServiceBookingForm = ({ service, packageTitle, onClose }: ServiceBookingFo
         slots: bookingSlots.map(slot => ({
           date: slot.date,
           startTime: slot.startTime,
-          hours: slot.hours
+          endTime: slot.endTime
         }))
       }
     });
@@ -173,7 +178,7 @@ const ServiceBookingForm = ({ service, packageTitle, onClose }: ServiceBookingFo
                   </Button>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   {/* Date */}
                   <div className="space-y-2">
                     <Label>Date</Label>
@@ -228,34 +233,38 @@ const ServiceBookingForm = ({ service, packageTitle, onClose }: ServiceBookingFo
                     </Select>
                   </div>
 
-                  {/* Duration */}
+                  {/* End Time */}
                   <div className="space-y-2">
-                    <Label>Durée (heures)</Label>
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => updateBookingSlot(slot.id, { hours: Math.max(1, slot.hours - 1) })}
-                      >
-                        <Minus className="w-4 h-4" />
-                      </Button>
-                      <Input
-                        type="number"
-                        min="1"
-                        max="12"
-                        value={slot.hours}
-                        onChange={(e) => updateBookingSlot(slot.id, { hours: parseInt(e.target.value) || 1 })}
-                        className="text-center"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => updateBookingSlot(slot.id, { hours: Math.min(12, slot.hours + 1) })}
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
+                    <Label>Heure de fin</Label>
+                    <Select 
+                      value={slot.endTime}
+                      onValueChange={(value) => updateBookingSlot(slot.id, { endTime: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner l'heure de fin" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timeSlots.map((time) => (
+                          <SelectItem key={time} value={time}>
+                            {time}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Duration Display */}
+                  <div className="space-y-2">
+                    <Label>Durée calculée</Label>
+                    <div className="flex items-center justify-center h-10 bg-muted rounded-md">
+                      <span className="text-sm font-medium">
+                        {(() => {
+                          const start = new Date(`2000-01-01T${slot.startTime}:00`);
+                          const end = new Date(`2000-01-01T${slot.endTime}:00`);
+                          const hours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+                          return hours > 0 ? `${hours}h` : "0h";
+                        })()}
+                      </span>
                     </div>
                   </div>
                 </div>

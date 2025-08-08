@@ -22,7 +22,7 @@ export interface CartItem {
     slots?: Array<{
       date: Date;
       startTime: string;
-      hours: number;
+      endTime: string;
     }>;
   };
 }
@@ -150,6 +150,9 @@ const Cart = ({ isOpen = false, onClose }: CartProps) => {
                         <p>📅 {item.customBooking.hours}h total - {item.customBooking.address}</p>
                         {item.customBooking.slots && item.customBooking.slots.length > 1 && (
                           <p>🕒 {item.customBooking.slots.length} créneaux programmés</p>
+                        )}
+                        {item.customBooking.slots && item.customBooking.slots.length === 1 && (
+                          <p>🕒 {item.customBooking.slots[0].startTime} - {item.customBooking.slots[0].endTime}</p>
                         )}
                       </div>
                     )}
