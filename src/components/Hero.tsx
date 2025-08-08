@@ -25,15 +25,14 @@ const Hero = () => {
             {/* Heading */}
             <div className="space-y-4">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
-                Votre assistant personnel
+                Votre partenaire de confiance
                 <span className="block bg-gradient-hero bg-clip-text text-transparent">
-                  au quotidien
+                  pour un quotidien simplifié
                 </span>
-                pour tous vos besoins
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl">
-                Services à domicile professionnels pour particuliers et entreprises. 
-                Ménage, jardinage, bricolage, garde d'enfants, assistance seniors et bien plus.
+                Solutions personnalisées d'assistance familiale et domestique. 
+                Garde d'enfants, aide à domicile, conciergerie et accompagnement administratif par des professionnels certifiés.
               </p>
             </div>
 
