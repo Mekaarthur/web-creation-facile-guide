@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { LiveRequestNotifications } from "@/components/LiveRequestNotifications";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "./hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -25,8 +26,9 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
+    <HelmetProvider>
+      <AuthProvider>
+        <TooltipProvider>
         <Toaster />
         <Sonner />
         <LiveRequestNotifications />
@@ -52,6 +54,7 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
+    </HelmetProvider>
   </QueryClientProvider>
 );
 

@@ -1,8 +1,10 @@
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Twitterbot
 Allow: /
@@ -10,5 +12,25 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
+User-agent: LinkedInBot
+Allow: /
+
 User-agent: *
 Allow: /
+Crawl-delay: 2
+
+# Sitemaps
+Sitemap: https://bikawo.fr/sitemap.xml
+Sitemap: https://bikawo.fr/sitemap-blog.xml
+
+# Sections importantes
+Allow: /services
+Allow: /blog
+Allow: /a-propos-de-nous
+Allow: /contact
+
+# Pages à faible valeur SEO
+Disallow: /admin
+Disallow: /auth
+Disallow: /*?*utm_*
+Disallow: /*?*ref=*

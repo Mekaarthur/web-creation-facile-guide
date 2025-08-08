@@ -1,10 +1,12 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SEOComponent from "@/components/SEOComponent";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Calendar, User, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { seoStructuredData } from "@/utils/seoData";
 
 const blogPosts = [
   {
@@ -66,6 +68,12 @@ const categories = ["Tous", "Bien-être", "Organisation", "Économie", "Parental
 const Blog = () => {
   return (
     <div className="min-h-screen">
+      <SEOComponent 
+        title="Blog Bikawo - Conseils pour réduire la charge mentale"
+        description="Découvrez nos guides pratiques pour déléguer sans culpabiliser, organiser votre quotidien et réduire votre charge mentale familiale."
+        keywords="charge mentale, délégation, organisation familiale, conseils parentaux, aide domestique, garde enfants, bien-être familial"
+        structuredData={seoStructuredData.faq}
+      />
       <Navbar />
       <div className="pt-20">
         {/* Hero Section */}

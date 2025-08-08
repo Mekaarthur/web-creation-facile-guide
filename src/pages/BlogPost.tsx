@@ -1,10 +1,12 @@
 import { useParams, Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SEOComponent from "@/components/SEOComponent";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock, Calendar, User, ArrowLeft, Share2, BookOpen } from "lucide-react";
+import { generateArticleStructuredData } from "@/utils/seoData";
 
 const blogContent = {
   "10-signes-charge-mentale": {
@@ -554,6 +556,10 @@ const BlogPost = () => {
   if (!post) {
     return (
       <div className="min-h-screen">
+        <SEOComponent 
+          title="Article non trouvé | Bikawo"
+          description="L'article que vous cherchez n'existe pas ou a été supprimé."
+        />
         <Navbar />
         <div className="pt-20 py-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -571,6 +577,22 @@ const BlogPost = () => {
 
   return (
     <div className="min-h-screen">
+      <SEOComponent 
+        title={`${post.title} | Blog Bikawo`}
+        description={`${post.title} - Découvrez nos conseils pour réduire la charge mentale et organiser votre quotidien familial.`}
+        keywords={`${post.category.toLowerCase()}, charge mentale, ${post.title.toLowerCase()}, délégation, organisation familiale`}
+        type="article"
+        publishedTime={post.publishedAt}
+        author={post.author}
+        structuredData={generateArticleStructuredData({
+          title: post.title,
+          description: `${post.title} - Conseils pratiques pour un quotidien plus serein`,
+          author: post.author,
+          publishedAt: post.publishedAt,
+          image: post.image,
+          slug: slug || ''
+        })}
+      />
       <Navbar />
       <div className="pt-20">
         {/* Hero Section */}

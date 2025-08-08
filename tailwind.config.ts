@@ -9,6 +9,7 @@ export default {
 		"./src/**/*.{ts,tsx}",
 	],
 	prefix: "",
+	plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 	theme: {
 		container: {
 			center: true,
@@ -187,5 +188,5 @@ export default {
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 } satisfies Config;

@@ -4,9 +4,12 @@ import Testimonials from "@/components/Testimonials";
 import Footer from "@/components/Footer";
 import ChatBot from "@/components/ChatBot";
 import InnovativeFeatures from "@/components/InnovativeFeatures";
+import SEOComponent from "@/components/SEOComponent";
 import { Button } from "@/components/ui/button";
+import { ArrowRight, Clock, Star, Users, Calendar, UserPlus, Heart, Home } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Calendar, UserPlus, Heart, Users, Home, Play } from "lucide-react";
+import { seoStructuredData } from "@/utils/seoData";
+
 import activityChildcare from "@/assets/activity-childcare.jpg";
 import activityHomeHelp from "@/assets/activity-home-help.jpg";
 import activitySeniorHelp from "@/assets/activity-senior-help.jpg";
@@ -14,6 +17,12 @@ import activitySeniorHelp from "@/assets/activity-senior-help.jpg";
 const Index = () => {
   return (
     <div className="min-h-screen">
+      <SEOComponent 
+        title="Bikawo - La charge mentale en moins, la sérénité en plus"
+        description="Services d'assistance familiale combinés avec un seul prestataire de confiance. Ménage, garde d'enfants, aide administrative. Réactivité et flexibilité garanties."
+        keywords="charge mentale, assistant personnel, services à domicile, aide familiale, garde enfants, délégation tâches, conciergerie familiale, Paris, France"
+        structuredData={seoStructuredData.organization}
+      />
       <Navbar />
       <Hero />
       
