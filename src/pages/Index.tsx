@@ -4,8 +4,11 @@ import Testimonials from "@/components/Testimonials";
 import Footer from "@/components/Footer";
 import ChatBot from "@/components/ChatBot";
 import InnovativeFeatures from "@/components/InnovativeFeatures";
-
 import SEOComponent from "@/components/SEOComponent";
+import SEOOptimization from "@/components/SEOOptimization";
+import TrackingManager from "@/components/TrackingManager";
+import RetargetingPixels from "@/components/RetargetingPixels";
+import GoogleSuggestOptimizer from "@/components/GoogleSuggestOptimizer";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Clock, Star, Users, Calendar, UserPlus, Heart, Home } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -18,6 +21,17 @@ import activitySeniorHelp from "@/assets/activity-senior-help.jpg";
 const Index = () => {
   return (
     <div className="min-h-screen">
+      <SEOOptimization 
+        title="Bikawo - Assistant Personnel à Domicile Paris | Services Famille"
+        description="★ N°1 Assistant personnel à domicile Paris. Garde enfants, ménage, aide seniors, démarches admin. Crédit impôt 50%. Prestataire unique de confiance. Réservation en ligne."
+        keywords="assistant personnel Paris, services domicile, garde enfants domicile, ménage Paris, aide seniors, conciergerie familiale, crédit impôt 50%, Bikawo, prestataire confiance"
+      />
+      <GoogleSuggestOptimizer />
+      <TrackingManager />
+      <RetargetingPixels 
+        userType="visitor"
+        serviceInterest={["garde-enfants", "menage", "aide-seniors"]}
+      />
       <SEOComponent 
         title="Bikawo - La charge mentale en moins, la sérénité en plus"
         description="Services d'assistance familiale combinés avec un seul prestataire de confiance. Ménage, garde d'enfants, aide administrative. Réactivité et flexibilité garanties."
