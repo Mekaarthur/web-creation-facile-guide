@@ -1,8 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Star, Users, Clock, Shield } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-assisted-family.jpg";
 
 const Hero = () => {
+  const navigate = useNavigate();
+
   return (
     <section id="home" className="relative min-h-screen flex items-center bg-gradient-subtle overflow-hidden">
       {/* Background decorative elements */}
@@ -32,7 +35,6 @@ const Hero = () => {
                 <span className="block bg-gradient-hero bg-clip-text text-transparent">
                   au quotidien
                 </span>
-                pour tous vos besoins
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl">
                 Services combinés avec le même prestataire de confiance. 
@@ -66,8 +68,8 @@ const Hero = () => {
                 variant="hero" 
                 size="xl" 
                 className="group"
-onClick={() => {
-                  window.location.href = '/services';
+                onClick={() => {
+                  navigate('/services');
                 }}
               >
                 Démarrer maintenant
