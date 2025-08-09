@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from "@/components/ui/badge";
 import Cart, { useCart } from "@/components/Cart";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 // Import des images
 import serviceChildcareEducation from "@/assets/service-childcare-education.jpg";
@@ -750,14 +750,15 @@ const ServicesPackages = () => {
                   ></textarea>
                 </div>
 
-                <Button 
-                  variant="hero" 
-                  className="w-full" 
-                  size="lg"
-                  onClick={() => window.location.href = '/demande-personnalisee'}
-                >
-                  Envoyer ma demande
-                </Button>
+                <Link to="/demande-personnalisee">
+                  <Button 
+                    variant="hero" 
+                    className="w-full" 
+                    size="lg"
+                  >
+                    Envoyer ma demande
+                  </Button>
+                </Link>
               </div>
             </div>
           </Card>

@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { 
   Trophy, 
   Users, 
@@ -170,22 +171,24 @@ const About = () => {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Button 
-                variant="hero" 
-                size="lg" 
-                className="group"
-                onClick={() => window.location.href = '/services'}
-              >
-                Découvrir nos services
-                <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-              </Button>
-              <Button 
-                variant="outline" 
-                size="lg"
-                onClick={() => window.location.href = '/nous-recrutons'}
-              >
-                Rejoindre l'équipe
-              </Button>
+              <Link to="/services">
+                <Button 
+                  variant="hero" 
+                  size="lg" 
+                  className="group"
+                >
+                  Découvrir nos services
+                  <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
+              <Link to="/nous-recrutons">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                >
+                  Rejoindre l'équipe
+                </Button>
+              </Link>
             </div>
           </div>
 

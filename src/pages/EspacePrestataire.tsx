@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -353,12 +354,11 @@ const EspacePrestataire = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button 
-              onClick={() => window.location.href = '/auth'}
-              className="w-full"
-            >
-              Se connecter
-            </Button>
+            <Link to="/auth">
+              <Button className="w-full">
+                Se connecter
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       </div>

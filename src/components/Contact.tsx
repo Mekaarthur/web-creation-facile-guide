@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -282,13 +283,14 @@ const Contact = () => {
                 Avant de nous contacter, consultez notre FAQ. 
                 Vous y trouverez peut-être déjà la réponse à votre question.
               </p>
-              <Button 
-                variant="outline" 
-                size="lg"
-                onClick={() => window.location.href = '/aide'}
-              >
-                Consulter la FAQ
-              </Button>
+              <Link to="/aide">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                >
+                  Consulter la FAQ
+                </Button>
+              </Link>
             </div>
           </Card>
         </div>

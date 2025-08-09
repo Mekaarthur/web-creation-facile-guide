@@ -25,12 +25,12 @@ const ChatBot = () => {
 
   const handleQuickAction = (action: string) => {
     if (action === "Envoyer une demande personnalisée") {
-      window.location.href = '/demande-personnalisee';
+      window.open('/demande-personnalisee', '_self');
       return;
     }
     
     if (action === "Demander un devis") {
-      window.location.href = '/services';
+      window.open('/services', '_self');
       return;
     }
     
