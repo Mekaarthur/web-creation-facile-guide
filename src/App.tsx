@@ -8,6 +8,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "./hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import AuthComplete from "./pages/AuthComplete";
 import EspacePersonnel from "./pages/EspacePersonnel";
 import EspacePrestataire from "./pages/EspacePrestataire";
 import NousRecrutons from "./pages/NousRecrutons";
@@ -38,6 +39,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/complete" element={<AuthComplete />} />
             <Route path="/espace-personnel" element={<EspacePersonnel />} />
             <Route path="/espace-prestataire" element={<EspacePrestataire />} />
             <Route path="/nous-recrutons" element={<NousRecrutons />} />

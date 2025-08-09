@@ -52,21 +52,44 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const redirectUrl = `${window.location.origin}/espace-personnel`;
+      
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             full_name: name,
           },
+          emailRedirectTo: redirectUrl
         },
       });
 
       if (error) throw error;
 
+      // Déclencher l'envoi de l'email de confirmation personnalisé
+      if (data.user && !data.user.email_confirmed_at) {
+        try {
+          const { error: emailError } = await supabase.functions.invoke('send-confirmation-email', {
+            body: { 
+              userEmail: email,
+              userId: data.user.id,
+              confirmationToken: data.session?.access_token
+            }
+          });
+
+          if (emailError) {
+            console.error('Erreur envoi email:', emailError);
+          }
+        } catch (emailError) {
+          console.error('Erreur lors de l\'envoi de l\'email de confirmation:', emailError);
+        }
+      }
+
+
       toast({
-        title: "Inscription réussie",
-        description: "Vérifiez votre email pour confirmer votre compte",
+        title: "Inscription réussie ! 🎉",
+        description: "Un email de confirmation a été envoyé à votre adresse. Veuillez cliquer sur le lien pour activer votre compte.",
       });
     } catch (error: any) {
       toast({

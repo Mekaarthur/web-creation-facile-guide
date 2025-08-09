@@ -29,12 +29,19 @@ file_size_limit = "50MiB"
 [auth]
 enabled = true
 port = 54328
-site_url = "http://localhost:3000"
-additional_redirect_urls = ["https://localhost:3000"]
+site_url = "https://bikawo.com"
+additional_redirect_urls = ["http://localhost:3000", "http://localhost:5173", "https://bikawo.com"]
 jwt_expiry = 3600
 refresh_token_rotation_enabled = true
 secure_password_change_enabled = true
 enable_signup = true
+enable_email_confirmations = true
+enable_email_autoconfirm = false
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = true
 
 [edge_functions]
 enabled = true
@@ -52,4 +59,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.send-notification-email]
+verify_jwt = false
+
+[functions.send-confirmation-email]
 verify_jwt = false

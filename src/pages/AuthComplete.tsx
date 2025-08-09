@@ -1,263 +1,173 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, User, UserPlus, LogIn } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { CheckCircle, XCircle, Loader, Mail, ArrowRight } from 'lucide-react';
 
 const AuthComplete = () => {
-  const [isLogin, setIsLogin] = useState(true);
-  const [civility, setCivility] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [message, setMessage] = useState('');
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
-    if (user) {
-      navigate("/");
-    }
-  }, [user, navigate]);
+    const handleAuthCallback = async () => {
+      try {
+        // Récupérer les paramètres d'URL
+        const token = searchParams.get('token');
+        const type = searchParams.get('type');
+        const error = searchParams.get('error');
+        const errorDescription = searchParams.get('error_description');
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!civility || !firstName || !lastName) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez remplir tous les champs obligatoires.",
-        variant: "destructive",
-      });
-      return;
-    }
+        if (error) {
+          setStatus('error');
+          setMessage(errorDescription || 'Une erreur est survenue lors de la confirmation');
+          return;
+        }
 
-    setLoading(true);
+        if (token && type === 'signup') {
+          // Vérifier la session utilisateur
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          
+          if (sessionError) {
+            console.error('Erreur session:', sessionError);
+            setStatus('error');
+            setMessage('Erreur lors de la vérification de votre session');
+            return;
+          }
 
-    try {
-      const redirectUrl = `${window.location.origin}/`;
-      
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            civility,
-            first_name: firstName,
-            last_name: lastName,
+          if (session?.user) {
+            setStatus('success');
+            setMessage('Votre email a été confirmé avec succès !');
+            
+            toast({
+              title: "Email confirmé ! 🎉",
+              description: "Votre compte est maintenant activé. Bienvenue chez Bikawo !",
+            });
+
+            // Rediriger vers l'espace personnel après 3 secondes
+            setTimeout(() => {
+              navigate('/espace-personnel');
+            }, 3000);
+          } else {
+            setStatus('error');
+            setMessage('Session utilisateur non trouvée. Veuillez vous connecter.');
+          }
+        } else {
+          // Pas de token, probablement une visite directe
+          const urlMessage = searchParams.get('message');
+          if (urlMessage) {
+            setStatus('error');
+            setMessage(urlMessage);
+          } else {
+            setStatus('error');
+            setMessage('Lien de confirmation invalide ou expiré');
           }
         }
-      });
-
-      if (error) {
-        toast({
-          title: "Erreur d'inscription",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Inscription réussie",
-          description: "Vérifiez votre email pour confirmer votre compte.",
-        });
+      } catch (error: any) {
+        console.error('Erreur lors de la confirmation:', error);
+        setStatus('error');
+        setMessage('Une erreur inattendue est survenue');
       }
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Une erreur inattendue s'est produite.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+    };
+
+    handleAuthCallback();
+  }, [searchParams, navigate, toast]);
+
+  const getStatusIcon = () => {
+    switch (status) {
+      case 'loading':
+        return <Loader className="w-16 h-16 text-blue-500 animate-spin" />;
+      case 'success':
+        return <CheckCircle className="w-16 h-16 text-green-500" />;
+      case 'error':
+        return <XCircle className="w-16 h-16 text-red-500" />;
     }
   };
 
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        toast({
-          title: "Erreur de connexion",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Connexion réussie",
-          description: "Vous êtes maintenant connecté.",
-        });
-        navigate("/");
-      }
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Une erreur inattendue s'est produite.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+  const getStatusTitle = () => {
+    switch (status) {
+      case 'loading':
+        return 'Confirmation en cours...';
+      case 'success':
+        return 'Email confirmé !';
+      case 'error':
+        return 'Erreur de confirmation';
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-subtle px-4">
-      <Card className="w-full max-w-md shadow-elegant">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center flex items-center justify-center gap-2">
-            {isLogin ? <LogIn className="w-6 h-6" /> : <UserPlus className="w-6 h-6" />}
-            {isLogin ? "Connexion" : "Inscription"}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 p-4">
+      <Card className="w-full max-w-md text-center">
+        <CardHeader className="space-y-4">
+          <div className="flex justify-center">
+            {getStatusIcon()}
+          </div>
+          <CardTitle className="text-2xl font-bold">
+            {getStatusTitle()}
           </CardTitle>
-          <CardDescription className="text-center">
-            {isLogin
-              ? "Connectez-vous à votre compte Assist'mw"
-              : "Créez votre compte pour accéder à nos services"}
+          <CardDescription className="text-base">
+            {message}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={isLogin ? handleSignIn : handleSignUp} className="space-y-4">
-            {!isLogin && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="civility">Civilité *</Label>
-                  <Select value={civility} onValueChange={setCivility} required={!isLogin}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionnez votre civilité" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="mr">Monsieur</SelectItem>
-                      <SelectItem value="mrs">Madame</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">Prénom *</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="firstName"
-                        type="text"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="Prénom"
-                        className="pl-10"
-                        required={!isLogin}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Nom *</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="lastName"
-                        type="text"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        placeholder="Nom"
-                        className="pl-10"
-                        required={!isLogin}
-                      />
-                    </div>
-                  </div>
-                </div>
+        
+        <CardContent className="space-y-4">
+          {status === 'success' && (
+            <div className="space-y-4">
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <p className="text-sm text-green-700">
+                  Vous allez être automatiquement redirigé vers votre espace personnel dans quelques secondes...
+                </p>
               </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="votre@email.com"
-                  className="pl-10"
-                  required
-                />
-              </div>
+              
+              <Button 
+                onClick={() => navigate('/espace-personnel')}
+                className="w-full"
+              >
+                Accéder à mon espace personnel
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
             </div>
+          )}
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe *</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="pl-10 pr-10"
-                  required
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
+          {status === 'error' && (
+            <div className="space-y-4">
+              <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                <div className="flex items-center justify-center space-x-2 text-red-700">
+                  <Mail className="w-4 h-4" />
+                  <p className="text-sm">
+                    Problème avec votre confirmation d'email
+                  </p>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Button 
+                  onClick={() => navigate('/auth')}
+                  className="w-full"
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
-                  )}
+                  Retour à la connexion
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  onClick={() => navigate('/')}
+                  className="w-full"
+                >
+                  Retour à l'accueil
                 </Button>
               </div>
             </div>
+          )}
 
-            <Button
-              type="submit"
-              className="w-full"
-              variant="hero"
-              size="lg"
-              disabled={loading}
-            >
-              {loading ? "Chargement..." : (isLogin ? "Se connecter" : "S'inscrire")}
-            </Button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <Button
-              variant="link"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-sm"
-            >
-              {isLogin
-                ? "Pas de compte ? Inscrivez-vous"
-                : "Déjà un compte ? Connectez-vous"}
-            </Button>
-          </div>
-
-          {!isLogin && (
-            <div className="mt-4 text-xs text-muted-foreground text-center">
-              En vous inscrivant, vous acceptez nos{" "}
-              <Button variant="link" className="h-auto p-0 text-xs">
-                Conditions d'utilisation
-              </Button>{" "}
-              et notre{" "}
-              <Button variant="link" className="h-auto p-0 text-xs">
-                Politique de confidentialité
-              </Button>
+          {status === 'loading' && (
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <p className="text-sm text-blue-700">
+                Veuillez patienter pendant que nous vérifions votre email...
+              </p>
             </div>
           )}
         </CardContent>
