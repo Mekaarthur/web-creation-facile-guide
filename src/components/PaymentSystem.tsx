@@ -26,28 +26,43 @@ const PaymentSystem = ({ amount, onPaymentSuccess, onPaymentCancel }: PaymentSys
   const { toast } = useToast();
 
   const handlePayment = async () => {
+    if (!amount || amount <= 0) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Le montant doit être supérieur à 0"
+      });
+      return;
+    }
+
     setProcessing(true);
     
     try {
       const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: { amount, bookingId: 'current-booking' }
+        body: { 
+          amount, 
+          bookingId: 'current-booking',
+          serviceName: "Service Bikawo",
+          description: `Paiement de ${amount}€ pour service Bikawo`
+        }
       });
 
       if (error) throw error;
 
-      // Rediriger vers Stripe Checkout
-      window.open(data.url, '_blank');
-      
-      toast({
-        title: "Redirection vers Stripe",
-        description: "Vous allez être redirigé vers la page de paiement sécurisée",
-      });
+      if (data?.url) {
+        // Open Stripe checkout in a new tab
+        window.open(data.url, '_blank');
+        toast({
+          title: "Redirection vers le paiement",
+          description: "Une nouvelle fenêtre s'est ouverte pour le paiement sécurisé"
+        });
+      }
     } catch (error) {
-      console.error('Erreur paiement:', error);
+      console.error('Payment error:', error);
       toast({
-        title: "Erreur de paiement",
-        description: "Impossible de traiter le paiement. Veuillez réessayer.",
         variant: "destructive",
+        title: "Erreur de paiement",
+        description: "Une erreur est survenue lors de l'initialisation du paiement"
       });
     } finally {
       setProcessing(false);

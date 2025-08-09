@@ -116,14 +116,12 @@ export const StripePaymentIntegration: React.FC<PaymentIntegrationProps> = ({
     try {
       const { data, error } = await supabase.functions.invoke('create-payment', {
         body: {
-          amount: Math.round(amount * 100), // Convertir en centimes
-          currency: 'eur',
+          amount: amount, // Montant en euros
           description: serviceDescription,
-          payment_method_id: selectedMethod,
-          provider_id: providerId,
-          booking_id: bookingId,
+          serviceName: serviceDescription,
+          bookingId: bookingId,
           metadata: {
-            service_description: serviceDescription,
+            provider_id: providerId,
             booking_id: bookingId
           }
         }
@@ -131,21 +129,12 @@ export const StripePaymentIntegration: React.FC<PaymentIntegrationProps> = ({
 
       if (error) throw error;
 
-      if (data.requires_action) {
-        // Payment nécessite une action (3D Secure, etc.)
+      if (data?.url) {
+        // Open Stripe checkout in a new tab
+        window.open(data.url, '_blank');
         toast({
-          title: "Authentification requise",
-          description: "Veuillez compléter l'authentification de votre paiement"
-        });
-        
-        if (data.redirect_url) {
-          window.open(data.redirect_url, '_blank');
-        }
-      } else if (data.success) {
-        // Paiement réussi
-        toast({
-          title: "Paiement réussi",
-          description: "Votre paiement a été traité avec succès"
+          title: "Redirection vers le paiement",
+          description: "Une nouvelle fenêtre s'est ouverte pour le paiement sécurisé"
         });
         
         onPaymentSuccess?.(data);
