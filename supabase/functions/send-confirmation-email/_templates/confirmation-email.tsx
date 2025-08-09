@@ -38,15 +38,10 @@ export const ConfirmationEmail = ({
           />
         </Section>
 
-        <Heading style={h1}>BIENVENU SUR BIKAWO</Heading>
+        <Heading style={h1}>BIENVENUE SUR BIKAWO</Heading>
         
         <Text style={text}>
-          Merci de vous être inscrit sur Bikawo, votre assistant personnel au quotidien !
-        </Text>
-
-        <Text style={text}>
-          Pour commencer à utiliser nos services et bénéficier d'un accompagnement personnalisé, 
-          veuillez confirmer votre adresse email en cliquant sur le bouton ci-dessous :
+          Bienvenue sur Bikawo ! Clique sur le lien ci-dessous pour activer ton compte et commencer à profiter de nos services.
         </Text>
 
         <Section style={buttonContainer}>
