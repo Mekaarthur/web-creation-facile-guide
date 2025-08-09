@@ -21,7 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 const EspacePrestataire = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { toast } = useToast();
   const [profile, setProfile] = useState({
     business_name: "",
@@ -342,6 +342,17 @@ const EspacePrestataire = () => {
       default: return <AlertCircle className="w-4 h-4 text-yellow-500" />;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
