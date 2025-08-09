@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import Cart, { useCart } from "@/components/Cart";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 // Import des images
 import serviceChildcareEducation from "@/assets/service-childcare-education.jpg";
@@ -48,6 +50,16 @@ const ServicesPackages = () => {
   const [selectedPackage, setSelectedPackage] = useState<any>(null);
   const [showCart, setShowCart] = useState(false);
   const { addToCart, getCartItemsCount } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleReservation = (pkg: any) => {
+    if (!user) {
+      navigate('/auth');
+    } else {
+      setSelectedPackage(pkg);
+    }
+  };
   
   const packages = [
     {
@@ -327,13 +339,13 @@ const ServicesPackages = () => {
                    {/* CTA */}
                    <Dialog>
                      <DialogTrigger asChild>
-                       <Button 
-                         variant={pkg.popular ? "accent" : "outline"} 
-                         className="w-full group/btn"
-                         onClick={() => {
-                           setSelectedPackage(pkg);
-                         }}
-                       >
+                        <Button 
+                          variant={pkg.popular ? "accent" : "outline"} 
+                          className="w-full group/btn"
+                          onClick={() => {
+                            handleReservation(pkg);
+                          }}
+                        >
                          Réserver {pkg.title}
                          <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
                        </Button>

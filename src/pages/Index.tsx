@@ -4,7 +4,7 @@ import Testimonials from "@/components/Testimonials";
 import Footer from "@/components/Footer";
 import ChatBot from "@/components/ChatBot";
 import InnovativeFeatures from "@/components/InnovativeFeatures";
-import DigitalFlyer from "@/components/DigitalFlyer";
+
 import SEOComponent from "@/components/SEOComponent";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Clock, Star, Users, Calendar, UserPlus, Heart, Home } from "lucide-react";
@@ -40,7 +40,7 @@ const Index = () => {
               <p className="text-muted-foreground mb-6">
                 Accédez à nos services et réservez votre prestation en quelques clics
               </p>
-              <Link to="/espace-personnel">
+              <Link to="/services">
                 <Button variant="default" size="lg" className="w-full">
                   Réserver maintenant
                 </Button>
@@ -138,7 +138,7 @@ const Index = () => {
         </div>
       </section>
 
-      <DigitalFlyer />
+      
       <InnovativeFeatures />
       <Testimonials />
       <Footer />

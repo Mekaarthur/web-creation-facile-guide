@@ -66,7 +66,7 @@ const Hero = () => {
                 variant="hero" 
                 size="xl" 
                 className="group"
-                onClick={() => {
+onClick={() => {
                   window.location.href = '/services';
                 }}
               >

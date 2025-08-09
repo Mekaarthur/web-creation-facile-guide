@@ -7,10 +7,22 @@ import Cart from "@/components/Cart";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/components/Cart";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const ServicesPage = () => {
   const [showCart, setShowCart] = useState(false);
   const { getCartItemsCount } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleReservation = () => {
+    if (!user) {
+      navigate('/auth');
+    } else {
+      setShowCart(true);
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -39,7 +51,7 @@ const ServicesPage = () => {
       {/* Floating Cart Button */}
       <div className="fixed bottom-6 right-6 z-50">
         <Button
-          onClick={() => setShowCart(!showCart)}
+          onClick={handleReservation}
           className="rounded-full w-14 h-14 shadow-lg hover:shadow-xl transition-all"
           variant="hero"
         >
