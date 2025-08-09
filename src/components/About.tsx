@@ -170,12 +170,21 @@ const About = () => {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Button variant="hero" size="lg" className="group">
+              <Button 
+                variant="hero" 
+                size="lg" 
+                className="group"
+                onClick={() => window.location.href = '/services'}
+              >
                 Découvrir nos services
                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               </Button>
-              <Button variant="outline" size="lg">
-                Notre équipe
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={() => window.location.href = '/nous-recrutons'}
+              >
+                Rejoindre l'équipe
               </Button>
             </div>
           </div>

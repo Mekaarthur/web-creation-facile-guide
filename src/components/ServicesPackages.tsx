@@ -28,6 +28,7 @@ import {
   Shield,
   Star,
   Heart,
+  MessageSquare,
   Car,
   Calendar,
   Utensils,
@@ -749,7 +750,12 @@ const ServicesPackages = () => {
                   ></textarea>
                 </div>
 
-                <Button variant="hero" className="w-full" size="lg">
+                <Button 
+                  variant="hero" 
+                  className="w-full" 
+                  size="lg"
+                  onClick={() => window.location.href = '/demande-personnalisee'}
+                >
                   Envoyer ma demande
                 </Button>
               </div>

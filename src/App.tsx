@@ -22,6 +22,7 @@ import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import AnalyticsSEO from "./pages/AnalyticsSEO";
 import SocialMediaGuide from "./pages/SocialMediaGuide";
+import CustomRequest from "./pages/CustomRequest";
 
 import NotFound from "./pages/NotFound";
 
@@ -52,6 +53,7 @@ const App = () => (
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/analytics-seo" element={<AnalyticsSEO />} />
             <Route path="/guide-reseaux-sociaux" element={<SocialMediaGuide />} />
+            <Route path="/demande-personnalisee" element={<CustomRequest />} />
             
             <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

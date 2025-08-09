@@ -435,6 +435,57 @@ export type Database = {
           },
         ]
       }
+      custom_requests: {
+        Row: {
+          additional_notes: string | null
+          budget_range: string | null
+          client_email: string
+          client_name: string
+          client_phone: string | null
+          created_at: string
+          id: string
+          location: string
+          preferred_date: string | null
+          preferred_time: string | null
+          service_description: string
+          status: string
+          updated_at: string
+          urgency_level: string | null
+        }
+        Insert: {
+          additional_notes?: string | null
+          budget_range?: string | null
+          client_email: string
+          client_name: string
+          client_phone?: string | null
+          created_at?: string
+          id?: string
+          location: string
+          preferred_date?: string | null
+          preferred_time?: string | null
+          service_description: string
+          status?: string
+          updated_at?: string
+          urgency_level?: string | null
+        }
+        Update: {
+          additional_notes?: string | null
+          budget_range?: string | null
+          client_email?: string
+          client_name?: string
+          client_phone?: string | null
+          created_at?: string
+          id?: string
+          location?: string
+          preferred_date?: string | null
+          preferred_time?: string | null
+          service_description?: string
+          status?: string
+          updated_at?: string
+          urgency_level?: string | null
+        }
+        Relationships: []
+      }
       invoices: {
         Row: {
           amount: number
@@ -490,6 +541,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      job_applications: {
+        Row: {
+          availability: string
+          category: string
+          certifications: string | null
+          created_at: string
+          cv_file_url: string | null
+          email: string
+          experience_years: number | null
+          first_name: string
+          has_transport: boolean | null
+          id: string
+          last_name: string
+          motivation: string
+          phone: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          availability: string
+          category: string
+          certifications?: string | null
+          created_at?: string
+          cv_file_url?: string | null
+          email: string
+          experience_years?: number | null
+          first_name: string
+          has_transport?: boolean | null
+          id?: string
+          last_name: string
+          motivation: string
+          phone: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          availability?: string
+          category?: string
+          certifications?: string | null
+          created_at?: string
+          cv_file_url?: string | null
+          email?: string
+          experience_years?: number | null
+          first_name?: string
+          has_transport?: boolean | null
+          id?: string
+          last_name?: string
+          motivation?: string
+          phone?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       notifications: {
         Row: {

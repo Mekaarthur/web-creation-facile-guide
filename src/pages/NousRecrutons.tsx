@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +29,78 @@ const NousRecrutons = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedCategoryDetail, setSelectedCategoryDetail] = useState<any>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    category: "",
+    experience_years: "",
+    availability: "",
+    motivation: "",
+    has_transport: false,
+    certifications: ""
+  });
+
+  const { toast } = useToast();
+
+  const handleJobApplication = async () => {
+    if (!formData.first_name || !formData.last_name || !formData.email || !formData.phone || !selectedCategory || !formData.availability || !formData.motivation) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs obligatoires"
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabase
+        .from('job_applications')
+        .insert([{
+          ...formData,
+          category: selectedCategory,
+          experience_years: parseInt(formData.experience_years) || 0
+        }]);
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Candidature envoyée !",
+        description: "Votre candidature a été envoyée avec succès. Nous vous recontacterons rapidement."
+      });
+
+      // Reset form
+      setFormData({
+        first_name: "",
+        last_name: "",
+        email: "",
+        phone: "",
+        category: "",
+        experience_years: "",
+        availability: "",
+        motivation: "",
+        has_transport: false,
+        certifications: ""
+      });
+      setSelectedCategory("");
+
+    } catch (error) {
+      console.error('Error submitting job application:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible d'envoyer votre candidature. Veuillez réessayer."
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const categories = [
     {
@@ -418,22 +492,39 @@ const NousRecrutons = () => {
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">Prénom</label>
-                  <Input placeholder="Votre prénom" />
+                  <Input 
+                    value={formData.first_name}
+                    onChange={(e) => setFormData({...formData, first_name: e.target.value})}
+                    placeholder="Votre prénom" 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">Nom</label>
-                  <Input placeholder="Votre nom" />
+                  <Input 
+                    value={formData.last_name}
+                    onChange={(e) => setFormData({...formData, last_name: e.target.value})}
+                    placeholder="Votre nom" 
+                  />
                 </div>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Email</label>
-                <Input type="email" placeholder="votre.email@exemple.com" />
+                <Input 
+                  type="email" 
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  placeholder="votre.email@exemple.com" 
+                />
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Téléphone</label>
-                <Input placeholder="06 12 34 56 78" />
+                <Input 
+                  value={formData.phone}
+                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  placeholder="06 12 34 56 78" 
+                />
               </div>
               
               <div>
@@ -453,18 +544,43 @@ const NousRecrutons = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Expérience</label>
-                <Textarea 
-                  placeholder="Décrivez votre expérience pertinente pour cette catégorie..."
-                  rows={4}
+                <label className="block text-sm font-medium text-foreground mb-2">Années d'expérience</label>
+                <Input 
+                  type="number"
+                  value={formData.experience_years}
+                  onChange={(e) => setFormData({...formData, experience_years: e.target.value})}
+                  placeholder="Ex: 3"
+                  min="0"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Disponibilités</label>
                 <Textarea 
+                  value={formData.availability}
+                  onChange={(e) => setFormData({...formData, availability: e.target.value})}
                   placeholder="Indiquez vos créneaux de disponibilité..."
                   rows={3}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Motivation</label>
+                <Textarea 
+                  value={formData.motivation}
+                  onChange={(e) => setFormData({...formData, motivation: e.target.value})}
+                  placeholder="Pourquoi souhaitez-vous rejoindre notre équipe ?"
+                  rows={4}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Certifications</label>
+                <Textarea 
+                  value={formData.certifications}
+                  onChange={(e) => setFormData({...formData, certifications: e.target.value})}
+                  placeholder="Listez vos certifications, formations, diplômes..."
+                  rows={2}
                 />
               </div>
               
@@ -478,8 +594,14 @@ const NousRecrutons = () => {
                 <p className="text-xs text-muted-foreground mt-1">Format PDF uniquement, taille maximale 5 Mo</p>
               </div>
               
-              <Button variant="hero" className="w-full" size="lg">
-                Envoyer ma candidature
+              <Button 
+                variant="hero" 
+                className="w-full" 
+                size="lg"
+                onClick={handleJobApplication}
+                disabled={loading}
+              >
+                {loading ? "Envoi en cours..." : "Envoyer ma candidature"}
               </Button>
             </CardContent>
           </Card>
