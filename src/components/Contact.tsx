@@ -282,7 +282,11 @@ const Contact = () => {
                 Avant de nous contacter, consultez notre FAQ. 
                 Vous y trouverez peut-être déjà la réponse à votre question.
               </p>
-              <Button variant="outline" size="lg">
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={() => window.location.href = '/aide'}
+              >
                 Consulter la FAQ
               </Button>
             </div>

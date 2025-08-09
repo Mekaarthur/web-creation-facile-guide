@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Play, Star, Users, Clock, Shield } from "lucide-react";
+import { ArrowRight, Play, Star, Users, Clock, Shield, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-assisted-family.jpg";
 
@@ -72,6 +72,18 @@ const Hero = () => {
                   <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
+              
+              <Link to="/demande-personnalisee">
+                <Button 
+                  variant="outline" 
+                  size="xl" 
+                  className="group border-white/20 text-white hover:bg-white/10"
+                >
+                  Envoyer une demande personnalisée
+                  <MessageSquare className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
+              
               <Button 
                 variant="glass" 
                 size="xl" 

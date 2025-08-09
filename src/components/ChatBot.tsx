@@ -17,10 +17,26 @@ const ChatBot = () => {
 
   const quickActions = [
     "Demander un devis",
+    "Envoyer une demande personnalisée",
     "Réserver une garde d'enfant",
     "Parler à un conseiller",
     "Tarifs des services"
   ];
+
+  const handleQuickAction = (action: string) => {
+    if (action === "Envoyer une demande personnalisée") {
+      window.location.href = '/demande-personnalisee';
+      return;
+    }
+    
+    if (action === "Demander un devis") {
+      window.location.href = '/services';
+      return;
+    }
+    
+    // Pour les autres actions, on envoie le message normalement
+    setInputMessage(action);
+  };
 
   const handleSendMessage = () => {
     if (!inputMessage.trim()) return;
@@ -37,9 +53,15 @@ const ChatBot = () => {
 
     // Simulation de réponse automatique
     setTimeout(() => {
+      let botResponseText = "Merci pour votre message ! Un de nos conseillers va vous recontacter dans les plus brefs délais. En attendant, vous pouvez nous appeler au 06 09 08 53 90.";
+      
+      if (inputMessage.includes("devis") || inputMessage.includes("tarif")) {
+        botResponseText = "Pour un devis personnalisé, rendez-vous sur notre page services ou appelez-nous au 06 09 08 53 90 pour un conseil immédiat !";
+      }
+      
       const botResponse = {
         id: messages.length + 2,
-        text: "Merci pour votre message ! Un de nos conseillers va vous recontacter dans les plus brefs délais. En attendant, vous pouvez nous appeler au 06 09 08 53 90.",
+        text: botResponseText,
         isBot: true,
         timestamp: new Date()
       };
@@ -115,7 +137,7 @@ const ChatBot = () => {
                     variant="outline"
                     size="sm"
                     className="text-xs h-8"
-                    onClick={() => setInputMessage(action)}
+                    onClick={() => handleQuickAction(action)}
                   >
                     {action}
                   </Button>
