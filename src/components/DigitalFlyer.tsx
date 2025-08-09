@@ -18,7 +18,15 @@ import {
   MapPin,
   QrCode,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Euro,
+  Calendar,
+  Award,
+  Briefcase,
+  Target,
+  TrendingUp,
+  HandHeart,
+  CheckCircle
 } from 'lucide-react';
 
 // Import images that exist in the project
@@ -29,7 +37,7 @@ import serviceAnimals from '@/assets/service-animals.jpg';
 import serviceHome from '@/assets/service-home-cleaning.jpg';
 
 const DigitalFlyer = () => {
-  const [currentSide, setCurrentSide] = useState<'front' | 'back'>('front');
+  const [currentSide, setCurrentSide] = useState<'front' | 'back' | 'advantages'>('front');
 
   const services = [
     { icon: Baby, title: "BIKA KIDS", subtitle: "GARDE ET AIDE AUX DEVOIRS", color: "text-yellow-600" },
@@ -57,6 +65,62 @@ const DigitalFlyer = () => {
     { src: serviceSeniors, alt: "Aide aux seniors", rotation: "rotate-2" },
     { src: serviceHome, alt: "Services maison", rotation: "-rotate-1" },
     { src: serviceAnimals, alt: "Soins animaux", rotation: "rotate-3" }
+  ];
+
+  const clientAdvantages = [
+    {
+      icon: Euro,
+      title: "Crédit d'impôt 50%",
+      description: "Bénéficiez d'un crédit d'impôt immédiat sur tous nos services"
+    },
+    {
+      icon: Clock,
+      title: "Disponibilité 7j/7",
+      description: "Service client réactif et prestataires disponibles quand vous en avez besoin"
+    },
+    {
+      icon: ShieldCheck,
+      title: "Personnel vérifié",
+      description: "Tous nos prestataires sont sélectionnés et formés avec soin"
+    },
+    {
+      icon: Heart,
+      title: "Programme de parrainage",
+      description: "20€ de crédits offerts pour vous et votre filleul après sa 1ère mission"
+    }
+  ];
+
+  const providerAdvantages = [
+    {
+      icon: TrendingUp,
+      title: "Revenus complémentaires",
+      description: "Augmentez vos revenus avec des missions flexibles et bien rémunérées"
+    },
+    {
+      icon: Calendar,
+      title: "Flexibilité totale",
+      description: "Choisissez vos horaires et vos missions selon votre disponibilité"
+    },
+    {
+      icon: Award,
+      title: "Formation continue",
+      description: "Accès à des formations pour développer vos compétences"
+    },
+    {
+      icon: HandHeart,
+      title: "Programme de parrainage",
+      description: "30€ offerts après que votre filleul ait complété 5 missions avec un bon score"
+    },
+    {
+      icon: Briefcase,
+      title: "Support professionnel",
+      description: "Accompagnement personnalisé et assistance technique"
+    },
+    {
+      icon: Target,
+      title: "Missions qualifiées",
+      description: "Accès à des clients pré-qualifiés et motivés"
+    }
   ];
 
   const FrontSide = () => (
@@ -216,6 +280,75 @@ const DigitalFlyer = () => {
     </div>
   );
 
+  const AdvantagesSide = () => (
+    <div className="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <div className="text-3xl font-bold text-primary mb-2">BIKAWO</div>
+        <div className="text-lg text-muted-foreground">Avantages pour tous</div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-8 h-full">
+        {/* Client Advantages */}
+        <div className="bg-white rounded-xl p-6 shadow-lg">
+          <div className="text-center mb-6">
+            <Users className="w-12 h-12 text-primary mx-auto mb-3" />
+            <h3 className="text-xl font-bold text-gray-800">Avantages Clients</h3>
+          </div>
+          <div className="space-y-4">
+            {clientAdvantages.map((advantage, index) => (
+              <div key={index} className="flex items-start space-x-3">
+                <advantage.icon className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
+                <div>
+                  <h4 className="font-semibold text-gray-800 text-sm">{advantage.title}</h4>
+                  <p className="text-xs text-gray-600 mt-1">{advantage.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Provider Advantages */}
+        <div className="bg-white rounded-xl p-6 shadow-lg">
+          <div className="text-center mb-6">
+            <Briefcase className="w-12 h-12 text-secondary mx-auto mb-3" />
+            <h3 className="text-xl font-bold text-gray-800">Avantages Prestataires</h3>
+          </div>
+          <div className="space-y-3">
+            {providerAdvantages.map((advantage, index) => (
+              <div key={index} className="flex items-start space-x-3">
+                <advantage.icon className="w-5 h-5 text-secondary mt-1 flex-shrink-0" />
+                <div>
+                  <h4 className="font-semibold text-gray-800 text-sm">{advantage.title}</h4>
+                  <p className="text-xs text-gray-600 mt-1">{advantage.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Call to action */}
+      <div className="text-center mt-8">
+        <div className="bg-white/80 rounded-lg p-4 backdrop-blur-sm">
+          <p className="text-sm text-gray-700 mb-3">
+            Rejoignez la communauté Bikawo dès aujourd'hui !
+          </p>
+          <div className="flex justify-center space-x-4">
+            <Badge variant="outline" className="bg-primary/10 text-primary border-primary">
+              <Phone className="w-3 h-3 mr-1" />
+              +33 0609085390
+            </Badge>
+            <Badge variant="outline" className="bg-secondary/10 text-secondary border-secondary">
+              <Mail className="w-3 h-3 mr-1" />
+              contact@bikawo.com
+            </Badge>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="max-w-4xl mx-auto p-8">
       <div className="text-center mb-8">
@@ -225,22 +358,30 @@ const DigitalFlyer = () => {
         </p>
         
         {/* Toggle buttons */}
-        <div className="flex justify-center space-x-4 mb-8">
+        <div className="flex justify-center space-x-2 mb-8 flex-wrap">
           <Button
             variant={currentSide === 'front' ? 'default' : 'outline'}
             onClick={() => setCurrentSide('front')}
             className="flex items-center space-x-2"
           >
             <ChevronLeft className="w-4 h-4" />
-            <span>Recto (Style Créatif)</span>
+            <span>Recto</span>
           </Button>
           <Button
             variant={currentSide === 'back' ? 'default' : 'outline'}
             onClick={() => setCurrentSide('back')}
             className="flex items-center space-x-2"
           >
-            <span>Verso (Informations)</span>
+            <span>Verso</span>
             <ChevronRight className="w-4 h-4" />
+          </Button>
+          <Button
+            variant={currentSide === 'advantages' ? 'default' : 'outline'}
+            onClick={() => setCurrentSide('advantages')}
+            className="flex items-center space-x-2"
+          >
+            <CheckCircle className="w-4 h-4" />
+            <span>Avantages</span>
           </Button>
         </div>
       </div>
@@ -249,7 +390,9 @@ const DigitalFlyer = () => {
       <Card className="mx-auto w-full max-w-2xl shadow-2xl overflow-hidden">
         <CardContent className="p-0">
           <div className="aspect-[3/4] relative">
-            {currentSide === 'front' ? <FrontSide /> : <BackSide />}
+            {currentSide === 'front' && <FrontSide />}
+            {currentSide === 'back' && <BackSide />}
+            {currentSide === 'advantages' && <AdvantagesSide />}
           </div>
         </CardContent>
       </Card>
