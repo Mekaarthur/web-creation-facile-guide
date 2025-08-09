@@ -45,10 +45,13 @@ import {
 } from "lucide-react";
 import ServicesBooking from "@/components/ServicesBooking";
 import ServiceBookingForm from "@/components/ServiceBookingForm";
+import SubscriptionBooking from "@/components/SubscriptionBooking";
 
 const ServicesPackages = () => {
   const [selectedPackage, setSelectedPackage] = useState<any>(null);
   const [showCart, setShowCart] = useState(false);
+  const [showSubscription, setShowSubscription] = useState(false);
+  const [selectedServiceForSubscription, setSelectedServiceForSubscription] = useState<any>(null);
   const { addToCart, getCartItemsCount } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -58,6 +61,20 @@ const ServicesPackages = () => {
       navigate('/auth');
     } else {
       setSelectedPackage(pkg);
+    }
+  };
+
+  const handleSubscriptionReservation = (pkg: any) => {
+    if (!user) {
+      navigate('/auth');
+    } else {
+      setSelectedServiceForSubscription({
+        id: pkg.id,
+        title: pkg.title,
+        icon: pkg.icon,
+        price: pkg.price
+      });
+      setShowSubscription(true);
     }
   };
   
@@ -337,19 +354,20 @@ const ServicesPackages = () => {
                   </div>
 
                    {/* CTA */}
-                   <Dialog>
-                     <DialogTrigger asChild>
-                        <Button 
-                          variant={pkg.popular ? "accent" : "outline"} 
-                          className="w-full group/btn"
-                          onClick={() => {
-                            handleReservation(pkg);
-                          }}
-                        >
-                         Réserver {pkg.title}
-                         <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
-                       </Button>
-                     </DialogTrigger>
+                   <div className="space-y-2">
+                     <Dialog>
+                       <DialogTrigger asChild>
+                          <Button 
+                            variant={pkg.popular ? "accent" : "outline"} 
+                            className="w-full group/btn"
+                            onClick={() => {
+                              handleReservation(pkg);
+                            }}
+                          >
+                           Réserver à l'heure
+                           <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                         </Button>
+                       </DialogTrigger>
                      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                        <DialogHeader>
                          <DialogTitle className="flex items-center gap-2">
@@ -418,8 +436,18 @@ const ServicesPackages = () => {
                          </div>
                        </div>
                      </DialogContent>
-                   </Dialog>
-                 </div>
+                    </Dialog>
+                    
+                    <Button 
+                      variant="secondary"
+                      className="w-full group/btn"
+                      onClick={() => handleSubscriptionReservation(pkg)}
+                    >
+                      Réserver
+                      <Calendar className="w-4 h-4 ml-1 transition-transform group-hover/btn:translate-x-1" />
+                    </Button>
+                  </div>
+                </div>
                </Card>
              );
            })}
@@ -443,29 +471,36 @@ const ServicesPackages = () => {
                 <div className="text-2xl font-bold text-primary">22-25€/h</div>
               </div>
               <p className="text-sm text-muted-foreground mb-3">
-                Choisir n'importe quel service Zen selon vos besoins ponctuels.
+                Choisir n'importe quel service Bikawo selon vos besoins ponctuels.
               </p>
               <div className="space-y-2">
                 <h5 className="text-sm font-medium text-foreground">Services inclus :</h5>
                 <ul className="text-xs text-muted-foreground space-y-1">
                   <li className="flex items-start space-x-2">
                     <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
-                    <span>Zen Kids : garde ponctuelle, sorties éducatives, aide aux devoirs</span>
+                    <span>Bika Kids : garde ponctuelle, sorties éducatives, aide aux devoirs</span>
                   </li>
                   <li className="flex items-start space-x-2">
                     <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
-                    <span>Zen Maison : courses, récupération colis, petits travaux</span>
+                    <span>Bika Maison : courses, récupération colis, petits travaux</span>
                   </li>
                   <li className="flex items-start space-x-2">
                     <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
-                    <span>Zen Vie : rendez-vous médicaux, démarches administratives</span>
+                    <span>Bika Vie : rendez-vous médicaux, démarches administratives</span>
                   </li>
                   <li className="flex items-start space-x-2">
                     <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
-                    <span>Zen Travel : assistance voyages, vérification documents</span>
+                    <span>Bika Travel : assistance voyages, vérification documents</span>
                   </li>
                 </ul>
               </div>
+              <Button 
+                variant="outline" 
+                className="w-full mt-4"
+                onClick={() => navigate('/services')}
+              >
+                Réserver à la carte
+              </Button>
             </Card>
 
             <Card className="p-6 space-y-4 border-accent relative">
@@ -484,7 +519,7 @@ const ServicesPackages = () => {
                 <ul className="text-xs text-muted-foreground space-y-1">
                   <li className="flex items-start space-x-2">
                     <div className="w-1 h-1 rounded-full bg-accent mt-1.5 flex-shrink-0"></div>
-                    <span>Combinaisons Zen Kids + Maison + Travel</span>
+                    <span>Combinaisons Bika Kids + Maison + Travel</span>
                   </li>
                   <li className="flex items-start space-x-2">
                     <div className="w-1 h-1 rounded-full bg-accent mt-1.5 flex-shrink-0"></div>
@@ -504,6 +539,18 @@ const ServicesPackages = () => {
                   </li>
                 </ul>
               </div>
+              <Button 
+                variant="accent" 
+                className="w-full mt-4"
+                onClick={() => handleSubscriptionReservation({ 
+                  id: 'hebdo', 
+                  title: 'Formule Hebdo', 
+                  icon: Clock, 
+                  price: '10h - 200€' 
+                })}
+              >
+                Réserver Hebdo
+              </Button>
             </Card>
 
             <Card className="p-6 space-y-4">
@@ -519,11 +566,11 @@ const ServicesPackages = () => {
                 <ul className="text-xs text-muted-foreground space-y-1">
                   <li className="flex items-start space-x-2">
                     <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
-                    <span>Tous les services Zen Kids, Maison, Vie</span>
+                    <span>Tous les services Bika Kids, Maison, Vie</span>
                   </li>
                   <li className="flex items-start space-x-2">
                     <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
-                    <span>Zen Travel complet avec priorité</span>
+                    <span>Bika Travel complet avec priorité</span>
                   </li>
                   <li className="flex items-start space-x-2">
                     <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
@@ -539,6 +586,18 @@ const ServicesPackages = () => {
                   </li>
                 </ul>
               </div>
+              <Button 
+                variant="default" 
+                className="w-full mt-4"
+                onClick={() => handleSubscriptionReservation({ 
+                  id: 'mensuel', 
+                  title: 'Formule Mensuelle', 
+                  icon: Calendar, 
+                  price: '40h - 800€' 
+                })}
+              >
+                Réserver Mensuel
+              </Button>
             </Card>
 
             <Card className="p-6 space-y-4">
@@ -562,7 +621,7 @@ const ServicesPackages = () => {
                   </li>
                   <li className="flex items-start space-x-2">
                     <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
-                    <span>Accès à tous les services Zen</span>
+                    <span>Accès à tous les services Bikawo</span>
                   </li>
                   <li className="flex items-start space-x-2">
                     <div className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
@@ -574,6 +633,18 @@ const ServicesPackages = () => {
                   </li>
                 </ul>
               </div>
+              <Button 
+                variant="hero" 
+                className="w-full mt-4"
+                onClick={() => handleSubscriptionReservation({ 
+                  id: 'premium', 
+                  title: 'Bika Plus Premium', 
+                  icon: Crown, 
+                  price: '≥ 1400€/mois' 
+                })}
+              >
+                Réserver Premium
+              </Button>
             </Card>
           </div>
         </div>
@@ -686,6 +757,13 @@ const ServicesPackages = () => {
           </Card>
         </div>
       </div>
+
+      {/* Subscription Booking Modal */}
+      <SubscriptionBooking
+        isOpen={showSubscription}
+        onClose={() => setShowSubscription(false)}
+        selectedService={selectedServiceForSubscription}
+      />
     </section>
   );
 };
