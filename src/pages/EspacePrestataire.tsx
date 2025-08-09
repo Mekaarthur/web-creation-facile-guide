@@ -48,10 +48,11 @@ const EspacePrestataire = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
 
   useEffect(() => {
+    console.log("EspacePrestataire - user:", user, "loading:", loading);
     if (user) {
       loadProviderProfile();
     }
-  }, [user]);
+  }, [user, loading]);
 
   const loadProviderProfile = async () => {
     if (!user) return;
