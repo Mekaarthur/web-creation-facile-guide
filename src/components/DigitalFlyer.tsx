@@ -92,34 +92,34 @@ const DigitalFlyer = () => {
 
   const providerAdvantages = [
     {
+      icon: Euro,
+      title: "Rémunération attractive",
+      description: "Tarifs compétitifs : 15-25€/h selon le service + pourboires clients"
+    },
+    {
       icon: TrendingUp,
-      title: "Revenus complémentaires",
-      description: "Augmentez vos revenus avec des missions flexibles et bien rémunérées"
+      title: "Revenus évolutifs",
+      description: "Augmentez vos gains : bonus fidélité, missions premium, partenariats exclusifs"
+    },
+    {
+      icon: Target,
+      title: "Opportunités multiples",
+      description: "6 secteurs d'activité : garde d'enfants, seniors, animaux, maison, voyage, business"
     },
     {
       icon: Calendar,
       title: "Flexibilité totale",
-      description: "Choisissez vos horaires et vos missions selon votre disponibilité"
-    },
-    {
-      icon: Award,
-      title: "Formation continue",
-      description: "Accès à des formations pour développer vos compétences"
+      description: "Choisissez vos horaires, vos zones et vos types de missions"
     },
     {
       icon: HandHeart,
       title: "Programme de parrainage",
-      description: "30€ offerts après que votre filleul ait complété 5 missions avec un bon score"
+      description: "30€ offerts après 5 missions complétées par votre filleul"
     },
     {
-      icon: Briefcase,
-      title: "Support professionnel",
-      description: "Accompagnement personnalisé et assistance technique"
-    },
-    {
-      icon: Target,
-      title: "Missions qualifiées",
-      description: "Accès à des clients pré-qualifiés et motivés"
+      icon: Award,
+      title: "Développement professionnel",
+      description: "Formations gratuites, certifications et évolution vers des missions premium"
     }
   ];
 
