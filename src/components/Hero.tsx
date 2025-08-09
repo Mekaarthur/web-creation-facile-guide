@@ -1,11 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Star, Users, Clock, Shield } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-assisted-family.jpg";
 
 const Hero = () => {
-  const navigate = useNavigate();
-
   return (
     <section id="home" className="relative min-h-screen flex items-center bg-gradient-subtle overflow-hidden">
       {/* Background decorative elements */}
@@ -64,17 +62,16 @@ const Hero = () => {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button 
-                variant="hero" 
-                size="xl" 
-                className="group"
-                onClick={() => {
-                  navigate('/services');
-                }}
-              >
-                Démarrer maintenant
-                <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-              </Button>
+              <Link to="/services">
+                <Button 
+                  variant="hero" 
+                  size="xl" 
+                  className="group"
+                >
+                  Démarrer maintenant
+                  <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
               <Button 
                 variant="glass" 
                 size="xl" 
