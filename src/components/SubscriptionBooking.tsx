@@ -18,6 +18,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SubscriptionPlan {
   id: string;
@@ -99,7 +100,7 @@ const SubscriptionBooking = ({ isOpen, onClose, selectedService }: SubscriptionB
     }
   ];
 
-  const handleSubscription = (planId: string) => {
+  const handleSubscription = async (planId: string) => {
     if (!user) {
       navigate('/auth');
       return;
@@ -108,11 +109,26 @@ const SubscriptionBooking = ({ isOpen, onClose, selectedService }: SubscriptionB
     const plan = subscriptionPlans.find(p => p.id === planId);
     if (!plan) return;
 
-    // Ici vous pouvez intégrer votre logique de paiement Stripe
-    toast.success(`Réservation ${plan.title} pour ${selectedService?.title} initiée !`);
-    
-    // Rediriger vers une page de paiement ou ouvrir le processus de checkout
-    console.log("Proceeding to checkout for:", { service: selectedService, plan });
+    try {
+      // Call the create-subscription edge function
+      const { data, error } = await supabase.functions.invoke('create-subscription', {
+        body: { 
+          planId: planId,
+          serviceTitle: selectedService?.title
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        // Open Stripe checkout in a new tab
+        window.open(data.url, '_blank');
+        toast.success(`Redirection vers le paiement ${plan.title}...`);
+      }
+    } catch (error) {
+      console.error('Error creating subscription:', error);
+      toast.error('Erreur lors de la création de l\'abonnement');
+    }
     
     onClose();
   };
