@@ -12,8 +12,9 @@ import FileUpload from "@/components/FileUpload";
 import ProviderNotifications from "@/components/ProviderNotifications";
 import { ProviderAvailabilityCalendar } from "@/components/ProviderAvailabilityCalendar";
 import { ClientRequestsList } from "@/components/ClientRequestsList";
-import { Calendar, MapPin, Star, DollarSign, Clock, User, FileText, Settings, BarChart3, MessageSquare, Upload, CheckCircle, AlertCircle, XCircle, Camera, Check, X, Bell, Share2, Copy, UserPlus } from "lucide-react";
+import { Calendar, MapPin, Star, DollarSign, Clock, User, FileText, Settings, BarChart3, MessageSquare, Upload, CheckCircle, AlertCircle, XCircle, Camera, Check, X, Bell, Share2, Copy, UserPlus, Gift } from "lucide-react";
 import ReferralProgram from "@/components/ReferralProgram";
+import { RewardsSection } from "@/components/RewardsSection";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -441,13 +442,14 @@ const EspacePrestataire = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-9">
+          <TabsList className="grid w-full grid-cols-10">
             <TabsTrigger value="profile">Profil</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="missions">Missions</TabsTrigger>
             <TabsTrigger value="calendar">Calendrier</TabsTrigger>
             <TabsTrigger value="client-requests">Demandes</TabsTrigger>
             <TabsTrigger value="payments">Paiements</TabsTrigger>
+            <TabsTrigger value="rewards">Récompenses</TabsTrigger>
             <TabsTrigger value="referral">Parrainage</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="settings">Paramètres</TabsTrigger>
@@ -813,6 +815,11 @@ const EspacePrestataire = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Récompenses Tab */}
+          <TabsContent value="rewards" className="space-y-6">
+            <RewardsSection userType="provider" />
           </TabsContent>
 
           {/* Notifications Tab */}

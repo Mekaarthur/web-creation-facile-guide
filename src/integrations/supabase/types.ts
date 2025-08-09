@@ -259,6 +259,39 @@ export type Database = {
           },
         ]
       }
+      client_monthly_activity: {
+        Row: {
+          client_id: string
+          consecutive_months: number
+          created_at: string
+          id: string
+          month: number
+          total_hours: number
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          client_id: string
+          consecutive_months?: number
+          created_at?: string
+          id?: string
+          month: number
+          total_hours?: number
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          client_id?: string
+          consecutive_months?: number
+          created_at?: string
+          id?: string
+          month?: number
+          total_hours?: number
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
       client_requests: {
         Row: {
           additional_notes: string | null
@@ -316,6 +349,48 @@ export type Database = {
           status?: string
           updated_at?: string
           urgency_level?: string | null
+        }
+        Relationships: []
+      }
+      client_rewards: {
+        Row: {
+          booking_id: string | null
+          client_id: string
+          created_at: string
+          earned_date: string
+          expires_at: string
+          id: string
+          reward_type: string
+          status: string
+          updated_at: string
+          used_date: string | null
+          valid_until: string
+        }
+        Insert: {
+          booking_id?: string | null
+          client_id: string
+          created_at?: string
+          earned_date?: string
+          expires_at: string
+          id?: string
+          reward_type?: string
+          status?: string
+          updated_at?: string
+          used_date?: string | null
+          valid_until: string
+        }
+        Update: {
+          booking_id?: string | null
+          client_id?: string
+          created_at?: string
+          earned_date?: string
+          expires_at?: string
+          id?: string
+          reward_type?: string
+          status?: string
+          updated_at?: string
+          used_date?: string | null
+          valid_until?: string
         }
         Relationships: []
       }
@@ -668,6 +743,54 @@ export type Database = {
           },
         ]
       }
+      provider_rewards: {
+        Row: {
+          amount: number
+          average_rating: number
+          created_at: string
+          earned_date: string
+          hours_worked: number
+          id: string
+          missions_count: number
+          paid_date: string | null
+          provider_id: string
+          reward_tier: string
+          status: string
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          amount: number
+          average_rating?: number
+          created_at?: string
+          earned_date?: string
+          hours_worked?: number
+          id?: string
+          missions_count?: number
+          paid_date?: string | null
+          provider_id: string
+          reward_tier: string
+          status?: string
+          updated_at?: string
+          year?: number
+        }
+        Update: {
+          amount?: number
+          average_rating?: number
+          created_at?: string
+          earned_date?: string
+          hours_worked?: number
+          id?: string
+          missions_count?: number
+          paid_date?: string | null
+          provider_id?: string
+          reward_tier?: string
+          status?: string
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
       provider_services: {
         Row: {
           created_at: string
@@ -981,6 +1104,20 @@ export type Database = {
         Args: { lat1: number; lon1: number; lat2: number; lon2: number }
         Returns: number
       }
+      calculate_provider_reward_tier: {
+        Args: {
+          p_provider_id: string
+          p_missions_count: number
+          p_hours_worked: number
+          p_average_rating: number
+          p_months_active: number
+        }
+        Returns: string
+      }
+      check_client_reward_eligibility: {
+        Args: { p_client_id: string }
+        Returns: boolean
+      }
       create_booking_from_request: {
         Args: { request_id: string; provider_id: string; service_id: string }
         Returns: string
@@ -1009,6 +1146,10 @@ export type Database = {
           location: string
           match_score: number
         }[]
+      }
+      get_reward_amount: {
+        Args: { p_tier: string }
+        Returns: number
       }
     }
     Enums: {
