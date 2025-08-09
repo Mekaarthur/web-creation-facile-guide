@@ -1,52 +1,53 @@
 import { MessageCircle, Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instagram } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   const footerSections = [
     {
       title: "Nos services",
       links: [
-        { name: "Bika Kids", href: "#services" },
-        { name: "Bika Maison", href: "#services" },
-        { name: "Bika Vie", href: "#services" },
-        { name: "Bika Travel", href: "#services" },
-        { name: "Bika Plus", href: "#services" },
-        { name: "Bika Pro", href: "#services" }
+        { name: "Bika Kids", href: "/services" },
+        { name: "Bika Maison", href: "/services" },
+        { name: "Bika Vie", href: "/services" },
+        { name: "Bika Travel", href: "/services" },
+        { name: "Bika Plus", href: "/services" },
+        { name: "Bika Pro", href: "/services" }
       ]
     },
     {
       title: "Entreprise",
       links: [
-        { name: "À propos", href: "#about" },
-        { name: "Notre équipe", href: "#" },
-        { name: "Carrières", href: "#" },
-        { name: "Presse", href: "#" }
+        { name: "À propos", href: "/a-propos-de-nous" },
+        { name: "Notre équipe", href: "/a-propos-de-nous" },
+        { name: "Carrières", href: "/nous-recrutons" },
+        { name: "Presse", href: "/blog" }
       ]
     },
     {
       title: "Ressources",
       links: [
-        { name: "FAQ", href: "#" },
-        { name: "Documentation", href: "#" },
-        { name: "Guides", href: "#" },
-        { name: "Status", href: "#" }
+        { name: "FAQ", href: "/aide" },
+        { name: "Documentation", href: "/aide" },
+        { name: "Guides", href: "/blog" },
+        { name: "Status", href: "/aide" }
       ]
     },
     {
       title: "Légal",
       links: [
-        { name: "Mentions légales", href: "#" },
-        { name: "Confidentialité", href: "#" },
-        { name: "CGU", href: "#" },
-        { name: "Cookies", href: "#" }
+        { name: "Mentions légales", href: "/aide" },
+        { name: "Confidentialité", href: "/aide" },
+        { name: "CGU", href: "/aide" },
+        { name: "Cookies", href: "/aide" }
       ]
     }
   ];
 
   const socialLinks = [
-    { icon: Facebook, href: "#", name: "Facebook" },
-    { icon: Twitter, href: "#", name: "Twitter" },
-    { icon: Linkedin, href: "#", name: "LinkedIn" },
-    { icon: Instagram, href: "#", name: "Instagram" }
+    { icon: Facebook, href: "https://facebook.com/bikawo", name: "Facebook" },
+    { icon: Twitter, href: "https://twitter.com/bikawo", name: "Twitter" },
+    { icon: Linkedin, href: "https://linkedin.com/company/bikawo", name: "LinkedIn" },
+    { icon: Instagram, href: "https://instagram.com/bikawo", name: "Instagram" }
   ];
 
   return (
@@ -109,12 +110,12 @@ const Footer = () => {
               <ul className="space-y-2">
                 {section.links.map((link) => (
                   <li key={link.name}>
-                    <a
-                      href={link.href}
+                    <Link
+                      to={link.href}
                       className="text-white/70 hover:text-white transition-colors duration-300"
                     >
                       {link.name}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -168,8 +169,8 @@ const Footer = () => {
             <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6 text-white/70 text-sm">
               <span>© 2024 Bikawô. Tous droits réservés.</span>
               <div className="flex space-x-4">
-                <a href="#" className="hover:text-white transition-colors">Politique de confidentialité</a>
-                <a href="#" className="hover:text-white transition-colors">Conditions d'utilisation</a>
+                <Link to="/aide" className="hover:text-white transition-colors">Politique de confidentialité</Link>
+                <Link to="/aide" className="hover:text-white transition-colors">Conditions d'utilisation</Link>
               </div>
             </div>
             <div className="flex items-center space-x-2 text-white/70 text-sm">

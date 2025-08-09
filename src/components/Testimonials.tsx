@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Star, Heart, Quote } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Testimonials = () => {
   const testimonials = [
@@ -117,12 +118,12 @@ const Testimonials = () => {
               Découvrez vous aussi la douceur et la tranquillité d'un service pensé pour votre bien-être familial.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="px-6 py-3 bg-gradient-primary text-white rounded-lg font-medium hover:shadow-glow transition-all">
+              <Link to="/services" className="inline-block px-6 py-3 bg-gradient-primary text-white rounded-lg font-medium hover:shadow-glow transition-all">
                 Commencer maintenant
-              </button>
-              <a href="/services" className="inline-block px-6 py-3 border border-primary text-primary rounded-lg font-medium hover:bg-primary/5 transition-all">
+              </Link>
+              <Link to="/services" className="inline-block px-6 py-3 border border-primary text-primary rounded-lg font-medium hover:bg-primary/5 transition-all">
                 Découvrir nos services
-              </a>
+              </Link>
             </div>
           </div>
         </div>
