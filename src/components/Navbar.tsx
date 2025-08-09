@@ -30,7 +30,6 @@ const Navbar = () => {
     { name: "Accueil", href: "/" },
     { name: "Nos services", href: "/services" },
     { name: "À propos", href: "/a-propos-de-nous" },
-    { name: "Blog", href: "/blog" },
     { name: "Espace client", href: "/espace-personnel" },
     { name: "Espace prestataire", href: "/espace-prestataire" },
     ...(isAdmin ? [{ name: "Gestion demandes", href: "/gestion-demandes" }] : []),
