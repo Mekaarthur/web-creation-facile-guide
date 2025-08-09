@@ -27,11 +27,22 @@ const ReferralProgram = () => {
     if (!user) return;
 
     try {
-      // Charger le code de parrainage
+      // Déterminer le type d'utilisateur (client ou prestataire)
+      const { data: providerData } = await supabase
+        .from('providers')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      const userType = providerData ? 'provider' : 'client';
+
+      // Charger le code de parrainage principal
       const { data: referralData } = await supabase
         .from('referrals')
         .select('*')
         .eq('referrer_id', user.id)
+        .eq('referrer_type', userType)
+        .is('referred_id', null) // Code principal sans référé spécifique
         .maybeSingle();
 
       if (referralData) {
@@ -44,7 +55,9 @@ const ReferralProgram = () => {
             .from('referrals')
             .insert({
               referrer_id: user.id,
-              referral_code: newCode
+              referral_code: newCode,
+              referrer_type: userType,
+              reward_amount: userType === 'provider' ? 30.00 : 20.00
             });
           
           if (!error) {
@@ -53,11 +66,12 @@ const ReferralProgram = () => {
         }
       }
 
-      // Charger les parrainages
+      // Charger tous les parrainages (y compris ceux avec referred_id)
       const { data: referralsData } = await supabase
         .from('referrals')
         .select('*')
-        .eq('referrer_id', user.id);
+        .eq('referrer_id', user.id)
+        .eq('referrer_type', userType);
 
       if (referralsData) {
         setReferrals(referralsData);
@@ -186,7 +200,9 @@ const ReferralProgram = () => {
               <Card>
                 <CardContent className="p-4 text-center">
                   <Gift className="w-6 h-6 text-blue-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-blue-600">50€</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {referrals.length > 0 ? `${referrals[0]?.reward_amount || 20}€` : '20-30€'}
+                  </p>
                   <p className="text-sm text-muted-foreground">Par parrainage</p>
                 </CardContent>
               </Card>
@@ -236,7 +252,8 @@ const ReferralProgram = () => {
                 </div>
                 <h3 className="text-xl font-semibold">Vous gagnez ensemble</h3>
                 <p className="text-muted-foreground">
-                  Recevez 50€ pour chaque nouveau prestataire qui complète sa première mission
+                  <strong>Clients :</strong> 20€ après la 1ère mission 2h+ du filleul<br/>
+                  <strong>Prestataires :</strong> 30€ après 5 missions avec note 4/5+ du filleul
                 </p>
               </div>
             </div>
@@ -257,9 +274,17 @@ const ReferralProgram = () => {
                 {referrals.map((referral) => (
                   <div key={referral.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
-                      <p className="font-medium">Code: {referral.referral_code}</p>
+                      <p className="font-medium">
+                        {referral.referred_user_email ? `Filleul: ${referral.referred_user_email}` : `Code: ${referral.referral_code}`}
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         Créé le {new Date(referral.created_at).toLocaleDateString()}
+                        {referral.missions_completed > 0 && (
+                          <span> • {referral.missions_completed} mission(s)</span>
+                        )}
+                        {referral.first_mission_duration > 0 && (
+                          <span> • {referral.first_mission_duration.toFixed(1)}h</span>
+                        )}
                       </p>
                     </div>
                     <div className="text-right space-y-1">

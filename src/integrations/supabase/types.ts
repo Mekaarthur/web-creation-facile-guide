@@ -940,10 +940,16 @@ export type Database = {
           completed_at: string | null
           created_at: string
           expires_at: string
+          first_mission_duration: number | null
           id: string
+          missions_completed: number | null
+          provider_rating: number | null
           referral_code: string
           referred_id: string | null
+          referred_type: string | null
+          referred_user_email: string | null
           referrer_id: string
+          referrer_type: string
           reward_amount: number | null
           status: string
         }
@@ -951,10 +957,16 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           expires_at?: string
+          first_mission_duration?: number | null
           id?: string
+          missions_completed?: number | null
+          provider_rating?: number | null
           referral_code: string
           referred_id?: string | null
+          referred_type?: string | null
+          referred_user_email?: string | null
           referrer_id: string
+          referrer_type?: string
           reward_amount?: number | null
           status?: string
         }
@@ -962,10 +974,16 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           expires_at?: string
+          first_mission_duration?: number | null
           id?: string
+          missions_completed?: number | null
+          provider_rating?: number | null
           referral_code?: string
           referred_id?: string | null
+          referred_type?: string | null
+          referred_user_email?: string | null
           referrer_id?: string
+          referrer_type?: string
           reward_amount?: number | null
           status?: string
         }
@@ -1121,6 +1139,14 @@ export type Database = {
       create_booking_from_request: {
         Args: { request_id: string; provider_id: string; service_id: string }
         Returns: string
+      }
+      create_referral_from_code: {
+        Args: {
+          p_referral_code: string
+          p_referred_email: string
+          p_referred_type?: string
+        }
+        Returns: boolean
       }
       generate_invoice_number: {
         Args: Record<PropertyKey, never>
