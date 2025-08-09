@@ -4,6 +4,7 @@ import Testimonials from "@/components/Testimonials";
 import Footer from "@/components/Footer";
 import ChatBot from "@/components/ChatBot";
 import InnovativeFeatures from "@/components/InnovativeFeatures";
+import DigitalFlyer from "@/components/DigitalFlyer";
 import SEOComponent from "@/components/SEOComponent";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Clock, Star, Users, Calendar, UserPlus, Heart, Home } from "lucide-react";
@@ -137,6 +138,7 @@ const Index = () => {
         </div>
       </section>
 
+      <DigitalFlyer />
       <InnovativeFeatures />
       <Testimonials />
       <Footer />
