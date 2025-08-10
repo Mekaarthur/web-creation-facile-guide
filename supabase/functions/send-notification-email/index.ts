@@ -11,24 +11,29 @@ const corsHeaders = {
 };
 
 interface NotificationRequest {
-  to: string;
-  type: 'booking_request' | 'booking_accepted' | 'booking_rejected' | 'payment_processed' | 'review_request' | 'chat_message';
+  recipientEmail?: string;
+  recipientName?: string;
+  to?: string;
+  type: 'booking_request' | 'booking_accepted' | 'booking_rejected' | 'payment_processed' | 'review_request' | 'chat_message' | 'request_accepted';
   data: {
     clientName?: string;
     providerName?: string;
     serviceName: string;
-    bookingDate: string;
-    bookingTime: string;
+    serviceDescription?: string;
+    bookingDate?: string;
+    bookingTime?: string;
     location: string;
-    price: number;
-    bookingId: string;
+    price?: number;
+    bookingId?: string;
     message?: string;
     rating?: number;
+    preferredDate?: string;
+    preferredTime?: string;
   };
 }
 
 const getEmailTemplate = (type: string, data: any) => {
-  const { clientName, providerName, serviceName, bookingDate, bookingTime, location, price, message, rating } = data;
+  const { clientName, providerName, serviceName, serviceDescription, bookingDate, bookingTime, location, price, message, rating, preferredDate, preferredTime } = data;
 
   switch (type) {
     case 'booking_request':
@@ -176,6 +181,53 @@ const getEmailTemplate = (type: string, data: any) => {
         `
       };
 
+    case 'request_accepted':
+      return {
+        subject: `Votre demande de service a été acceptée - ${serviceName}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #16a34a;">✅ Excellente nouvelle ! Votre demande a été acceptée</h1>
+            <p>Bonjour,</p>
+            <p>Nous avons le plaisir de vous informer que votre demande de service a été acceptée par un de nos prestataires qualifiés.</p>
+            
+            <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #16a34a;">
+              <h2 style="color: #16a34a; margin-top: 0;">Détails de votre service :</h2>
+              <ul style="margin: 10px 0;">
+                <li><strong>Service :</strong> ${serviceName}</li>
+                ${serviceDescription ? `<li><strong>Description :</strong> ${serviceDescription}</li>` : ''}
+                <li><strong>Prestataire assigné :</strong> ${providerName}</li>
+                <li><strong>Localisation :</strong> ${location}</li>
+                ${preferredDate ? `<li><strong>Date souhaitée :</strong> ${new Date(preferredDate).toLocaleDateString('fr-FR')}</li>` : ''}
+                ${preferredTime ? `<li><strong>Horaire souhaité :</strong> ${preferredTime}</li>` : ''}
+              </ul>
+            </div>
+            
+            <div style="background-color: #eff6ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <h3 style="color: #1e40af; margin-top: 0;">Prochaines étapes :</h3>
+              <ol>
+                <li>Votre prestataire va vous contacter prochainement pour finaliser les détails</li>
+                <li>Vous recevrez un devis détaillé si nécessaire</li>
+                <li>Une fois validé, le service sera programmé selon vos disponibilités</li>
+              </ol>
+            </div>
+            
+            <p>Si vous avez des questions, n'hésitez pas à nous contacter.</p>
+            <p>Merci de faire confiance à AssistLife !</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${Deno.env.get('SITE_URL') || 'https://assistlife.fr'}" 
+                 style="background: #16a34a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                Voir le suivi de ma demande
+              </a>
+            </div>
+            
+            <p style="color: #6b7280; font-size: 12px; margin-top: 30px;">
+              Cordialement,<br>L'équipe AssistLife
+            </p>
+          </div>
+        `
+      };
+
     default:
       return {
         subject: 'Notification Bikawo',
@@ -191,15 +243,21 @@ serve(async (req) => {
   }
 
   try {
-    const { to, type, data }: NotificationRequest = await req.json();
+    const requestBody: NotificationRequest = await req.json();
+    const { to, recipientEmail, type, data } = requestBody;
+    
+    const emailTo = to || recipientEmail;
+    if (!emailTo) {
+      throw new Error('No recipient email provided');
+    }
 
-    console.log('Sending notification email:', { to, type, data });
+    console.log('Sending notification email:', { to: emailTo, type, data });
 
     const emailTemplate = getEmailTemplate(type, data);
 
     const emailResponse = await resend.emails.send({
-      from: "Bikawo <contact@bikawo.com>",
-      to: [to],
+      from: "AssistLife <contact@assistlife.fr>",
+      to: [emailTo],
       subject: emailTemplate.subject,
       html: emailTemplate.html,
     });

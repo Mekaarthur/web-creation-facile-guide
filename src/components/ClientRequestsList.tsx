@@ -165,16 +165,84 @@ export const ClientRequestsList = () => {
 
   const handleAcceptRequest = async (requestId: string) => {
     try {
-      const { error } = await supabase
+      // Récupérer l'utilisateur actuel (prestataire connecté)
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour accepter une demande",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Récupérer le profil prestataire
+      const { data: providerData } = await supabase
+        .from('providers')
+        .select('id, business_name, user_id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!providerData) {
+        toast({
+          title: "Erreur",
+          description: "Profil prestataire introuvable",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Récupérer les détails de la demande
+      const { data: requestData } = await supabase
         .from('client_requests')
-        .update({ status: 'assigned' })
+        .select('*')
+        .eq('id', requestId)
+        .single();
+
+      if (!requestData) {
+        toast({
+          title: "Erreur",
+          description: "Demande introuvable",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Mettre à jour le statut et assigner le prestataire
+      const { error: updateError } = await supabase
+        .from('client_requests')
+        .update({ 
+          status: 'assigned',
+          assigned_provider_id: providerData.id
+        })
         .eq('id', requestId);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
+
+      // Envoyer une notification d'acceptation au client
+      const { error: notificationError } = await supabase.functions.invoke('send-notification-email', {
+        body: {
+          type: 'request_accepted',
+          recipientEmail: requestData.client_email,
+          recipientName: requestData.client_name,
+          data: {
+            serviceName: requestData.service_type,
+            serviceDescription: requestData.service_description,
+            providerName: providerData.business_name || 'Prestataire AssistLife',
+            location: requestData.location,
+            preferredDate: requestData.preferred_date,
+            preferredTime: requestData.preferred_time
+          }
+        }
+      });
+
+      if (notificationError) {
+        console.warn('Erreur envoi notification:', notificationError);
+      }
 
       toast({
         title: "Demande acceptée",
-        description: "Vous avez accepté cette demande client",
+        description: `Vous avez accepté cette demande et le client ${requestData.client_name} a été notifié`,
       });
     } catch (error) {
       console.error('Error accepting request:', error);
