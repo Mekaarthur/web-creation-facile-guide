@@ -256,7 +256,7 @@ serve(async (req) => {
     const emailTemplate = getEmailTemplate(type, data);
 
     const emailResponse = await resend.emails.send({
-      from: "AssistLife <contact@assistlife.fr>",
+      from: "AssistLife <onboarding@resend.dev>",
       to: [emailTo],
       subject: emailTemplate.subject,
       html: emailTemplate.html,
