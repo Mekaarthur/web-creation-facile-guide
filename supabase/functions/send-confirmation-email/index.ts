@@ -58,7 +58,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Envoyer l'email via Resend
     const emailResponse = await resend.emails.send({
-      from: "Bikawo <bienvenue@bikawo.com>",
+      from: "Bikawo <contact@bikawo.com>",
       to: [userEmail],
       subject: "🎉 Bienvenue sur Bikawo - Confirmez votre email",
       html: emailHtml,
