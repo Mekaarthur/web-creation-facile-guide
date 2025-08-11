@@ -22,7 +22,7 @@ export const EMAIL_TEMPLATES: Record<string, EmailTemplateConfig> = {
     content: "Merci de vous être inscrit sur Bikawo. Pour finaliser votre inscription et accéder à tous nos services, veuillez confirmer votre adresse email en cliquant sur le bouton ci-dessous.",
     buttonText: "Confirmer mon email",
     footer: "Si vous n'avez pas créé de compte, vous pouvez ignorer cet email.",
-    signature: "L'équipe Bikawo"
+    signature: "Avec tendresse, l'équipe Bikawo"
   },
   booking_request: {
     subject: "Nouvelle demande de réservation - {serviceName}",
@@ -31,7 +31,7 @@ export const EMAIL_TEMPLATES: Record<string, EmailTemplateConfig> = {
     content: "Vous avez reçu une nouvelle demande de réservation pour vos services. Voici les détails :",
     buttonText: "Gérer ma demande",
     footer: "Connectez-vous à votre espace prestataire pour accepter ou refuser cette demande.",
-    signature: "L'équipe Bikawo"
+    signature: "Avec tendresse, l'équipe Bikawo"
   },
   booking_accepted: {
     subject: "Réservation confirmée - {serviceName}",
@@ -40,7 +40,7 @@ export const EMAIL_TEMPLATES: Record<string, EmailTemplateConfig> = {
     content: "Votre réservation a été acceptée par le prestataire. Vous recevrez bientôt ses coordonnées pour finaliser les détails.",
     buttonText: "Voir mes réservations",
     footer: "Le prestataire vous contactera prochainement pour confirmer les détails.",
-    signature: "L'équipe Bikawo"
+    signature: "Avec tendresse, l'équipe Bikawo"
   },
   booking_rejected: {
     subject: "Réservation non disponible - {serviceName}",
@@ -49,7 +49,7 @@ export const EMAIL_TEMPLATES: Record<string, EmailTemplateConfig> = {
     content: "Malheureusement, le prestataire n'est pas disponible pour votre créneau demandé. Nous vous encourageons à essayer un autre créneau ou un autre prestataire.",
     buttonText: "Rechercher d'autres créneaux",
     footer: "Notre équipe reste à votre disposition pour vous aider à trouver une solution.",
-    signature: "L'équipe Bikawo"
+    signature: "Avec tendresse, l'équipe Bikawo"
   },
   payment_processed: {
     subject: "Paiement reçu - {serviceName}",
@@ -58,7 +58,7 @@ export const EMAIL_TEMPLATES: Record<string, EmailTemplateConfig> = {
     content: "Le paiement pour votre prestation a été traité avec succès. Les fonds seront versés sur votre compte selon les conditions convenues.",
     buttonText: "Voir mes gains",
     footer: "Consultez votre espace prestataire pour plus de détails sur vos revenus.",
-    signature: "L'équipe Bikawo"
+    signature: "Avec tendresse, l'équipe Bikawo"
   },
   review_request: {
     subject: "Laissez votre avis - {serviceName}",
@@ -67,7 +67,7 @@ export const EMAIL_TEMPLATES: Record<string, EmailTemplateConfig> = {
     content: "Votre prestation est terminée ! Aidez les autres clients en partageant votre expérience avec ce prestataire.",
     buttonText: "Laisser un avis",
     footer: "Votre avis est important pour maintenir la qualité de nos services.",
-    signature: "L'équipe Bikawo"
+    signature: "Avec tendresse, l'équipe Bikawo"
   },
   chat_message: {
     subject: "Nouveau message - {serviceName}",
@@ -76,7 +76,7 @@ export const EMAIL_TEMPLATES: Record<string, EmailTemplateConfig> = {
     content: "Vous avez reçu un nouveau message concernant votre réservation. Connectez-vous pour voir tous les messages et répondre.",
     buttonText: "Voir les messages",
     footer: "Restez en contact avec votre prestataire pour une expérience optimale.",
-    signature: "L'équipe Bikawo"
+    signature: "Avec tendresse, l'équipe Bikawo"
   },
   request_accepted: {
     subject: "Votre demande de service a été acceptée - {serviceName}",
@@ -85,7 +85,7 @@ export const EMAIL_TEMPLATES: Record<string, EmailTemplateConfig> = {
     content: "Nous avons le plaisir de vous informer que votre demande de service a été acceptée par un de nos prestataires qualifiés. Votre prestataire va vous contacter prochainement pour finaliser les détails.",
     buttonText: "Voir le suivi de ma demande",
     footer: "Si vous avez des questions, n'hésitez pas à nous contacter.",
-    signature: "L'équipe Bikawo"
+    signature: "Avec tendresse, l'équipe Bikawo"
   }
 };
 
