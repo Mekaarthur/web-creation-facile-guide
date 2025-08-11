@@ -1349,6 +1349,19 @@ export type Database = {
         Args: { p_tier: string }
         Returns: number
       }
+      mission_checkin: {
+        Args: { booking_id: string; location_info?: string; photos?: string[] }
+        Returns: boolean
+      }
+      mission_checkout: {
+        Args: {
+          booking_id: string
+          location_info?: string
+          photos?: string[]
+          notes?: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

@@ -246,9 +246,40 @@ const ServicesBooking = () => {
 
       if (slotsError) throw slotsError;
 
+      // Envoyer email de confirmation de commande
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('first_name, last_name')
+          .eq('user_id', user.id)
+          .single();
+
+        const clientName = profile?.first_name && profile?.last_name 
+          ? `${profile.first_name} ${profile.last_name}` 
+          : 'Client';
+
+        await supabase.functions.invoke('send-workflow-notification', {
+          body: {
+            booking_id: booking.id,
+            notification_type: 'order_received',
+            recipient_email: user.email,
+            recipient_name: clientName,
+            booking_details: {
+              service_name: selectedService.name,
+              booking_date: format(timeSlots[0].startDate, 'dd/MM/yyyy'),
+              start_time: timeSlots[0].startTime,
+              address: location,
+              total_price: getTotalPrice()
+            }
+          }
+        });
+      } catch (emailError) {
+        console.error('Erreur envoi email:', emailError);
+      }
+
       toast({
-        title: "Demande envoyée",
-        description: `Votre demande de prestation avec ${timeSlots.length} créneau(x) a été envoyée. Notre équipe vous assignera un prestataire adapté.`,
+        title: "Commande reçue !",
+        description: `Votre demande avec ${timeSlots.length} créneau(x) a été reçue. Nous vous assignons automatiquement le meilleur prestataire.`,
       });
 
       setIsBookingDialogOpen(false);

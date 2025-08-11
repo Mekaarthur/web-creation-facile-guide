@@ -192,6 +192,9 @@ export const BookingManagement = () => {
   const getStatusBadge = (status: string) => {
     const variants = {
       pending: { variant: 'secondary' as const, text: 'En attente' },
+      assigned: { variant: 'default' as const, text: 'Assigné' },
+      confirmed: { variant: 'default' as const, text: 'Confirmé' },
+      in_progress: { variant: 'default' as const, text: 'En cours' },
       accepted: { variant: 'default' as const, text: 'Acceptée' },
       rejected: { variant: 'destructive' as const, text: 'Refusée' },
       completed: { variant: 'default' as const, text: 'Terminée' },
@@ -212,9 +215,9 @@ export const BookingManagement = () => {
   const filteredBookings = bookings.filter(booking => {
     switch (activeTab) {
       case 'pending':
-        return booking.status === 'pending';
+        return ['pending', 'assigned'].includes(booking.status);
       case 'accepted':
-        return booking.status === 'accepted';
+        return ['confirmed', 'in_progress'].includes(booking.status);
       case 'completed':
         return booking.status === 'completed';
       default:
