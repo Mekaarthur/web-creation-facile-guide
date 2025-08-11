@@ -79,8 +79,15 @@ export type Database = {
       bookings: {
         Row: {
           address: string | null
+          after_photos: string[] | null
+          assigned_at: string | null
+          before_photos: string[] | null
           booking_date: string
+          check_in_location: string | null
+          check_out_location: string | null
           client_id: string
+          completed_at: string | null
+          confirmed_at: string | null
           created_at: string
           custom_duration: number | null
           end_time: string
@@ -89,16 +96,25 @@ export type Database = {
           id: string
           notes: string | null
           provider_id: string
+          provider_notes: string | null
           service_id: string
           start_time: string
+          started_at: string | null
           status: string
           total_price: number
           updated_at: string
         }
         Insert: {
           address?: string | null
+          after_photos?: string[] | null
+          assigned_at?: string | null
+          before_photos?: string[] | null
           booking_date: string
+          check_in_location?: string | null
+          check_out_location?: string | null
           client_id: string
+          completed_at?: string | null
+          confirmed_at?: string | null
           created_at?: string
           custom_duration?: number | null
           end_time: string
@@ -107,16 +123,25 @@ export type Database = {
           id?: string
           notes?: string | null
           provider_id: string
+          provider_notes?: string | null
           service_id: string
           start_time: string
+          started_at?: string | null
           status?: string
           total_price: number
           updated_at?: string
         }
         Update: {
           address?: string | null
+          after_photos?: string[] | null
+          assigned_at?: string | null
+          before_photos?: string[] | null
           booking_date?: string
+          check_in_location?: string | null
+          check_out_location?: string | null
           client_id?: string
+          completed_at?: string | null
+          confirmed_at?: string | null
           created_at?: string
           custom_duration?: number | null
           end_time?: string
@@ -125,8 +150,10 @@ export type Database = {
           id?: string
           notes?: string | null
           provider_id?: string
+          provider_notes?: string | null
           service_id?: string
           start_time?: string
+          started_at?: string | null
           status?: string
           total_price?: number
           updated_at?: string
