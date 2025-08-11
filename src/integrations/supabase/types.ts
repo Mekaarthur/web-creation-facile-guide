@@ -1304,6 +1304,10 @@ export type Database = {
         Args: { p_client_id: string }
         Returns: boolean
       }
+      confirm_booking: {
+        Args: { booking_id: string; provider_confirms: boolean }
+        Returns: boolean
+      }
       create_booking_from_request: {
         Args: { request_id: string; provider_id: string; service_id: string }
         Returns: string
