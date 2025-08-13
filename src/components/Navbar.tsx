@@ -7,6 +7,7 @@ import LanguageSwitcher from "./LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { Menu, X, MessageCircle, Phone, LogOut, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminRole } from "@/hooks/useAdminRole";
 import { cn } from "@/lib/utils";
 
 const Navbar = () => {
@@ -26,10 +27,8 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Fonction pour vérifier si l'utilisateur est admin (temporaire pour les tests)
-  const isAdmin = user?.email === 'admin@bikawo.com' || 
-                   user?.email === 'admin@assistme.fr' || 
-                   user?.email === 'test@admin.com';
+  // Utiliser le hook pour vérifier les droits admin
+  const { isAdmin } = useAdminRole();
 
   const navItems = [
     { name: "Accueil", href: "/" },
