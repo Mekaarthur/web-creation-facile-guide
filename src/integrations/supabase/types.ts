@@ -571,6 +571,7 @@ export type Database = {
       }
       job_applications: {
         Row: {
+          admin_comments: string | null
           availability: string
           category: string
           certifications: string | null
@@ -588,6 +589,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          admin_comments?: string | null
           availability: string
           category: string
           certifications?: string | null
@@ -605,6 +607,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          admin_comments?: string | null
           availability?: string
           category?: string
           certifications?: string | null
