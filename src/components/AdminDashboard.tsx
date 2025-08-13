@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { AdminClientRequests } from './AdminClientRequests';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,7 +43,10 @@ interface Provider {
   is_verified: boolean;
   created_at: string;
   rating: number | null;
-  profiles: {
+  user_id: string;
+  description?: string;
+  location?: string;
+  profiles?: {
     first_name: string | null;
     last_name: string | null;
   } | null;
@@ -52,16 +56,10 @@ interface Review {
   id: string;
   rating: number;
   comment: string | null;
-  is_moderated: boolean;
-  is_flagged: boolean;
+  is_approved: boolean;
   created_at: string;
-  client: {
-    first_name: string | null;
-    last_name: string | null;
-  } | null;
-  provider: {
-    business_name: string | null;
-  } | null;
+  client_id: string;
+  provider_id: string;
 }
 
 interface Stats {
@@ -144,28 +142,25 @@ export const AdminDashboard = () => {
   };
 
   const loadProviders = async () => {
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('providers')
-      .select(`
-        *,
-        profiles(first_name, last_name)
-      `)
+      .select('*')
       .order('created_at', { ascending: false })
       .limit(50);
 
     if (error) throw error;
-    setProviders(data || []);
+    // Ajouter une propriété profiles nulle pour compatibilité avec la fonction getUserDisplayName
+    const providersWithProfiles = data?.map(provider => ({
+      ...provider,
+      profiles: null
+    })) || [];
+    setProviders(providersWithProfiles);
   };
 
   const loadReviews = async () => {
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('reviews')
-      .select(`
-        *,
-        client:profiles!reviews_client_id_fkey(first_name, last_name),
-        provider:providers(business_name)
-      `)
-      .or('is_moderated.eq.false,is_flagged.eq.true')
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -174,30 +169,34 @@ export const AdminDashboard = () => {
 
   const loadStats = async () => {
     try {
-      // Utiliser les fonctions de statistiques créées dans la migration
-      const { data: statsData, error: statsError } = await (supabase as any)
-        .rpc('get_platform_stats');
-
-      if (statsError) throw statsError;
-
-      if (statsData && statsData.length > 0) {
-        setStats(statsData[0]);
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des statistiques:', error);
-      // Fallback avec des requêtes simples
-      const [usersCount, providersCount] = await Promise.all([
-        (supabase as any).from('profiles').select('id', { count: 'exact', head: true }),
-        (supabase as any).from('providers').select('id', { count: 'exact', head: true })
+      // Charger les statistiques directement depuis les tables
+      const [usersCount, providersCount, bookingsCount, reviewsData] = await Promise.all([
+        supabase.from('profiles').select('id', { count: 'exact', head: true }),
+        supabase.from('providers').select('id', { count: 'exact', head: true }),
+        supabase.from('bookings').select('id', { count: 'exact', head: true }),
+        supabase.from('reviews').select('*')
       ]);
+
+      const pendingReviews = reviewsData.data?.filter(r => !r.is_approved) || [];
+      const flaggedReviews = reviewsData.data?.filter(r => r.is_approved === false) || [];
 
       setStats({
         total_users: usersCount.count || 0,
         total_providers: providersCount.count || 0,
+        total_bookings: bookingsCount.count || 0,
+        total_revenue: 0, // À calculer depuis les bookings complétées
+        pending_reviews: pendingReviews.length,
+        flagged_reviews: flaggedReviews.length
+      });
+    } catch (error) {
+      console.error('Erreur lors du chargement des statistiques:', error);
+      setStats({
+        total_users: 0,
+        total_providers: 0,
         total_bookings: 0,
         total_revenue: 0,
-        pending_reviews: reviews.filter(r => !r.is_moderated).length,
-        flagged_reviews: reviews.filter(r => r.is_flagged).length
+        pending_reviews: 0,
+        flagged_reviews: 0
       });
     }
   };
@@ -230,10 +229,10 @@ export const AdminDashboard = () => {
   const moderateReview = async (reviewId: string, action: 'approve' | 'reject') => {
     try {
       const updates = action === 'approve' 
-        ? { is_moderated: true, is_flagged: false }
-        : { is_moderated: true, is_flagged: true };
+        ? { is_approved: true }
+        : { is_approved: false };
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('reviews')
         .update(updates)
         .eq('id', reviewId);
@@ -263,10 +262,10 @@ export const AdminDashboard = () => {
     if (user.profiles?.first_name && user.profiles?.last_name) {
       return `${user.profiles.first_name} ${user.profiles.last_name}`;
     }
-    if ('email' in user) {
-      return user.email || "Utilisateur anonyme";
+    if ('user_id' in user) {
+      return `Prestataire ${user.user_id.slice(0, 8)}`;
     }
-    return "Utilisateur anonyme";
+    return "Utilisateur";
   };
 
   if (loading) {
@@ -350,6 +349,7 @@ export const AdminDashboard = () => {
         <TabsList>
           <TabsTrigger value="users">Utilisateurs</TabsTrigger>
           <TabsTrigger value="providers">Prestataires</TabsTrigger>
+          <TabsTrigger value="requests">Demandes clients</TabsTrigger>
           <TabsTrigger value="reviews">
             Modération
             {(stats.pending_reviews + stats.flagged_reviews) > 0 && (
@@ -462,6 +462,11 @@ export const AdminDashboard = () => {
           </Card>
         </TabsContent>
 
+        {/* Gestion des demandes clients */}
+        <TabsContent value="requests" className="space-y-4">
+          <AdminClientRequests />
+        </TabsContent>
+
         {/* Modération des avis */}
         <TabsContent value="reviews" className="space-y-4">
           <Card>
@@ -483,15 +488,8 @@ export const AdminDashboard = () => {
                 <TableBody>
                   {reviews.map((review) => (
                     <TableRow key={review.id}>
-                      <TableCell>
-                        {review.client?.first_name && review.client?.last_name
-                          ? `${review.client.first_name} ${review.client.last_name}`
-                          : "Client anonyme"
-                        }
-                      </TableCell>
-                      <TableCell>
-                        {review.provider?.business_name || "Prestataire"}
-                      </TableCell>
+                      <TableCell>Client {review.client_id.slice(0, 8)}</TableCell>
+                      <TableCell>Prestataire {review.provider_id.slice(0, 8)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -502,8 +500,8 @@ export const AdminDashboard = () => {
                         {review.comment || "-"}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={review.is_flagged ? "destructive" : "secondary"}>
-                          {review.is_flagged ? "Signalé" : "En attente"}
+                        <Badge variant={review.is_approved ? "default" : "secondary"}>
+                          {review.is_approved ? "Approuvé" : "En attente"}
                         </Badge>
                       </TableCell>
                       <TableCell>
