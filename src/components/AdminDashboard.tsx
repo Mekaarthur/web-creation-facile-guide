@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { AdminClientRequests } from './AdminClientRequests';
+import { AdminClientRequestsEnhanced } from './AdminClientRequestsEnhanced';
 import { AdminJobApplications } from './AdminJobApplications';
+import { InternalMessaging } from './InternalMessaging';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -352,6 +354,8 @@ export const AdminDashboard = () => {
           <TabsTrigger value="providers">Prestataires</TabsTrigger>
           <TabsTrigger value="applications">Candidatures</TabsTrigger>
           <TabsTrigger value="requests">Demandes clients</TabsTrigger>
+          <TabsTrigger value="enhanced_requests">Gestion avancée</TabsTrigger>
+          <TabsTrigger value="messaging">Messagerie</TabsTrigger>
           <TabsTrigger value="reviews">
             Modération
             {(stats.pending_reviews + stats.flagged_reviews) > 0 && (
@@ -472,6 +476,16 @@ export const AdminDashboard = () => {
         {/* Gestion des demandes clients */}
         <TabsContent value="requests" className="space-y-4">
           <AdminClientRequests />
+        </TabsContent>
+
+        {/* Gestion avancée des demandes */}
+        <TabsContent value="enhanced_requests" className="space-y-4">
+          <AdminClientRequestsEnhanced />
+        </TabsContent>
+
+        {/* Messagerie interne */}
+        <TabsContent value="messaging" className="space-y-4">
+          <InternalMessaging />
         </TabsContent>
 
         {/* Modération des avis */}

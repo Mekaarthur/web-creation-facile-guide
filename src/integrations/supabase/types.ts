@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      action_history: {
+        Row: {
+          action_type: string
+          admin_comment: string | null
+          admin_user_id: string | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          new_value: string | null
+          old_value: string | null
+        }
+        Insert: {
+          action_type: string
+          admin_comment?: string | null
+          admin_user_id?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+        }
+        Update: {
+          action_type?: string
+          admin_comment?: string | null
+          admin_user_id?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+        }
+        Relationships: []
+      }
       booking_slots: {
         Row: {
           booking_date: string
@@ -297,6 +333,7 @@ export type Database = {
           additional_notes: string | null
           assigned_provider_id: string | null
           budget_range: string | null
+          city: string | null
           client_email: string
           client_name: string
           client_phone: string | null
@@ -304,6 +341,9 @@ export type Database = {
           form_response_id: string
           id: string
           location: string
+          payment_amount: number | null
+          payment_method: string | null
+          payment_status: string | null
           preferred_date: string | null
           preferred_time: string | null
           service_description: string
@@ -316,6 +356,7 @@ export type Database = {
           additional_notes?: string | null
           assigned_provider_id?: string | null
           budget_range?: string | null
+          city?: string | null
           client_email: string
           client_name: string
           client_phone?: string | null
@@ -323,6 +364,9 @@ export type Database = {
           form_response_id: string
           id?: string
           location: string
+          payment_amount?: number | null
+          payment_method?: string | null
+          payment_status?: string | null
           preferred_date?: string | null
           preferred_time?: string | null
           service_description: string
@@ -335,6 +379,7 @@ export type Database = {
           additional_notes?: string | null
           assigned_provider_id?: string | null
           budget_range?: string | null
+          city?: string | null
           client_email?: string
           client_name?: string
           client_phone?: string | null
@@ -342,6 +387,9 @@ export type Database = {
           form_response_id?: string
           id?: string
           location?: string
+          payment_amount?: number | null
+          payment_method?: string | null
+          payment_status?: string | null
           preferred_date?: string | null
           preferred_time?: string | null
           service_description?: string
@@ -486,6 +534,112 @@ export type Database = {
         }
         Relationships: []
       }
+      internal_conversations: {
+        Row: {
+          admin_id: string | null
+          booking_id: string | null
+          client_id: string
+          client_request_id: string | null
+          created_at: string
+          id: string
+          job_application_id: string | null
+          last_message_at: string | null
+          provider_id: string | null
+          status: string | null
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          admin_id?: string | null
+          booking_id?: string | null
+          client_id: string
+          client_request_id?: string | null
+          created_at?: string
+          id?: string
+          job_application_id?: string | null
+          last_message_at?: string | null
+          provider_id?: string | null
+          status?: string | null
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          admin_id?: string | null
+          booking_id?: string | null
+          client_id?: string
+          client_request_id?: string | null
+          created_at?: string
+          id?: string
+          job_application_id?: string | null
+          last_message_at?: string | null
+          provider_id?: string | null
+          status?: string | null
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "internal_conversations_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_conversations_client_request_id_fkey"
+            columns: ["client_request_id"]
+            isOneToOne: false
+            referencedRelation: "client_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_conversations_job_application_id_fkey"
+            columns: ["job_application_id"]
+            isOneToOne: false
+            referencedRelation: "job_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      internal_messages: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          file_url: string | null
+          id: string
+          is_read: boolean | null
+          message_text: string
+          message_type: string | null
+          receiver_id: string
+          sender_id: string
+          updated_at: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_text: string
+          message_type?: string | null
+          receiver_id: string
+          sender_id: string
+          updated_at?: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_text?: string
+          message_type?: string | null
+          receiver_id?: string
+          sender_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       invoices: {
         Row: {
           amount: number
@@ -548,6 +702,7 @@ export type Database = {
           availability: string
           category: string
           certifications: string | null
+          city: string | null
           created_at: string
           cv_file_url: string | null
           email: string
@@ -566,6 +721,7 @@ export type Database = {
           availability: string
           category: string
           certifications?: string | null
+          city?: string | null
           created_at?: string
           cv_file_url?: string | null
           email: string
@@ -584,6 +740,7 @@ export type Database = {
           availability?: string
           category?: string
           certifications?: string | null
+          city?: string | null
           created_at?: string
           cv_file_url?: string | null
           email?: string
@@ -596,6 +753,48 @@ export type Database = {
           phone?: string
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      notification_logs: {
+        Row: {
+          content: string
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          error_message: string | null
+          id: string
+          notification_type: string
+          sent_at: string | null
+          status: string | null
+          subject: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          error_message?: string | null
+          id?: string
+          notification_type: string
+          sent_at?: string | null
+          status?: string | null
+          subject?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          error_message?: string | null
+          id?: string
+          notification_type?: string
+          sent_at?: string | null
+          status?: string | null
+          subject?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -1352,6 +1551,17 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
         }
         Returns: boolean
+      }
+      log_action: {
+        Args: {
+          p_entity_type: string
+          p_entity_id: string
+          p_action_type: string
+          p_old_value?: string
+          p_new_value?: string
+          p_admin_comment?: string
+        }
+        Returns: string
       }
       mission_checkin: {
         Args: { booking_id: string; location_info?: string; photos?: string[] }
