@@ -756,6 +756,60 @@ export type Database = {
         }
         Relationships: []
       }
+      mission_assignments: {
+        Row: {
+          assigned_at: string | null
+          assigned_provider_id: string | null
+          assignment_method: string | null
+          client_request_id: string
+          created_at: string | null
+          eligible_providers: string[]
+          id: string
+          response_deadline: string | null
+          responses_received: number | null
+          sent_notifications: number | null
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_provider_id?: string | null
+          assignment_method?: string | null
+          client_request_id: string
+          created_at?: string | null
+          eligible_providers: string[]
+          id?: string
+          response_deadline?: string | null
+          responses_received?: number | null
+          sent_notifications?: number | null
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_provider_id?: string | null
+          assignment_method?: string | null
+          client_request_id?: string
+          created_at?: string | null
+          eligible_providers?: string[]
+          id?: string
+          response_deadline?: string | null
+          responses_received?: number | null
+          sent_notifications?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_assignments_assigned_provider_id_fkey"
+            columns: ["assigned_provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mission_assignments_client_request_id_fkey"
+            columns: ["client_request_id"]
+            isOneToOne: false
+            referencedRelation: "client_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_logs: {
         Row: {
           content: string
@@ -1050,6 +1104,48 @@ export type Database = {
           },
         ]
       }
+      provider_responses: {
+        Row: {
+          created_at: string | null
+          id: string
+          mission_assignment_id: string
+          provider_id: string
+          response_time: unknown | null
+          response_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          mission_assignment_id: string
+          provider_id: string
+          response_time?: unknown | null
+          response_type: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          mission_assignment_id?: string
+          provider_id?: string
+          response_time?: unknown | null
+          response_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_responses_mission_assignment_id_fkey"
+            columns: ["mission_assignment_id"]
+            isOneToOne: false
+            referencedRelation: "mission_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_responses_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provider_rewards: {
         Row: {
           amount: number
@@ -1143,63 +1239,152 @@ export type Database = {
           },
         ]
       }
+      provider_status_history: {
+        Row: {
+          admin_user_id: string | null
+          created_at: string | null
+          id: string
+          new_status: string
+          old_status: string | null
+          provider_id: string
+          reason: string | null
+        }
+        Insert: {
+          admin_user_id?: string | null
+          created_at?: string | null
+          id?: string
+          new_status: string
+          old_status?: string | null
+          provider_id: string
+          reason?: string | null
+        }
+        Update: {
+          admin_user_id?: string | null
+          created_at?: string | null
+          id?: string
+          new_status?: string
+          old_status?: string | null
+          provider_id?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_status_history_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       providers: {
         Row: {
           acceptance_rate: number | null
           business_name: string | null
           created_at: string
           description: string | null
+          diploma_document_url: string | null
+          forfait_rate: number | null
           hourly_rate: number | null
+          hourly_rate_override: number | null
           id: string
+          identity_document_url: string | null
+          insurance_document_url: string | null
           is_verified: boolean
           last_activity_at: string | null
+          last_mission_date: string | null
           location: string | null
           missions_accepted: number | null
           missions_completed: number | null
+          missions_this_week: number | null
           monthly_earnings: number | null
+          performance_score: number | null
+          postal_codes: string[] | null
+          profile_photo_url: string | null
+          quality_agreement_date: string | null
+          quality_agreement_signed: boolean | null
           rating: number | null
+          response_time_avg: number | null
+          rotation_priority: number | null
+          service_zones: string[] | null
           siret_number: string | null
+          status: string | null
           total_earnings: number | null
           updated_at: string
           user_id: string
+          work_radius: number | null
         }
         Insert: {
           acceptance_rate?: number | null
           business_name?: string | null
           created_at?: string
           description?: string | null
+          diploma_document_url?: string | null
+          forfait_rate?: number | null
           hourly_rate?: number | null
+          hourly_rate_override?: number | null
           id?: string
+          identity_document_url?: string | null
+          insurance_document_url?: string | null
           is_verified?: boolean
           last_activity_at?: string | null
+          last_mission_date?: string | null
           location?: string | null
           missions_accepted?: number | null
           missions_completed?: number | null
+          missions_this_week?: number | null
           monthly_earnings?: number | null
+          performance_score?: number | null
+          postal_codes?: string[] | null
+          profile_photo_url?: string | null
+          quality_agreement_date?: string | null
+          quality_agreement_signed?: boolean | null
           rating?: number | null
+          response_time_avg?: number | null
+          rotation_priority?: number | null
+          service_zones?: string[] | null
           siret_number?: string | null
+          status?: string | null
           total_earnings?: number | null
           updated_at?: string
           user_id: string
+          work_radius?: number | null
         }
         Update: {
           acceptance_rate?: number | null
           business_name?: string | null
           created_at?: string
           description?: string | null
+          diploma_document_url?: string | null
+          forfait_rate?: number | null
           hourly_rate?: number | null
+          hourly_rate_override?: number | null
           id?: string
+          identity_document_url?: string | null
+          insurance_document_url?: string | null
           is_verified?: boolean
           last_activity_at?: string | null
+          last_mission_date?: string | null
           location?: string | null
           missions_accepted?: number | null
           missions_completed?: number | null
+          missions_this_week?: number | null
           monthly_earnings?: number | null
+          performance_score?: number | null
+          postal_codes?: string[] | null
+          profile_photo_url?: string | null
+          quality_agreement_date?: string | null
+          quality_agreement_signed?: boolean | null
           rating?: number | null
+          response_time_avg?: number | null
+          rotation_priority?: number | null
+          service_zones?: string[] | null
           siret_number?: string | null
+          status?: string | null
           total_earnings?: number | null
           updated_at?: string
           user_id?: string
+          work_radius?: number | null
         }
         Relationships: []
       }
@@ -1486,6 +1671,10 @@ export type Database = {
         Args: { lat1: number; lon1: number; lat2: number; lon2: number }
         Returns: number
       }
+      calculate_provider_performance_score: {
+        Args: { p_provider_id: string }
+        Returns: number
+      }
       calculate_provider_reward_tier: {
         Args: {
           p_provider_id: string
@@ -1515,6 +1704,22 @@ export type Database = {
           p_referred_type?: string
         }
         Returns: boolean
+      }
+      find_eligible_providers: {
+        Args: {
+          p_service_type: string
+          p_location: string
+          p_postal_code?: string
+          p_requested_date?: string
+        }
+        Returns: {
+          provider_id: string
+          business_name: string
+          performance_score: number
+          distance_score: number
+          rotation_priority: number
+          final_priority_score: number
+        }[]
       }
       generate_invoice_number: {
         Args: Record<PropertyKey, never>

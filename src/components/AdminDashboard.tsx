@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { AdminClientRequests } from './AdminClientRequests';
 import { AdminClientRequestsEnhanced } from './AdminClientRequestsEnhanced';
 import { InternalMessaging } from './InternalMessaging';
+import { MissionAssignmentTrigger } from './MissionAssignmentTrigger';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +52,14 @@ interface Provider {
   user_id: string;
   description?: string;
   location?: string;
+  status?: string;
+  performance_score?: number;
+  missions_this_week?: number;
+  last_mission_date?: string;
+  identity_document_url?: string;
+  insurance_document_url?: string;
+  diploma_document_url?: string;
+  quality_agreement_signed?: boolean;
   profiles?: {
     first_name: string | null;
     last_name: string | null;
@@ -232,18 +241,28 @@ export const AdminDashboard = () => {
     }
   };
 
-  const verifyProvider = async (providerId: string) => {
+  const updateProviderStatus = async (providerId: string, newStatus: string) => {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('providers')
-        .update({ is_verified: true })
+        .update({ status: newStatus })
         .eq('id', providerId);
 
       if (error) throw error;
 
+      // Enregistrer dans l'historique
+      await supabase
+        .from('provider_status_history')
+        .insert({
+          provider_id: providerId,
+          new_status: newStatus,
+          admin_user_id: null, // À adapter selon votre système d'auth admin
+          reason: `Changement via interface admin`
+        });
+
       toast({
-        title: "Prestataire vérifié",
-        description: "Le prestataire a été vérifié avec succès",
+        title: "Statut mis à jour",
+        description: `Le prestataire a été marqué comme ${newStatus}`,
       });
 
       loadProviders();
@@ -251,7 +270,7 @@ export const AdminDashboard = () => {
       console.error('Erreur:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de vérifier le prestataire",
+        description: "Impossible de mettre à jour le statut",
         variant: "destructive",
       });
     }
@@ -346,7 +365,8 @@ export const AdminDashboard = () => {
           user_id: userId,
           business_name: `${application.first_name} ${application.last_name}`,
           description: `Prestataire ${application.category}`,
-          is_verified: false
+          is_verified: false,
+          status: 'pending_validation'
         });
 
       if (providerError) throw providerError;
@@ -369,61 +389,6 @@ export const AdminDashboard = () => {
         variant: "destructive",
       });
     }
-  };
-
-  const notifyClient = async (requestId: string) => {
-    try {
-      // Logique pour notifier le client
-      await supabase.functions.invoke('send-notification', {
-        body: { requestId, type: 'client_notification' }
-      });
-      
-      toast({
-        title: "Notification envoyée",
-        description: "Le client a été notifié",
-      });
-    } catch (error) {
-      console.error('Erreur notification:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'envoyer la notification",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const processPayment = async (requestId: string) => {
-    try {
-      // Logique pour traiter le paiement
-      const { error } = await supabase
-        .from('client_requests')
-        .update({ payment_status: 'processing' })
-        .eq('id', requestId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Paiement en cours",
-        description: "Le paiement est en cours de traitement",
-      });
-      
-      loadDashboardData();
-    } catch (error) {
-      console.error('Erreur paiement:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de traiter le paiement",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const openMessaging = (requestId: string) => {
-    // Logique pour ouvrir la messagerie
-    toast({
-      title: "Messagerie",
-      description: "Fonctionnalité en développement",
-    });
   };
 
   const getUserDisplayName = (user: User | Provider) => {
@@ -456,6 +421,8 @@ export const AdminDashboard = () => {
 
   return (
     <div className="p-8 space-y-8">
+      <MissionAssignmentTrigger />
+      
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -618,33 +585,66 @@ export const AdminDashboard = () => {
                     <TableRow key={provider.id}>
                       <TableCell>{getUserDisplayName(provider)}</TableCell>
                       <TableCell>
-                        <Badge variant={provider.is_verified ? "default" : "secondary"}>
-                          {provider.is_verified ? "Vérifié" : "En attente"}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={
+                            provider.status === 'active' ? "default" :
+                            provider.status === 'suspended' ? "destructive" :
+                            provider.status === 'in_training' ? "secondary" :
+                            provider.status === 'deactivated' ? "outline" : "secondary"
+                          }>
+                            {provider.status === 'active' ? "Actif" :
+                             provider.status === 'pending_validation' ? "En attente" :
+                             provider.status === 'suspended' ? "Suspendu" :
+                             provider.status === 'in_training' ? "En formation" :
+                             provider.status === 'deactivated' ? "Désactivé" : provider.status}
+                          </Badge>
+                          {provider.is_verified && (
+                            <Badge variant="outline" className="text-xs">
+                              Vérifié
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
-                        {provider.rating ? (
-                          <div className="flex items-center gap-1">
-                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                            <span>{provider.rating}</span>
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {provider.rating ? (
+                            <div className="flex items-center gap-1">
+                              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                              <span>{provider.rating}</span>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                          {provider.performance_score && (
+                            <Badge variant="outline" className="text-xs">
+                              Score: {provider.performance_score}
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         {format(new Date(provider.created_at), 'dd MMM yyyy', { locale: fr })}
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
-                          {!provider.is_verified && (
+                          {provider.status === 'pending_validation' && (
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => verifyProvider(provider.id)}
+                              onClick={() => updateProviderStatus(provider.id, 'active')}
                             >
                               <CheckCircle className="w-4 h-4 mr-1" />
-                              Vérifier
+                              Activer
+                            </Button>
+                          )}
+                          {provider.status === 'active' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => updateProviderStatus(provider.id, 'suspended')}
+                            >
+                              <Ban className="w-4 h-4 mr-1" />
+                              Suspendre
                             </Button>
                           )}
                           <Dialog>
@@ -654,41 +654,69 @@ export const AdminDashboard = () => {
                                 Voir
                               </Button>
                             </DialogTrigger>
-                            <DialogContent>
+                            <DialogContent className="max-w-2xl">
                               <DialogHeader>
-                                <DialogTitle>Détails prestataire</DialogTitle>
+                                <DialogTitle>Gestion du prestataire</DialogTitle>
                               </DialogHeader>
-                              <div className="space-y-4">
-                                <div>
-                                  <label className="text-sm font-medium">Nom / Entreprise</label>
-                                  <p className="text-sm text-muted-foreground">{getUserDisplayName(provider)}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm font-medium">Statut</label>
-                                  <Badge variant={provider.is_verified ? "default" : "secondary"}>
-                                    {provider.is_verified ? "Vérifié" : "En attente"}
-                                  </Badge>
-                                </div>
-                                <div>
-                                  <label className="text-sm font-medium">Note</label>
-                                  <div className="flex items-center gap-1">
-                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                    <span>{provider.rating || "Aucune note"}</span>
+                              <div className="space-y-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="text-sm font-medium">Nom / Entreprise</label>
+                                    <p className="text-sm text-muted-foreground">{getUserDisplayName(provider)}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium">Score de performance</label>
+                                    <p className="text-sm text-muted-foreground">{provider.performance_score || "0"}/100</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium">Missions cette semaine</label>
+                                    <p className="text-sm text-muted-foreground">{provider.missions_this_week || 0}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium">Dernière mission</label>
+                                    <p className="text-sm text-muted-foreground">
+                                      {provider.last_mission_date 
+                                        ? format(new Date(provider.last_mission_date), 'dd/MM/yyyy', { locale: fr })
+                                        : "Aucune"}
+                                    </p>
                                   </div>
                                 </div>
+                                
                                 <div>
-                                  <label className="text-sm font-medium">Localisation</label>
-                                  <p className="text-sm text-muted-foreground">{provider.location || "Non renseignée"}</p>
+                                  <label className="text-sm font-medium">Statut</label>
+                                  <Select
+                                    value={provider.status || 'pending_validation'}
+                                    onValueChange={(value) => updateProviderStatus(provider.id, value)}
+                                  >
+                                    <SelectTrigger className="w-full mt-2">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="pending_validation">En attente de validation</SelectItem>
+                                      <SelectItem value="active">Actif</SelectItem>
+                                      <SelectItem value="suspended">Suspendu</SelectItem>
+                                      <SelectItem value="in_training">En formation</SelectItem>
+                                      <SelectItem value="deactivated">Désactivé</SelectItem>
+                                    </SelectContent>
+                                  </Select>
                                 </div>
+
                                 <div>
-                                  <label className="text-sm font-medium">Description</label>
-                                  <p className="text-sm text-muted-foreground">{provider.description || "Aucune description"}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm font-medium">Date d'inscription</label>
-                                  <p className="text-sm text-muted-foreground">
-                                    {format(new Date(provider.created_at), 'dd MMMM yyyy à HH:mm', { locale: fr })}
-                                  </p>
+                                  <label className="text-sm font-medium">Documents</label>
+                                  <div className="grid grid-cols-2 gap-2 mt-2">
+                                    <Badge variant={provider.identity_document_url ? "default" : "secondary"}>
+                                      CNI: {provider.identity_document_url ? "✓" : "✗"}
+                                    </Badge>
+                                    <Badge variant={provider.insurance_document_url ? "default" : "secondary"}>
+                                      Assurance: {provider.insurance_document_url ? "✓" : "✗"}
+                                    </Badge>
+                                    <Badge variant={provider.diploma_document_url ? "default" : "secondary"}>
+                                      Diplômes: {provider.diploma_document_url ? "✓" : "✗"}
+                                    </Badge>
+                                    <Badge variant={provider.quality_agreement_signed ? "default" : "secondary"}>
+                                      Engagement: {provider.quality_agreement_signed ? "✓" : "✗"}
+                                    </Badge>
+                                  </div>
                                 </div>
                               </div>
                             </DialogContent>
@@ -748,7 +776,7 @@ export const AdminDashboard = () => {
                         <div className="flex gap-2">
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Button variant="outline" size="sm" onClick={() => setSelectedApplication(application)}>
+                              <Button variant="outline" size="sm">
                                 <Eye className="w-4 h-4 mr-1" />
                                 Voir
                               </Button>
@@ -776,12 +804,6 @@ export const AdminDashboard = () => {
                                   <label className="text-sm font-medium">Expérience</label>
                                   <p className="text-sm text-muted-foreground">
                                     {application.experience_years ? `${application.experience_years} ans` : 'Non renseignée'}
-                                  </p>
-                                </div>
-                                <div>
-                                  <label className="text-sm font-medium">Date de candidature</label>
-                                  <p className="text-sm text-muted-foreground">
-                                    {format(new Date(application.created_at), 'dd MMMM yyyy à HH:mm', { locale: fr })}
                                   </p>
                                 </div>
                               </div>
