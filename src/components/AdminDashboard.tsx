@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AdminClientRequests } from './AdminClientRequests';
+import { AdminJobApplications } from './AdminJobApplications';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -349,6 +350,7 @@ export const AdminDashboard = () => {
         <TabsList>
           <TabsTrigger value="users">Utilisateurs</TabsTrigger>
           <TabsTrigger value="providers">Prestataires</TabsTrigger>
+          <TabsTrigger value="applications">Candidatures</TabsTrigger>
           <TabsTrigger value="requests">Demandes clients</TabsTrigger>
           <TabsTrigger value="reviews">
             Modération
@@ -460,6 +462,11 @@ export const AdminDashboard = () => {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Gestion des candidatures */}
+        <TabsContent value="applications" className="space-y-4">
+          <AdminJobApplications />
         </TabsContent>
 
         {/* Gestion des demandes clients */}
