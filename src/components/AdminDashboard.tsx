@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AdminClientRequests } from './AdminClientRequests';
 import { AdminClientRequestsEnhanced } from './AdminClientRequestsEnhanced';
-import { AdminJobApplications } from './AdminJobApplications';
 import { InternalMessaging } from './InternalMessaging';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -65,6 +64,17 @@ interface Review {
   provider_id: string;
 }
 
+interface JobApplication {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  category: string;
+  experience_years: number | null;
+  status: string;
+  created_at: string;
+}
+
 interface Stats {
   total_users: number;
   total_providers: number;
@@ -78,6 +88,7 @@ export const AdminDashboard = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [jobApplications, setJobApplications] = useState<JobApplication[]>([]);
   const [stats, setStats] = useState<Stats>({
     total_users: 0,
     total_providers: 0,
@@ -88,6 +99,8 @@ export const AdminDashboard = () => {
   });
   const [loading, setLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
+  const [selectedApplication, setSelectedApplication] = useState<JobApplication | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -101,6 +114,7 @@ export const AdminDashboard = () => {
         loadUsers(),
         loadProviders(),
         loadReviews(),
+        loadJobApplications(),
         loadStats()
       ]);
     } catch (error) {
@@ -168,6 +182,17 @@ export const AdminDashboard = () => {
 
     if (error) throw error;
     setReviews(data || []);
+  };
+
+  const loadJobApplications = async () => {
+    const { data, error } = await supabase
+      .from('job_applications')
+      .select('id, first_name, last_name, email, category, experience_years, status, created_at')
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error) throw error;
+    setJobApplications(data || []);
   };
 
   const loadStats = async () => {
@@ -390,10 +415,35 @@ export const AdminDashboard = () => {
                         {format(new Date(user.created_at), 'dd MMM yyyy', { locale: fr })}
                       </TableCell>
                       <TableCell>
-                        <Button variant="outline" size="sm">
-                          <Eye className="w-4 h-4 mr-1" />
-                          Voir
-                        </Button>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm" onClick={() => setSelectedUser(user)}>
+                              <Eye className="w-4 h-4 mr-1" />
+                              Voir
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Détails utilisateur</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <label className="text-sm font-medium">Nom</label>
+                                <p className="text-sm text-muted-foreground">{getUserDisplayName(user)}</p>
+                              </div>
+                              <div>
+                                <label className="text-sm font-medium">ID</label>
+                                <p className="text-sm text-muted-foreground font-mono">{user.id}</p>
+                              </div>
+                              <div>
+                                <label className="text-sm font-medium">Date d'inscription</label>
+                                <p className="text-sm text-muted-foreground">
+                                  {format(new Date(user.created_at), 'dd MMMM yyyy à HH:mm', { locale: fr })}
+                                </p>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -454,10 +504,52 @@ export const AdminDashboard = () => {
                               Vérifier
                             </Button>
                           )}
-                          <Button variant="outline" size="sm">
-                            <Eye className="w-4 h-4 mr-1" />
-                            Voir
-                          </Button>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size="sm" onClick={() => setSelectedProvider(provider)}>
+                                <Eye className="w-4 h-4 mr-1" />
+                                Voir
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Détails prestataire</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div>
+                                  <label className="text-sm font-medium">Nom / Entreprise</label>
+                                  <p className="text-sm text-muted-foreground">{getUserDisplayName(provider)}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium">Statut</label>
+                                  <Badge variant={provider.is_verified ? "default" : "secondary"}>
+                                    {provider.is_verified ? "Vérifié" : "En attente"}
+                                  </Badge>
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium">Note</label>
+                                  <div className="flex items-center gap-1">
+                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                    <span>{provider.rating || "Aucune note"}</span>
+                                  </div>
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium">Localisation</label>
+                                  <p className="text-sm text-muted-foreground">{provider.location || "Non renseignée"}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium">Description</label>
+                                  <p className="text-sm text-muted-foreground">{provider.description || "Aucune description"}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium">Date d'inscription</label>
+                                  <p className="text-sm text-muted-foreground">
+                                    {format(new Date(provider.created_at), 'dd MMMM yyyy à HH:mm', { locale: fr })}
+                                  </p>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -470,7 +562,94 @@ export const AdminDashboard = () => {
 
         {/* Gestion des candidatures */}
         <TabsContent value="applications" className="space-y-4">
-          <AdminJobApplications />
+          <Card>
+            <CardHeader>
+              <CardTitle>Gestion des candidatures</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Candidat</TableHead>
+                    <TableHead>Catégorie</TableHead>
+                    <TableHead>Expérience</TableHead>
+                    <TableHead>Statut</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {jobApplications.map((application) => (
+                    <TableRow key={application.id}>
+                      <TableCell>
+                        {application.first_name} {application.last_name}
+                      </TableCell>
+                      <TableCell>{application.category}</TableCell>
+                      <TableCell>
+                        {application.experience_years ? `${application.experience_years} ans` : '-'}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={
+                          application.status === 'approved' ? 'default' :
+                          application.status === 'rejected' ? 'destructive' : 'secondary'
+                        }>
+                          {application.status === 'pending' ? 'En attente' :
+                           application.status === 'approved' ? 'Approuvée' :
+                           application.status === 'rejected' ? 'Rejetée' : application.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {format(new Date(application.created_at), 'dd MMM yyyy', { locale: fr })}
+                      </TableCell>
+                      <TableCell>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm" onClick={() => setSelectedApplication(application)}>
+                              <Eye className="w-4 h-4 mr-1" />
+                              Voir
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Détails candidature</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <label className="text-sm font-medium">Candidat</label>
+                                <p className="text-sm text-muted-foreground">
+                                  {application.first_name} {application.last_name}
+                                </p>
+                              </div>
+                              <div>
+                                <label className="text-sm font-medium">Email</label>
+                                <p className="text-sm text-muted-foreground">{application.email}</p>
+                              </div>
+                              <div>
+                                <label className="text-sm font-medium">Catégorie</label>
+                                <p className="text-sm text-muted-foreground">{application.category}</p>
+                              </div>
+                              <div>
+                                <label className="text-sm font-medium">Expérience</label>
+                                <p className="text-sm text-muted-foreground">
+                                  {application.experience_years ? `${application.experience_years} ans` : 'Non renseignée'}
+                                </p>
+                              </div>
+                              <div>
+                                <label className="text-sm font-medium">Date de candidature</label>
+                                <p className="text-sm text-muted-foreground">
+                                  {format(new Date(application.created_at), 'dd MMMM yyyy à HH:mm', { locale: fr })}
+                                </p>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Gestion des demandes clients */}
