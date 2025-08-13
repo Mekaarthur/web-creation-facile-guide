@@ -24,6 +24,7 @@ import AnalyticsSEO from "./pages/AnalyticsSEO";
 import ConfigMessages from "./pages/ConfigMessages";
 import CustomRequest from "./pages/CustomRequest";
 import AdminJobApplications from "./pages/AdminJobApplications";
+import AdminClientRequests from "./pages/AdminClientRequests";
 
 import NotFound from "./pages/NotFound";
 
@@ -56,6 +57,7 @@ const App = () => (
             <Route path="/config-messages" element={<ConfigMessages />} />
             <Route path="/demande-personnalisee" element={<CustomRequest />} />
             <Route path="/admin/candidatures" element={<AdminJobApplications />} />
+            <Route path="/admin/demandes" element={<AdminClientRequests />} />
             
             <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

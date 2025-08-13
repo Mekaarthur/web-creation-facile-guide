@@ -3,11 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import StatusManager from '@/components/StatusManager';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
   DialogContent,
@@ -76,55 +77,12 @@ const AdminJobApplications = () => {
     }
   };
 
-  const updateApplicationStatus = async (id: string, status: string) => {
-    try {
-      const { error } = await supabase
-        .from('job_applications')
-        .update({ status })
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setApplications(prev => 
-        prev.map(app => 
-          app.id === id ? { ...app, status } : app
-        )
-      );
-
-      toast({
-        title: "Statut mis à jour",
-        description: `Candidature marquée comme ${status}`
-      });
-    } catch (error) {
-      console.error('Error updating status:', error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de mettre à jour le statut"
-      });
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return 'bg-green-100 text-green-800';
-      case 'rejected':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-yellow-100 text-yellow-800';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return <CheckCircle className="w-4 h-4" />;
-      case 'rejected':
-        return <XCircle className="w-4 h-4" />;
-      default:
-        return <Clock className="w-4 h-4" />;
-    }
+  const handleStatusUpdate = (applicationId: string, newStatus: string) => {
+    setApplications(prev => 
+      prev.map(app => 
+        app.id === applicationId ? { ...app, status: newStatus } : app
+      )
+    );
   };
 
   const pendingApplications = applications.filter(app => app.status === 'pending');
@@ -221,12 +179,6 @@ const AdminJobApplications = () => {
                             <h3 className="font-semibold">
                               {application.first_name} {application.last_name}
                             </h3>
-                            <Badge className={getStatusColor(application.status)}>
-                              <span className="flex items-center gap-1">
-                                {getStatusIcon(application.status)}
-                                {t(`admin.${application.status}`)}
-                              </span>
-                            </Badge>
                           </div>
                           
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground mb-3">
@@ -249,7 +201,15 @@ const AdminJobApplications = () => {
                           </p>
                         </div>
                         
-                        <div className="flex gap-2">
+                        <div className="flex items-center gap-4">
+                          <StatusManager
+                            itemId={application.id}
+                            currentStatus={application.status}
+                            itemType="job_application"
+                            onStatusUpdate={(newStatus) => handleStatusUpdate(application.id, newStatus)}
+                            itemData={application}
+                          />
+                          
                           <Dialog>
                             <DialogTrigger asChild>
                               <Button 
@@ -299,46 +259,10 @@ const AdminJobApplications = () => {
                                       {selectedApplication.motivation}
                                     </p>
                                   </div>
-                                  
-                                  <div className="flex gap-2 pt-4">
-                                    <Button 
-                                      onClick={() => updateApplicationStatus(selectedApplication.id, 'approved')}
-                                      className="bg-green-600 hover:bg-green-700"
-                                    >
-                                      <CheckCircle className="w-4 h-4 mr-2" />
-                                      Approuver
-                                    </Button>
-                                    <Button 
-                                      variant="destructive"
-                                      onClick={() => updateApplicationStatus(selectedApplication.id, 'rejected')}
-                                    >
-                                      <XCircle className="w-4 h-4 mr-2" />
-                                      Rejeter
-                                    </Button>
-                                  </div>
                                 </div>
                               )}
                             </DialogContent>
                           </Dialog>
-                          
-                          {application.status === 'pending' && (
-                            <>
-                              <Button 
-                                size="sm"
-                                onClick={() => updateApplicationStatus(application.id, 'approved')}
-                                className="bg-green-600 hover:bg-green-700"
-                              >
-                                <CheckCircle className="w-4 h-4" />
-                              </Button>
-                              <Button 
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => updateApplicationStatus(application.id, 'rejected')}
-                              >
-                                <XCircle className="w-4 h-4" />
-                              </Button>
-                            </>
-                          )}
                         </div>
                       </div>
                     </div>
