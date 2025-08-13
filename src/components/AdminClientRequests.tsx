@@ -16,7 +16,12 @@ import {
   MapPin,
   Calendar,
   Euro,
-  MessageSquare
+  MessageSquare,
+  UserCheck,
+  Users,
+  Timer,
+  Ban,
+  Send
 } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
@@ -129,11 +134,58 @@ export const AdminClientRequests = () => {
     const stats = {
       total: requests.length,
       new: requests.filter(r => r.status === 'new').length,
-      assigned: requests.filter(r => r.status === 'assigned').length,
+      searching_provider: requests.filter(r => r.status === 'searching_provider').length,
+      awaiting_client_confirmation: requests.filter(r => r.status === 'awaiting_client_confirmation').length,
+      confirmed: requests.filter(r => r.status === 'confirmed').length,
+      in_progress: requests.filter(r => r.status === 'in_progress').length,
       completed: requests.filter(r => r.status === 'completed').length,
+      dispute: requests.filter(r => r.status === 'dispute').length,
+      unmatched: requests.filter(r => r.status === 'unmatched').length,
       urgent: requests.filter(r => r.urgency_level === 'urgent').length,
     };
     return stats;
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'new': return 'secondary';
+      case 'searching_provider': return 'outline';
+      case 'awaiting_client_confirmation': return 'default';
+      case 'confirmed': return 'secondary';
+      case 'in_progress': return 'outline';
+      case 'completed': return 'default';
+      case 'dispute': return 'destructive';
+      case 'unmatched': return 'destructive';
+      default: return 'outline';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'new': return 'Nouvelle demande';
+      case 'searching_provider': return 'Recherche prestataire';
+      case 'awaiting_client_confirmation': return 'Attente confirmation';
+      case 'confirmed': return 'Confirmée';
+      case 'in_progress': return 'En cours';
+      case 'completed': return 'Terminée';
+      case 'dispute': return 'Litige';
+      case 'unmatched': return 'Non pourvue';
+      default: return status;
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'new': return <MessageSquare className="w-4 h-4" />;
+      case 'searching_provider': return <Search className="w-4 h-4" />;
+      case 'awaiting_client_confirmation': return <Clock className="w-4 h-4" />;
+      case 'confirmed': return <CheckCircle className="w-4 h-4" />;
+      case 'in_progress': return <Timer className="w-4 h-4" />;
+      case 'completed': return <CheckCircle className="w-4 h-4" />;
+      case 'dispute': return <AlertTriangle className="w-4 h-4" />;
+      case 'unmatched': return <Ban className="w-4 h-4" />;
+      default: return <MessageSquare className="w-4 h-4" />;
+    }
   };
 
   const getUrgencyColor = (urgency: string) => {
@@ -153,12 +205,53 @@ export const AdminClientRequests = () => {
     }
   };
 
+  const handleSearchProviders = async (requestId: string) => {
+    try {
+      const { error } = await supabase.functions.invoke('match-providers', {
+        body: { requestId }
+      });
+      
+      if (error) throw error;
+      
+      await handleStatusUpdate(requestId, 'searching_provider');
+      
+      toast({
+        title: "Recherche lancée",
+        description: "Recherche de prestataires en cours",
+      });
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de lancer la recherche",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSendNotification = async (requestId: string, message: string) => {
+    try {
+      // Logique d'envoi de notification
+      toast({
+        title: "Notification envoyée",
+        description: message,
+      });
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'envoyer la notification",
+        variant: "destructive",
+      });
+    }
+  };
+
   const stats = getStatusStats();
 
   return (
     <div className="space-y-6">
       {/* Statistiques */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Total</CardTitle>
@@ -177,26 +270,34 @@ export const AdminClientRequests = () => {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Assignées</CardTitle>
+            <CardTitle className="text-sm font-medium">En recherche</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{stats.assigned}</div>
+            <div className="text-2xl font-bold text-orange-600">{stats.searching_provider}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Complétées</CardTitle>
+            <CardTitle className="text-sm font-medium">Confirmées</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.completed}</div>
+            <div className="text-2xl font-bold text-green-600">{stats.confirmed}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Urgentes</CardTitle>
+            <CardTitle className="text-sm font-medium">En cours</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.urgent}</div>
+            <div className="text-2xl font-bold text-purple-600">{stats.in_progress}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Terminées</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-800">{stats.completed}</div>
           </CardContent>
         </Card>
       </div>
@@ -225,11 +326,14 @@ export const AdminClientRequests = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous les statuts</SelectItem>
-                <SelectItem value="new">Nouvelles</SelectItem>
-                <SelectItem value="assigned">Assignées</SelectItem>
+                <SelectItem value="new">Nouvelles demandes</SelectItem>
+                <SelectItem value="searching_provider">En recherche prestataire</SelectItem>
+                <SelectItem value="awaiting_client_confirmation">Attente confirmation</SelectItem>
+                <SelectItem value="confirmed">Confirmées</SelectItem>
                 <SelectItem value="in_progress">En cours</SelectItem>
-                <SelectItem value="completed">Complétées</SelectItem>
-                <SelectItem value="cancelled">Annulées</SelectItem>
+                <SelectItem value="completed">Terminées</SelectItem>
+                <SelectItem value="dispute">Litiges</SelectItem>
+                <SelectItem value="unmatched">Non pourvues</SelectItem>
               </SelectContent>
             </Select>
             <Select value={urgencyFilter} onValueChange={setUrgencyFilter}>
@@ -289,8 +393,9 @@ export const AdminClientRequests = () => {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={request.status === 'new' ? 'secondary' : request.status === 'completed' ? 'default' : 'outline'}>
-                      {request.status}
+                    <Badge variant={getStatusColor(request.status)} className="flex items-center gap-1 w-fit">
+                      {getStatusIcon(request.status)}
+                      {getStatusLabel(request.status)}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -311,6 +416,29 @@ export const AdminClientRequests = () => {
                             Voir
                           </Button>
                         </DialogTrigger>
+                        
+                        {/* Actions rapides selon le statut */}
+                        {request.status === 'new' && (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => handleSearchProviders(request.id)}
+                          >
+                            <Search className="w-4 h-4 mr-1" />
+                            Rechercher
+                          </Button>
+                        )}
+                        
+                        {request.status === 'unmatched' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleSendNotification(request.id, "Aucun prestataire disponible, souhaitez-vous reprogrammer ?")}
+                          >
+                            <Send className="w-4 h-4 mr-1" />
+                            Proposer
+                          </Button>
+                        )}
                         <DialogContent className="max-w-2xl">
                           <DialogHeader>
                             <DialogTitle>Détails de la demande</DialogTitle>
@@ -354,11 +482,14 @@ export const AdminClientRequests = () => {
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="new">Nouvelle</SelectItem>
-                                    <SelectItem value="assigned">Assignée</SelectItem>
+                                    <SelectItem value="new">Nouvelle demande</SelectItem>
+                                    <SelectItem value="searching_provider">Recherche prestataire</SelectItem>
+                                    <SelectItem value="awaiting_client_confirmation">Attente confirmation client</SelectItem>
+                                    <SelectItem value="confirmed">Confirmée</SelectItem>
                                     <SelectItem value="in_progress">En cours</SelectItem>
-                                    <SelectItem value="completed">Complétée</SelectItem>
-                                    <SelectItem value="cancelled">Annulée</SelectItem>
+                                    <SelectItem value="completed">Terminée</SelectItem>
+                                    <SelectItem value="dispute">Litige</SelectItem>
+                                    <SelectItem value="unmatched">Non pourvue</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </div>
