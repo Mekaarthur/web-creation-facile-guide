@@ -60,13 +60,23 @@ const NousRecrutons = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('job_applications')
-        .insert([{
-          ...formData,
+        .insert({
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          email: formData.email,
+          phone: formData.phone,
           category: selectedCategory,
-          experience_years: parseInt(formData.experience_years) || 0
-        }]);
+          experience_years: parseInt(formData.experience_years) || 0,
+          availability: formData.availability,
+          motivation: formData.motivation,
+          has_transport: formData.has_transport,
+          certifications: formData.certifications,
+          status: 'pending'
+        })
+        .select()
+        .single();
 
       if (error) {
         throw error;
@@ -83,8 +93,10 @@ const NousRecrutons = () => {
             language: i18n.language
           }
         });
+        console.log('Confirmation email sent successfully');
       } catch (emailError) {
         console.error('Error sending confirmation email:', emailError);
+        // Don't throw error for email failure, application was still saved
       }
 
       toast({

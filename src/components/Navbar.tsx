@@ -26,8 +26,10 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Fonction pour vérifier si l'utilisateur est admin
-  const isAdmin = user?.email === 'admin@bikawo.com' || user?.email === 'admin@assistme.fr' || user?.email === 'test@admin.com';
+  // Fonction pour vérifier si l'utilisateur est admin (temporaire pour les tests)
+  const isAdmin = user?.email === 'admin@bikawo.com' || 
+                   user?.email === 'admin@assistme.fr' || 
+                   user?.email === 'test@admin.com';
 
   const navItems = [
     { name: "Accueil", href: "/" },
