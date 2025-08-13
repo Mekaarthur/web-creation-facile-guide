@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { MapPin, Navigation, Save } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface Location {
   id?: string;
@@ -16,6 +16,7 @@ interface Location {
   city: string;
   postal_code: string;
   service_radius: number;
+  zones_couvertes?: string[];
 }
 
 interface GeolocationManagerProps {
@@ -38,29 +39,60 @@ const GeolocationManager: React.FC<GeolocationManagerProps> = ({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [locating, setLocating] = useState(false);
+  const [zones, setZones] = useState<any[]>([]);
+  const [selectedZones, setSelectedZones] = useState<string[]>([]);
   const { user } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
+    loadZones();
     if (providerId) {
       loadProviderLocation();
     }
   }, [providerId]);
 
+  const loadZones = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('zones_geographiques' as any)
+        .select('*')
+        .order('nom_zone');
+
+      if (error) throw error;
+      setZones((data as unknown as any[]) || []);
+    } catch (error) {
+      console.error('Erreur lors du chargement des zones:', error);
+    }
+  };
+
   const loadProviderLocation = async () => {
     if (!providerId) return;
 
     try {
-      const { data, error } = await supabase
+      // Charger d'abord depuis provider_locations
+      const { data: locationData, error: locationError } = await supabase
         .from('provider_locations')
         .select('*')
         .eq('provider_id', providerId)
         .single();
 
-      if (error && error.code !== 'PGRST116') throw error;
+      if (locationError && locationError.code !== 'PGRST116') throw locationError;
       
-      if (data) {
-        setLocation(data);
+      // Charger aussi les zones couvertes depuis providers
+      const { data: providerData, error: providerError } = await supabase
+        .from('providers' as any)
+        .select('zones_couvertes')
+        .eq('id', providerId)
+        .single();
+
+      if (providerError) throw providerError;
+      
+      if (locationData) {
+        setLocation(locationData);
+      }
+
+      if (providerData && (providerData as any).zones_couvertes) {
+        setSelectedZones((providerData as any).zones_couvertes);
       }
     } catch (error) {
       console.error('Error loading location:', error);
@@ -155,20 +187,28 @@ const GeolocationManager: React.FC<GeolocationManagerProps> = ({
         service_radius: location.service_radius,
       };
 
-      const { error } = await supabase
+      const { error: locationError } = await supabase
         .from('provider_locations')
         .upsert(locationData, {
           onConflict: 'provider_id'
         });
 
-      if (error) throw error;
+      if (locationError) throw locationError;
+
+      // Mettre à jour aussi les zones couvertes dans la table providers
+      const { error: providerError } = await supabase
+        .from('providers' as any)
+        .update({ zones_couvertes: selectedZones })
+        .eq('id', providerId);
+
+      if (providerError) throw providerError;
 
       toast({
         title: "Succès",
         description: "Localisation enregistrée",
       });
 
-      onLocationUpdated?.(location);
+      onLocationUpdated?.({ ...location, zones_couvertes: selectedZones });
     } catch (error: any) {
       console.error('Error saving location:', error);
       toast({
@@ -186,6 +226,14 @@ const GeolocationManager: React.FC<GeolocationManagerProps> = ({
       ...prev,
       [field]: value
     }));
+  };
+
+  const toggleZone = (zoneId: string) => {
+    setSelectedZones(prev => 
+      prev.includes(zoneId) 
+        ? prev.filter(id => id !== zoneId)
+        : [...prev, zoneId]
+    );
   };
 
   if (loading) {
@@ -295,6 +343,28 @@ const GeolocationManager: React.FC<GeolocationManagerProps> = ({
             value={location.service_radius}
             onChange={(e) => handleInputChange('service_radius', parseInt(e.target.value) || 20)}
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Zones de couverture</Label>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {zones.map((zone) => (
+              <Button
+                key={zone.id}
+                variant={selectedZones.includes(zone.id) ? "default" : "outline"}
+                size="sm"
+                onClick={() => toggleZone(zone.id)}
+                className="justify-start text-xs"
+              >
+                {zone.nom_zone}
+              </Button>
+            ))}
+          </div>
+          {selectedZones.length > 0 && (
+            <p className="text-sm text-muted-foreground">
+              {selectedZones.length} zone(s) sélectionnée(s)
+            </p>
+          )}
         </div>
 
         <Button 

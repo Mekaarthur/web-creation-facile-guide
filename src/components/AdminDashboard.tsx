@@ -3,6 +3,7 @@ import { AdminClientRequests } from './AdminClientRequests';
 import { AdminClientRequestsEnhanced } from './AdminClientRequestsEnhanced';
 import { InternalMessaging } from './InternalMessaging';
 import { MissionAssignmentTrigger } from './MissionAssignmentTrigger';
+import ZoneGeographiqueManager from './ZoneGeographiqueManager';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +27,8 @@ import {
   CheckCircle,
   MessageSquare,
   CreditCard,
-  Send
+  Send,
+  MapPin
 } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
@@ -490,6 +492,10 @@ export const AdminDashboard = () => {
           <TabsTrigger value="applications">Candidatures</TabsTrigger>
           <TabsTrigger value="requests">Demandes clients</TabsTrigger>
           <TabsTrigger value="enhanced_requests">Gestion avancée</TabsTrigger>
+          <TabsTrigger value="zones">
+            <MapPin className="w-4 h-4 mr-2" />
+            Zones géographiques
+          </TabsTrigger>
           <TabsTrigger value="messaging">Messagerie</TabsTrigger>
           <TabsTrigger value="reviews">
             Modération
@@ -883,6 +889,11 @@ export const AdminDashboard = () => {
         {/* Gestion avancée des demandes */}
         <TabsContent value="enhanced_requests" className="space-y-4">
           <AdminClientRequestsEnhanced />
+        </TabsContent>
+
+        {/* Gestion des zones géographiques */}
+        <TabsContent value="zones" className="space-y-4">
+          <ZoneGeographiqueManager />
         </TabsContent>
 
         {/* Messagerie interne */}

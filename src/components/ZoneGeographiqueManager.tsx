@@ -52,12 +52,12 @@ const ZoneGeographiqueManager = () => {
   const loadZones = async () => {
     try {
       const { data, error } = await supabase
-        .from('zones_geographiques')
+        .from('zones_geographiques' as any)
         .select('*')
         .order('nom_zone');
 
       if (error) throw error;
-      setZones(data || []);
+      setZones((data as unknown as ZoneGeographique[]) || []);
     } catch (error) {
       console.error('Erreur lors du chargement des zones:', error);
       toast({
@@ -88,7 +88,7 @@ const ZoneGeographiqueManager = () => {
     try {
       if (editingZone) {
         const { error } = await supabase
-          .from('zones_geographiques')
+          .from('zones_geographiques' as any)
           .update(zoneData)
           .eq('id', editingZone.id);
         
@@ -99,7 +99,7 @@ const ZoneGeographiqueManager = () => {
         });
       } else {
         const { error } = await supabase
-          .from('zones_geographiques')
+          .from('zones_geographiques' as any)
           .insert([zoneData]);
         
         if (error) throw error;
@@ -139,7 +139,7 @@ const ZoneGeographiqueManager = () => {
 
     try {
       const { error } = await supabase
-        .from('zones_geographiques')
+        .from('zones_geographiques' as any)
         .delete()
         .eq('id', id);
 

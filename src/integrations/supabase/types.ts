@@ -1331,6 +1331,7 @@ export type Database = {
       providers: {
         Row: {
           acceptance_rate: number | null
+          adresse_complete: string | null
           business_name: string | null
           created_at: string
           description: string | null
@@ -1344,7 +1345,9 @@ export type Database = {
           is_verified: boolean
           last_activity_at: string | null
           last_mission_date: string | null
+          latitude: number | null
           location: string | null
+          longitude: number | null
           missions_accepted: number | null
           missions_completed: number | null
           missions_this_week: number | null
@@ -1355,6 +1358,7 @@ export type Database = {
           quality_agreement_date: string | null
           quality_agreement_signed: boolean | null
           rating: number | null
+          rayon_intervention_km: number | null
           response_time_avg: number | null
           rotation_priority: number | null
           service_zones: string[] | null
@@ -1364,9 +1368,11 @@ export type Database = {
           updated_at: string
           user_id: string
           work_radius: number | null
+          zones_couvertes: string[] | null
         }
         Insert: {
           acceptance_rate?: number | null
+          adresse_complete?: string | null
           business_name?: string | null
           created_at?: string
           description?: string | null
@@ -1380,7 +1386,9 @@ export type Database = {
           is_verified?: boolean
           last_activity_at?: string | null
           last_mission_date?: string | null
+          latitude?: number | null
           location?: string | null
+          longitude?: number | null
           missions_accepted?: number | null
           missions_completed?: number | null
           missions_this_week?: number | null
@@ -1391,6 +1399,7 @@ export type Database = {
           quality_agreement_date?: string | null
           quality_agreement_signed?: boolean | null
           rating?: number | null
+          rayon_intervention_km?: number | null
           response_time_avg?: number | null
           rotation_priority?: number | null
           service_zones?: string[] | null
@@ -1400,9 +1409,11 @@ export type Database = {
           updated_at?: string
           user_id: string
           work_radius?: number | null
+          zones_couvertes?: string[] | null
         }
         Update: {
           acceptance_rate?: number | null
+          adresse_complete?: string | null
           business_name?: string | null
           created_at?: string
           description?: string | null
@@ -1416,7 +1427,9 @@ export type Database = {
           is_verified?: boolean
           last_activity_at?: string | null
           last_mission_date?: string | null
+          latitude?: number | null
           location?: string | null
+          longitude?: number | null
           missions_accepted?: number | null
           missions_completed?: number | null
           missions_this_week?: number | null
@@ -1427,6 +1440,7 @@ export type Database = {
           quality_agreement_date?: string | null
           quality_agreement_signed?: boolean | null
           rating?: number | null
+          rayon_intervention_km?: number | null
           response_time_avg?: number | null
           rotation_priority?: number | null
           service_zones?: string[] | null
@@ -1436,6 +1450,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           work_radius?: number | null
+          zones_couvertes?: string[] | null
         }
         Relationships: []
       }
@@ -1702,6 +1717,36 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      zones_geographiques: {
+        Row: {
+          codes_postaux: string[]
+          created_at: string
+          id: string
+          nom_zone: string
+          rayon_km: number | null
+          type_zone: string
+          updated_at: string
+        }
+        Insert: {
+          codes_postaux?: string[]
+          created_at?: string
+          id?: string
+          nom_zone: string
+          rayon_km?: number | null
+          type_zone?: string
+          updated_at?: string
+        }
+        Update: {
+          codes_postaux?: string[]
+          created_at?: string
+          id?: string
+          nom_zone?: string
+          rayon_km?: number | null
+          type_zone?: string
+          updated_at?: string
         }
         Relationships: []
       }
