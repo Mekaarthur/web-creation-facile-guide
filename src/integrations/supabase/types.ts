@@ -699,58 +699,109 @@ export type Database = {
       job_applications: {
         Row: {
           admin_comments: string | null
+          admin_notes: string | null
+          application_date: string | null
           availability: string
+          availability_days: string[] | null
+          availability_hours: string | null
+          business_name: string | null
           category: string
           certifications: string | null
           city: string | null
+          coverage_address: string | null
+          coverage_radius: number | null
           created_at: string
           cv_file_url: string | null
+          description: string | null
+          diploma_urls: string[] | null
           email: string
           experience_years: number | null
           first_name: string
+          forfait_rates: Json | null
           has_transport: boolean | null
+          hourly_rate: number | null
           id: string
+          identity_document_url: string | null
+          insurance_document_url: string | null
           last_name: string
           motivation: string
           phone: string
+          postal_code: string | null
+          profile_photo_url: string | null
+          service_categories: string[] | null
+          siret_number: string | null
           status: string
           updated_at: string
         }
         Insert: {
           admin_comments?: string | null
+          admin_notes?: string | null
+          application_date?: string | null
           availability: string
+          availability_days?: string[] | null
+          availability_hours?: string | null
+          business_name?: string | null
           category: string
           certifications?: string | null
           city?: string | null
+          coverage_address?: string | null
+          coverage_radius?: number | null
           created_at?: string
           cv_file_url?: string | null
+          description?: string | null
+          diploma_urls?: string[] | null
           email: string
           experience_years?: number | null
           first_name: string
+          forfait_rates?: Json | null
           has_transport?: boolean | null
+          hourly_rate?: number | null
           id?: string
+          identity_document_url?: string | null
+          insurance_document_url?: string | null
           last_name: string
           motivation: string
           phone: string
+          postal_code?: string | null
+          profile_photo_url?: string | null
+          service_categories?: string[] | null
+          siret_number?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
           admin_comments?: string | null
+          admin_notes?: string | null
+          application_date?: string | null
           availability?: string
+          availability_days?: string[] | null
+          availability_hours?: string | null
+          business_name?: string | null
           category?: string
           certifications?: string | null
           city?: string | null
+          coverage_address?: string | null
+          coverage_radius?: number | null
           created_at?: string
           cv_file_url?: string | null
+          description?: string | null
+          diploma_urls?: string[] | null
           email?: string
           experience_years?: number | null
           first_name?: string
+          forfait_rates?: Json | null
           has_transport?: boolean | null
+          hourly_rate?: number | null
           id?: string
+          identity_document_url?: string | null
+          insurance_document_url?: string | null
           last_name?: string
           motivation?: string
           phone?: string
+          postal_code?: string | null
+          profile_photo_url?: string | null
+          service_categories?: string[] | null
+          siret_number?: string | null
           status?: string
           updated_at?: string
         }
@@ -1695,6 +1746,10 @@ export type Database = {
       }
       create_booking_from_request: {
         Args: { request_id: string; provider_id: string; service_id: string }
+        Returns: string
+      }
+      create_provider_from_application: {
+        Args: { application_id: string }
         Returns: string
       }
       create_referral_from_code: {
