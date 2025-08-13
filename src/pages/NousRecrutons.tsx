@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +27,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const NousRecrutons = () => {
+  const { t, i18n } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedCategoryDetail, setSelectedCategoryDetail] = useState<any>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -49,8 +51,8 @@ const NousRecrutons = () => {
     if (!formData.first_name || !formData.last_name || !formData.email || !formData.phone || !selectedCategory || !formData.availability || !formData.motivation) {
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Veuillez remplir tous les champs obligatoires"
+        title: t('jobs.error'),
+        description: t('jobs.errorMessage')
       });
       return;
     }
@@ -70,9 +72,24 @@ const NousRecrutons = () => {
         throw error;
       }
 
+      // Envoyer l'email de confirmation automatique
+      try {
+        await supabase.functions.invoke('send-job-application-confirmation', {
+          body: {
+            firstName: formData.first_name,
+            lastName: formData.last_name,
+            email: formData.email,
+            category: selectedCategory,
+            language: i18n.language
+          }
+        });
+      } catch (emailError) {
+        console.error('Error sending confirmation email:', emailError);
+      }
+
       toast({
-        title: "Candidature envoyée !",
-        description: "Votre candidature a été envoyée avec succès. Nous vous recontacterons rapidement."
+        title: t('jobs.success'),
+        description: t('jobs.successMessage')
       });
 
       // Reset form
@@ -94,8 +111,8 @@ const NousRecrutons = () => {
       console.error('Error submitting job application:', error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible d'envoyer votre candidature. Veuillez réessayer."
+        title: t('jobs.error'),
+        description: t('jobs.submitError')
       });
     } finally {
       setLoading(false);
