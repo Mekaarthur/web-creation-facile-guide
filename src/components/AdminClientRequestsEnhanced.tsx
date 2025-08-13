@@ -183,6 +183,11 @@ export const AdminClientRequestsEnhanced = () => {
 
       if (error) throw error;
 
+      // Si le statut passe à "searching_provider", déclencher l'attribution automatique
+      if (newStatus === 'searching_provider') {
+        await triggerAutoAssignment(requestId);
+      }
+
       // Envoyer notification automatique
       await sendStatusNotification(requestId, newStatus);
 
@@ -201,6 +206,36 @@ export const AdminClientRequestsEnhanced = () => {
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour le statut",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const triggerAutoAssignment = async (requestId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('auto-assign-mission', {
+        body: { clientRequestId: requestId }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast({
+          title: "Attribution automatique",
+          description: `Mission envoyée à ${data.eligibleProvidersCount} prestataire(s) éligible(s)`,
+        });
+      } else {
+        toast({
+          title: "Attention",
+          description: data.message || "Aucun prestataire éligible trouvé",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Erreur attribution automatique:', error);
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de l'attribution automatique",
         variant: "destructive",
       });
     }
