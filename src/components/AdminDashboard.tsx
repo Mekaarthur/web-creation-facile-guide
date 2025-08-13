@@ -22,7 +22,10 @@ import {
   Settings,
   Eye,
   Ban,
-  CheckCircle
+  CheckCircle,
+  MessageSquare,
+  CreditCard,
+  Send
 } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
@@ -281,6 +284,146 @@ export const AdminDashboard = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const updateApplicationStatus = async (applicationId: string, newStatus: string) => {
+    try {
+      const application = jobApplications.find(app => app.id === applicationId);
+      if (!application) return;
+
+      const { error } = await supabase
+        .from('job_applications')
+        .update({ status: newStatus })
+        .eq('id', applicationId);
+
+      if (error) throw error;
+
+      // Si approuvé, créer un profil prestataire
+      if (newStatus === 'approved') {
+        await createProviderFromApplication(application);
+      }
+
+      toast({
+        title: "Statut mis à jour",
+        description: `La candidature a été ${newStatus === 'approved' ? 'approuvée et un compte prestataire a été créé' : newStatus === 'rejected' ? 'rejetée' : 'mise à jour'}`,
+      });
+
+      loadJobApplications();
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour le statut",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const createProviderFromApplication = async (application: JobApplication) => {
+    try {
+      // D'abord créer un utilisateur si nécessaire
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: application.email,
+        password: Math.random().toString(36).slice(-8), // Mot de passe temporaire
+        email_confirm: true,
+        user_metadata: {
+          first_name: application.first_name,
+          last_name: application.last_name
+        }
+      });
+
+      if (authError && authError.message !== 'User already registered') {
+        throw authError;
+      }
+
+      const userId = authData?.user?.id;
+      if (!userId) return;
+
+      // Créer le profil prestataire
+      const { error: providerError } = await supabase
+        .from('providers')
+        .upsert({
+          user_id: userId,
+          business_name: `${application.first_name} ${application.last_name}`,
+          description: `Prestataire ${application.category}`,
+          is_verified: false
+        });
+
+      if (providerError) throw providerError;
+
+      // Envoyer email de bienvenue
+      await supabase.functions.invoke('send-notification-email', {
+        body: {
+          email: application.email,
+          name: `${application.first_name} ${application.last_name}`,
+          subject: 'Votre candidature a été approuvée',
+          message: `Félicitations ! Votre candidature a été approuvée. Un compte prestataire a été créé pour vous. Vous pouvez maintenant vous connecter avec votre email.`
+        }
+      });
+
+    } catch (error) {
+      console.error('Erreur création prestataire:', error);
+      toast({
+        title: "Avertissement",
+        description: "Candidature approuvée mais erreur lors de la création du compte prestataire",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const notifyClient = async (requestId: string) => {
+    try {
+      // Logique pour notifier le client
+      await supabase.functions.invoke('send-notification', {
+        body: { requestId, type: 'client_notification' }
+      });
+      
+      toast({
+        title: "Notification envoyée",
+        description: "Le client a été notifié",
+      });
+    } catch (error) {
+      console.error('Erreur notification:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'envoyer la notification",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const processPayment = async (requestId: string) => {
+    try {
+      // Logique pour traiter le paiement
+      const { error } = await supabase
+        .from('client_requests')
+        .update({ payment_status: 'processing' })
+        .eq('id', requestId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Paiement en cours",
+        description: "Le paiement est en cours de traitement",
+      });
+      
+      loadDashboardData();
+    } catch (error) {
+      console.error('Erreur paiement:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de traiter le paiement",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const openMessaging = (requestId: string) => {
+    // Logique pour ouvrir la messagerie
+    toast({
+      title: "Messagerie",
+      description: "Fonctionnalité en développement",
+    });
   };
 
   const getUserDisplayName = (user: User | Provider) => {
@@ -602,47 +745,105 @@ export const AdminDashboard = () => {
                         {format(new Date(application.created_at), 'dd MMM yyyy', { locale: fr })}
                       </TableCell>
                       <TableCell>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button variant="outline" size="sm" onClick={() => setSelectedApplication(application)}>
-                              <Eye className="w-4 h-4 mr-1" />
-                              Voir
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Détails candidature</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                              <div>
-                                <label className="text-sm font-medium">Candidat</label>
-                                <p className="text-sm text-muted-foreground">
-                                  {application.first_name} {application.last_name}
-                                </p>
+                        <div className="flex gap-2">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size="sm" onClick={() => setSelectedApplication(application)}>
+                                <Eye className="w-4 h-4 mr-1" />
+                                Voir
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Détails candidature</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div>
+                                  <label className="text-sm font-medium">Candidat</label>
+                                  <p className="text-sm text-muted-foreground">
+                                    {application.first_name} {application.last_name}
+                                  </p>
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium">Email</label>
+                                  <p className="text-sm text-muted-foreground">{application.email}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium">Catégorie</label>
+                                  <p className="text-sm text-muted-foreground">{application.category}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium">Expérience</label>
+                                  <p className="text-sm text-muted-foreground">
+                                    {application.experience_years ? `${application.experience_years} ans` : 'Non renseignée'}
+                                  </p>
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium">Date de candidature</label>
+                                  <p className="text-sm text-muted-foreground">
+                                    {format(new Date(application.created_at), 'dd MMMM yyyy à HH:mm', { locale: fr })}
+                                  </p>
+                                </div>
                               </div>
-                              <div>
-                                <label className="text-sm font-medium">Email</label>
-                                <p className="text-sm text-muted-foreground">{application.email}</p>
+                            </DialogContent>
+                          </Dialog>
+
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="default" size="sm">
+                                <Settings className="w-4 h-4 mr-1" />
+                                Gestion
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Gestion de candidature</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div>
+                                  <label className="text-sm font-medium">Candidat</label>
+                                  <p className="text-sm text-muted-foreground">
+                                    {application.first_name} {application.last_name}
+                                  </p>
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium">Statut actuel</label>
+                                  <Badge variant={
+                                    application.status === 'approved' ? 'default' :
+                                    application.status === 'rejected' ? 'destructive' : 'secondary'
+                                  }>
+                                    {application.status === 'pending' ? 'En attente' :
+                                     application.status === 'approved' ? 'Approuvée' :
+                                     application.status === 'rejected' ? 'Rejetée' : application.status}
+                                  </Badge>
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="text-sm font-medium">Actions</label>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      variant="default"
+                                      size="sm"
+                                      onClick={() => updateApplicationStatus(application.id, 'approved')}
+                                      disabled={application.status === 'approved'}
+                                    >
+                                      <CheckCircle className="w-4 h-4 mr-1" />
+                                      Approuver
+                                    </Button>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() => updateApplicationStatus(application.id, 'rejected')}
+                                      disabled={application.status === 'rejected'}
+                                    >
+                                      <Ban className="w-4 h-4 mr-1" />
+                                      Rejeter
+                                    </Button>
+                                  </div>
+                                </div>
                               </div>
-                              <div>
-                                <label className="text-sm font-medium">Catégorie</label>
-                                <p className="text-sm text-muted-foreground">{application.category}</p>
-                              </div>
-                              <div>
-                                <label className="text-sm font-medium">Expérience</label>
-                                <p className="text-sm text-muted-foreground">
-                                  {application.experience_years ? `${application.experience_years} ans` : 'Non renseignée'}
-                                </p>
-                              </div>
-                              <div>
-                                <label className="text-sm font-medium">Date de candidature</label>
-                                <p className="text-sm text-muted-foreground">
-                                  {format(new Date(application.created_at), 'dd MMMM yyyy à HH:mm', { locale: fr })}
-                                </p>
-                              </div>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

@@ -281,6 +281,22 @@ export const AdminClientRequestsEnhanced = () => {
     }
   };
 
+  const openMessaging = (requestId: string) => {
+    // Logique pour ouvrir la messagerie
+    toast({
+      title: "Messagerie",
+      description: "Ouverture de la messagerie interne",
+    });
+  };
+
+  const processPayment = (requestId: string) => {
+    // Logique pour traiter le paiement
+    toast({
+      title: "Paiement",
+      description: "Traitement du paiement en cours",
+    });
+  };
+
   const getStatusStats = () => {
     const stats = {
       total: requests.length,
@@ -666,22 +682,30 @@ export const AdminClientRequestsEnhanced = () => {
                               <div>
                                 <h4 className="font-semibold mb-3">Actions rapides</h4>
                                 <div className="flex gap-2 flex-wrap">
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => sendStatusNotification(selectedRequest.id, selectedRequest.status)}
-                                  >
-                                    <Send className="w-4 h-4 mr-1" />
-                                    Notifier client
-                                  </Button>
-                                  <Button variant="outline" size="sm">
-                                    <MessageSquare className="w-4 h-4 mr-1" />
-                                    Messagerie
-                                  </Button>
-                                  <Button variant="outline" size="sm">
-                                    <CreditCard className="w-4 h-4 mr-1" />
-                                    Paiement
-                                  </Button>
+                                   <Button 
+                                     variant="outline" 
+                                     size="sm"
+                                     onClick={() => sendStatusNotification(selectedRequest.id, selectedRequest.status)}
+                                   >
+                                     <Send className="w-4 h-4 mr-1" />
+                                     Notifier client
+                                   </Button>
+                                   <Button 
+                                     variant="outline" 
+                                     size="sm"
+                                     onClick={() => openMessaging(selectedRequest.id)}
+                                   >
+                                     <MessageSquare className="w-4 h-4 mr-1" />
+                                     Messagerie
+                                   </Button>
+                                   <Button 
+                                     variant="outline" 
+                                     size="sm"
+                                     onClick={() => processPayment(selectedRequest.id)}
+                                   >
+                                     <CreditCard className="w-4 h-4 mr-1" />
+                                     Paiement
+                                   </Button>
                                 </div>
                               </div>
                             </div>
