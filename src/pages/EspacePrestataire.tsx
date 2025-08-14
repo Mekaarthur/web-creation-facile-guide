@@ -16,6 +16,7 @@ import { ClientRequestsList } from "@/components/ClientRequestsList";
 import { Calendar, MapPin, Star, DollarSign, Clock, User, FileText, Settings, BarChart3, MessageSquare, Upload, CheckCircle, AlertCircle, XCircle, Camera, Check, X, Bell, Share2, Copy, UserPlus, Gift } from "lucide-react";
 import ReferralProgram from "@/components/ReferralProgram";
 import { RewardsSection } from "@/components/RewardsSection";
+import { PrestationsRealisees } from "@/components/PrestationsRealisees";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -460,7 +461,7 @@ const EspacePrestataire = () => {
             <TabsTrigger value="missions">Missions</TabsTrigger>
             <TabsTrigger value="calendar">Calendrier</TabsTrigger>
             <TabsTrigger value="client-requests">Demandes</TabsTrigger>
-            <TabsTrigger value="payments">Paiements</TabsTrigger>
+            <TabsTrigger value="prestations">Prestations</TabsTrigger>
             <TabsTrigger value="rewards">Récompenses</TabsTrigger>
             <TabsTrigger value="referral">Parrainage</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
@@ -827,6 +828,11 @@ const EspacePrestataire = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Prestations Tab */}
+          <TabsContent value="prestations" className="space-y-6">
+            <PrestationsRealisees />
           </TabsContent>
 
           {/* Récompenses Tab */}

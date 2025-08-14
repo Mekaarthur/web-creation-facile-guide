@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -936,6 +936,81 @@ export type Database = {
         }
         Relationships: []
       }
+      prestations_realisees: {
+        Row: {
+          booking_id: string | null
+          client_id: string
+          client_request_id: string | null
+          created_at: string
+          date_prestation: string
+          duree_heures: number
+          id: string
+          location: string
+          montant_total: number | null
+          notes: string | null
+          paid_at: string | null
+          provider_id: string
+          service_type: string
+          statut_paiement: string
+          taux_horaire: number
+          updated_at: string
+          validated_at: string | null
+        }
+        Insert: {
+          booking_id?: string | null
+          client_id: string
+          client_request_id?: string | null
+          created_at?: string
+          date_prestation: string
+          duree_heures?: number
+          id?: string
+          location: string
+          montant_total?: number | null
+          notes?: string | null
+          paid_at?: string | null
+          provider_id: string
+          service_type: string
+          statut_paiement?: string
+          taux_horaire?: number
+          updated_at?: string
+          validated_at?: string | null
+        }
+        Update: {
+          booking_id?: string | null
+          client_id?: string
+          client_request_id?: string | null
+          created_at?: string
+          date_prestation?: string
+          duree_heures?: number
+          id?: string
+          location?: string
+          montant_total?: number | null
+          notes?: string | null
+          paid_at?: string | null
+          provider_id?: string
+          service_type?: string
+          statut_paiement?: string
+          taux_horaire?: number
+          updated_at?: string
+          validated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prestations_realisees_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prestations_realisees_client_request_id_fkey"
+            columns: ["client_request_id"]
+            isOneToOne: false
+            referencedRelation: "client_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1764,7 +1839,7 @@ export type Database = {
         Returns: number
       }
       calculate_distance: {
-        Args: { lat1: number; lon1: number; lat2: number; lon2: number }
+        Args: { lat1: number; lat2: number; lon1: number; lon2: number }
         Returns: number
       }
       calculate_provider_performance_score: {
@@ -1773,11 +1848,11 @@ export type Database = {
       }
       calculate_provider_reward_tier: {
         Args: {
-          p_provider_id: string
-          p_missions_count: number
-          p_hours_worked: number
           p_average_rating: number
+          p_hours_worked: number
+          p_missions_count: number
           p_months_active: number
+          p_provider_id: string
         }
         Returns: string
       }
@@ -1790,7 +1865,7 @@ export type Database = {
         Returns: boolean
       }
       create_booking_from_request: {
-        Args: { request_id: string; provider_id: string; service_id: string }
+        Args: { provider_id: string; request_id: string; service_id: string }
         Returns: string
       }
       create_provider_from_application: {
@@ -1807,18 +1882,18 @@ export type Database = {
       }
       find_eligible_providers: {
         Args: {
-          p_service_type: string
           p_location: string
           p_postal_code?: string
           p_requested_date?: string
+          p_service_type: string
         }
         Returns: {
-          provider_id: string
           business_name: string
-          performance_score: number
           distance_score: number
-          rotation_priority: number
           final_priority_score: number
+          performance_score: number
+          provider_id: string
+          rotation_priority: number
         }[]
       }
       generate_invoice_number: {
@@ -1831,19 +1906,19 @@ export type Database = {
       }
       get_matching_providers: {
         Args:
-          | { p_service_type: string; p_location: string; p_limit?: number }
           | {
-              p_service_type: string
-              p_location: string
-              p_limit?: number
               p_date_time?: string
+              p_limit?: number
+              p_location: string
+              p_service_type: string
             }
+          | { p_limit?: number; p_location: string; p_service_type: string }
         Returns: {
-          provider_id: string
           business_name: string
-          rating: number
           location: string
           match_score: number
+          provider_id: string
+          rating: number
         }[]
       }
       get_reward_amount: {
@@ -1852,19 +1927,19 @@ export type Database = {
       }
       has_role: {
         Args: {
-          _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
         }
         Returns: boolean
       }
       log_action: {
         Args: {
-          p_entity_type: string
-          p_entity_id: string
           p_action_type: string
-          p_old_value?: string
-          p_new_value?: string
           p_admin_comment?: string
+          p_entity_id: string
+          p_entity_type: string
+          p_new_value?: string
+          p_old_value?: string
         }
         Returns: string
       }
@@ -1876,8 +1951,8 @@ export type Database = {
         Args: {
           booking_id: string
           location_info?: string
-          photos?: string[]
           notes?: string
+          photos?: string[]
         }
         Returns: boolean
       }

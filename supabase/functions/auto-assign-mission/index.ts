@@ -29,7 +29,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Starting auto-assignment for request:', clientRequestId);
 
-    // 1. Trouver les prestataires éligibles
+    // 1. Trouver les prestataires éligibles avec filtrage géographique amélioré
+    console.log('Searching providers for:', { serviceType, location, postalCode, requestedDate });
+    
     const { data: eligibleProviders, error: providersError } = await supabase.rpc('find_eligible_providers', {
       p_service_type: serviceType,
       p_location: location,

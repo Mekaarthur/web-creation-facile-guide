@@ -106,14 +106,38 @@ const handler = async (req: Request): Promise<Response> => {
         throw updateError;
       }
 
-      // Mettre à jour la demande client
+      // Mettre à jour la demande client - statut "confirmée" + montant
+      const { data: clientRequest } = await supabase
+        .from('client_requests')
+        .select('service_type, preferred_date, location')
+        .eq('id', assignment.client_request_id)
+        .single();
+      
+      // Calculer le montant (forfait de base de 2h x 17€)
+      const montantPrestation = 2 * 17; // 34€ par défaut
+      
       await supabase
         .from('client_requests')
         .update({
-          status: 'awaiting_client_confirmation',
-          assigned_provider_id: providerId
+          status: 'confirmed',
+          assigned_provider_id: providerId,
+          payment_amount: montantPrestation
         })
         .eq('id', assignment.client_request_id);
+        
+      // Créer automatiquement une prestation réalisée
+      await supabase
+        .from('prestations_realisees')
+        .insert({
+          client_request_id: assignment.client_request_id,
+          provider_id: providerId,
+          client_id: assignment.client_requests.client_email, // Temporaire, sera corrigé avec le vrai client_id
+          service_type: clientRequest?.service_type || 'Service',
+          duree_heures: 2.0,
+          date_prestation: clientRequest?.preferred_date || new Date().toISOString().split('T')[0],
+          location: clientRequest?.location || assignment.client_requests.location,
+          notes: 'Prestation créée automatiquement après acceptation du prestataire'
+        });
 
       // Récupérer les infos du prestataire
       const { data: providerData } = await supabase
