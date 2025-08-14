@@ -15,6 +15,74 @@ export interface NotificationConfig {
 }
 
 export const EMAIL_TEMPLATES: Record<string, EmailTemplateConfig> = {
+  // E-mails Clients
+  client_confirmation: {
+    subject: "Merci de nous faire confiance 💛",
+    title: "Votre demande a bien été reçue",
+    greeting: "Bonjour {prenom_client},",
+    content: "Votre demande pour {type_prestation} a bien été reçue. Nous mettons tout en œuvre pour trouver la personne idéale qui prendra soin de votre mission comme si c'était la sienne. 📅 {date} 📍 {lieu}.",
+    buttonText: "Suivre ma demande",
+    footer: "Nous vous tiendrons informé(e) de l'évolution de votre demande.",
+    signature: "Avec toute notre attention, L'équipe Bikawo"
+  },
+  client_provider_found: {
+    subject: "Nous avons trouvé votre perle rare ✨",
+    title: "Excellente nouvelle !",
+    greeting: "Bonjour {prenom_client},",
+    content: "Bonne nouvelle ! {prenom_prestataire} est disponible pour vous aider. 📅 {date} à {heure} 💰 {prix}.",
+    buttonText: "Confirmer ma mission",
+    footer: "Cliquez pour confirmer votre mission ou contactez-nous si vous avez des questions.",
+    signature: "Avec douceur et efficacité, L'équipe Bikawo"
+  },
+  client_mission_reminder: {
+    subject: "Nous avons hâte de vous retrouver demain 🕊️",
+    title: "Rappel de votre mission",
+    greeting: "Bonjour {prenom_client},",
+    content: "Petit rappel pour votre mission demain avec {prenom_prestataire}. 📅 {date} à {heure} 📍 {lieu}. Nous vous souhaitons une expérience fluide et sereine.",
+    buttonText: "Voir les détails",
+    footer: "En cas d'imprévu, n'hésitez pas à nous contacter.",
+    signature: "À très bientôt, L'équipe Bikawo"
+  },
+  client_review_request: {
+    subject: "Votre avis compte pour nous 🌸",
+    title: "Comment s'est passée votre mission ?",
+    greeting: "Bonjour {prenom_client},",
+    content: "Nous espérons que {prenom_prestataire} a rendu votre journée plus simple. Votre avis nous aide à grandir et à offrir encore plus de douceur à nos clients.",
+    buttonText: "Donner mon avis",
+    footer: "Votre retour est précieux pour maintenir la qualité de nos services.",
+    signature: "Merci pour votre confiance, L'équipe Bikawo"
+  },
+  
+  // E-mails Prestataires
+  provider_new_mission: {
+    subject: "Une mission vous attend 💼",
+    title: "Nouvelle mission disponible",
+    greeting: "Bonjour {prenom_prestataire},",
+    content: "Une mission est disponible près de chez vous : {type_prestation} – {lieu} ⏱ {duree} 💰 {tarif}. Cliquez vite, le premier qui accepte remporte la mission !",
+    buttonText: "Accepter la mission",
+    footer: "Cette mission est disponible pour un temps limité.",
+    signature: "Merci d'être un pilier de notre communauté, L'équipe Bikawo"
+  },
+  provider_mission_reminder: {
+    subject: "Rendez-vous demain avec {prenom_client} 🌟",
+    title: "Rappel de votre mission",
+    greeting: "Bonjour {prenom_prestataire},",
+    content: "Vous avez rendez-vous demain avec {prenom_client} pour {type_prestation}. 📅 {date} à {heure} 📍 {lieu}. Merci de mettre tout votre savoir-faire et votre bienveillance dans cette mission.",
+    buttonText: "Voir les détails",
+    footer: "En cas d'imprévu, contactez-nous immédiatement.",
+    signature: "Avec gratitude, L'équipe Bikawo"
+  },
+  provider_review_request: {
+    subject: "Comment s'est passée votre mission ? 🤝",
+    title: "Votre retour nous intéresse",
+    greeting: "Bonjour {prenom_prestataire},",
+    content: "Votre retour sur {prenom_client} nous aide à bâtir une communauté toujours plus fiable et chaleureuse.",
+    buttonText: "Donner mon avis",
+    footer: "Votre feedback contribue à l'amélioration continue de nos services.",
+    signature: "Merci d'être l'âme de Bikawo, L'équipe Bikawo"
+  },
+  
+  // E-mails système existants
   confirmation: {
     subject: "🎉 Bienvenue sur Bikawo - Confirmez votre email",
     title: "Bienvenue sur Bikawo !",
@@ -22,33 +90,6 @@ export const EMAIL_TEMPLATES: Record<string, EmailTemplateConfig> = {
     content: "Merci de vous être inscrit sur Bikawo. Pour finaliser votre inscription et accéder à tous nos services, veuillez confirmer votre adresse email en cliquant sur le bouton ci-dessous.",
     buttonText: "Confirmer mon email",
     footer: "Si vous n'avez pas créé de compte, vous pouvez ignorer cet email.",
-    signature: "Avec tendresse, l'équipe Bikawo"
-  },
-  booking_request: {
-    subject: "Nouvelle demande de réservation - {serviceName}",
-    title: "Nouvelle demande de réservation",
-    greeting: "Bonjour,",
-    content: "Vous avez reçu une nouvelle demande de réservation pour vos services. Voici les détails :",
-    buttonText: "Gérer ma demande",
-    footer: "Connectez-vous à votre espace prestataire pour accepter ou refuser cette demande.",
-    signature: "Avec tendresse, l'équipe Bikawo"
-  },
-  booking_accepted: {
-    subject: "Réservation confirmée - {serviceName}",
-    title: "Réservation confirmée !",
-    greeting: "Excellente nouvelle !",
-    content: "Votre réservation a été acceptée par le prestataire. Vous recevrez bientôt ses coordonnées pour finaliser les détails.",
-    buttonText: "Voir mes réservations",
-    footer: "Le prestataire vous contactera prochainement pour confirmer les détails.",
-    signature: "Avec tendresse, l'équipe Bikawo"
-  },
-  booking_rejected: {
-    subject: "Réservation non disponible - {serviceName}",
-    title: "Réservation non disponible",
-    greeting: "Nous sommes désolés,",
-    content: "Malheureusement, le prestataire n'est pas disponible pour votre créneau demandé. Nous vous encourageons à essayer un autre créneau ou un autre prestataire.",
-    buttonText: "Rechercher d'autres créneaux",
-    footer: "Notre équipe reste à votre disposition pour vous aider à trouver une solution.",
     signature: "Avec tendresse, l'équipe Bikawo"
   },
   payment_processed: {
@@ -59,46 +100,56 @@ export const EMAIL_TEMPLATES: Record<string, EmailTemplateConfig> = {
     buttonText: "Voir mes gains",
     footer: "Consultez votre espace prestataire pour plus de détails sur vos revenus.",
     signature: "Avec tendresse, l'équipe Bikawo"
-  },
-  review_request: {
-    subject: "Laissez votre avis - {serviceName}",
-    title: "Comment s'est passée votre prestation ?",
-    greeting: "Bonjour,",
-    content: "Votre prestation est terminée ! Aidez les autres clients en partageant votre expérience avec ce prestataire.",
-    buttonText: "Laisser un avis",
-    footer: "Votre avis est important pour maintenir la qualité de nos services.",
-    signature: "Avec tendresse, l'équipe Bikawo"
-  },
-  chat_message: {
-    subject: "Nouveau message - {serviceName}",
-    title: "Nouveau message reçu",
-    greeting: "Bonjour,",
-    content: "Vous avez reçu un nouveau message concernant votre réservation. Connectez-vous pour voir tous les messages et répondre.",
-    buttonText: "Voir les messages",
-    footer: "Restez en contact avec votre prestataire pour une expérience optimale.",
-    signature: "Avec tendresse, l'équipe Bikawo"
-  },
-  request_accepted: {
-    subject: "Votre demande de service a été acceptée - {serviceName}",
-    title: "✅ Excellente nouvelle ! Votre demande a été acceptée",
-    greeting: "Bonjour,",
-    content: "Nous avons le plaisir de vous informer que votre demande de service a été acceptée par un de nos prestataires qualifiés. Votre prestataire va vous contacter prochainement pour finaliser les détails.",
-    buttonText: "Voir le suivi de ma demande",
-    footer: "Si vous avez des questions, n'hésitez pas à nous contacter.",
-    signature: "Avec tendresse, l'équipe Bikawo"
   }
 };
 
 export const NOTIFICATION_TEMPLATES: Record<string, NotificationConfig> = {
+  // Notifications Clients
+  client_confirmation: {
+    title: "Demande reçue",
+    message: "✅ Merci {prenom_client} ! Nous cherchons la personne parfaite pour votre mission.",
+    actionText: "Suivre"
+  },
+  client_provider_found: {
+    title: "Prestataire trouvé",
+    message: "🎉 {prenom_prestataire} est disponible pour vous aider le {date}.",
+    actionText: "Confirmer"
+  },
+  client_mission_reminder: {
+    title: "Rappel mission",
+    message: "⏰ N'oubliez pas votre mission demain avec {prenom_prestataire}.",
+    actionText: "Détails"
+  },
+  
+  // Notifications Prestataires
+  provider_new_mission: {
+    title: "Nouvelle mission",
+    message: "💼 Nouvelle mission dispo à {lieu} : {type_prestation} ({tarif}).",
+    actionText: "Accepter"
+  },
+  provider_mission_reminder: {
+    title: "Rappel mission",
+    message: "⏰ Mission demain avec {prenom_client} – {type_prestation}.",
+    actionText: "Détails"
+  },
+  
+  // Notifications communes
+  review_request_client: {
+    title: "Votre avis compte",
+    message: "🌸 Votre avis compte pour nous. Partagez votre expérience.",
+    actionText: "Donner avis"
+  },
+  review_request_provider: {
+    title: "Votre retour",
+    message: "🌸 Votre avis compte pour nous. Partagez votre expérience.",
+    actionText: "Donner avis"
+  },
+  
+  // Notifications système existantes
   new_booking: {
     title: "Nouvelle réservation",
     message: "Vous avez reçu une nouvelle demande de réservation",
     actionText: "Voir les détails"
-  },
-  booking_confirmed: {
-    title: "Réservation confirmée",
-    message: "Votre réservation a été confirmée par le prestataire",
-    actionText: "Voir ma réservation"
   },
   payment_received: {
     title: "Paiement reçu",
@@ -109,11 +160,6 @@ export const NOTIFICATION_TEMPLATES: Record<string, NotificationConfig> = {
     title: "Nouveau message",
     message: "Vous avez reçu un nouveau message",
     actionText: "Lire le message"
-  },
-  review_reminder: {
-    title: "Laissez votre avis",
-    message: "N'oubliez pas de laisser un avis sur votre prestation",
-    actionText: "Laisser un avis"
   }
 };
 
@@ -136,8 +182,14 @@ export const COMPANY_CONFIG = {
   websiteUrl: "https://bikawo.com",
   logoUrl: "https://bikawo.com/logo.png",
   colors: {
-    primary: "#2563eb",
-    secondary: "#059669",
+    primary: "#667eea",
+    secondary: "#764ba2",
     accent: "#dc2626"
+  },
+  tonality: {
+    enabled: true,
+    style: "tendre", // tendre, professionnel, décontracté
+    useEmojis: true,
+    warmGreetings: true
   }
 };
