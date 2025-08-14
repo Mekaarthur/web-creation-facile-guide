@@ -337,6 +337,24 @@ const EspacePrestataire = () => {
     }
   };
 
+  const configureNotifications = () => {
+    toast({
+      title: "Configuration des notifications",
+      description: "Cette fonctionnalité sera disponible prochainement",
+    });
+  };
+
+  const modifyAvailability = () => {
+    // Rediriger vers l'onglet calendrier
+    const calendarTab = document.querySelector('[value="calendar"]') as HTMLElement;
+    calendarTab?.click();
+    
+    toast({
+      title: "Disponibilité",
+      description: "Utilisez le calendrier pour modifier vos disponibilités",
+    });
+  };
+
   const getDocumentIcon = (status: string) => {
     switch (status) {
       case 'approved': return <CheckCircle className="w-4 h-4 text-green-500" />;
@@ -871,7 +889,7 @@ const EspacePrestataire = () => {
                         Recevoir des notifications pour les nouvelles missions
                       </p>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={configureNotifications}>
                       Configurer
                     </Button>
                   </div>
@@ -883,7 +901,7 @@ const EspacePrestataire = () => {
                         Définir vos créneaux de disponibilité
                       </p>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={modifyAvailability}>
                       Modifier
                     </Button>
                   </div>
