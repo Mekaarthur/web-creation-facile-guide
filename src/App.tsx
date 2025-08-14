@@ -32,6 +32,10 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import AdminAlertes from "./pages/admin/Alertes";
 import AdminKanban from "./pages/admin/Kanban";
 import AdminUtilisateurs from "./pages/admin/Utilisateurs";
+import AdminPrestataires from "./pages/admin/Prestataires";
+import AdminModeration from "./pages/admin/Moderation";
+import AdminMessagerie from "./pages/admin/Messagerie";
+import AdminPaiements from "./pages/admin/Paiements";
 
 import NotFound from "./pages/NotFound";
 
@@ -69,12 +73,12 @@ const App = () => (
               <Route path="alertes" element={<AdminAlertes />} />
               <Route path="kanban" element={<AdminKanban />} />
               <Route path="utilisateurs" element={<AdminUtilisateurs />} />
-              <Route path="prestataires" element={<div>Prestataires - En développement</div>} />
+              <Route path="prestataires" element={<AdminPrestataires />} />
               <Route path="demandes" element={<AdminClientRequests />} />
               <Route path="candidatures" element={<AdminJobApplications />} />
-              <Route path="moderation" element={<div>Modération - En développement</div>} />
-              <Route path="messagerie" element={<div>Messagerie - En développement</div>} />
-              <Route path="paiements" element={<div>Paiements - En développement</div>} />
+              <Route path="moderation" element={<AdminModeration />} />
+              <Route path="messagerie" element={<AdminMessagerie />} />
+              <Route path="paiements" element={<AdminPaiements />} />
               <Route path="zones" element={<div>Zones géographiques - En développement</div>} />
               <Route path="statistiques" element={<div>Statistiques - En développement</div>} />
               <Route path="parametres" element={<div>Paramètres - En développement</div>} />
