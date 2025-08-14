@@ -26,6 +26,13 @@ import CustomRequest from "./pages/CustomRequest";
 import AdminJobApplications from "./pages/AdminJobApplications";
 import AdminClientRequests from "./pages/AdminClientRequests";
 
+// Admin Layout and Pages
+import { AdminLayout } from "./components/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/Dashboard";
+import AdminAlertes from "./pages/admin/Alertes";
+import AdminKanban from "./pages/admin/Kanban";
+import AdminUtilisateurs from "./pages/admin/Utilisateurs";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -56,10 +63,22 @@ const App = () => (
             <Route path="/analytics-seo" element={<AnalyticsSEO />} />
             <Route path="/config-messages" element={<ConfigMessages />} />
             <Route path="/demande-personnalisee" element={<CustomRequest />} />
-            <Route path="/admin/candidatures" element={<AdminJobApplications />} />
-            <Route path="/admin/demandes" element={<AdminClientRequests />} />
-            
-            <Route path="/admin" element={<Admin />} />
+            {/* Admin Routes with Layout */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="alertes" element={<AdminAlertes />} />
+              <Route path="kanban" element={<AdminKanban />} />
+              <Route path="utilisateurs" element={<AdminUtilisateurs />} />
+              <Route path="prestataires" element={<div>Prestataires - En développement</div>} />
+              <Route path="demandes" element={<AdminClientRequests />} />
+              <Route path="candidatures" element={<AdminJobApplications />} />
+              <Route path="moderation" element={<div>Modération - En développement</div>} />
+              <Route path="messagerie" element={<div>Messagerie - En développement</div>} />
+              <Route path="paiements" element={<div>Paiements - En développement</div>} />
+              <Route path="zones" element={<div>Zones géographiques - En développement</div>} />
+              <Route path="statistiques" element={<div>Statistiques - En développement</div>} />
+              <Route path="parametres" element={<div>Paramètres - En développement</div>} />
+            </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
