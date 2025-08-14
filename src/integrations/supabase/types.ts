@@ -50,6 +50,48 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_actions_log: {
+        Row: {
+          action_type: string
+          admin_user_id: string
+          created_at: string
+          description: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          ip_address: unknown | null
+          new_data: Json | null
+          old_data: Json | null
+          user_agent: string | null
+        }
+        Insert: {
+          action_type: string
+          admin_user_id: string
+          created_at?: string
+          description?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          ip_address?: unknown | null
+          new_data?: Json | null
+          old_data?: Json | null
+          user_agent?: string | null
+        }
+        Update: {
+          action_type?: string
+          admin_user_id?: string
+          created_at?: string
+          description?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          ip_address?: unknown | null
+          new_data?: Json | null
+          old_data?: Json | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       booking_slots: {
         Row: {
           booking_date: string
@@ -225,6 +267,96 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      cart_items: {
+        Row: {
+          address: string | null
+          booking_date: string | null
+          cart_id: string
+          created_at: string
+          end_time: string | null
+          id: string
+          notes: string | null
+          quantity: number
+          service_id: string
+          start_time: string | null
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          address?: string | null
+          booking_date?: string | null
+          cart_id: string
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          quantity?: number
+          service_id: string
+          start_time?: string | null
+          total_price: number
+          unit_price: number
+        }
+        Update: {
+          address?: string | null
+          booking_date?: string | null
+          cart_id?: string
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          quantity?: number
+          service_id?: string
+          start_time?: string | null
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cart_items_cart_id_fkey"
+            columns: ["cart_id"]
+            isOneToOne: false
+            referencedRelation: "carts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cart_items_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      carts: {
+        Row: {
+          client_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          status: string
+          total_estimated: number
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          status?: string
+          total_estimated?: number
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          status?: string
+          total_estimated?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       chat_conversations: {
         Row: {
@@ -487,6 +619,66 @@ export type Database = {
           updated_at?: string
           used_date?: string | null
           valid_until?: string
+        }
+        Relationships: []
+      }
+      communications: {
+        Row: {
+          contenu: string
+          created_at: string
+          destinataire_email: string | null
+          destinataire_id: string | null
+          destinataire_phone: string | null
+          error_message: string | null
+          id: string
+          read_at: string | null
+          related_entity_id: string | null
+          related_entity_type: string | null
+          retry_count: number | null
+          sent_at: string | null
+          status: string
+          sujet: string | null
+          template_name: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          contenu: string
+          created_at?: string
+          destinataire_email?: string | null
+          destinataire_id?: string | null
+          destinataire_phone?: string | null
+          error_message?: string | null
+          id?: string
+          read_at?: string | null
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          retry_count?: number | null
+          sent_at?: string | null
+          status?: string
+          sujet?: string | null
+          template_name?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          contenu?: string
+          created_at?: string
+          destinataire_email?: string | null
+          destinataire_id?: string | null
+          destinataire_phone?: string | null
+          error_message?: string | null
+          id?: string
+          read_at?: string | null
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          retry_count?: number | null
+          sent_at?: string | null
+          status?: string
+          sujet?: string | null
+          template_name?: string | null
+          type?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -992,6 +1184,81 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      payments: {
+        Row: {
+          admin_notes: string | null
+          amount: number
+          booking_id: string | null
+          cart_id: string | null
+          client_id: string
+          created_at: string
+          currency: string
+          id: string
+          payment_date: string | null
+          payment_method: string
+          refund_amount: number | null
+          refund_date: string | null
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          transaction_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount: number
+          booking_id?: string | null
+          cart_id?: string | null
+          client_id: string
+          created_at?: string
+          currency?: string
+          id?: string
+          payment_date?: string | null
+          payment_method: string
+          refund_amount?: number | null
+          refund_date?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount?: number
+          booking_id?: string | null
+          cart_id?: string | null
+          client_id?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          payment_date?: string | null
+          payment_method?: string
+          refund_amount?: number | null
+          refund_date?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_cart_id_fkey"
+            columns: ["cart_id"]
+            isOneToOne: false
+            referencedRelation: "carts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       prestations_realisees: {
         Row: {
@@ -1853,6 +2120,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      calculate_cart_total: {
+        Args: { cart_id_param: string }
+        Returns: number
+      }
       calculate_detailed_rating: {
         Args: {
           general_rating: number
@@ -1902,6 +2173,10 @@ export type Database = {
           p_referred_type?: string
         }
         Returns: boolean
+      }
+      expire_old_carts: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       find_eligible_providers: {
         Args: {

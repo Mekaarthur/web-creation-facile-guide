@@ -36,6 +36,7 @@ import AdminPrestataires from "./pages/admin/Prestataires";
 import AdminModeration from "./pages/admin/Moderation";
 import AdminMessagerie from "./pages/admin/Messagerie";
 import AdminPaiements from "./pages/admin/Paiements";
+import AdminPaniers from "./pages/admin/Paniers";
 
 import NotFound from "./pages/NotFound";
 
@@ -77,8 +78,9 @@ const App = () => (
               <Route path="demandes" element={<AdminClientRequests />} />
               <Route path="candidatures" element={<AdminJobApplications />} />
               <Route path="moderation" element={<AdminModeration />} />
-              <Route path="messagerie" element={<AdminMessagerie />} />
-              <Route path="paiements" element={<AdminPaiements />} />
+            <Route path="messagerie" element={<AdminMessagerie />} />
+            <Route path="paniers" element={<AdminPaniers />} />
+            <Route path="paiements" element={<AdminPaiements />} />
               <Route path="zones" element={<div>Zones géographiques - En développement</div>} />
               <Route path="statistiques" element={<div>Statistiques - En développement</div>} />
               <Route path="parametres" element={<div>Paramètres - En développement</div>} />

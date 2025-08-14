@@ -4,7 +4,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, CreditCard, DollarSign, TrendingUp, AlertCircle, Download, Filter } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Search, CreditCard, DollarSign, TrendingUp, AlertCircle, Download, Filter, RotateCcw, Check, X, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -13,66 +16,71 @@ interface Payment {
   amount: number;
   status: string;
   payment_date: string;
-  client_name: string;
-  provider_name: string;
-  service_type: string;
+  payment_method: string;
   transaction_id: string;
+  currency: string;
+  admin_notes?: string;
+  refund_amount?: number;
+  profiles?: {
+    first_name: string;
+    last_name: string;
+  };
+  carts?: {
+    status: string;
+    total_estimated: number;
+  };
+  bookings?: {
+    id: string;
+    service_id: string;
+    services: {
+      name: string;
+    };
+  };
+}
+
+interface Statistics {
+  total_revenue: number;
+  pending_amount: number;
+  failed_count: number;
+  refunded_amount: number;
+  by_method: {
+    stripe: number;
+    paypal: number;
+    virement: number;
+    especes: number;
+  };
 }
 
 export default function AdminPaiements() {
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [statistics, setStatistics] = useState<Statistics | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [refundAmount, setRefundAmount] = useState('');
+  const [refundReason, setRefundReason] = useState('');
+  const [confirmNotes, setConfirmNotes] = useState('');
   const { toast } = useToast();
 
   const loadPayments = async () => {
     try {
-      // Simuler des données de paiement pour la démo
-      const mockPayments: Payment[] = [
-        {
-          id: '1',
-          amount: 85.50,
-          status: 'completed',
-          payment_date: new Date().toISOString(),
-          client_name: 'Marie Dupont',
-          provider_name: 'Jean Martin',
-          service_type: 'Aide ménagère',
-          transaction_id: 'txn_1234567890'
-        },
-        {
-          id: '2',
-          amount: 120.00,
-          status: 'pending',
-          payment_date: new Date(Date.now() - 3600000).toISOString(),
-          client_name: 'Sophie Laurent',
-          provider_name: 'Paul Dubois',
-          service_type: 'Garde d\'enfants',
-          transaction_id: 'txn_1234567891'
-        },
-        {
-          id: '3',
-          amount: 65.00,
-          status: 'failed',
-          payment_date: new Date(Date.now() - 7200000).toISOString(),
-          client_name: 'Pierre Moreau',
-          provider_name: 'Claire Petit',
-          service_type: 'Aide aux seniors',
-          transaction_id: 'txn_1234567892'
-        },
-        {
-          id: '4',
-          amount: 95.75,
-          status: 'refunded',
-          payment_date: new Date(Date.now() - 86400000).toISOString(),
-          client_name: 'Julie Roux',
-          provider_name: 'Marc Blanc',
-          service_type: 'Aide administrative',
-          transaction_id: 'txn_1234567893'
-        },
-      ];
+      setLoading(true);
+      const { data, error } = await supabase.functions.invoke('admin-payments', {
+        body: {
+          action: 'list',
+          filters: {
+            status: statusFilter !== 'all' ? statusFilter : undefined,
+            search: searchTerm || undefined
+          }
+        }
+      });
 
-      setPayments(mockPayments);
+      if (error) throw error;
+
+      setPayments(data.payments);
+      setStatistics(data.statistics);
     } catch (error) {
       console.error('Erreur:', error);
       toast({
@@ -85,15 +93,53 @@ export default function AdminPaiements() {
     }
   };
 
+  const handlePaymentAction = async (action: string, paymentId: string, extraData?: any) => {
+    try {
+      setActionLoading(paymentId);
+      
+      const { data, error } = await supabase.functions.invoke('admin-payments', {
+        body: {
+          action,
+          paymentId,
+          ...extraData
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Succès",
+        description: `Action ${action} effectuée avec succès`,
+      });
+
+      // Recharger les données
+      loadPayments();
+      setSelectedPayment(null);
+      setRefundAmount('');
+      setRefundReason('');
+      setConfirmNotes('');
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast({
+        title: "Erreur",
+        description: `Impossible d'effectuer l'action ${action}`,
+        variant: "destructive"
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   useEffect(() => {
     loadPayments();
   }, []);
 
   const filteredPayments = payments.filter(payment => {
+    const clientName = payment.profiles ? `${payment.profiles.first_name} ${payment.profiles.last_name}` : '';
     const matchesSearch = 
-      payment.client_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      payment.provider_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      payment.transaction_id?.toLowerCase().includes(searchTerm.toLowerCase());
+      clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      payment.transaction_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      payment.id.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || payment.status === statusFilter;
     
@@ -102,34 +148,43 @@ export default function AdminPaiements() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'completed':
-        return <Badge variant="default" className="bg-green-100 text-green-800">Complété</Badge>;
-      case 'pending':
+      case 'payé':
+        return <Badge variant="default" className="bg-green-100 text-green-800">Payé</Badge>;
+      case 'en_attente':
         return <Badge variant="secondary">En attente</Badge>;
-      case 'failed':
+      case 'échoué':
         return <Badge variant="destructive">Échoué</Badge>;
-      case 'refunded':
+      case 'remboursé':
         return <Badge variant="outline">Remboursé</Badge>;
+      case 'annulé':
+        return <Badge variant="outline" className="bg-gray-100 text-gray-800">Annulé</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
   };
 
-  const statusCounts = {
-    all: payments.length,
-    completed: payments.filter(p => p.status === 'completed').length,
-    pending: payments.filter(p => p.status === 'pending').length,
-    failed: payments.filter(p => p.status === 'failed').length,
-    refunded: payments.filter(p => p.status === 'refunded').length,
+  const getMethodBadge = (method: string) => {
+    switch (method) {
+      case 'stripe':
+        return <Badge variant="outline" className="bg-blue-50 text-blue-700">Stripe</Badge>;
+      case 'paypal':
+        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700">PayPal</Badge>;
+      case 'virement':
+        return <Badge variant="outline" className="bg-green-50 text-green-700">Virement</Badge>;
+      case 'especes':
+        return <Badge variant="outline" className="bg-gray-50 text-gray-700">Espèces</Badge>;
+      default:
+        return <Badge variant="outline">{method}</Badge>;
+    }
   };
 
-  const totalRevenue = payments
-    .filter(p => p.status === 'completed')
-    .reduce((sum, p) => sum + p.amount, 0);
-
-  const pendingAmount = payments
-    .filter(p => p.status === 'pending')
-    .reduce((sum, p) => sum + p.amount, 0);
+  const statusCounts = {
+    all: payments.length,
+    payé: payments.filter(p => p.status === 'payé').length,
+    en_attente: payments.filter(p => p.status === 'en_attente').length,
+    échoué: payments.filter(p => p.status === 'échoué').length,
+    remboursé: payments.filter(p => p.status === 'remboursé').length,
+  };
 
   if (loading) {
     return (
@@ -159,7 +214,7 @@ export default function AdminPaiements() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">€{totalRevenue.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-green-600">€{statistics?.total_revenue?.toFixed(2) || '0.00'}</div>
             <p className="text-xs text-muted-foreground">+12% ce mois</p>
           </CardContent>
         </Card>
@@ -171,8 +226,8 @@ export default function AdminPaiements() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">€{pendingAmount.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">{statusCounts.pending} transactions</p>
+            <div className="text-2xl font-bold text-orange-600">€{statistics?.pending_amount?.toFixed(2) || '0.00'}</div>
+            <p className="text-xs text-muted-foreground">{statusCounts.en_attente} transactions</p>
           </CardContent>
         </Card>
         <Card>
@@ -183,7 +238,7 @@ export default function AdminPaiements() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{statusCounts.failed}</div>
+            <div className="text-2xl font-bold text-red-600">{statistics?.failed_count || 0}</div>
             <p className="text-xs text-muted-foreground">À résoudre</p>
           </CardContent>
         </Card>
@@ -191,12 +246,12 @@ export default function AdminPaiements() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-blue-600" />
-              Croissance
+              Remboursements
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">+24%</div>
-            <p className="text-xs text-muted-foreground">vs mois dernier</p>
+            <div className="text-2xl font-bold text-blue-600">€{statistics?.refunded_amount?.toFixed(2) || '0.00'}</div>
+            <p className="text-xs text-muted-foreground">{statusCounts.remboursé} remboursements</p>
           </CardContent>
         </Card>
       </div>
@@ -221,6 +276,10 @@ export default function AdminPaiements() {
               <Filter className="w-4 h-4 mr-2" />
               Filtres avancés
             </Button>
+            <Button variant="outline" size="sm" onClick={loadPayments}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Actualiser
+            </Button>
             <Button variant="outline" size="sm">
               <Download className="w-4 h-4 mr-2" />
               Exporter
@@ -235,17 +294,17 @@ export default function AdminPaiements() {
           <TabsTrigger value="all">
             Tous ({statusCounts.all})
           </TabsTrigger>
-          <TabsTrigger value="completed">
-            Complétés ({statusCounts.completed})
+          <TabsTrigger value="payé">
+            Payés ({statusCounts.payé})
           </TabsTrigger>
-          <TabsTrigger value="pending">
-            En attente ({statusCounts.pending})
+          <TabsTrigger value="en_attente">
+            En attente ({statusCounts.en_attente})
           </TabsTrigger>
-          <TabsTrigger value="failed">
-            Échoués ({statusCounts.failed})
+          <TabsTrigger value="échoué">
+            Échoués ({statusCounts.échoué})
           </TabsTrigger>
-          <TabsTrigger value="refunded">
-            Remboursés ({statusCounts.refunded})
+          <TabsTrigger value="remboursé">
+            Remboursés ({statusCounts.remboursé})
           </TabsTrigger>
         </TabsList>
 
@@ -258,47 +317,200 @@ export default function AdminPaiements() {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-3">
-              {filteredPayments.map((payment) => (
-                <Card key={payment.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-2 flex-1">
-                        <div className="flex items-center gap-3">
-                          <span className="font-semibold text-lg">€{payment.amount.toFixed(2)}</span>
-                          {getStatusBadge(payment.status)}
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-muted-foreground">
-                          <div>
-                            <span className="font-medium">Client:</span> {payment.client_name}
-                          </div>
-                          <div>
-                            <span className="font-medium">Prestataire:</span> {payment.provider_name}
-                          </div>
-                          <div>
-                            <span className="font-medium">Service:</span> {payment.service_type}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          <span>ID: {payment.transaction_id}</span>
-                          <span>Date: {new Date(payment.payment_date).toLocaleDateString('fr-FR')}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 ml-4">
-                        <Button variant="outline" size="sm">
-                          Voir détails
-                        </Button>
-                        {payment.status === 'failed' && (
-                          <Button variant="default" size="sm">
-                            Relancer
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <Card>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Montant</TableHead>
+                      <TableHead>Client</TableHead>
+                      <TableHead>Méthode</TableHead>
+                      <TableHead>Statut</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Transaction ID</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredPayments.map((payment) => {
+                      const clientName = payment.profiles 
+                        ? `${payment.profiles.first_name} ${payment.profiles.last_name}`
+                        : 'N/A';
+                      
+                      return (
+                        <TableRow key={payment.id}>
+                          <TableCell className="font-medium">
+                            €{payment.amount.toFixed(2)} {payment.currency}
+                          </TableCell>
+                          <TableCell>{clientName}</TableCell>
+                          <TableCell>{getMethodBadge(payment.payment_method)}</TableCell>
+                          <TableCell>{getStatusBadge(payment.status)}</TableCell>
+                          <TableCell>
+                            {payment.payment_date 
+                              ? new Date(payment.payment_date).toLocaleDateString('fr-FR')
+                              : 'N/A'
+                            }
+                          </TableCell>
+                          <TableCell className="font-mono text-xs">
+                            {payment.transaction_id || payment.id.slice(0, 8)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center gap-2 justify-end">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => setSelectedPayment(payment)}
+                                  >
+                                    Détails
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-2xl">
+                                  <DialogHeader>
+                                    <DialogTitle>Détails du paiement</DialogTitle>
+                                    <DialogDescription>
+                                      Paiement #{selectedPayment?.id.slice(0, 8)}
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  {selectedPayment && (
+                                    <div className="space-y-4">
+                                      <div className="grid grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                          <span className="font-medium">Montant:</span> €{selectedPayment.amount.toFixed(2)}
+                                        </div>
+                                        <div>
+                                          <span className="font-medium">Devise:</span> {selectedPayment.currency}
+                                        </div>
+                                        <div>
+                                          <span className="font-medium">Méthode:</span> {selectedPayment.payment_method}
+                                        </div>
+                                        <div>
+                                          <span className="font-medium">Statut:</span> {getStatusBadge(selectedPayment.status)}
+                                        </div>
+                                        <div>
+                                          <span className="font-medium">Date:</span> {selectedPayment.payment_date ? new Date(selectedPayment.payment_date).toLocaleString('fr-FR') : 'N/A'}
+                                        </div>
+                                        <div>
+                                          <span className="font-medium">Transaction ID:</span> {selectedPayment.transaction_id}
+                                        </div>
+                                      </div>
+                                      
+                                      {selectedPayment.admin_notes && (
+                                        <div>
+                                          <span className="font-medium">Notes admin:</span>
+                                          <p className="text-muted-foreground mt-1">{selectedPayment.admin_notes}</p>
+                                        </div>
+                                      )}
+
+                                      <div className="flex gap-2 pt-4">
+                                        {selectedPayment.status === 'en_attente' && (
+                                          <Dialog>
+                                            <DialogTrigger asChild>
+                                              <Button size="sm" disabled={actionLoading === selectedPayment.id}>
+                                                <Check className="w-4 h-4 mr-2" />
+                                                Confirmer paiement
+                                              </Button>
+                                            </DialogTrigger>
+                                            <DialogContent>
+                                              <DialogHeader>
+                                                <DialogTitle>Confirmer le paiement</DialogTitle>
+                                                <DialogDescription>
+                                                  Voulez-vous confirmer ce paiement manuellement ?
+                                                </DialogDescription>
+                                              </DialogHeader>
+                                              <div className="space-y-4">
+                                                <Textarea
+                                                  placeholder="Notes (optionnel)"
+                                                  value={confirmNotes}
+                                                  onChange={(e) => setConfirmNotes(e.target.value)}
+                                                />
+                                                <Button
+                                                  onClick={() => handlePaymentAction('confirm', selectedPayment.id, { notes: confirmNotes })}
+                                                  disabled={actionLoading === selectedPayment.id}
+                                                >
+                                                  Confirmer
+                                                </Button>
+                                              </div>
+                                            </DialogContent>
+                                          </Dialog>
+                                        )}
+                                        
+                                        {selectedPayment.status === 'payé' && (
+                                          <Dialog>
+                                            <DialogTrigger asChild>
+                                              <Button variant="destructive" size="sm" disabled={actionLoading === selectedPayment.id}>
+                                                <RotateCcw className="w-4 h-4 mr-2" />
+                                                Rembourser
+                                              </Button>
+                                            </DialogTrigger>
+                                            <DialogContent>
+                                              <DialogHeader>
+                                                <DialogTitle>Rembourser le paiement</DialogTitle>
+                                                <DialogDescription>
+                                                  Remboursement pour le paiement #{selectedPayment.id.slice(0, 8)}
+                                                </DialogDescription>
+                                              </DialogHeader>
+                                              <div className="space-y-4">
+                                                <div>
+                                                  <label className="text-sm font-medium">Montant à rembourser</label>
+                                                  <Input
+                                                    type="number"
+                                                    step="0.01"
+                                                    max={selectedPayment.amount}
+                                                    placeholder={selectedPayment.amount.toString()}
+                                                    value={refundAmount}
+                                                    onChange={(e) => setRefundAmount(e.target.value)}
+                                                  />
+                                                </div>
+                                                <div>
+                                                  <label className="text-sm font-medium">Raison du remboursement</label>
+                                                  <Textarea
+                                                    placeholder="Expliquez la raison du remboursement..."
+                                                    value={refundReason}
+                                                    onChange={(e) => setRefundReason(e.target.value)}
+                                                  />
+                                                </div>
+                                                <Button
+                                                  variant="destructive"
+                                                  onClick={() => handlePaymentAction('refund', selectedPayment.id, { 
+                                                    amount: parseFloat(refundAmount) || selectedPayment.amount,
+                                                    reason: refundReason 
+                                                  })}
+                                                  disabled={actionLoading === selectedPayment.id}
+                                                >
+                                                  Confirmer le remboursement
+                                                </Button>
+                                              </div>
+                                            </DialogContent>
+                                          </Dialog>
+                                        )}
+                                        
+                                        {selectedPayment.status === 'échoué' && (
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handlePaymentAction('retry', selectedPayment.id)}
+                                            disabled={actionLoading === selectedPayment.id}
+                                          >
+                                            <RotateCcw className="w-4 h-4 mr-2" />
+                                            Relancer
+                                          </Button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+                                </DialogContent>
+                              </Dialog>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
           )}
         </TabsContent>
       </Tabs>
