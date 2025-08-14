@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { AdminClientRequests } from './AdminClientRequests';
 import { AdminClientRequestsEnhanced } from './AdminClientRequestsEnhanced';
 import { AdminManualAssignment } from './AdminManualAssignment';
+import { AdminAlertsPanel } from './AdminAlertsPanel';
+import { AdminKanbanBoard } from './AdminKanbanBoard';
 import { InternalMessaging } from './InternalMessaging';
 import { MissionAssignmentTrigger } from './MissionAssignmentTrigger';
 import ZoneGeographiqueManager from './ZoneGeographiqueManager';
@@ -100,6 +102,7 @@ interface Stats {
 }
 
 export const AdminDashboard = () => {
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [users, setUsers] = useState<User[]>([]);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -486,8 +489,13 @@ export const AdminDashboard = () => {
       </div>
 
       {/* Onglets de gestion */}
-      <Tabs defaultValue="users" className="space-y-4">
-        <TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        {/* Panneau d'alertes visible sur tous les onglets */}
+        <AdminAlertsPanel onNavigate={setActiveTab} />
+        
+        <TabsList className="grid w-full grid-cols-9 lg:w-auto">
+          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+          <TabsTrigger value="kanban">Kanban</TabsTrigger>
           <TabsTrigger value="users">Utilisateurs</TabsTrigger>
           <TabsTrigger value="providers">Prestataires</TabsTrigger>
           <TabsTrigger value="applications">Candidatures</TabsTrigger>
@@ -509,6 +517,19 @@ export const AdminDashboard = () => {
           </TabsTrigger>
           <TabsTrigger value="stats">Statistiques</TabsTrigger>
         </TabsList>
+
+        {/* Vue d'ensemble du dashboard */}
+        <TabsContent value="dashboard" className="space-y-4">
+          <div className="text-center py-8">
+            <h3 className="text-lg font-medium">Bienvenue dans le tableau de bord admin</h3>
+            <p className="text-muted-foreground">Utilisez les onglets pour naviguer dans les différentes sections</p>
+          </div>
+        </TabsContent>
+
+        {/* Tableau Kanban */}
+        <TabsContent value="kanban" className="space-y-4">
+          <AdminKanbanBoard />
+        </TabsContent>
 
         {/* Gestion des utilisateurs */}
         <TabsContent value="users" className="space-y-4">
