@@ -43,13 +43,13 @@ export const ProviderMissionResponse = () => {
     
     // Écouter les nouvelles assignations en temps réel
     const channel = supabase
-      .channel('mission-assignments')
+      .channel('missions')
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'mission_assignments'
+          table: 'missions'
         },
         () => {
           loadAvailableMissions();
@@ -87,7 +87,7 @@ export const ProviderMissionResponse = () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('mission_assignments')
+        .from('missions')
         .select(`
           *,
           client_requests (

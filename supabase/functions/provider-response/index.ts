@@ -29,7 +29,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // 1. Vérifier que l'assignation existe et n'est pas déjà attribuée
     const { data: assignment, error: assignmentError } = await supabase
-      .from('mission_assignments')
+      .from('missions')
       .select('*, client_requests(*)')
       .eq('id', assignmentId)
       .single();
@@ -62,11 +62,11 @@ const handler = async (req: Request): Promise<Response> => {
     const responseTime = new Date(Date.now() - new Date(assignment.created_at).getTime());
     
     const { error: responseError } = await supabase
-      .from('provider_responses')
+      .from('candidatures_prestataires')
       .insert({
         mission_assignment_id: assignmentId,
         provider_id: providerId,
-        response_type: responseType,
+        response_type: responseType === 'accept' ? 'acceptee' : 'attribuee_a_un_autre',
         response_time: responseTime
       });
 
@@ -78,7 +78,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (responseType === 'accept') {
       // Vérifier à nouveau qu'elle n'est pas déjà attribuée (race condition)
       const { data: currentAssignment } = await supabase
-        .from('mission_assignments')
+        .from('missions')
         .select('assigned_provider_id')
         .eq('id', assignmentId)
         .single();
@@ -95,7 +95,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       // Attribuer la mission
       const { error: updateError } = await supabase
-        .from('mission_assignments')
+        .from('missions')
         .update({
           assigned_provider_id: providerId,
           assigned_at: new Date().toISOString()
@@ -119,7 +119,7 @@ const handler = async (req: Request): Promise<Response> => {
       await supabase
         .from('client_requests')
         .update({
-          status: 'confirmed',
+          status: 'confirmee',
           assigned_provider_id: providerId,
           payment_amount: montantPrestation
         })
@@ -204,7 +204,7 @@ const handler = async (req: Request): Promise<Response> => {
     } else {
       // Si refus, juste enregistrer la réponse
       await supabase
-        .from('mission_assignments')
+        .from('missions')
         .update({
           responses_received: supabase.sql`responses_received + 1`
         })

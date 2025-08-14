@@ -80,13 +80,14 @@ const handler = async (req: Request): Promise<Response> => {
     const responseDeadline = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
     const { data: missionAssignment, error: assignmentError } = await supabase
-      .from('mission_assignments')
+      .from('missions')
       .insert({
         client_request_id: clientRequestId,
         eligible_providers: providerIds,
         response_deadline: responseDeadline.toISOString(),
         sent_notifications: 0,
-        responses_received: 0
+        responses_received: 0,
+        assigned_by_admin: false
       })
       .select()
       .single();
@@ -160,7 +161,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // 4. Mettre à jour le nombre de notifications envoyées
     await supabase
-      .from('mission_assignments')
+      .from('missions')
       .update({ sent_notifications: notificationsSent })
       .eq('id', missionAssignment.id);
 
@@ -197,7 +198,7 @@ async function checkMissionTimeout(assignmentId: string) {
     console.log('Checking timeout for assignment:', assignmentId);
 
     const { data: assignment } = await supabase
-      .from('mission_assignments')
+      .from('missions')
       .select('*, client_requests(*)')
       .eq('id', assignmentId)
       .single();

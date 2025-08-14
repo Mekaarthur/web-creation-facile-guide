@@ -184,6 +184,48 @@ export type Database = {
           },
         ]
       }
+      candidatures_prestataires: {
+        Row: {
+          created_at: string | null
+          id: string
+          mission_assignment_id: string
+          provider_id: string
+          response_time: unknown | null
+          response_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          mission_assignment_id: string
+          provider_id: string
+          response_time?: unknown | null
+          response_type: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          mission_assignment_id?: string
+          provider_id?: string
+          response_time?: unknown | null
+          response_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_responses_mission_assignment_id_fkey"
+            columns: ["mission_assignment_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_responses_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_conversations: {
         Row: {
           booking_id: string | null
@@ -338,6 +380,7 @@ export type Database = {
           client_name: string
           client_phone: string | null
           created_at: string
+          finished_at: string | null
           form_response_id: string
           id: string
           location: string
@@ -348,6 +391,7 @@ export type Database = {
           preferred_time: string | null
           service_description: string
           service_type: string
+          started_at: string | null
           status: string
           updated_at: string
           urgency_level: string | null
@@ -361,6 +405,7 @@ export type Database = {
           client_name: string
           client_phone?: string | null
           created_at?: string
+          finished_at?: string | null
           form_response_id: string
           id?: string
           location: string
@@ -371,6 +416,7 @@ export type Database = {
           preferred_time?: string | null
           service_description: string
           service_type: string
+          started_at?: string | null
           status?: string
           updated_at?: string
           urgency_level?: string | null
@@ -384,6 +430,7 @@ export type Database = {
           client_name?: string
           client_phone?: string | null
           created_at?: string
+          finished_at?: string | null
           form_response_id?: string
           id?: string
           location?: string
@@ -394,6 +441,7 @@ export type Database = {
           preferred_time?: string | null
           service_description?: string
           service_type?: string
+          started_at?: string | null
           status?: string
           updated_at?: string
           urgency_level?: string | null
@@ -807,9 +855,12 @@ export type Database = {
         }
         Relationships: []
       }
-      mission_assignments: {
+      missions: {
         Row: {
+          admin_assignment_time: string | null
+          admin_user_id: string | null
           assigned_at: string | null
+          assigned_by_admin: boolean | null
           assigned_provider_id: string | null
           assignment_method: string | null
           client_request_id: string
@@ -821,7 +872,10 @@ export type Database = {
           sent_notifications: number | null
         }
         Insert: {
+          admin_assignment_time?: string | null
+          admin_user_id?: string | null
           assigned_at?: string | null
+          assigned_by_admin?: boolean | null
           assigned_provider_id?: string | null
           assignment_method?: string | null
           client_request_id: string
@@ -833,7 +887,10 @@ export type Database = {
           sent_notifications?: number | null
         }
         Update: {
+          admin_assignment_time?: string | null
+          admin_user_id?: string | null
           assigned_at?: string | null
+          assigned_by_admin?: boolean | null
           assigned_provider_id?: string | null
           assignment_method?: string | null
           client_request_id?: string
@@ -1223,48 +1280,6 @@ export type Database = {
           },
           {
             foreignKeyName: "provider_notifications_provider_id_fkey"
-            columns: ["provider_id"]
-            isOneToOne: false
-            referencedRelation: "providers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      provider_responses: {
-        Row: {
-          created_at: string | null
-          id: string
-          mission_assignment_id: string
-          provider_id: string
-          response_time: unknown | null
-          response_type: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          mission_assignment_id: string
-          provider_id: string
-          response_time?: unknown | null
-          response_type: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          mission_assignment_id?: string
-          provider_id?: string
-          response_time?: unknown | null
-          response_type?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "provider_responses_mission_assignment_id_fkey"
-            columns: ["mission_assignment_id"]
-            isOneToOne: false
-            referencedRelation: "mission_assignments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "provider_responses_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
             referencedRelation: "providers"
@@ -1830,6 +1845,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_mission_manually: {
+        Args: {
+          p_admin_user_id?: string
+          p_mission_id: string
+          p_provider_id: string
+        }
+        Returns: boolean
+      }
       calculate_detailed_rating: {
         Args: {
           general_rating: number

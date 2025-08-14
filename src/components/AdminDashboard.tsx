@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AdminClientRequests } from './AdminClientRequests';
 import { AdminClientRequestsEnhanced } from './AdminClientRequestsEnhanced';
+import { AdminManualAssignment } from './AdminManualAssignment';
 import { InternalMessaging } from './InternalMessaging';
 import { MissionAssignmentTrigger } from './MissionAssignmentTrigger';
 import ZoneGeographiqueManager from './ZoneGeographiqueManager';
@@ -491,6 +492,7 @@ export const AdminDashboard = () => {
           <TabsTrigger value="providers">Prestataires</TabsTrigger>
           <TabsTrigger value="applications">Candidatures</TabsTrigger>
           <TabsTrigger value="requests">Demandes clients</TabsTrigger>
+          <TabsTrigger value="manual_assignment">Attribution manuelle</TabsTrigger>
           <TabsTrigger value="enhanced_requests">Gestion avancée</TabsTrigger>
           <TabsTrigger value="zones">
             <MapPin className="w-4 h-4 mr-2" />
@@ -884,6 +886,11 @@ export const AdminDashboard = () => {
         {/* Gestion des demandes clients */}
         <TabsContent value="requests" className="space-y-4">
           <AdminClientRequests />
+        </TabsContent>
+
+        {/* Attribution manuelle des missions */}
+        <TabsContent value="manual_assignment" className="space-y-4">
+          <AdminManualAssignment />
         </TabsContent>
 
         {/* Gestion avancée des demandes */}
