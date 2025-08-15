@@ -4,21 +4,31 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Send, MessageSquare } from "lucide-react";
+import { Send, MessageSquare, Calendar as CalendarIcon, MapPin } from "lucide-react";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 const CustomRequestForm = () => {
   const [loading, setLoading] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedTime, setSelectedTime] = useState("");
+  const [hasDelivery, setHasDelivery] = useState(false);
   const [formData, setFormData] = useState({
     client_name: "",
     client_email: "",
     client_phone: "",
     service_description: "",
-    preferred_date: "",
-    preferred_time: "",
+    preferred_datetime: "",
+    pickup_address: "",
+    delivery_address: "",
     budget_range: "",
-    location: "",
     urgency_level: "normal",
     additional_notes: ""
   });
@@ -28,7 +38,7 @@ const CustomRequestForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.client_name || !formData.client_email || !formData.service_description || !formData.location) {
+    if (!formData.client_name || !formData.client_email || !formData.service_description || !formData.pickup_address) {
       toast({
         variant: "destructive",
         title: "Erreur",
@@ -40,9 +50,24 @@ const CustomRequestForm = () => {
     setLoading(true);
 
     try {
+      // Prepare datetime if both date and time are provided
+      let preferredDatetime = null;
+      if (selectedDate && selectedTime) {
+        const [hours, minutes] = selectedTime.split(':');
+        const datetime = new Date(selectedDate);
+        datetime.setHours(parseInt(hours), parseInt(minutes));
+        preferredDatetime = datetime.toISOString();
+      }
+
+      const dataToInsert = {
+        ...formData,
+        preferred_datetime: preferredDatetime,
+        location: formData.pickup_address // Pour compatibilité avec l'ancien champ
+      };
+
       const { error } = await supabase
         .from('custom_requests')
-        .insert([formData]);
+        .insert([dataToInsert]);
 
       if (error) {
         throw error;
@@ -59,13 +84,16 @@ const CustomRequestForm = () => {
         client_email: "",
         client_phone: "",
         service_description: "",
-        preferred_date: "",
-        preferred_time: "",
+        preferred_datetime: "",
+        pickup_address: "",
+        delivery_address: "",
         budget_range: "",
-        location: "",
         urgency_level: "normal",
         additional_notes: ""
       });
+      setSelectedDate(undefined);
+      setSelectedTime("");
+      setHasDelivery(false);
 
     } catch (error) {
       console.error('Error submitting custom request:', error);
@@ -144,57 +172,119 @@ const CustomRequestForm = () => {
             />
           </div>
 
+          {/* Date et heure souhaitées */}
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Date souhaitée</label>
-              <Input
-                type="date"
-                value={formData.preferred_date}
-                onChange={(e) => setFormData({...formData, preferred_date: e.target.value})}
-                min={new Date().toISOString().split('T')[0]}
-              />
+              <Label className="text-sm font-medium text-foreground mb-2 block">
+                Date souhaitée
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !selectedDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {selectedDate ? format(selectedDate, "PPP", { locale: fr }) : "Sélectionner une date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    disabled={(date) => date < new Date()}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Heure préférée</label>
+              <Label className="text-sm font-medium text-foreground mb-2 block">
+                Heure souhaitée
+              </Label>
               <Input
-                value={formData.preferred_time}
-                onChange={(e) => setFormData({...formData, preferred_time: e.target.value})}
-                placeholder="Ex: 14h00"
+                type="time"
+                value={selectedTime}
+                onChange={(e) => setSelectedTime(e.target.value)}
+                placeholder="Ex: 14:00"
               />
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Localisation <span className="text-destructive">*</span>
-              </label>
+          {/* Adresse de départ/récupération */}
+          <div>
+            <Label className="text-sm font-medium text-foreground mb-2 block">
+              Adresse de départ / récupération <span className="text-destructive">*</span>
+            </Label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
-                value={formData.location}
-                onChange={(e) => setFormData({...formData, location: e.target.value})}
-                placeholder="Ville ou adresse"
+                value={formData.pickup_address}
+                onChange={(e) => setFormData({...formData, pickup_address: e.target.value})}
+                placeholder="Adresse complète de départ"
+                className="pl-10"
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Budget souhaité</label>
-              <Select
-                value={formData.budget_range}
-                onValueChange={(value) => setFormData({...formData, budget_range: value})}
+          </div>
+
+          {/* Option livraison/destination */}
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="hasDelivery"
+                checked={hasDelivery}
+                onCheckedChange={(checked) => setHasDelivery(checked === true)}
+              />
+              <Label
+                htmlFor="hasDelivery"
+                className="text-sm font-medium text-foreground cursor-pointer"
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionnez votre budget" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="20-50">20€ - 50€</SelectItem>
-                  <SelectItem value="50-100">50€ - 100€</SelectItem>
-                  <SelectItem value="100-200">100€ - 200€</SelectItem>
-                  <SelectItem value="200-500">200€ - 500€</SelectItem>
-                  <SelectItem value="500+">500€+</SelectItem>
-                  <SelectItem value="à discuter">À discuter</SelectItem>
-                </SelectContent>
-              </Select>
+                Service avec livraison ou destination différente
+              </Label>
             </div>
+
+            {hasDelivery && (
+              <div>
+                <Label className="text-sm font-medium text-foreground mb-2 block">
+                  Adresse de livraison / lieu de destination
+                </Label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    value={formData.delivery_address}
+                    onChange={(e) => setFormData({...formData, delivery_address: e.target.value})}
+                    placeholder="Adresse complète de livraison"
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <Label className="text-sm font-medium text-foreground mb-2 block">Budget souhaité</Label>
+            <Select
+              value={formData.budget_range}
+              onValueChange={(value) => setFormData({...formData, budget_range: value})}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionnez votre budget" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="20-50">20€ - 50€</SelectItem>
+                <SelectItem value="50-100">50€ - 100€</SelectItem>
+                <SelectItem value="100-200">100€ - 200€</SelectItem>
+                <SelectItem value="200-500">200€ - 500€</SelectItem>
+                <SelectItem value="500+">500€+</SelectItem>
+                <SelectItem value="à discuter">À discuter</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div>

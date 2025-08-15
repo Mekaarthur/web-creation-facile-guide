@@ -731,9 +731,12 @@ export type Database = {
           client_name: string
           client_phone: string | null
           created_at: string
+          delivery_address: string | null
           id: string
           location: string
+          pickup_address: string | null
           preferred_date: string | null
+          preferred_datetime: string | null
           preferred_time: string | null
           service_description: string
           status: string
@@ -747,9 +750,12 @@ export type Database = {
           client_name: string
           client_phone?: string | null
           created_at?: string
+          delivery_address?: string | null
           id?: string
           location: string
+          pickup_address?: string | null
           preferred_date?: string | null
+          preferred_datetime?: string | null
           preferred_time?: string | null
           service_description: string
           status?: string
@@ -763,9 +769,12 @@ export type Database = {
           client_name?: string
           client_phone?: string | null
           created_at?: string
+          delivery_address?: string | null
           id?: string
           location?: string
+          pickup_address?: string | null
           preferred_date?: string | null
+          preferred_datetime?: string | null
           preferred_time?: string | null
           service_description?: string
           status?: string
