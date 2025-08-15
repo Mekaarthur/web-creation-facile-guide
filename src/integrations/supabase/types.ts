@@ -1465,6 +1465,72 @@ export type Database = {
           },
         ]
       }
+      provider_invoices: {
+        Row: {
+          amount_brut: number
+          amount_net: number
+          booking_id: string
+          charges_sociales: number | null
+          created_at: string
+          id: string
+          invoice_number: string
+          issued_date: string
+          payment_date: string | null
+          provider_id: string
+          sent_date: string | null
+          status: string
+          tva_amount: number | null
+          updated_at: string
+        }
+        Insert: {
+          amount_brut?: number
+          amount_net?: number
+          booking_id: string
+          charges_sociales?: number | null
+          created_at?: string
+          id?: string
+          invoice_number?: string
+          issued_date?: string
+          payment_date?: string | null
+          provider_id: string
+          sent_date?: string | null
+          status?: string
+          tva_amount?: number | null
+          updated_at?: string
+        }
+        Update: {
+          amount_brut?: number
+          amount_net?: number
+          booking_id?: string
+          charges_sociales?: number | null
+          created_at?: string
+          id?: string
+          invoice_number?: string
+          issued_date?: string
+          payment_date?: string | null
+          provider_id?: string
+          sent_date?: string | null
+          status?: string
+          tva_amount?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_invoices_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_invoices_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provider_locations: {
         Row: {
           address: string
@@ -1714,6 +1780,8 @@ export type Database = {
           latitude: number | null
           location: string | null
           longitude: number | null
+          mandat_facturation_accepte: boolean | null
+          mandat_facturation_date: string | null
           missions_accepted: number | null
           missions_completed: number | null
           missions_this_week: number | null
@@ -1755,6 +1823,8 @@ export type Database = {
           latitude?: number | null
           location?: string | null
           longitude?: number | null
+          mandat_facturation_accepte?: boolean | null
+          mandat_facturation_date?: string | null
           missions_accepted?: number | null
           missions_completed?: number | null
           missions_this_week?: number | null
@@ -1796,6 +1866,8 @@ export type Database = {
           latitude?: number | null
           location?: string | null
           longitude?: number | null
+          mandat_facturation_accepte?: boolean | null
+          mandat_facturation_date?: string | null
           missions_accepted?: number | null
           missions_completed?: number | null
           missions_this_week?: number | null
@@ -2204,6 +2276,10 @@ export type Database = {
         }[]
       }
       generate_invoice_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_provider_invoice_number: {
         Args: Record<PropertyKey, never>
         Returns: string
       }

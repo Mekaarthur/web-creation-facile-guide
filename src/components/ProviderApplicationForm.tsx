@@ -27,6 +27,7 @@ interface FormData {
   business_name: string;
   description: string;
   siret_number: string;
+  mandat_facturation_accepte: boolean;
   
   // Services
   service_categories: string[];
@@ -132,6 +133,7 @@ export const ProviderApplicationForm = () => {
     business_name: '',
     description: '',
     siret_number: '',
+    mandat_facturation_accepte: false,
     service_categories: [],
     hourly_rate: 0,
     availability_days: [],
@@ -246,6 +248,7 @@ export const ProviderApplicationForm = () => {
         business_name: '',
         description: '',
         siret_number: '',
+        mandat_facturation_accepte: false,
         service_categories: [],
         hourly_rate: 0,
         availability_days: [],
@@ -376,6 +379,36 @@ export const ProviderApplicationForm = () => {
               value={formData.siret_number}
               onChange={(e) => updateFormData('siret_number', e.target.value)}
             />
+          </div>
+
+          {/* Mandat de facturation */}
+          <div className="space-y-3">
+            <div className="flex items-start space-x-3">
+              <Checkbox
+                id="mandat_facturation"
+                checked={formData.mandat_facturation_accepte || false}
+                onCheckedChange={(checked) => updateFormData('mandat_facturation_accepte', checked)}
+              />
+              <div className="space-y-1">
+                <Label 
+                  htmlFor="mandat_facturation" 
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Mandat de facturation *
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  J'autorise Bikawo à établir mes factures en mon nom et pour mon compte conformément à la réglementation en vigueur.
+                </p>
+              </div>
+            </div>
+            <div className="text-xs text-muted-foreground bg-muted p-3 rounded-lg">
+              <p><strong>Important :</strong> Ce mandat permet à Bikawo de :</p>
+              <ul className="list-disc list-inside mt-1 space-y-1">
+                <li>Émettre des factures en votre nom vers vos clients</li>
+                <li>Gérer automatiquement votre facturation</li>
+                <li>Vous transmettre vos fiches de rémunération sous 4 jours</li>
+              </ul>
+            </div>
           </div>
         </CardContent>
       </Card>

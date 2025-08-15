@@ -17,6 +17,7 @@ import { Calendar, MapPin, Star, DollarSign, Clock, User, FileText, Settings, Ba
 import ReferralProgram from "@/components/ReferralProgram";
 import { RewardsSection } from "@/components/RewardsSection";
 import { PrestationsRealisees } from "@/components/PrestationsRealisees";
+import ProviderInvoiceManagement from "@/components/ProviderInvoiceManagement";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -473,13 +474,14 @@ const EspacePrestataire = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-10">
+          <TabsList className="grid w-full grid-cols-11">
             <TabsTrigger value="profile">Profil</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="missions">Missions</TabsTrigger>
             <TabsTrigger value="calendar">Calendrier</TabsTrigger>
             <TabsTrigger value="client-requests">Demandes</TabsTrigger>
             <TabsTrigger value="prestations">Prestations</TabsTrigger>
+            <TabsTrigger value="invoices">Rémunération</TabsTrigger>
             <TabsTrigger value="rewards">Récompenses</TabsTrigger>
             <TabsTrigger value="referral">Parrainage</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
@@ -851,6 +853,11 @@ const EspacePrestataire = () => {
           {/* Prestations Tab */}
           <TabsContent value="prestations" className="space-y-6">
             <PrestationsRealisees />
+          </TabsContent>
+
+          {/* Rémunération Tab */}
+          <TabsContent value="invoices" className="space-y-6">
+            <ProviderInvoiceManagement />
           </TabsContent>
 
           {/* Récompenses Tab */}
