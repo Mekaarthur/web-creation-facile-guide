@@ -62,6 +62,8 @@ const navigationGroups = [
     title: 'Finance & Configuration',
     items: [
       { name: 'Paiements', href: '/admin/paiements', icon: CreditCard, badge: null },
+      { name: 'Factures clients', href: '/admin/factures', icon: FileText, badge: null },
+      { name: 'Fiches rémunération', href: '/admin/remunerations', icon: Building2, badge: null },
       { name: 'Zones', href: '/admin/zones', icon: MapPin, badge: null },
       { name: 'Statistiques', href: '/admin/statistiques', icon: BarChart3, badge: null },
       { name: 'Paramètres', href: '/admin/parametres', icon: Settings, badge: null },
