@@ -35,10 +35,14 @@ interface FormData {
   // Disponibilités
   availability_days: string[];
   availability_hours: string;
+  availability_time_slots: { day: string; start: string; end: string; }[];
   
   // Zone de couverture
   coverage_address: string;
   coverage_radius: number;
+  intervention_zones: string[];
+  other_intervention_zone: string;
+  transportation_mode: string;
   
   // Documents
   identity_document_url: string;
@@ -72,6 +76,50 @@ const DAYS = [
   'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'
 ];
 
+const INTERVENTION_ZONES = [
+  'Paris 1er',
+  'Paris 2ème',
+  'Paris 3ème',
+  'Paris 4ème',
+  'Paris 5ème',
+  'Paris 6ème',
+  'Paris 7ème',
+  'Paris 8ème',
+  'Paris 9ème',
+  'Paris 10ème',
+  'Paris 11ème',
+  'Paris 12ème',
+  'Paris 13ème',
+  'Paris 14ème',
+  'Paris 15ème',
+  'Paris 16ème',
+  'Paris 17ème',
+  'Paris 18ème',
+  'Paris 19ème',
+  'Paris 20ème',
+  'Boulogne-Billancourt',
+  'Neuilly-sur-Seine',
+  'Levallois-Perret',
+  'Issy-les-Moulineaux',
+  'Vincennes',
+  'Saint-Denis',
+  'Montreuil',
+  'Créteil'
+];
+
+const TRANSPORTATION_MODES = [
+  { value: 'walking', label: 'À pied' },
+  { value: 'bike', label: 'Vélo' },
+  { value: 'scooter', label: 'Scooter' },
+  { value: 'car', label: 'Voiture' },
+  { value: 'public_transport', label: 'Transport en commun' }
+];
+
+const TIME_SLOTS = [
+  '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', 
+  '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'
+];
+
 export const ProviderApplicationForm = () => {
   const [formData, setFormData] = useState<FormData>({
     first_name: '',
@@ -88,8 +136,12 @@ export const ProviderApplicationForm = () => {
     hourly_rate: 0,
     availability_days: [],
     availability_hours: '09h00 - 18h00',
+    availability_time_slots: [],
     coverage_address: '',
     coverage_radius: 20,
+    intervention_zones: [],
+    other_intervention_zone: '',
+    transportation_mode: '',
     identity_document_url: '',
     diploma_urls: [],
     insurance_document_url: '',
@@ -120,6 +172,31 @@ export const ProviderApplicationForm = () => {
       ? current.filter(d => d !== day)
       : [...current, day];
     updateFormData('availability_days', updated);
+  };
+
+  const toggleInterventionZone = (zone: string) => {
+    const current = formData.intervention_zones;
+    const updated = current.includes(zone)
+      ? current.filter(z => z !== zone)
+      : [...current, zone];
+    updateFormData('intervention_zones', updated);
+  };
+
+  const addTimeSlot = () => {
+    const newSlot = { day: '', start: '09:00', end: '18:00' };
+    updateFormData('availability_time_slots', [...formData.availability_time_slots, newSlot]);
+  };
+
+  const updateTimeSlot = (index: number, field: string, value: string) => {
+    const updated = formData.availability_time_slots.map((slot, i) => 
+      i === index ? { ...slot, [field]: value } : slot
+    );
+    updateFormData('availability_time_slots', updated);
+  };
+
+  const removeTimeSlot = (index: number) => {
+    const updated = formData.availability_time_slots.filter((_, i) => i !== index);
+    updateFormData('availability_time_slots', updated);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -173,8 +250,12 @@ export const ProviderApplicationForm = () => {
         hourly_rate: 0,
         availability_days: [],
         availability_hours: '09h00 - 18h00',
+        availability_time_slots: [],
         coverage_address: '',
         coverage_radius: 20,
+        intervention_zones: [],
+        other_intervention_zone: '',
+        transportation_mode: '',
         identity_document_url: '',
         diploma_urls: [],
         insurance_document_url: '',
@@ -386,7 +467,7 @@ export const ProviderApplicationForm = () => {
           </div>
 
           <div>
-            <Label htmlFor="availability_hours">Horaires</Label>
+            <Label htmlFor="availability_hours">Horaires généraux</Label>
             <Select 
               value={formData.availability_hours} 
               onValueChange={(value) => updateFormData('availability_hours', value)}
@@ -404,6 +485,88 @@ export const ProviderApplicationForm = () => {
               </SelectContent>
             </Select>
           </div>
+
+          <Separator />
+
+          <div>
+            <Label>Créneaux spécifiques (optionnel)</Label>
+            <p className="text-sm text-muted-foreground mb-3">
+              Ajoutez des créneaux précis par jour de la semaine
+            </p>
+            
+            {formData.availability_time_slots.map((slot, index) => (
+              <div key={index} className="flex items-center gap-2 mb-2 p-3 border rounded-lg">
+                <Select
+                  value={slot.day}
+                  onValueChange={(value) => updateTimeSlot(index, 'day', value)}
+                >
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="Jour" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DAYS.map(day => (
+                      <SelectItem key={day} value={day} className="capitalize">
+                        {day}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select
+                  value={slot.start}
+                  onValueChange={(value) => updateTimeSlot(index, 'start', value)}
+                >
+                  <SelectTrigger className="w-[100px]">
+                    <SelectValue placeholder="Début" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TIME_SLOTS.map(time => (
+                      <SelectItem key={time} value={time}>
+                        {time}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <span className="text-muted-foreground">à</span>
+
+                <Select
+                  value={slot.end}
+                  onValueChange={(value) => updateTimeSlot(index, 'end', value)}
+                >
+                  <SelectTrigger className="w-[100px]">
+                    <SelectValue placeholder="Fin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TIME_SLOTS.map(time => (
+                      <SelectItem key={time} value={time}>
+                        {time}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => removeTimeSlot(index)}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  Supprimer
+                </Button>
+              </div>
+            ))}
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={addTimeSlot}
+              className="w-full mt-2"
+            >
+              + Ajouter un créneau
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -412,10 +575,10 @@ export const ProviderApplicationForm = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MapPin className="w-5 h-5" />
-            Zone de couverture
+            Zone de couverture et déplacement
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <div>
             <Label htmlFor="coverage_address">Adresse de base</Label>
             <Input
@@ -442,6 +605,70 @@ export const ProviderApplicationForm = () => {
                 <SelectItem value="20">20 km</SelectItem>
                 <SelectItem value="30">30 km</SelectItem>
                 <SelectItem value="50">50 km</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Separator />
+
+          <div>
+            <Label>Zone(s) d'intervention *</Label>
+            <p className="text-sm text-muted-foreground mb-3">
+              Sélectionnez les zones où vous souhaitez intervenir
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto border rounded-lg p-3">
+              {INTERVENTION_ZONES.map(zone => (
+                <div key={zone} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={zone}
+                    checked={formData.intervention_zones.includes(zone)}
+                    onCheckedChange={() => toggleInterventionZone(zone)}
+                  />
+                  <Label htmlFor={zone} className="text-sm">
+                    {zone}
+                  </Label>
+                </div>
+              ))}
+            </div>
+            
+            {formData.intervention_zones.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {formData.intervention_zones.map(zone => (
+                  <Badge key={zone} variant="secondary" className="text-xs">
+                    {zone}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="other_intervention_zone">Autres zones (champ libre)</Label>
+            <Input
+              id="other_intervention_zone"
+              value={formData.other_intervention_zone}
+              onChange={(e) => updateFormData('other_intervention_zone', e.target.value)}
+              placeholder="Précisez d'autres zones d'intervention..."
+            />
+          </div>
+
+          <Separator />
+
+          <div>
+            <Label htmlFor="transportation_mode">Mode de déplacement *</Label>
+            <Select 
+              value={formData.transportation_mode} 
+              onValueChange={(value) => updateFormData('transportation_mode', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionnez votre mode de déplacement" />
+              </SelectTrigger>
+              <SelectContent>
+                {TRANSPORTATION_MODES.map(mode => (
+                  <SelectItem key={mode.value} value={mode.value}>
+                    {mode.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
