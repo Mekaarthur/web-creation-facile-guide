@@ -17,7 +17,8 @@ import {
   ChevronRight,
   Bell,
   FileText,
-  Building2
+  Building2,
+  Heart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +48,7 @@ const navigationGroups = [
     items: [
       { name: 'Clients', href: '/admin/utilisateurs', icon: Users, badge: null },
       { name: 'Prestataires', href: '/admin/prestataires', icon: Building2, badge: 2 },
+      { name: 'Binômes', href: '/admin/binomes', icon: Heart, badge: null },
       { name: 'Modération', href: '/admin/moderation', icon: Shield, badge: 3 },
     ]
   },
