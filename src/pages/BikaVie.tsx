@@ -3,7 +3,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ServiceBreadcrumb from "@/components/ServiceBreadcrumb";
 import RelatedServices from "@/components/RelatedServices";
-import ServiceBookingForm from "@/components/ServiceBookingForm";
+import ServiceReservationForm from "@/components/ServiceReservationForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,27 +27,27 @@ const BikaVie = () => {
   const services = [
     {
       name: "Rendez-vous médicaux",
-      price: "24€/h",
+      price: 24,
       description: "Prise, modification et gestion de tous vos rendez-vous médicaux"
     },
     {
       name: "Dossiers administratifs",
-      price: "28€/h",
+      price: 28,
       description: "Constitution et dépôt de dossiers CAF, CPAM, préfecture"
     },
     {
       name: "Gestion d'agenda",
-      price: "26€/h",
+      price: 26,
       description: "Gestion d'agenda partagé familial, rappels vaccins et échéances"
     },
     {
       name: "Organisation événements",
-      price: "32€/h",
+      price: 32,
       description: "Organisation complète de fêtes familiales, baby-showers, célébrations"
     },
     {
       name: "Aide administrative",
-      price: "30€/h",
+      price: 30,
       description: "Gestion administrative complète, suivi de dossiers complexes"
     }
   ];
@@ -69,7 +69,7 @@ const BikaVie = () => {
       "@type": "Offer",
       "name": service.name,
       "description": service.description,
-      "price": service.price.replace("€/h", ""),
+      "price": service.price,
       "priceCurrency": "EUR"
     }))
   };
@@ -357,7 +357,7 @@ const BikaVie = () => {
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-lg">{service.name}</CardTitle>
                       <Badge variant="outline" className="text-purple-600 border-purple-200 font-semibold">
-                        {service.price}
+                        {`${service.price}€/h`}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -453,8 +453,8 @@ const BikaVie = () => {
 
       {/* Formulaire de réservation */}
       {isBookingFormOpen && selectedService && (
-        <ServiceBookingForm
-          service={selectedService}
+        <ServiceReservationForm
+          service={{ name: selectedService.name, description: selectedService.description, price: selectedService.price, category: "vie" }}
           packageTitle="Bika Vie"
           onClose={() => setIsBookingFormOpen(false)}
         />

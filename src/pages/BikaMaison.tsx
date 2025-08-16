@@ -3,7 +3,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ServiceBreadcrumb from "@/components/ServiceBreadcrumb";
 import RelatedServices from "@/components/RelatedServices";
-import ServiceBookingForm from "@/components/ServiceBookingForm";
+import ServiceReservationForm from "@/components/ServiceReservationForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,32 +27,32 @@ const BikaMaison = () => {
   const services = [
     {
       name: "Courses planifiées",
-      price: "22€/h",
+      price: 22,
       description: "Courses hebdomadaires selon votre liste personnalisée et vos habitudes"
     },
     {
       name: "Courses express",
-      price: "27€/h",
+      price: 27,
       description: "Courses urgentes réalisées en moins de 2h pour vos besoins imprévus"
     },
     {
       name: "Récupération colis",
-      price: "24€/h",
+      price: 24,
       description: "Récupération colis, pressing, cordonnerie et toutes commissions"
     },
     {
       name: "Petits travaux",
-      price: "28€/h",
+      price: 28,
       description: "Montage de meubles simples, changement d'ampoules, petites réparations"
     },
     {
       name: "Garde d'animaux",
-      price: "23€/h",
+      price: 23,
       description: "Garde courte durée de vos animaux domestiques pendant vos absences"
     },
     {
       name: "Rangement",
-      price: "25€/h",
+      price: 25,
       description: "Rangement dressing, tri des jouets, organisation optimale de vos espaces"
     }
   ];
@@ -74,7 +74,7 @@ const BikaMaison = () => {
       "@type": "Offer",
       "name": service.name,
       "description": service.description,
-      "price": service.price.replace("€/h", ""),
+      "price": service.price,
       "priceCurrency": "EUR"
     }))
   };
@@ -364,7 +364,7 @@ const BikaMaison = () => {
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-lg">{service.name}</CardTitle>
                       <Badge variant="outline" className="text-green-600 border-green-200 font-semibold">
-                        {service.price}
+                        {`${service.price}€/h`}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -466,8 +466,8 @@ const BikaMaison = () => {
 
       {/* Formulaire de réservation */}
       {isBookingFormOpen && selectedService && (
-        <ServiceBookingForm
-          service={selectedService}
+        <ServiceReservationForm
+          service={{ name: selectedService.name, description: selectedService.description, price: selectedService.price, category: "maison" }}
           packageTitle="Bika Maison"
           onClose={() => setIsBookingFormOpen(false)}
         />

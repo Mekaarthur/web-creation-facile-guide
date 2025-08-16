@@ -3,7 +3,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ServiceBreadcrumb from "@/components/ServiceBreadcrumb";
 import RelatedServices from "@/components/RelatedServices";
-import ServiceBookingForm from "@/components/ServiceBookingForm";
+import ServiceReservationForm from "@/components/ServiceReservationForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,37 +27,37 @@ const BikaKids = () => {
   const services = [
     {
       name: "Garde ponctuelle",
-      price: "22€/h",
+      price: 22,
       description: "Garde d'enfants à domicile pour quelques heures, soirées ou après-midi"
     },
     {
       name: "Garde de nuit",
-      price: "25€/h",
+      price: 25,
       description: "Surveillance et garde d'enfants toute la nuit pour vos déplacements"
     },
     {
       name: "Garde d'urgence",
-      price: "27€/h",
+      price: 27,
       description: "Intervention rapide en cas d'imprévu ou urgence familiale"
     },
     {
       name: "Sorties éducatives",
-      price: "24€/h",
+      price: 24,
       description: "Accompagnement au musée, médiathèque, parcs et activités culturelles"
     },
     {
       name: "Accompagnement scolaire",
-      price: "23€/h",
+      price: 23,
       description: "Trajets école-maison-activités extrascolaires sécurisés"
     },
     {
       name: "Aide aux devoirs",
-      price: "25€/h",
+      price: 25,
       description: "Soutien scolaire personnalisé et préparation du cartable"
     },
     {
       name: "Organisation anniversaire",
-      price: "30€/h",
+      price: 30,
       description: "Pré-organisation complète d'anniversaires enfants"
     }
   ];
@@ -79,7 +79,7 @@ const BikaKids = () => {
       "@type": "Offer",
       "name": service.name,
       "description": service.description,
-      "price": service.price.replace("€/h", ""),
+      "price": service.price,
       "priceCurrency": "EUR"
     }))
   };
@@ -367,7 +367,7 @@ const BikaKids = () => {
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-lg">{service.name}</CardTitle>
                       <Badge variant="outline" className="text-blue-600 border-blue-200 font-semibold">
-                        {service.price}
+                        {`${service.price}€/h`}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -487,8 +487,8 @@ const BikaKids = () => {
 
       {/* Formulaire de réservation */}
       {isBookingFormOpen && selectedService && (
-        <ServiceBookingForm
-          service={selectedService}
+        <ServiceReservationForm
+          service={{ name: selectedService.name, description: selectedService.description, price: selectedService.price, category: "enfants" }}
           packageTitle="Bika Kids"
           onClose={() => setIsBookingFormOpen(false)}
         />

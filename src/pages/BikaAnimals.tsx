@@ -3,7 +3,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ServiceBreadcrumb from "@/components/ServiceBreadcrumb";
 import RelatedServices from "@/components/RelatedServices";
-import ServiceBookingForm from "@/components/ServiceBookingForm";
+import ServiceReservationForm from "@/components/ServiceReservationForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,11 +23,11 @@ const BikaAnimals = () => {
   };
 
   const services = [
-    { name: "Promenade animaux", price: "20€/h", description: "Balades matinales et du soir adaptées aux besoins de votre animal" },
-    { name: "Visite vétérinaire", price: "25€/h", description: "Accompagnement chez le vétérinaire, gestion des rendez-vous santé" },
-    { name: "Courses animaux", price: "22€/h", description: "Achat nourriture, accessoires, produits d'hygiène spécialisés" },
-    { name: "Garde d'animaux", price: "24€/h", description: "Garde ponctuelle à domicile respectant les habitudes de l'animal" },
-    { name: "Toilettage", price: "30€/h", description: "Toilettage et soins de base, brossage, nettoyage oreilles et yeux" }
+    { name: "Promenade animaux", price: 20, description: "Balades matinales et du soir adaptées aux besoins de votre animal" },
+    { name: "Visite vétérinaire", price: 25, description: "Accompagnement chez le vétérinaire, gestion des rendez-vous santé" },
+    { name: "Courses animaux", price: 22, description: "Achat nourriture, accessoires, produits d'hygiène spécialisés" },
+    { name: "Garde d'animaux", price: 24, description: "Garde ponctuelle à domicile respectant les habitudes de l'animal" },
+    { name: "Toilettage", price: 30, description: "Toilettage et soins de base, brossage, nettoyage oreilles et yeux" }
   ];
 
   const structuredData = {
@@ -38,7 +38,7 @@ const BikaAnimals = () => {
     "areaServed": { "@type": "Place", "name": "Île-de-France" },
     "offers": services.map(service => ({
       "@type": "Offer", "name": service.name, "description": service.description,
-      "price": service.price.replace("€/h", ""), "priceCurrency": "EUR"
+      "price": service.price, "priceCurrency": "EUR"
     }))
   };
 
@@ -164,7 +164,7 @@ const BikaAnimals = () => {
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-lg">{service.name}</CardTitle>
-                      <Badge variant="outline" className="text-green-600 border-green-200 font-semibold">{service.price}</Badge>
+                      <Badge variant="outline" className="text-green-600 border-green-200 font-semibold">{`${service.price}€/h`}</Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -273,8 +273,8 @@ const BikaAnimals = () => {
 
       {/* Formulaire de réservation */}
       {isBookingFormOpen && selectedService && (
-        <ServiceBookingForm
-          service={selectedService}
+        <ServiceReservationForm
+          service={{ name: selectedService.name, description: selectedService.description, price: selectedService.price }}
           packageTitle="Bika Animals"
           onClose={() => setIsBookingFormOpen(false)}
         />

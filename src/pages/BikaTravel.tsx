@@ -3,7 +3,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ServiceBreadcrumb from "@/components/ServiceBreadcrumb";
 import RelatedServices from "@/components/RelatedServices";
-import ServiceBookingForm from "@/components/ServiceBookingForm";
+import ServiceReservationForm from "@/components/ServiceReservationForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,27 +27,27 @@ const BikaTravel = () => {
   const services = [
     {
       name: "Aide pré-voyage",
-      price: "25€/h",
+      price: 25,
       description: "Vérification documents, check-in en ligne, préparation valises optimale"
     },
     {
       name: "Transfert aéroport",
-      price: "32€/h",
+      price: 32,
       description: "Transfert sécurisé domicile-aéroport avec service Fast-Track"
     },
     {
       name: "Veille de vols",
-      price: "35€/h",
+      price: 35,
       description: "Surveillance de vos vols, rebooking automatique en cas d'imprévu"
     },
     {
       name: "Travel-Kids",
-      price: "30€/h",
+      price: 30,
       description: "Service spécialisé familles : kit enfant, poussette voyage, divertissements"
     },
     {
       name: "Préparation retour",
-      price: "27€/h",
+      price: 27,
       description: "Courses de première nécessité avant votre retour de voyage"
     }
   ];
@@ -69,7 +69,7 @@ const BikaTravel = () => {
       "@type": "Offer",
       "name": service.name,
       "description": service.description,
-      "price": service.price.replace("€/h", ""),
+      "price": service.price,
       "priceCurrency": "EUR"
     }))
   };
@@ -360,7 +360,7 @@ const BikaTravel = () => {
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-lg">{service.name}</CardTitle>
                       <Badge variant="outline" className="text-sky-600 border-sky-200 font-semibold">
-                        {service.price}
+                        {`${service.price}€/h`}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -461,8 +461,8 @@ const BikaTravel = () => {
 
       {/* Formulaire de réservation */}
       {isBookingFormOpen && selectedService && (
-        <ServiceBookingForm
-          service={selectedService}
+        <ServiceReservationForm
+          service={{ name: selectedService.name, description: selectedService.description, price: selectedService.price }}
           packageTitle="Bika Travel"
           onClose={() => setIsBookingFormOpen(false)}
         />

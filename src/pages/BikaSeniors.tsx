@@ -3,7 +3,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ServiceBreadcrumb from "@/components/ServiceBreadcrumb";
 import RelatedServices from "@/components/RelatedServices";
-import ServiceBookingForm from "@/components/ServiceBookingForm";
+import ServiceReservationForm from "@/components/ServiceReservationForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,18 +23,18 @@ const BikaSeniors = () => {
   };
 
   const services = [
-    { name: "Aide quotidienne", price: "24€/h", description: "Assistance dans les activités quotidiennes, toilette, habillage, préparation repas" },
-    { name: "Accompagnement médical", price: "27€/h", description: "Accompagnement aux rendez-vous médicaux, suivi des traitements" },
-    { name: "Courses seniors", price: "26€/h", description: "Courses alimentaires et pharmaceutiques adaptées aux besoins spécifiques" },
-    { name: "Compagnie", price: "24€/h", description: "Temps de compagnie, conversation, jeux, lecture, sorties de proximité" },
-    { name: "Aide mobilité", price: "28€/h", description: "Aide à la mobilité, transferts sécurisés, assistance pour les repas" }
+    { name: "Aide quotidienne", price: 24, description: "Assistance dans les activités quotidiennes, toilette, habillage, préparation repas" },
+    { name: "Accompagnement médical", price: 27, description: "Accompagnement aux rendez-vous médicaux, suivi des traitements" },
+    { name: "Courses seniors", price: 26, description: "Courses alimentaires et pharmaceutiques adaptées aux besoins spécifiques" },
+    { name: "Compagnie", price: 24, description: "Temps de compagnie, conversation, jeux, lecture, sorties de proximité" },
+    { name: "Aide mobilité", price: 28, description: "Aide à la mobilité, transferts sécurisés, assistance pour les repas" }
   ];
 
   const structuredData = {
     "@context": "https://schema.org", "@type": "Service", "name": "Bika Seniors - Aide personnes âgées",
     "provider": { "@type": "Organization", "name": "Bikawo", "url": "https://bikawo.fr" },
     "areaServed": { "@type": "Place", "name": "Île-de-France" },
-    "offers": services.map(service => ({ "@type": "Offer", "name": service.name, "description": service.description, "price": service.price.replace("€/h", ""), "priceCurrency": "EUR" }))
+    "offers": services.map(service => ({ "@type": "Offer", "name": service.name, "description": service.description, "price": service.price, "priceCurrency": "EUR" }))
   };
 
   return (
@@ -156,7 +156,7 @@ const BikaSeniors = () => {
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-lg">{service.name}</CardTitle>
-                      <Badge variant="outline" className="text-blue-600 border-blue-200 font-semibold">{service.price}</Badge>
+                      <Badge variant="outline" className="text-blue-600 border-blue-200 font-semibold">{`${service.price}€/h`}</Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -233,7 +233,7 @@ const BikaSeniors = () => {
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-lg">{service.name}</CardTitle>
                       <Badge variant="outline" className="text-blue-600 border-blue-200 font-semibold">
-                        {service.price}
+                        {`${service.price}€/h`}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -291,8 +291,8 @@ const BikaSeniors = () => {
 
       {/* Formulaire de réservation */}
       {isBookingFormOpen && selectedService && (
-        <ServiceBookingForm
-          service={selectedService}
+        <ServiceReservationForm
+          service={{ name: selectedService.name, description: selectedService.description, price: selectedService.price, category: "seniors" }}
           packageTitle="Bika Seniors"
           onClose={() => setIsBookingFormOpen(false)}
         />

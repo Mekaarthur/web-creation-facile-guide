@@ -3,7 +3,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ServiceBreadcrumb from "@/components/ServiceBreadcrumb";
 import RelatedServices from "@/components/RelatedServices";
-import ServiceBookingForm from "@/components/ServiceBookingForm";
+import ServiceReservationForm from "@/components/ServiceReservationForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,18 +23,18 @@ const BikaPro = () => {
   };
 
   const services = [
-    { name: "Expert administratif", price: "35€/h", description: "Experts administratifs externalisés pour vos besoins ponctuels ou récurrents" },
-    { name: "Executive expert", price: "45€/h", description: "Expert executive à la carte pour missions stratégiques et management" },
-    { name: "Organisation événements", price: "50€/h", description: "Organisation professionnelle de séminaires, boards, événements corporate" },
-    { name: "Gestion déplacements", price: "40€/h", description: "Gestion complète des déplacements d'équipe, logistique voyages d'affaires" },
-    { name: "Support business", price: "55€/h", description: "Support business personnalisé, assistant de direction externalisé" }
+    { name: "Expert administratif", price: 35, description: "Experts administratifs externalisés pour vos besoins ponctuels ou récurrents" },
+    { name: "Executive expert", price: 45, description: "Expert executive à la carte pour missions stratégiques et management" },
+    { name: "Organisation événements", price: 50, description: "Organisation professionnelle de séminaires, boards, événements corporate" },
+    { name: "Gestion déplacements", price: 40, description: "Gestion complète des déplacements d'équipe, logistique voyages d'affaires" },
+    { name: "Support business", price: 55, description: "Support business personnalisé, assistant de direction externalisé" }
   ];
 
   const structuredData = {
     "@context": "https://schema.org", "@type": "Service", "name": "Bika Pro - Services aux entreprises",
     "provider": { "@type": "Organization", "name": "Bikawo", "url": "https://bikawo.fr" },
     "areaServed": { "@type": "Place", "name": "Île-de-France" },
-    "offers": services.map(service => ({ "@type": "Offer", "name": service.name, "description": service.description, "price": service.price.replace("€/h", ""), "priceCurrency": "EUR" }))
+    "offers": services.map(service => ({ "@type": "Offer", "name": service.name, "description": service.description, "price": service.price, "priceCurrency": "EUR" }))
   };
 
   return (
@@ -156,7 +156,7 @@ const BikaPro = () => {
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-lg">{service.name}</CardTitle>
-                      <Badge variant="outline" className="text-slate-600 border-slate-200 font-semibold">{service.price}</Badge>
+                      <Badge variant="outline" className="text-slate-600 border-slate-200 font-semibold">{`${service.price}€/h`}</Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -265,8 +265,8 @@ const BikaPro = () => {
 
       {/* Formulaire de réservation */}
       {isBookingFormOpen && selectedService && (
-        <ServiceBookingForm
-          service={selectedService}
+        <ServiceReservationForm
+          service={{ name: selectedService.name, description: selectedService.description, price: selectedService.price }}
           packageTitle="Bika Pro"
           onClose={() => setIsBookingFormOpen(false)}
         />
