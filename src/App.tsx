@@ -25,6 +25,14 @@ import ConfigMessages from "./pages/ConfigMessages";
 import CustomRequest from "./pages/CustomRequest";
 import AdminJobApplications from "./pages/AdminJobApplications";
 import AdminClientRequests from "./pages/AdminClientRequests";
+import BikaKids from "./pages/BikaKids";
+import BikaMaison from "./pages/BikaMaison";
+import BikaVie from "./pages/BikaVie";
+import BikaTravel from "./pages/BikaTravel";
+import BikaPlus from "./pages/BikaPlus";
+import BikaAnimals from "./pages/BikaAnimals";
+import BikaSeniors from "./pages/BikaSeniors";
+import BikaPro from "./pages/BikaPro";
 
 // Admin Layout and Pages
 import { AdminLayout } from "./components/admin/AdminLayout";
@@ -68,6 +76,15 @@ const App = () => (
             <Route path="/analytics-seo" element={<AnalyticsSEO />} />
             <Route path="/config-messages" element={<ConfigMessages />} />
             <Route path="/demande-personnalisee" element={<CustomRequest />} />
+            <Route path="/custom-request" element={<CustomRequest />} />
+            <Route path="/bika-kids-ile-de-france" element={<BikaKids />} />
+            <Route path="/bika-maison-ile-de-france" element={<BikaMaison />} />
+            <Route path="/bika-vie-ile-de-france" element={<BikaVie />} />
+            <Route path="/bika-travel-ile-de-france" element={<BikaTravel />} />
+            <Route path="/bika-plus-ile-de-france" element={<BikaPlus />} />
+            <Route path="/bika-animals-ile-de-france" element={<BikaAnimals />} />
+            <Route path="/bika-seniors-ile-de-france" element={<BikaSeniors />} />
+            <Route path="/bika-pro-ile-de-france" element={<BikaPro />} />
             {/* Admin Routes with Layout */}
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
