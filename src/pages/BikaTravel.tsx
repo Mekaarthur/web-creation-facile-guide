@@ -3,14 +3,23 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ServiceBreadcrumb from "@/components/ServiceBreadcrumb";
 import RelatedServices from "@/components/RelatedServices";
+import ServiceBookingForm from "@/components/ServiceBookingForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Shield, MapPin, Calculator, Heart, Star, Calendar, MessageCircle, Phone, Plane, CheckCircle, Smartphone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 const BikaTravel = () => {
   const navigate = useNavigate();
+  const [selectedService, setSelectedService] = useState(null);
+  const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
+
+  const handleOpenBooking = (service) => {
+    setSelectedService(service);
+    setIsBookingFormOpen(true);
+  };
 
   const services = [
     {
@@ -404,6 +413,26 @@ const BikaTravel = () => {
           </div>
         </section>
 
+        {/* Section Réservation */}
+        <section className="py-16 bg-gray-50">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl font-bold mb-6 text-sky-600">
+              Réserver un service maintenant
+            </h2>
+            <p className="text-xl mb-8 text-gray-600">
+              Choisissez votre service et planifiez votre intervention en quelques clics
+            </p>
+            <Button 
+              size="lg" 
+              onClick={() => handleOpenBooking(services[0])}
+              className="bg-sky-600 hover:bg-sky-700 text-white px-8 py-3"
+            >
+              <Calendar className="w-5 h-5 mr-2" />
+              Réserver maintenant
+            </Button>
+          </div>
+        </section>
+
         {/* CTA Section */}
         <section className="py-16 bg-gradient-to-r from-sky-600 to-blue-600 text-white">
           <div className="container mx-auto px-4 text-center">
@@ -424,8 +453,17 @@ const BikaTravel = () => {
           </div>
         </section>
 
-        <RelatedServices currentService="travel" />
+      <RelatedServices currentService="travel" />
       </main>
+
+      {/* Formulaire de réservation */}
+      {isBookingFormOpen && selectedService && (
+        <ServiceBookingForm
+          service={selectedService}
+          packageTitle="Bika Travel"
+          onClose={() => setIsBookingFormOpen(false)}
+        />
+      )}
 
       <Footer />
     </div>

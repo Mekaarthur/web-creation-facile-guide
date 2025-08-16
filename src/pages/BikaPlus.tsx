@@ -3,14 +3,23 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ServiceBreadcrumb from "@/components/ServiceBreadcrumb";
 import RelatedServices from "@/components/RelatedServices";
+import ServiceBookingForm from "@/components/ServiceBookingForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Shield, MapPin, Calculator, Heart, Star, Calendar, MessageCircle, Phone, Crown, CheckCircle, Users } from "lucide-react";
+import { Clock, Shield, MapPin, Calculator, Heart, Star, Calendar, MessageCircle, Phone, Crown, CheckCircle, Briefcase, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 const BikaPlus = () => {
   const navigate = useNavigate();
+  const [selectedService, setSelectedService] = useState(null);
+  const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
+
+  const handleOpenBooking = (service) => {
+    setSelectedService(service);
+    setIsBookingFormOpen(true);
+  };
 
   const features = [
     {
@@ -421,6 +430,26 @@ const BikaPlus = () => {
           </div>
         </section>
 
+        {/* Section Réservation */}
+        <section className="py-16 bg-gray-50">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl font-bold mb-6 text-amber-600">
+              Réserver un service maintenant
+            </h2>
+            <p className="text-xl mb-8 text-gray-600">
+              Choisissez votre service et planifiez votre intervention en quelques clics
+            </p>
+            <Button 
+              size="lg" 
+              onClick={() => handleOpenBooking({ name: "Service Premium Bika Plus", price: "1500€/mois", description: "Service premium avec Chef Family Officer dédié" })}
+              className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3"
+            >
+              <Calendar className="w-5 h-5 mr-2" />
+              Réserver maintenant
+            </Button>
+          </div>
+        </section>
+
         {/* CTA Section */}
         <section className="py-16 bg-gradient-to-r from-yellow-500 to-amber-600 text-white">
           <div className="container mx-auto px-4 text-center">
@@ -443,6 +472,15 @@ const BikaPlus = () => {
 
         <RelatedServices currentService="plus" />
       </main>
+
+      {/* Formulaire de réservation */}
+      {isBookingFormOpen && selectedService && (
+        <ServiceBookingForm
+          service={selectedService}
+          packageTitle="Bika Plus"
+          onClose={() => setIsBookingFormOpen(false)}
+        />
+      )}
 
       <Footer />
     </div>
