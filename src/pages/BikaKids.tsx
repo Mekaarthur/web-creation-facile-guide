@@ -3,7 +3,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ServiceBreadcrumb from "@/components/ServiceBreadcrumb";
 import RelatedServices from "@/components/RelatedServices";
-import ServiceReservationForm from "@/components/ServiceReservationForm";
+import BikaServiceBooking from "@/components/BikaServiceBooking";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -487,10 +487,11 @@ const BikaKids = () => {
 
       {/* Formulaire de réservation */}
       {isBookingFormOpen && selectedService && (
-        <ServiceReservationForm
-          service={{ name: selectedService.name, description: selectedService.description, price: selectedService.price, category: "enfants" }}
-          packageTitle="Bika Kids"
+        <BikaServiceBooking
+          isOpen={isBookingFormOpen}
           onClose={() => setIsBookingFormOpen(false)}
+          service={{ name: selectedService.name, description: selectedService.description, price: selectedService.price, category: "kids" }}
+          packageTitle="Bika Kids"
         />
       )}
 
