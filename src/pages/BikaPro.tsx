@@ -109,7 +109,7 @@ const BikaPro = () => {
 
               <div className="relative">
                 <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                  <img src="/assets/service-business-full.jpg" alt="Service entreprise Bika Pro" className="w-full h-auto" />
+                  <img src="/src/assets/service-business-full.jpg" alt="Service entreprise Bika Pro" className="w-full h-auto" />
                   <div className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">🟢 En ligne</div>
                   <div className="absolute bottom-4 right-4 bg-white rounded-lg p-3 shadow-lg">
                     <div className="text-center">
@@ -122,6 +122,22 @@ const BikaPro = () => {
                       </div>
                     </div>
                   </div>
+                </div>
+                
+                {/* Actions rapides */}
+                <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3">
+                  <Button size="sm" variant="outline" className="bg-white border-slate-200 text-slate-600 hover:bg-slate-50">
+                    <Phone className="w-4 h-4 mr-2" />
+                    Appeler
+                  </Button>
+                  <Button size="sm" variant="outline" className="bg-white border-slate-200 text-slate-600 hover:bg-slate-50">
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Message
+                  </Button>
+                  <Button size="sm" variant="outline" className="bg-white border-slate-200 text-slate-600 hover:bg-slate-50">
+                    <Calculator className="w-4 h-4 mr-2" />
+                    Devis
+                  </Button>
                 </div>
               </div>
             </div>

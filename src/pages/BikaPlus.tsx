@@ -173,7 +173,7 @@ const BikaPlus = () => {
               <div className="relative">
                 <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                   <img 
-                    src="/assets/service-premium-full.jpg" 
+                    src="/src/assets/service-premium-full.jpg" 
                     alt="Service premium Bika Plus" 
                     className="w-full h-auto"
                   />
@@ -193,6 +193,22 @@ const BikaPlus = () => {
                       </div>
                     </div>
                   </div>
+                </div>
+                
+                {/* Actions rapides */}
+                <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3">
+                  <Button size="sm" variant="outline" className="bg-white border-amber-200 text-amber-600 hover:bg-amber-50">
+                    <Phone className="w-4 h-4 mr-2" />
+                    Appeler
+                  </Button>
+                  <Button size="sm" variant="outline" className="bg-white border-amber-200 text-amber-600 hover:bg-amber-50">
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Message
+                  </Button>
+                  <Button size="sm" variant="outline" className="bg-white border-amber-200 text-amber-600 hover:bg-amber-50">
+                    <Calculator className="w-4 h-4 mr-2" />
+                    Devis
+                  </Button>
                 </div>
               </div>
             </div>

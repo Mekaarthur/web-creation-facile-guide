@@ -172,7 +172,7 @@ const BikaVie = () => {
               <div className="relative">
                 <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                   <img 
-                    src="/assets/service-admin.jpg" 
+                    src="/src/assets/service-vie-full.jpg" 
                     alt="Service conciergerie Bika Vie" 
                     className="w-full h-auto"
                   />
@@ -192,6 +192,22 @@ const BikaVie = () => {
                       </div>
                     </div>
                   </div>
+                </div>
+                
+                {/* Actions rapides */}
+                <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3">
+                  <Button size="sm" variant="outline" className="bg-white border-purple-200 text-purple-600 hover:bg-purple-50">
+                    <Phone className="w-4 h-4 mr-2" />
+                    Appeler
+                  </Button>
+                  <Button size="sm" variant="outline" className="bg-white border-purple-200 text-purple-600 hover:bg-purple-50">
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Message
+                  </Button>
+                  <Button size="sm" variant="outline" className="bg-white border-purple-200 text-purple-600 hover:bg-purple-50">
+                    <Calculator className="w-4 h-4 mr-2" />
+                    Devis
+                  </Button>
                 </div>
               </div>
             </div>
