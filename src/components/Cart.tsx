@@ -24,6 +24,15 @@ export interface CartItem {
       startTime: string;
       endTime: string;
     }>;
+    clientInfo?: {
+      firstName: string;
+      lastName: string;
+      email: string;
+      phone: string;
+      company?: string;
+    };
+    serviceType?: string;
+    budget?: string;
   };
 }
 
