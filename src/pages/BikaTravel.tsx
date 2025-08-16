@@ -302,7 +302,7 @@ const BikaTravel = () => {
               <div className="text-center">
                 <div className="mb-6">
                   <img 
-                    src="/assets/service-travel-assistance.jpg" 
+                    src="/src/assets/service-travel.jpg" 
                     alt="Aide pré-voyage" 
                     className="w-full h-48 object-cover rounded-lg"
                   />

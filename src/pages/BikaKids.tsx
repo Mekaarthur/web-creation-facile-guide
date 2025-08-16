@@ -309,7 +309,7 @@ const BikaKids = () => {
               <div className="text-center">
                 <div className="mb-6">
                   <img 
-                    src="/assets/activity-childcare.jpg" 
+                    src="/src/assets/service-kids.jpg" 
                     alt="Garde d'enfants professionnelle" 
                     className="w-full h-48 object-cover rounded-lg"
                   />

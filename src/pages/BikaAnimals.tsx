@@ -173,6 +173,60 @@ const BikaAnimals = () => {
           </div>
         </section>
 
+        {/* Services en action */}
+        <section className="py-16 bg-gray-50">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <p className="text-green-600 font-medium mb-2">Nos services en action</p>
+              <h2 className="text-3xl font-bold text-gray-900">Des experts animaliers à votre service</h2>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="mb-6">
+                  <img 
+                    src="/src/assets/service-animals.jpg" 
+                    alt="Service animaux professionnels" 
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Promenades expertes</h3>
+                <p className="text-gray-600">
+                  Nos experts animaliers connaissent parfaitement les besoins de chaque animal
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="mb-6">
+                  <img 
+                    src="/src/assets/service-pet-care.jpg" 
+                    alt="Garde d'animaux" 
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Garde d'animaux</h3>
+                <p className="text-gray-600">
+                  Services de garde attentionnés respectant les habitudes de vos compagnons
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="mb-6">
+                  <img 
+                    src="/src/assets/service-seniors-care.jpg" 
+                    alt="Soins vétérinaires" 
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Accompagnement vétérinaire</h3>
+                <p className="text-gray-600">
+                  Accompagnement aux rendez-vous vétérinaires avec suivi attentif
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="py-16 bg-gradient-to-r from-green-600 to-emerald-600 text-white">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold mb-6">Offrez le meilleur à vos compagnons</h2>

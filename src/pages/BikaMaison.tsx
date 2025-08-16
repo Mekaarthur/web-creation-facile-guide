@@ -306,7 +306,7 @@ const BikaMaison = () => {
               <div className="text-center">
                 <div className="mb-6">
                   <img 
-                    src="/assets/service-home-cleaning.jpg" 
+                    src="/src/assets/service-maison.jpg" 
                     alt="Courses et logistique" 
                     className="w-full h-48 object-cover rounded-lg"
                   />

@@ -165,6 +165,60 @@ const BikaPro = () => {
           </div>
         </section>
 
+        {/* Services en action */}
+        <section className="py-16 bg-gray-50">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <p className="text-slate-600 font-medium mb-2">Nos services en action</p>
+              <h2 className="text-3xl font-bold text-gray-900">Des experts B2B à votre service</h2>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="mb-6">
+                  <img 
+                    src="/src/assets/service-business.jpg" 
+                    alt="Services aux entreprises" 
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Expert administratif</h3>
+                <p className="text-gray-600">
+                  Nos experts B2B optimisent l'efficacité de vos équipes administratives
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="mb-6">
+                  <img 
+                    src="/src/assets/service-business-admin.jpg" 
+                    alt="Executive support" 
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Executive support</h3>
+                <p className="text-gray-600">
+                  Accompagnement strategic personnalisé pour vos dirigeants
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="mb-6">
+                  <img 
+                    src="/src/assets/service-business-executive.jpg" 
+                    alt="Organisation événements" 
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Événements corporate</h3>
+                <p className="text-gray-600">
+                  Organisation professionnelle de séminaires et événements d'entreprise
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="py-16 bg-gradient-to-r from-slate-600 to-blue-600 text-white">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold mb-6">Optimisez la performance de vos équipes</h2>

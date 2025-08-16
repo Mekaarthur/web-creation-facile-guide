@@ -299,6 +299,60 @@ const BikaPlus = () => {
           </div>
         </section>
 
+        {/* Services en action */}
+        <section className="py-16 bg-gray-50">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <p className="text-amber-600 font-medium mb-2">Nos services en action</p>
+              <h2 className="text-3xl font-bold text-gray-900">L'excellence premium à votre service</h2>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="mb-6">
+                  <img 
+                    src="/src/assets/service-premium.jpg" 
+                    alt="Service premium Bika Plus" 
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Chef Family Officer</h3>
+                <p className="text-gray-600">
+                  Votre interlocuteur unique dédié qui coordonne tous vos besoins familiaux
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="mb-6">
+                  <img 
+                    src="/src/assets/service-premium-concierge.jpg" 
+                    alt="Conciergerie premium" 
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Conciergerie d'exception</h3>
+                <p className="text-gray-600">
+                  Service de conciergerie haut de gamme avec ligne prioritaire 24h/24
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="mb-6">
+                  <img 
+                    src="/src/assets/diverse-family.jpg" 
+                    alt="Service familial personnalisé" 
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Suivi personnalisé</h3>
+                <p className="text-gray-600">
+                  Accompagnement familial sur-mesure avec accès illimité à tous nos services
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Comparison Section */}
         <section className="py-16 bg-white">
           <div className="container mx-auto px-4">

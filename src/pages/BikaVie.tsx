@@ -299,7 +299,7 @@ const BikaVie = () => {
               <div className="text-center">
                 <div className="mb-6">
                   <img 
-                    src="/assets/service-admin-support.jpg" 
+                    src="/src/assets/service-admin.jpg" 
                     alt="Aide administrative experte" 
                     className="w-full h-48 object-cover rounded-lg"
                   />
