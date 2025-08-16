@@ -308,7 +308,7 @@ const BikaVie = () => {
               <div className="text-center">
                 <div className="mb-6">
                   <img 
-                    src="/src/assets/service-admin.jpg" 
+                    src="/src/assets/service-admin-support.jpg" 
                     alt="Aide administrative experte" 
                     className="w-full h-48 object-cover rounded-lg"
                   />
@@ -366,9 +366,16 @@ const BikaVie = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-sm">
+                    <CardDescription className="text-sm mb-4">
                       {service.description}
                     </CardDescription>
+                    <Button 
+                      onClick={() => handleOpenBooking(service)}
+                      className="bg-purple-600 hover:bg-purple-700 text-white w-full"
+                      size="sm"
+                    >
+                      Réserver ce service
+                    </Button>
                   </CardContent>
                 </Card>
               ))}

@@ -369,9 +369,16 @@ const BikaTravel = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-sm">
+                    <CardDescription className="text-sm mb-4">
                       {service.description}
                     </CardDescription>
+                    <Button 
+                      onClick={() => handleOpenBooking(service)}
+                      className="bg-sky-600 hover:bg-sky-700 text-white w-full"
+                      size="sm"
+                    >
+                      Réserver ce service
+                    </Button>
                   </CardContent>
                 </Card>
               ))}
