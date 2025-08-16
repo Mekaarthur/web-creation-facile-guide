@@ -10,6 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, Shield, MapPin, Calculator, Heart, Star, Calendar, MessageCircle, Phone, ShoppingCart, CheckCircle, Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import CallToActionButtons from "@/components/CallToActionButtons";
+import serviceMaisonErrands from "@/assets/service-maison-errands.jpg";
+import serviceMaisonRepairs from "@/assets/service-maison-repairs.jpg";
 
 const BikaMaison = () => {
   const navigate = useNavigate();
@@ -211,19 +214,12 @@ const BikaMaison = () => {
                 </div>
                 
                 {/* Actions rapides */}
-                <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3">
-                  <Button size="sm" variant="outline" className="bg-white border-green-200 text-green-600 hover:bg-green-50">
-                    <Phone className="w-4 h-4 mr-2" />
-                    Appeler
-                  </Button>
-                  <Button size="sm" variant="outline" className="bg-white border-green-200 text-green-600 hover:bg-green-50">
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Message
-                  </Button>
-                  <Button size="sm" variant="outline" className="bg-white border-green-200 text-green-600 hover:bg-green-50">
-                    <Calculator className="w-4 h-4 mr-2" />
-                    Devis
-                  </Button>
+                <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
+                  <CallToActionButtons 
+                    size="sm" 
+                    variant="outline" 
+                    className="bg-white border-green-200 text-green-600 hover:bg-green-50"
+                  />
                 </div>
               </div>
             </div>
@@ -329,21 +325,21 @@ const BikaMaison = () => {
               <div className="text-center">
                 <div className="mb-6">
                   <img 
-                    src="/assets/service-house-logistics.jpg" 
+                    src={serviceMaisonErrands} 
                     alt="Commissions et démarches" 
                     className="w-full h-48 object-cover rounded-lg"
                   />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">Toutes commissions</h3>
                 <p className="text-gray-600">
-                  Pressing, pharmacie, pressing, récupération de colis - nous nous occupons de tout
+                  Pressing, pharmacie, récupération de colis - nous nous occupons de tout
                 </p>
               </div>
 
               <div className="text-center">
                 <div className="mb-6">
                   <img 
-                    src="/assets/assistance-service.jpg" 
+                    src={serviceMaisonRepairs} 
                     alt="Petits travaux maison" 
                     className="w-full h-48 object-cover rounded-lg"
                   />

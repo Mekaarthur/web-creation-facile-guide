@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, Shield, MapPin, Calculator, Heart, Star, Calendar, MessageCircle, Phone, Briefcase, CheckCircle, TrendingUp, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import CallToActionButtons from "@/components/CallToActionButtons";
 
 const BikaPro = () => {
   const navigate = useNavigate();
@@ -134,19 +135,12 @@ const BikaPro = () => {
                 </div>
                 
                 {/* Actions rapides */}
-                <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3">
-                  <Button size="sm" variant="outline" className="bg-white border-slate-200 text-slate-600 hover:bg-slate-50">
-                    <Phone className="w-4 h-4 mr-2" />
-                    Appeler
-                  </Button>
-                  <Button size="sm" variant="outline" className="bg-white border-slate-200 text-slate-600 hover:bg-slate-50">
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Message
-                  </Button>
-                  <Button size="sm" variant="outline" className="bg-white border-slate-200 text-slate-600 hover:bg-slate-50">
-                    <Calculator className="w-4 h-4 mr-2" />
-                    Devis
-                  </Button>
+                <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
+                  <CallToActionButtons 
+                    size="sm" 
+                    variant="outline" 
+                    className="bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                  />
                 </div>
               </div>
             </div>

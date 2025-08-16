@@ -10,6 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, Shield, MapPin, Calculator, Heart, Star, Calendar, MessageCircle, Phone, Plane, CheckCircle, Smartphone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import CallToActionButtons from "@/components/CallToActionButtons";
+import serviceTravelAirport from "@/assets/service-travel-airport.jpg";
+import serviceTravelKids from "@/assets/service-travel-kids.jpg";
 
 const BikaTravel = () => {
   const navigate = useNavigate();
@@ -207,19 +210,12 @@ const BikaTravel = () => {
                 </div>
                 
                 {/* Actions rapides */}
-                <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3">
-                  <Button size="sm" variant="outline" className="bg-white border-sky-200 text-sky-600 hover:bg-sky-50">
-                    <Phone className="w-4 h-4 mr-2" />
-                    Appeler
-                  </Button>
-                  <Button size="sm" variant="outline" className="bg-white border-sky-200 text-sky-600 hover:bg-sky-50">
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Message
-                  </Button>
-                  <Button size="sm" variant="outline" className="bg-white border-sky-200 text-sky-600 hover:bg-sky-50">
-                    <Calculator className="w-4 h-4 mr-2" />
-                    Devis
-                  </Button>
+                <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
+                  <CallToActionButtons 
+                    size="sm" 
+                    variant="outline" 
+                    className="bg-white border-sky-200 text-sky-600 hover:bg-sky-50"
+                  />
                 </div>
               </div>
             </div>
@@ -325,7 +321,7 @@ const BikaTravel = () => {
               <div className="text-center">
                 <div className="mb-6">
                   <img 
-                    src="/assets/recruitment-hero.jpg" 
+                    src={serviceTravelAirport} 
                     alt="Transferts aéroport" 
                     className="w-full h-48 object-cover rounded-lg"
                   />
@@ -339,7 +335,7 @@ const BikaTravel = () => {
               <div className="text-center">
                 <div className="mb-6">
                   <img 
-                    src="/assets/diverse-family.jpg" 
+                    src={serviceTravelKids} 
                     alt="Travel-Kids families" 
                     className="w-full h-48 object-cover rounded-lg"
                   />

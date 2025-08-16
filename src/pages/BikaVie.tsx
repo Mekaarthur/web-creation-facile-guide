@@ -10,6 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, Shield, MapPin, Calculator, Heart, Star, Calendar, MessageCircle, Phone, FileText, CheckCircle, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import CallToActionButtons from "@/components/CallToActionButtons";
+import serviceVieCalendar from "@/assets/service-vie-calendar.jpg";
+import serviceVieEvents from "@/assets/service-vie-events.jpg";
 
 const BikaVie = () => {
   const navigate = useNavigate();
@@ -204,19 +207,12 @@ const BikaVie = () => {
                 </div>
                 
                 {/* Actions rapides */}
-                <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3">
-                  <Button size="sm" variant="outline" className="bg-white border-purple-200 text-purple-600 hover:bg-purple-50">
-                    <Phone className="w-4 h-4 mr-2" />
-                    Appeler
-                  </Button>
-                  <Button size="sm" variant="outline" className="bg-white border-purple-200 text-purple-600 hover:bg-purple-50">
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Message
-                  </Button>
-                  <Button size="sm" variant="outline" className="bg-white border-purple-200 text-purple-600 hover:bg-purple-50">
-                    <Calculator className="w-4 h-4 mr-2" />
-                    Devis
-                  </Button>
+                <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
+                  <CallToActionButtons 
+                    size="sm" 
+                    variant="outline" 
+                    className="bg-white border-purple-200 text-purple-600 hover:bg-purple-50"
+                  />
                 </div>
               </div>
             </div>
@@ -322,7 +318,7 @@ const BikaVie = () => {
               <div className="text-center">
                 <div className="mb-6">
                   <img 
-                    src="/assets/diverse-family.jpg" 
+                    src={serviceVieCalendar} 
                     alt="Gestion agenda familial" 
                     className="w-full h-48 object-cover rounded-lg"
                   />
@@ -336,7 +332,7 @@ const BikaVie = () => {
               <div className="text-center">
                 <div className="mb-6">
                   <img 
-                    src="/assets/storytelling-success.jpg" 
+                    src={serviceVieEvents} 
                     alt="Événements familiaux" 
                     className="w-full h-48 object-cover rounded-lg"
                   />

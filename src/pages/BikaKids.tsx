@@ -10,6 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, Shield, MapPin, Calculator, Heart, Star, Calendar, MessageCircle, Phone, Users, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import CallToActionButtons from "@/components/CallToActionButtons";
+import serviceKidsHomework from "@/assets/service-kids-homework.jpg";
+import serviceKidsOutings from "@/assets/service-kids-outings.jpg";
 
 const BikaKids = () => {
   const navigate = useNavigate();
@@ -214,19 +217,12 @@ const BikaKids = () => {
                 </div>
                 
                 {/* Actions rapides */}
-                <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3">
-                  <Button size="sm" variant="outline" className="bg-white border-pink-200 text-pink-600 hover:bg-pink-50">
-                    <Phone className="w-4 h-4 mr-2" />
-                    Appeler
-                  </Button>
-                  <Button size="sm" variant="outline" className="bg-white border-pink-200 text-pink-600 hover:bg-pink-50">
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Message
-                  </Button>
-                  <Button size="sm" variant="outline" className="bg-white border-pink-200 text-pink-600 hover:bg-pink-50">
-                    <Calculator className="w-4 h-4 mr-2" />
-                    Devis
-                  </Button>
+                <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
+                  <CallToActionButtons 
+                    size="sm" 
+                    variant="outline" 
+                    className="bg-white border-pink-200 text-pink-600 hover:bg-pink-50"
+                  />
                 </div>
               </div>
             </div>
@@ -332,7 +328,7 @@ const BikaKids = () => {
               <div className="text-center">
                 <div className="mb-6">
                   <img 
-                    src="/assets/service-childcare-education.jpg" 
+                    src={serviceKidsHomework} 
                     alt="Aide aux devoirs" 
                     className="w-full h-48 object-cover rounded-lg"
                   />
@@ -346,7 +342,7 @@ const BikaKids = () => {
               <div className="text-center">
                 <div className="mb-6">
                   <img 
-                    src="/assets/service-childcare-home.jpg" 
+                    src={serviceKidsOutings} 
                     alt="Sorties éducatives" 
                     className="w-full h-48 object-cover rounded-lg"
                   />
