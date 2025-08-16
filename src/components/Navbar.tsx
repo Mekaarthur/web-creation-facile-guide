@@ -5,7 +5,13 @@ import { NotificationCenter } from "@/components/NotificationCenter";
 import { MobileNavigation } from "@/components/MobileNavigation";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { Button } from "@/components/ui/button";
-import { Menu, X, MessageCircle, Phone, LogOut, User } from "lucide-react";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Menu, X, MessageCircle, Phone, LogOut, User, ChevronDown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { cn } from "@/lib/utils";
@@ -32,7 +38,20 @@ const Navbar = () => {
 
   const navItems = [
     { name: "Accueil", href: "/" },
-    { name: "Nos services", href: "/services" },
+    { 
+      name: "Nos services", 
+      href: "/services",
+      submenu: [
+        { name: "Bika Kids - Enfants", href: "/bika-kids-ile-de-france" },
+        { name: "Bika Maison - Logistique", href: "/bika-maison-ile-de-france" },
+        { name: "Bika Vie - Conciergerie", href: "/bika-vie-ile-de-france" },
+        { name: "Bika Travel - Voyageurs", href: "/bika-travel-ile-de-france" },
+        { name: "Bika Plus - Premium", href: "/bika-plus-ile-de-france" },
+        { name: "Bika Animals - Animaux", href: "/bika-animals-ile-de-france" },
+        { name: "Bika Seniors - Personnes âgées", href: "/bika-seniors-ile-de-france" },
+        { name: "Bika Pro - Entreprises", href: "/bika-pro-ile-de-france" }
+      ]
+    },
     { name: "À propos", href: "/a-propos-de-nous" },
     { name: "Espace client", href: "/espace-personnel" },
     { name: "Espace prestataire", href: "/espace-prestataire" },
@@ -67,7 +86,35 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
             {navItems.map((item) => (
-              item.href.startsWith('/#') ? (
+              item.submenu ? (
+                <DropdownMenu key={item.name}>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      className={cn(
+                        "relative px-3 py-2 text-sm font-medium transition-all duration-200 rounded-md group",
+                        "text-foreground hover:text-primary"
+                      )}
+                    >
+                      {item.name}
+                      <ChevronDown className="ml-1 h-4 w-4" />
+                      <div className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-primary rounded-full scale-x-0 transition-transform duration-200 group-hover:scale-x-100" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-64">
+                    {item.submenu.map((subItem) => (
+                      <DropdownMenuItem key={subItem.name} asChild>
+                        <Link 
+                          to={subItem.href}
+                          className="w-full cursor-pointer"
+                        >
+                          {subItem.name}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : item.href.startsWith('/#') ? (
                 <a
                   key={item.name}
                   href={item.href}
