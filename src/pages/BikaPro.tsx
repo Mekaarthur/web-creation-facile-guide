@@ -1,6 +1,8 @@
 import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ServiceBreadcrumb from "@/components/ServiceBreadcrumb";
+import RelatedServices from "@/components/RelatedServices";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -98,6 +100,7 @@ const BikaPro = () => {
       </Helmet>
       
       <Navbar />
+      <ServiceBreadcrumb serviceName="Bika Pro - Services aux Entreprises" />
       
       <main className="pt-20">
         {/* Hero Section */}
@@ -355,6 +358,8 @@ const BikaPro = () => {
             </div>
           </div>
         </section>
+
+        <RelatedServices currentService="pro" />
       </main>
 
       <Footer />
