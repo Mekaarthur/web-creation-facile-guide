@@ -11,6 +11,7 @@ import { Clock, Shield, MapPin, Calculator, Heart, Star, Calendar, MessageCircle
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import CallToActionButtons from "@/components/CallToActionButtons";
+import ClientSpace from "@/components/ClientSpace";
 
 const BikaPro = () => {
   const navigate = useNavigate();
@@ -262,6 +263,8 @@ const BikaPro = () => {
 
         <RelatedServices currentService="pro" />
       </main>
+
+      <ClientSpace />
 
       {/* Formulaire de réservation */}
       {isBookingFormOpen && selectedService && (

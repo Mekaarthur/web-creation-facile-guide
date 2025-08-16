@@ -11,6 +11,7 @@ import { Clock, Shield, MapPin, Calculator, Heart, Star, Calendar, MessageCircle
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import CallToActionButtons from "@/components/CallToActionButtons";
+import ClientSpace from "@/components/ClientSpace";
 import serviceKidsHomework from "@/assets/service-kids-homework.jpg";
 import serviceKidsOutings from "@/assets/service-kids-outings.jpg";
 
@@ -484,6 +485,8 @@ const BikaKids = () => {
 
       <RelatedServices currentService="kids" />
       </main>
+
+      <ClientSpace />
 
       {/* Formulaire de réservation */}
       {isBookingFormOpen && selectedService && (

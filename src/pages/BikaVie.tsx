@@ -11,6 +11,7 @@ import { Clock, Shield, MapPin, Calculator, Heart, Star, Calendar, MessageCircle
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import CallToActionButtons from "@/components/CallToActionButtons";
+import ClientSpace from "@/components/ClientSpace";
 import serviceVieCalendar from "@/assets/service-vie-calendar.jpg";
 import serviceVieEvents from "@/assets/service-vie-events.jpg";
 
@@ -450,6 +451,8 @@ const BikaVie = () => {
 
       <RelatedServices currentService="vie" />
       </main>
+
+      <ClientSpace />
 
       {/* Formulaire de réservation */}
       {isBookingFormOpen && selectedService && (
