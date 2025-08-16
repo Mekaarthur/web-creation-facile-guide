@@ -174,7 +174,14 @@ const BikaAnimals = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-sm">{service.description}</CardDescription>
+                    <CardDescription className="text-sm mb-4">{service.description}</CardDescription>
+                    <Button 
+                      onClick={() => handleOpenBooking(service)}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white w-full"
+                      size="sm"
+                    >
+                      Réserver ce service
+                    </Button>
                   </CardContent>
                 </Card>
               ))}

@@ -166,7 +166,14 @@ const BikaPro = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-sm">{service.description}</CardDescription>
+                    <CardDescription className="text-sm mb-4">{service.description}</CardDescription>
+                    <Button 
+                      onClick={() => handleOpenBooking(service)}
+                      className="bg-slate-600 hover:bg-slate-700 text-white w-full"
+                      size="sm"
+                    >
+                      Réserver ce service
+                    </Button>
                   </CardContent>
                 </Card>
               ))}
