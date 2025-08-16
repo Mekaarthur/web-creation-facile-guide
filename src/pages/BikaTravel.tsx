@@ -6,7 +6,7 @@ import RelatedServices from "@/components/RelatedServices";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plane, Shield, MapPin, Calculator, Smartphone } from "lucide-react";
+import { Clock, Shield, MapPin, Calculator, Heart, Star, Calendar, MessageCircle, Phone, Plane, CheckCircle, Smartphone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const BikaTravel = () => {
@@ -68,11 +68,11 @@ const BikaTravel = () => {
         <title>Bika Travel - Services aux voyageurs Île-de-France | Bikawo</title>
         <meta 
           name="description" 
-          content="Conciergerie voyage Île-de-France. Aide pré-voyage, transfert aéroport Roissy Orly, veille vols, service familles. Voyagez sans stress. Crédit d'impôt 50%." 
+          content="Services aux voyageurs en Île-de-France. Aide pré-voyage, transferts aéroport, veille de vols, Travel-Kids. Voyagez sereinement. Crédit d'impôt 50%." 
         />
         <meta 
           name="keywords" 
-          content="conciergerie voyage ile de france, transfert aeroport roissy orly, aide pre voyage, veille vol, travel kids, service voyageur paris" 
+          content="aide voyage ile de france, transfert aeroport paris, veille vol, travel kids, services voyageurs, concierge voyage" 
         />
         <link rel="canonical" href="https://bikawo.fr/bika-travel-ile-de-france" />
         <script type="application/ld+json">
@@ -85,48 +85,251 @@ const BikaTravel = () => {
       
       <main className="pt-20">
         {/* Hero Section */}
-        <section className="bg-gradient-to-br from-primary/5 to-accent/10 py-16">
+        <section className="bg-gradient-to-br from-sky-50 to-blue-50 py-20">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-4xl md:text-5xl font-bold text-primary mb-6">
-                Bika Travel - Services aux voyageurs Île-de-France
-              </h1>
-              <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-                Bika Travel transforme vos voyages en expériences sereines. Notre service spécialisé accompagne les 
-                voyageurs franciliens dans toutes les étapes de leurs déplacements, de la préparation au retour, 
-                pour des voyages sans stress en famille ou en solo.
-              </p>
-              <div className="flex flex-wrap justify-center gap-4 mb-8">
-                <Badge variant="secondary" className="text-sm py-2 px-4">
-                  <Plane className="w-4 h-4 mr-2" />
-                  Expert aéroportuaire
-                </Badge>
-                <Badge variant="secondary" className="text-sm py-2 px-4">
-                  <Smartphone className="w-4 h-4 mr-2" />
-                  Suivi temps réel
-                </Badge>
-                <Badge variant="secondary" className="text-sm py-2 px-4">
-                  <MapPin className="w-4 h-4 mr-2" />
-                  CDG & Orly
-                </Badge>
-                <Badge variant="secondary" className="text-sm py-2 px-4">
-                  <Calculator className="w-4 h-4 mr-2" />
-                  Crédit d'impôt 50%
-                </Badge>
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              {/* Left: Content */}
+              <div className="space-y-6">
+                <div className="text-sm text-blue-600 font-medium">
+                  ⭐ Services BIKA #1 en France
+                </div>
+                <div className="text-lg text-pink-500 italic">
+                  "La charge mentale en moins, la sérénité en plus"
+                </div>
+                <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
+                  Bika Travel
+                  <br />
+                  <span className="text-sky-600">Services aux Voyageurs</span>
+                </h1>
+                <div className="flex items-center space-x-2 mb-4">
+                  <Badge className="bg-blue-100 text-blue-800">✈️ Innovation voyage</Badge>
+                </div>
+                <p className="text-lg text-gray-600 leading-relaxed">
+                  Conciergerie voyage unique avec le même expert de confiance. 
+                  Préparation + transferts + veille de vols + Travel-Kids. 
+                  Voyages sans stress garantis.
+                </p>
+
+                {/* Features */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-6 h-6 bg-sky-100 rounded-full flex items-center justify-center">
+                      <Plane className="w-3 h-3 text-sky-600" />
+                    </div>
+                    <span className="text-sm text-gray-600">Expert voyage</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Smartphone className="w-3 h-3 text-blue-600" />
+                    </div>
+                    <span className="text-sm text-gray-600">Suivi temps réel</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center">
+                      <Shield className="w-3 h-3 text-indigo-600" />
+                    </div>
+                    <span className="text-sm text-gray-600">CDG & Orly</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
+                      <CheckCircle className="w-3 h-3 text-purple-600" />
+                    </div>
+                    <span className="text-sm text-gray-600">Rebooking auto</span>
+                  </div>
+                </div>
+
+                {/* CTA Buttons */}
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Button 
+                    size="lg" 
+                    onClick={() => navigate('/custom-request')}
+                    className="bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 text-white px-8 py-3"
+                  >
+                    Démarrer maintenant →
+                  </Button>
+                  <Button 
+                    size="lg" 
+                    variant="outline"
+                    onClick={() => navigate('/custom-request')}
+                    className="border-sky-200 text-sky-600 hover:bg-sky-50 px-8 py-3"
+                  >
+                    Envoyer une demande personnalisée
+                  </Button>
+                </div>
+
+                {/* Trust Indicators */}
+                <div className="flex items-center space-x-6">
+                  <div className="flex items-center space-x-2">
+                    <div className="flex -space-x-1">
+                      <div className="w-6 h-6 bg-sky-500 rounded-full"></div>
+                      <div className="w-6 h-6 bg-blue-500 rounded-full"></div>
+                      <div className="w-6 h-6 bg-indigo-500 rounded-full"></div>
+                      <div className="w-6 h-6 bg-purple-500 rounded-full"></div>
+                    </div>
+                    <span className="text-sm text-gray-600">2,500+ personnes nous font confiance</span>
+                  </div>
+                </div>
               </div>
-              <Button 
-                size="lg" 
-                onClick={() => navigate('/custom-request')}
-                className="bg-primary hover:bg-primary/90"
-              >
-                Demander un devis gratuit
-              </Button>
+
+              {/* Right: Image */}
+              <div className="relative">
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                  <img 
+                    src="/assets/service-travel-full.jpg" 
+                    alt="Service voyage Bika Travel" 
+                    className="w-full h-auto"
+                  />
+                  {/* Status Badge */}
+                  <div className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    🟢 En ligne
+                  </div>
+                  {/* Rating Badge */}
+                  <div className="absolute bottom-4 right-4 bg-white rounded-lg p-3 shadow-lg">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-sky-600">4.9</div>
+                      <div className="text-xs text-gray-500">Note moyenne</div>
+                      <div className="flex justify-center mt-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Services Section */}
-        <section className="py-16">
+        {/* Quick Actions Section */}
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Commencez dès maintenant</h2>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+              <Card className="text-center hover:shadow-lg transition-shadow border-0 bg-gradient-to-br from-sky-50 to-sky-100">
+                <CardHeader>
+                  <div className="w-16 h-16 bg-sky-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Plane className="w-8 h-8 text-white" />
+                  </div>
+                  <CardTitle className="text-xl">Préparation voyage</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="mb-6">
+                    Check-in, documents, valises - nous préparons tout pour votre départ
+                  </CardDescription>
+                  <Button 
+                    onClick={() => navigate('/custom-request')}
+                    className="bg-sky-600 hover:bg-sky-700 text-white w-full"
+                  >
+                    Préparer mon voyage
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="text-center hover:shadow-lg transition-shadow border-0 bg-gradient-to-br from-blue-50 to-blue-100">
+                <CardHeader>
+                  <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <MapPin className="w-8 h-8 text-white" />
+                  </div>
+                  <CardTitle className="text-xl">Transfert aéroport</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="mb-6">
+                    Service premium domicile-aéroport avec accès Fast-Track
+                  </CardDescription>
+                  <Button 
+                    variant="outline"
+                    onClick={() => navigate('/custom-request')}
+                    className="border-blue-200 text-blue-600 hover:bg-blue-50 w-full"
+                  >
+                    Réserver un transfert
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="text-center hover:shadow-lg transition-shadow border-0 bg-gradient-to-br from-indigo-50 to-indigo-100">
+                <CardHeader>
+                  <div className="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Heart className="w-8 h-8 text-white" />
+                  </div>
+                  <CardTitle className="text-xl">Travel-Kids</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="mb-6">
+                    Service spécialisé familles avec kits enfants et accompagnement
+                  </CardDescription>
+                  <Button 
+                    variant="outline"
+                    onClick={() => navigate('/custom-request')}
+                    className="border-indigo-200 text-indigo-600 hover:bg-indigo-50 w-full"
+                  >
+                    Voyager en famille
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* Services en action */}
+        <section className="py-16 bg-gray-50">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <p className="text-sky-600 font-medium mb-2">Nos services en action</p>
+              <h2 className="text-3xl font-bold text-gray-900">Des experts voyage à votre service</h2>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="mb-6">
+                  <img 
+                    src="/assets/service-travel-assistance.jpg" 
+                    alt="Aide pré-voyage" 
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Préparation experte</h3>
+                <p className="text-gray-600">
+                  Nos experts voyage anticipent tous vos besoins pour un départ serein
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="mb-6">
+                  <img 
+                    src="/assets/recruitment-hero.jpg" 
+                    alt="Transferts aéroport" 
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Expertise aéroportuaire</h3>
+                <p className="text-gray-600">
+                  Nos agents connaissent parfaitement CDG et Orly pour vos transferts
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="mb-6">
+                  <img 
+                    src="/assets/diverse-family.jpg" 
+                    alt="Travel-Kids families" 
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Travel-Kids</h3>
+                <p className="text-gray-600">
+                  Service spécialisé pour voyager sereinement en famille avec enfants
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Services List */}
+        <section className="py-16 bg-white">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center mb-12">Nos services Bika Travel</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
@@ -135,7 +338,7 @@ const BikaTravel = () => {
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-lg">{service.name}</CardTitle>
-                      <Badge variant="outline" className="text-primary font-semibold">
+                      <Badge variant="outline" className="text-sky-600 border-sky-200 font-semibold">
                         {service.price}
                       </Badge>
                     </div>
@@ -152,85 +355,33 @@ const BikaTravel = () => {
         </section>
 
         {/* Innovation Section */}
-        <section className="py-16 bg-muted/50">
+        <section className="py-16 bg-gradient-to-br from-blue-50 to-indigo-100">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
-              <h2 className="text-3xl font-bold text-center mb-8">Innovation Bikawo</h2>
-              <div className="text-center mb-8">
-                <p className="text-lg text-muted-foreground">
-                  Bika Travel est le seul service de conciergerie voyage personnalisé en Île-de-France. Notre équipe 
-                  anticipe tous vos besoins et gère les imprévus en temps réel pendant vos déplacements.
-                </p>
+            <div className="max-w-4xl mx-auto text-center">
+              <div className="mb-8">
+                <Badge className="bg-blue-500 text-white px-4 py-2 text-lg">
+                  🚀 Innovation Bikawo
+                </Badge>
               </div>
-              <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="text-xl font-semibold mb-4">Expertise aéroportuaire</h3>
-                  <p className="text-muted-foreground">
-                    Nos agents connaissent parfaitement Roissy-Charles de Gaulle et Orly, optimisant vos trajets et 
-                    procédures d'embarquement. Service premium avec accès privilégiés.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold mb-4">Technologie avancée</h3>
-                  <p className="text-muted-foreground">
-                    Suivi en temps réel de vos vols, alertes automatiques, rebooking immédiat en cas de perturbations. 
-                    Application mobile dédiée pour un suivi constant.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Travel Process Section */}
-        <section className="py-16">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
-              <h2 className="text-3xl font-bold text-center mb-12">Votre voyage étape par étape</h2>
-              <div className="grid md:grid-cols-4 gap-6">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white font-bold text-xl mx-auto mb-4">1</div>
-                  <h3 className="font-semibold mb-2">Pré-voyage</h3>
-                  <p className="text-sm text-muted-foreground">Vérification documents, check-in, préparation valises</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white font-bold text-xl mx-auto mb-4">2</div>
-                  <h3 className="font-semibold mb-2">Transfert</h3>
-                  <p className="text-sm text-muted-foreground">Transfert sécurisé domicile-aéroport avec Fast-Track</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white font-bold text-xl mx-auto mb-4">3</div>
-                  <h3 className="font-semibold mb-2">Surveillance</h3>
-                  <p className="text-sm text-muted-foreground">Veille vols, rebooking automatique si nécessaire</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white font-bold text-xl mx-auto mb-4">4</div>
-                  <h3 className="font-semibold mb-2">Retour</h3>
-                  <p className="text-sm text-muted-foreground">Préparation de votre retour, courses essentielles</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Family Travel Section */}
-        <section className="py-16 bg-muted/50">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center">
-              <h2 className="text-3xl font-bold mb-6">Travel-Kids : voyager en famille facilité</h2>
-              <p className="text-lg text-muted-foreground mb-8">
-                Service spécialisé pour les familles avec enfants : kit voyage enfant, matériel adapté, 
-                divertissements préparés, accompagnement personnalisé.
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                Le seul service de conciergerie voyage personnalisé en Île-de-France
+              </h2>
+              <p className="text-lg text-gray-600 mb-8">
+                Suivi en temps réel de vos vols, alertes automatiques, rebooking immédiat en cas de perturbations. 
+                Application mobile dédiée pour un suivi constant.
               </p>
-              <div className="bg-primary/10 rounded-lg p-6">
-                <h3 className="font-semibold mb-4">Inclus dans Travel-Kids :</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                  <div>• Kit divertissement</div>
-                  <div>• Poussette voyage</div>
-                  <div>• Snacks adaptés</div>
-                  <div>• Livres & jeux</div>
-                  <div>• Produits hygiène</div>
-                  <div>• Accompagnement</div>
+              <div className="grid md:grid-cols-2 gap-8">
+                <div className="bg-white rounded-lg p-6 shadow-sm">
+                  <h3 className="font-semibold mb-2 text-blue-700">Technologie avancée</h3>
+                  <p className="text-sm text-gray-600">
+                    Surveillance automatique, rebooking immédiat, application mobile dédiée
+                  </p>
+                </div>
+                <div className="bg-white rounded-lg p-6 shadow-sm">
+                  <h3 className="font-semibold mb-2 text-indigo-700">Expertise unique</h3>
+                  <p className="text-sm text-gray-600">
+                    Seul service de conciergerie voyage personnalisé avec agents experts CDG/Orly
+                  </p>
                 </div>
               </div>
             </div>
@@ -238,18 +389,19 @@ const BikaTravel = () => {
         </section>
 
         {/* CTA Section */}
-        <section className="py-16 bg-primary">
+        <section className="py-16 bg-gradient-to-r from-sky-600 to-blue-600 text-white">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold text-white mb-6">
-              Voyagez sereinement avec Bika Travel
+            <h2 className="text-3xl font-bold mb-6">
+              Transformez vos voyages en expériences sereines
             </h2>
-            <p className="text-xl text-white/90 mb-8">
-              Le seul service de conciergerie voyage personnalisé en Île-de-France
+            <p className="text-xl mb-8 opacity-90">
+              Laissez-nous nous occuper de tout pendant que vous profitez de vos vacances
             </p>
             <Button 
               size="lg" 
               variant="secondary"
               onClick={() => navigate('/custom-request')}
+              className="bg-white text-sky-600 hover:bg-gray-100 px-8 py-3"
             >
               Obtenir mon devis gratuit
             </Button>
