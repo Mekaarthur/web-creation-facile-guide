@@ -71,7 +71,7 @@ export const RewardsSection: React.FC<RewardsSectionProps> = ({ userType }) => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Gift className="h-5 w-5" />
-              Progression vers le bon psychologue
+              Progression vers l'accompagnement anti-charge mentale
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -101,7 +101,7 @@ export const RewardsSection: React.FC<RewardsSectionProps> = ({ userType }) => {
             {progress.isEligible && (
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <p className="text-green-800 font-medium">
-                  🎉 Félicitations ! Vous êtes éligible pour un bon psychologue !
+                  🎉 Félicitations ! Vous êtes éligible pour un accompagnement anti-charge mentale !
                 </p>
               </div>
             )}
@@ -129,7 +129,7 @@ export const RewardsSection: React.FC<RewardsSectionProps> = ({ userType }) => {
                         <Gift className="h-6 w-6 text-primary" />
                       </div>
                       <div>
-                        <h4 className="font-medium">Bon psychologue</h4>
+                        <h4 className="font-medium">Accompagnement anti-charge mentale</h4>
                         <p className="text-sm text-muted-foreground">
                           Valable jusqu'au {format(new Date(reward.valid_until), 'dd MMMM yyyy', { locale: fr })}
                         </p>
@@ -166,7 +166,7 @@ export const RewardsSection: React.FC<RewardsSectionProps> = ({ userType }) => {
                         <Gift className="h-6 w-6 text-muted-foreground" />
                       </div>
                       <div>
-                        <h4 className="font-medium">Bon psychologue</h4>
+                        <h4 className="font-medium">Accompagnement anti-charge mentale</h4>
                         <p className="text-sm text-muted-foreground">
                           Utilisé le {format(new Date(reward.used_date!), 'dd MMMM yyyy', { locale: fr })}
                         </p>

@@ -192,7 +192,7 @@ export const useRewards = () => {
   };
 
   // Award client reward
-  const awardClientReward = async (rewardType: string = 'psychologist_voucher') => {
+  const awardClientReward = async (rewardType: string = 'wellness_voucher') => {
     if (!user) return;
 
     try {
@@ -210,7 +210,7 @@ export const useRewards = () => {
       
       toast({
         title: "Félicitations !",
-        description: "Vous avez gagné un bon psychologue !",
+        description: "Vous avez gagné un accompagnement anti-charge mentale !",
       });
       
       await loadClientRewards();
@@ -238,8 +238,8 @@ export const useRewards = () => {
       if (error) throw error;
       
       toast({
-        title: "Bon utilisé",
-        description: "Votre bon psychologue a été utilisé avec succès",
+        title: "Accompagnement utilisé",
+        description: "Votre accompagnement anti-charge mentale a été utilisé avec succès",
       });
       
       await loadClientRewards();
