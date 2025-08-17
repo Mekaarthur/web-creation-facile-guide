@@ -42,6 +42,7 @@ import AdminKanban from "./pages/admin/Kanban";
 import AdminUtilisateurs from "./pages/admin/Utilisateurs";
 import AdminPrestataires from "./pages/admin/Prestataires";
 import AdminBinomes from "./pages/admin/Binomes";
+import TestsEmails from "./pages/admin/TestsEmails";
 import AdminModeration from "./pages/admin/Moderation";
 import AdminMessagerie from "./pages/admin/Messagerie";
 import AdminPaiements from "./pages/admin/Paiements";
@@ -94,6 +95,7 @@ const App = () => (
               <Route path="utilisateurs" element={<AdminUtilisateurs />} />
               <Route path="prestataires" element={<AdminPrestataires />} />
               <Route path="binomes" element={<AdminBinomes />} />
+              <Route path="tests-emails" element={<TestsEmails />} />
               <Route path="demandes" element={<AdminClientRequests />} />
               <Route path="candidatures" element={<AdminJobApplications />} />
               <Route path="moderation" element={<AdminModeration />} />

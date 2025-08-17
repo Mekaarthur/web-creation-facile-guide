@@ -57,6 +57,7 @@ const navigationGroups = [
     items: [
       { name: 'Messagerie', href: '/admin/messagerie', icon: MessageSquare, badge: 5 },
       { name: 'Messages & Emails', href: '/admin/messages', icon: MessageSquare, badge: null },
+      { name: 'Tests Emails', href: '/admin/tests-emails', icon: MessageSquare, badge: null },
       { name: 'Notifications', href: '/admin/notifications', icon: Bell, badge: null },
     ]
   },
