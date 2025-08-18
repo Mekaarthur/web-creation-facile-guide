@@ -23,6 +23,7 @@ import BlogPost from "./pages/BlogPost";
 import AnalyticsSEO from "./pages/AnalyticsSEO";
 import ConfigMessages from "./pages/ConfigMessages";
 import CustomRequest from "./pages/CustomRequest";
+import ProviderSignup from "./pages/ProviderSignup";
 import AdminJobApplications from "./pages/AdminJobApplications";
 import AdminClientRequests from "./pages/AdminClientRequests";
 import BikaKids from "./pages/BikaKids";
@@ -82,6 +83,7 @@ const App = () => (
             <Route path="/config-messages" element={<ConfigMessages />} />
             <Route path="/demande-personnalisee" element={<CustomRequest />} />
             <Route path="/custom-request" element={<CustomRequest />} />
+            <Route path="/candidature-prestataire" element={<ProviderSignup />} />
             <Route path="/bika-kids-ile-de-france" element={<BikaKids />} />
             <Route path="/bika-maison-ile-de-france" element={<BikaMaison />} />
             <Route path="/bika-vie-ile-de-france" element={<BikaVie />} />

@@ -49,7 +49,7 @@ const Hero = () => {
                   <ArrowRight className="w-6 h-6 ml-3 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
-              <Link to="/espace-prestataire" className="w-full sm:w-auto">
+              <Link to="/candidature-prestataire" className="w-full sm:w-auto">
                 <Button 
                   size="xl" 
                   variant="secondary"
