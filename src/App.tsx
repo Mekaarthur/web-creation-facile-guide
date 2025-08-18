@@ -50,6 +50,7 @@ import AdminRemunerations from "./pages/admin/Remunerations";
 import AdminPaiements from "./pages/admin/Paiements";
 import AdminFactures from "./pages/admin/Factures";
 import AdminPaniers from "./pages/admin/Paniers";
+import AdminNotifications from "./pages/admin/Notifications";
 import Payment from "./pages/Payment";
 
 import NotFound from "./pages/NotFound";
@@ -105,10 +106,11 @@ const App = () => (
               <Route path="demandes" element={<AdminClientRequests />} />
               <Route path="candidatures" element={<AdminJobApplications />} />
               <Route path="moderation" element={<AdminModeration />} />
-            <Route path="messagerie" element={<AdminMessagerie />} />
-            <Route path="paniers" element={<AdminPaniers />} />
-            <Route path="paiements" element={<AdminPaiements />} />
-            <Route path="messages" element={<ConfigMessages />} />
+              <Route path="messagerie" element={<AdminMessagerie />} />
+              <Route path="paniers" element={<AdminPaniers />} />
+              <Route path="paiements" element={<AdminPaiements />} />
+              <Route path="messages" element={<ConfigMessages />} />
+              <Route path="notifications" element={<AdminNotifications />} />
               <Route path="zones" element={<div>Zones géographiques - En développement</div>} />
               <Route path="statistiques" element={<div>Statistiques - En développement</div>} />
               <Route path="parametres" element={<div>Paramètres - En développement</div>} />

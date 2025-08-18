@@ -59,23 +59,76 @@ const CustomRequestForm = () => {
         preferredDatetime = datetime.toISOString();
       }
 
-      const dataToInsert = {
-        ...formData,
-        preferred_datetime: preferredDatetime,
-        location: formData.pickup_address // Pour compatibilité avec l'ancien champ
+      // Construire le payload pour client_requests
+      const preferredDateStr = selectedDate ? selectedDate.toISOString().split('T')[0] : null;
+      const payload = {
+        form_response_id: (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `web-${Date.now()}`),
+        client_name: formData.client_name,
+        client_email: formData.client_email,
+        client_phone: formData.client_phone,
+        service_type: 'Demande personnalisée',
+        service_description: formData.service_description,
+        location: formData.pickup_address,
+        preferred_date: preferredDateStr,
+        preferred_time: selectedTime || null,
+        budget_range: formData.budget_range || null,
+        urgency_level: formData.urgency_level || 'normal',
+        additional_notes: formData.additional_notes || null,
+        status: 'new'
       };
 
-      const { error } = await supabase
-        .from('custom_requests')
-        .insert([dataToInsert]);
+      // Sauvegarder dans la table utilisée par l'admin
+      const { data: created, error } = await supabase
+        .from('client_requests')
+        .insert([payload])
+        .select()
+        .single();
 
       if (error) {
         throw error;
       }
 
+      // Emails: confirmation client et notification admin
+      const bookingDetails = {
+        id: created?.id || 'pending',
+        serviceName: 'Demande personnalisée',
+        date: preferredDateStr || new Date().toISOString(),
+        time: selectedTime || '',
+        location: formData.pickup_address,
+        price: 0
+      };
+
+      // Confirmation au client
+      await supabase.functions.invoke('send-notification', {
+        body: {
+          type: 'booking_confirmation',
+          recipientEmail: formData.client_email,
+          recipientName: formData.client_name,
+          bookingDetails
+        }
+      });
+
+      // Notification à l'admin
+      await supabase.functions.invoke('send-notification-email', {
+        body: {
+          to: 'admin@bikawo.com',
+          type: 'booking_request',
+          data: {
+            clientName: formData.client_name,
+            serviceName: 'Demande personnalisée',
+            bookingDate: preferredDateStr || '',
+            bookingTime: selectedTime || '',
+            location: formData.pickup_address,
+            price: 0,
+            bookingId: created?.id,
+            message: formData.service_description
+          }
+        }
+      });
+
       toast({
         title: "Demande envoyée !",
-        description: "Votre demande personnalisée a été envoyée avec succès. Nous vous recontacterons rapidement."
+        description: "Votre demande a bien été enregistrée. Un email de confirmation vous a été envoyé."
       });
 
       // Reset form
