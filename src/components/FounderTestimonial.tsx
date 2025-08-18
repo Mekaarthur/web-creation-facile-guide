@@ -14,7 +14,7 @@ const FounderTestimonial = () => {
             <div className="flex justify-center mb-8">
               <div className="inline-flex items-center space-x-3 bg-accent/10 text-accent px-6 py-3 rounded-full">
                 <Heart className="w-5 h-5" />
-                <span className="font-semibold">Créé par une maman qui comprend</span>
+                <span className="font-semibold">Créé par des parents qui comprennent</span>
               </div>
             </div>
 
@@ -38,16 +38,16 @@ const FounderTestimonial = () => {
                 <Quote className="w-12 h-12 text-accent mx-auto md:mx-0" />
                 
                 <blockquote className="text-lg md:text-xl text-foreground italic leading-relaxed">
-                  "Après avoir jonglé entre ma carrière et mes trois enfants, j'ai compris que 
-                  la charge mentale n'était pas une fatalité. J'ai créé Bikawo pour offrir à 
-                  toutes les familles ce dont elles rêvent : du temps de qualité et la sérénité."
+                  "Après avoir jonglé entre études, carrière et l'arrivée de notre nouveau bébé, nous avons compris que 
+                  la charge mentale en famille est une véritable réalité. Nous avons créé Bikawo pour offrir à 
+                  toutes les familles ce dont elles ont réellement besoin : du temps de qualité et la sérénité."
                 </blockquote>
                 
                 <div className="border-t border-border pt-4">
-                  <p className="font-bold text-lg text-foreground">Sarah Martinez</p>
-                  <p className="text-accent font-medium">Fondatrice & Maman de 3 enfants</p>
+                  <p className="font-bold text-lg text-foreground">Anita & Arthur</p>
+                  <p className="text-accent font-medium">Fondateurs et Parents</p>
                   <p className="text-sm text-muted-foreground mt-2">
-                    Ancienne consultante, aujourd'hui entrepreneuse passionnée
+                    Entrepreneurs passionnés par l'aide aux familles
                   </p>
                 </div>
               </div>

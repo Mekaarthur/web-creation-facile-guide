@@ -49,6 +49,16 @@ const Hero = () => {
                   <ArrowRight className="w-6 h-6 ml-3 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
+              <Link to="/espace-prestataire" className="w-full sm:w-auto">
+                <Button 
+                  size="xl" 
+                  variant="secondary"
+                  className="group w-full sm:w-auto text-lg px-8 py-4 hover:scale-105 transition-all duration-300 shadow-elegant touch-target"
+                >
+                  Postuler
+                  <ArrowRight className="w-6 h-6 ml-3 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
             </div>
 
             {/* Social Proof Rapide */}
