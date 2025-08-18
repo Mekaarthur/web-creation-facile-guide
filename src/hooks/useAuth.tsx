@@ -36,6 +36,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log("Auth state change:", event, session);
         setSession(session);
         setUser(session?.user ?? null);
+        // Important: marquer le chargement comme terminé dès qu'on a un état
+        setLoading(false);
       }
     );
 
