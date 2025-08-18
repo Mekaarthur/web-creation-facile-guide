@@ -32,56 +32,27 @@ export default function AdminMessagerie() {
     try {
       const { data, error } = await supabase
         .from('internal_messages')
-        .select(`
-          *,
-          internal_conversations (subject)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (error) throw error;
 
-      // Simuler des données avec noms pour la démo
-      const mockMessages: Message[] = [
-        {
-          id: '1',
-          conversation_id: 'conv1',
-          sender_id: 'user1',
-          receiver_id: 'admin1',
-          message_text: 'Bonjour, j\'ai un problème avec ma dernière mission.',
-          created_at: new Date().toISOString(),
-          is_read: false,
-          sender_name: 'Marie Dupont',
-          receiver_name: 'Admin',
-          conversation_subject: 'Problème mission #123'
-        },
-        {
-          id: '2',
-          conversation_id: 'conv2',
-          sender_id: 'provider1',
-          receiver_id: 'admin1',
-          message_text: 'Pouvez-vous valider mes nouveaux documents ?',
-          created_at: new Date(Date.now() - 3600000).toISOString(),
-          is_read: true,
-          sender_name: 'Jean Martin',
-          receiver_name: 'Admin',
-          conversation_subject: 'Validation documents'
-        },
-        {
-          id: '3',
-          conversation_id: 'conv3',
-          sender_id: 'user2',
-          receiver_id: 'admin1',
-          message_text: 'Le prestataire n\'est pas venu au rendez-vous.',
-          created_at: new Date(Date.now() - 7200000).toISOString(),
-          is_read: false,
-          sender_name: 'Sophie Laurent',
-          receiver_name: 'Admin',
-          conversation_subject: 'Absence prestataire'
-        },
-      ];
+      const rows = (data as any[]) || [];
+      const mapped: Message[] = rows.map((r) => ({
+        id: r.id,
+        conversation_id: r.conversation_id,
+        sender_id: r.sender_id,
+        receiver_id: r.receiver_id,
+        message_text: r.message_text,
+        created_at: r.created_at,
+        is_read: r.is_read ?? false,
+        sender_name: r.sender_id ? `ID:${String(r.sender_id).slice(0,8)}` : 'Utilisateur',
+        receiver_name: r.receiver_id ? `ID:${String(r.receiver_id).slice(0,8)}` : 'Utilisateur',
+        conversation_subject: 'Conversation'
+      }));
 
-      setMessages(mockMessages);
+      setMessages(mapped);
     } catch (error) {
       console.error('Erreur:', error);
       toast({

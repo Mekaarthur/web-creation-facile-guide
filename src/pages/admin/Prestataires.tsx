@@ -31,10 +31,7 @@ export default function AdminPrestataires() {
     try {
       const { data, error } = await supabase
         .from('providers')
-        .select(`
-          *,
-          profiles (first_name, last_name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -161,7 +158,7 @@ export default function AdminPrestataires() {
                       <div className="space-y-2">
                         <div className="flex items-center gap-3">
                           <h3 className="font-semibold text-lg">
-                            {provider.profiles?.first_name || 'Prénom'} {provider.profiles?.last_name || 'Nom'}
+                            {provider.business_name || `Prestataire ${provider.id.slice(0, 8)}`}
                           </h3>
                           {getStatusBadge(provider.status)}
                         </div>
