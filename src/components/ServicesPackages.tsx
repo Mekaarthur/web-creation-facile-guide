@@ -16,6 +16,7 @@ import servicePremiumConcierge from "@/assets/service-premium-concierge.jpg";
 import servicePetCare from "@/assets/service-pet-care.jpg";
 import serviceSeniorsAssistance from "@/assets/service-seniors-assistance.jpg";
 import serviceBusinessExecutive from "@/assets/service-business-executive.jpg";
+import { PaymentLogos } from "@/components/PaymentLogos";
 import { 
   Baby, 
   Home, 
@@ -354,100 +355,31 @@ const ServicesPackages = () => {
                     <span className="text-sm font-semibold text-foreground">{pkg.price}</span>
                   </div>
 
-                   {/* CTA */}
-                   <div className="space-y-2">
-                     <Dialog>
-                       <DialogTrigger asChild>
-                          <Button 
-                            variant={pkg.popular ? "accent" : "outline"} 
-                            className="w-full group/btn"
-                            onClick={() => {
-                              handleReservation(pkg);
-                            }}
-                          >
-                           Réserver à l'heure
-                           <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
-                         </Button>
-                       </DialogTrigger>
-                     <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                       <DialogHeader>
-                         <DialogTitle className="flex items-center gap-2">
-                           <pkg.icon className="w-6 h-6 text-primary" />
-                           Réserver - {pkg.title}
-                         </DialogTitle>
-                         <DialogDescription>
-                           Choisissez le service spécifique que vous souhaitez réserver dans le package {pkg.title}
-                         </DialogDescription>
-                       </DialogHeader>
-
-                       <div className="grid gap-6 py-4">
-                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 dialog-grid">
-                           {pkg.services.map((service: any, idx: number) => (
-                             <Card key={idx} className="p-4 hover:shadow-md transition-all">
-                               <div className="space-y-3">
-                                 <div className="flex items-center justify-between">
-                                   <h4 className="font-semibold text-foreground">
-                                     {typeof service === 'string' ? service : service.name}
-                                   </h4>
-                                   {typeof service === 'object' && service.price > 0 && (
-                                     <Badge variant="secondary" className="flex items-center gap-1">
-                                       <Euro className="w-3 h-3" />
-                                       {service.price}€/h
-                                     </Badge>
-                                   )}
-                                 </div>
-                                 
-                                 {typeof service === 'object' && service.description && (
-                                   <p className="text-sm text-muted-foreground">
-                                     {service.description}
-                                   </p>
-                                 )}
-                                 
-                                   <Dialog>
-                                     <DialogTrigger asChild>
-                                       <Button size="sm" className="w-full">
-                                         Réserver ce service
-                                       </Button>
-                                     </DialogTrigger>
-                                     <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                                       <DialogHeader>
-                                         <DialogTitle>Réservation flexible - {typeof service === 'string' ? service : service.name}</DialogTitle>
-                                         <DialogDescription>
-                                           Configurez vos créneaux de réservation selon vos besoins
-                                         </DialogDescription>
-                                       </DialogHeader>
-                                       <ServiceBookingForm
-                                         service={{
-                                           name: typeof service === 'string' ? service : service.name,
-                                           description: typeof service === 'object' ? service.description : undefined,
-                                           price: typeof service === 'object' && service.price ? service.price : 25
-                                         }}
-                                         packageTitle={pkg.title}
-                                         onClose={() => {
-                                           // Close the dialog by finding and clicking the close button
-                                           const closeButtons = document.querySelectorAll('[data-dialog-close]');
-                                           closeButtons.forEach(btn => (btn as HTMLElement).click());
-                                         }}
-                                       />
-                                     </DialogContent>
-                                   </Dialog>
-                               </div>
-                             </Card>
-                           ))}
-                         </div>
-                       </div>
-                     </DialogContent>
-                    </Dialog>
-                    
-                    <Button 
-                      variant="secondary"
-                      className="w-full group/btn"
-                      onClick={() => handleSubscriptionReservation(pkg)}
-                    >
-                      Réserver
-                      <Calendar className="w-4 h-4 ml-1 transition-transform group-hover/btn:translate-x-1" />
-                    </Button>
-                  </div>
+                    {/* CTA */}
+                    <div className="space-y-2">
+                        <Button 
+                          variant={pkg.popular ? "accent" : "outline"} 
+                          className="w-full group/btn"
+                          onClick={() => {
+                            navigate(`/payment?service=${encodeURIComponent(pkg.title)}&price=${typeof pkg.services[0] === 'object' ? pkg.services[0].price : 22}&description=${encodeURIComponent(pkg.description)}&type=one-time&duration=1h`);
+                          }}
+                        >
+                         Réserver à l'heure
+                         <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                       </Button>
+                       
+                       <Button 
+                         variant="secondary"
+                         className="w-full group/btn"
+                         onClick={() => {
+                           const subscriptionPrice = pkg.id === 'plus' ? 1500 : (pkg.id === 'pro' ? 800 : 200);
+                           navigate(`/payment?service=${encodeURIComponent(pkg.title + ' - Abonnement')}&price=${subscriptionPrice}&description=${encodeURIComponent(pkg.description)}&type=subscription`);
+                         }}
+                       >
+                         S'abonner 
+                         <Calendar className="w-4 h-4 ml-1 transition-transform group-hover/btn:translate-x-1" />
+                       </Button>
+                     </div>
                 </div>
                </Card>
              );
@@ -540,18 +472,15 @@ const ServicesPackages = () => {
                   </li>
                 </ul>
               </div>
-              <Button 
-                variant="accent" 
-                className="w-full mt-4"
-                onClick={() => handleSubscriptionReservation({ 
-                  id: 'hebdo', 
-                  title: 'Formule Hebdo', 
-                  icon: Clock, 
-                  price: '10h - 200€' 
-                })}
-              >
-                Réserver Hebdo
-              </Button>
+                 <Button 
+                   variant="accent" 
+                   className="w-full mt-4"
+                   onClick={() => {
+                     navigate(`/payment?service=${encodeURIComponent('Formule Hebdo')}&price=200&description=${encodeURIComponent('Panier libre d\'heures combinant Kids + Maison + Travel selon vos besoins')}&type=subscription`);
+                   }}
+                 >
+                   Réserver Hebdo
+                 </Button>
             </Card>
 
             <Card className="p-6 space-y-4">
@@ -587,18 +516,15 @@ const ServicesPackages = () => {
                   </li>
                 </ul>
               </div>
-              <Button 
-                variant="default" 
-                className="w-full mt-4"
-                onClick={() => handleSubscriptionReservation({ 
-                  id: 'mensuel', 
-                  title: 'Formule Mensuelle', 
-                  icon: Calendar, 
-                  price: '40h - 800€' 
-                })}
-              >
-                Réserver Mensuel
-              </Button>
+               <Button 
+                 variant="default" 
+                 className="w-full mt-4"
+                 onClick={() => {
+                   navigate(`/payment?service=${encodeURIComponent('Formule Mensuelle')}&price=800&description=${encodeURIComponent('Combinaisons illimitées + suivi mensuel personnalisé')}&type=subscription`);
+                 }}
+               >
+                 Réserver Mensuel
+               </Button>
             </Card>
 
             <Card className="p-6 space-y-4">
@@ -634,18 +560,15 @@ const ServicesPackages = () => {
                   </li>
                 </ul>
               </div>
-              <Button 
-                variant="hero" 
-                className="w-full mt-4"
-                onClick={() => handleSubscriptionReservation({ 
-                  id: 'premium', 
-                  title: 'Bika Plus Premium', 
-                  icon: Crown, 
-                  price: '≥ 1400€/mois' 
-                })}
-              >
-                Réserver Premium
-              </Button>
+               <Button 
+                 variant="hero" 
+                 className="w-full mt-4"
+                 onClick={() => {
+                   navigate(`/payment?service=${encodeURIComponent('Bika Plus Premium')}&price=1400&description=${encodeURIComponent('Accès libre Bikawo Plus & Bika Travel prioritaire')}&type=subscription`);
+                 }}
+               >
+                 Réserver Premium
+               </Button>
             </Card>
           </div>
         </div>
@@ -762,6 +685,42 @@ const ServicesPackages = () => {
               </div>
             </div>
           </Card>
+        </div>
+      </div>
+
+      {/* Section Paiements sécurisés */}
+      <div className="mt-20 text-center">
+        <div className="max-w-4xl mx-auto">
+          <h3 className="text-xl font-semibold text-foreground mb-4">
+            Paiements 100% sécurisés
+          </h3>
+          <p className="text-muted-foreground mb-6">
+            Nous acceptons toutes les cartes bancaires avec une sécurité garantie
+          </p>
+          
+          <div className="flex flex-col items-center gap-6">
+            <PaymentLogos size="lg" className="justify-center" />
+            
+            <div className="flex flex-wrap justify-center gap-3 text-xs">
+              <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full font-medium">
+                🔒 SSL 256-bit
+              </div>
+              <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-medium">
+                🛡️ 3D Secure
+              </div>
+              <div className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-medium">
+                ⭐ PCI DSS
+              </div>
+              <div className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full font-medium">
+                🏛️ Stripe
+              </div>
+            </div>
+            
+            <p className="text-xs text-muted-foreground max-w-2xl">
+              Vos données bancaires sont cryptées et sécurisées. Elles ne sont jamais stockées sur nos serveurs. 
+              Le paiement est traité par Stripe, leader mondial de la sécurité des paiements en ligne.
+            </p>
+          </div>
         </div>
       </div>
 

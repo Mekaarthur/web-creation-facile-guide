@@ -157,7 +157,38 @@ export const StripePaymentIntegration: React.FC<PaymentIntegrationProps> = ({
   };
 
   const getBrandIcon = (brand: string) => {
-    // Icône générique pour toutes les cartes
+    const brandLower = brand.toLowerCase();
+    
+    if (brandLower === 'visa') {
+      return (
+        <div className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold min-w-[40px] text-center">
+          VISA
+        </div>
+      );
+    }
+    if (brandLower === 'mastercard') {
+      return (
+        <div className="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold min-w-[40px] text-center">
+          MC
+        </div>
+      );
+    }
+    if (brandLower === 'maestro') {
+      return (
+        <div className="bg-blue-800 text-white px-2 py-1 rounded text-xs font-bold min-w-[40px] text-center">
+          MAESTRO
+        </div>
+      );
+    }
+    if (brandLower === 'amex') {
+      return (
+        <div className="bg-gray-800 text-white px-2 py-1 rounded text-xs font-bold min-w-[40px] text-center">
+          AMEX
+        </div>
+      );
+    }
+    
+    // Icône générique pour les autres cartes
     return <CreditCard className="h-4 w-4" />;
   };
 

@@ -45,8 +45,11 @@ import AdminBinomes from "./pages/admin/Binomes";
 import TestsEmails from "./pages/admin/TestsEmails";
 import AdminModeration from "./pages/admin/Moderation";
 import AdminMessagerie from "./pages/admin/Messagerie";
+import AdminRemunerations from "./pages/admin/Remunerations";
 import AdminPaiements from "./pages/admin/Paiements";
+import AdminFactures from "./pages/admin/Factures";
 import AdminPaniers from "./pages/admin/Paniers";
+import Payment from "./pages/Payment";
 
 import NotFound from "./pages/NotFound";
 
@@ -84,10 +87,11 @@ const App = () => (
             <Route path="/bika-vie-ile-de-france" element={<BikaVie />} />
             <Route path="/bika-travel-ile-de-france" element={<BikaTravel />} />
             <Route path="/bika-plus-ile-de-france" element={<BikaPlus />} />
-            <Route path="/bika-animals-ile-de-france" element={<BikaAnimals />} />
-            <Route path="/bika-seniors-ile-de-france" element={<BikaSeniors />} />
-            <Route path="/bika-pro-ile-de-france" element={<BikaPro />} />
-            {/* Admin Routes with Layout */}
+             <Route path="/bika-animals-ile-de-france" element={<BikaAnimals />} />
+             <Route path="/bika-seniors-ile-de-france" element={<BikaSeniors />} />
+             <Route path="/bika-pro-ile-de-france" element={<BikaPro />} />
+             <Route path="/payment" element={<Payment />} />
+             {/* Admin Routes with Layout */}
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
               <Route path="alertes" element={<AdminAlertes />} />
