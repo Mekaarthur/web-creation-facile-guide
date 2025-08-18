@@ -4,9 +4,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Filter, Eye, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Search, Filter, Eye, CheckCircle, XCircle, Clock, Star, MapPin, Phone, Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 interface Provider {
   id: string;
@@ -14,10 +17,18 @@ interface Provider {
   business_name: string;
   status: string;
   created_at: string;
-  profiles: {
+  is_verified?: boolean;
+  rating?: number;
+  description?: string;
+  location?: string;
+  profiles?: {
     first_name: string;
     last_name: string;
+    avatar_url?: string;
   } | null;
+  bookings?: any[];
+  reviews?: any[];
+  documents?: any[];
 }
 
 export default function AdminPrestataires() {
@@ -25,22 +36,30 @@ export default function AdminPrestataires() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
   const { toast } = useToast();
 
   const loadProviders = async () => {
     try {
       const { data, error } = await supabase
         .from('providers')
-        .select('*')
+        .select(`
+          *,
+          profiles:profiles!user_id (first_name, last_name, avatar_url)
+        `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) throw new Error(`[${error.code}] DB Error: ${error.message}`);
       setProviders((data as any) || []);
-    } catch (error) {
-      console.error('Erreur:', error);
+    } catch (error: any) {
+      console.error('Erreur détaillée:', error);
+      const errorMessage = error.message?.includes('[') 
+        ? error.message 
+        : `[500] Erreur inconnue: ${error.message || 'Impossible de charger les prestataires'}`;
+      
       toast({
-        title: "Erreur",
-        description: "Impossible de charger les prestataires",
+        title: "Erreur de chargement",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -51,38 +70,88 @@ export default function AdminPrestataires() {
   const handleProviderAction = async (providerId: string, action: 'approve' | 'reject' | 'examine') => {
     try {
       if (action === 'examine') {
-        // Ouvrir les détails du prestataire
-        toast({
-          title: "Consultation",
-          description: "Ouverture des détails du prestataire",
-        });
+        // Récupérer les détails complets du prestataire
+        const { data: providerData, error: providerError } = await supabase
+          .from('providers')
+          .select(`
+            *,
+            profiles:profiles!user_id (first_name, last_name, avatar_url),
+            bookings:bookings!provider_id (
+              id, 
+              status, 
+              booking_date, 
+              total_price,
+              services (name)
+            ),
+            reviews:reviews!provider_id (
+              id, 
+              rating, 
+              comment, 
+              created_at,
+              is_approved
+            ),
+            documents:provider_documents (
+              id,
+              document_type,
+              file_name,
+              status,
+              created_at
+            )
+          `)
+          .eq('id', providerId)
+          .single();
+
+        if (providerError) throw new Error(`[${providerError.code}] ${providerError.message}`);
+        
+        setSelectedProvider({
+          ...providerData,
+          profiles: Array.isArray(providerData.profiles) ? providerData.profiles[0] : null,
+          bookings: Array.isArray(providerData.bookings) ? providerData.bookings : [],
+          reviews: Array.isArray(providerData.reviews) ? providerData.reviews : [],
+          documents: Array.isArray(providerData.documents) ? providerData.documents : []
+        } as Provider);
         return;
       }
 
-      const newStatus = action === 'approve' ? 'approved' : 'rejected';
+      const newStatus = action === 'approve' ? 'active' : 'rejected';
       
       const { error } = await supabase
         .from('providers')
         .update({ 
           status: newStatus,
+          is_verified: action === 'approve',
           updated_at: new Date().toISOString()
         })
         .eq('id', providerId);
 
-      if (error) throw error;
+      if (error) throw new Error(`[${error.code}] DB Update Error: ${error.message}`);
+
+      // Enregistrer dans l'historique des actions
+      await supabase
+        .from('provider_status_history')
+        .insert({
+          provider_id: providerId,
+          new_status: newStatus,
+          old_status: providers.find(p => p.id === providerId)?.status || 'unknown',
+          reason: `Action admin: ${action}`
+        });
 
       toast({
         title: "Statut mis à jour",
-        description: `Prestataire ${action === 'approve' ? 'approuvé' : 'rejeté'} avec succès`,
+        description: `Prestataire ${action === 'approve' ? 'approuvé et vérifié' : 'rejeté'} avec succès`,
       });
 
       // Recharger la liste
       loadProviders();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur action prestataire:', error);
+      const errorMsg = error.message?.includes('[') 
+        ? error.message 
+        : `[500] Erreur inconnue: ${error.message}`;
+        
       toast({
-        title: "Erreur",
-        description: "Impossible d'effectuer cette action",
+        title: "Erreur d'action",
+        description: errorMsg,
         variant: "destructive",
       });
     }
@@ -234,14 +303,126 @@ export default function AdminPrestataires() {
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleProviderAction(provider.id, 'examine')}
-                        >
-                          <Eye className="w-4 h-4 mr-2" />
-                          Voir détails
-                        </Button>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleProviderAction(provider.id, 'examine')}
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              Voir détails
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle>Détails du prestataire</DialogTitle>
+                            </DialogHeader>
+                            {selectedProvider && (
+                              <div className="space-y-6">
+                                {/* Informations générales */}
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="text-sm font-medium text-muted-foreground">Nom/Entreprise</label>
+                                    <p className="font-semibold">{selectedProvider.business_name}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-muted-foreground">Note moyenne</label>
+                                    <div className="flex items-center gap-2">
+                                      <Star className="w-4 h-4 text-yellow-500" />
+                                      <span>{selectedProvider.rating?.toFixed(1) || 'N/A'}</span>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-muted-foreground">Localisation</label>
+                                    <p>{selectedProvider.location || 'Non renseignée'}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-muted-foreground">Statut</label>
+                                    {getStatusBadge(selectedProvider.status)}
+                                  </div>
+                                </div>
+
+                                {/* Description */}
+                                {selectedProvider.description && (
+                                  <div>
+                                    <label className="text-sm font-medium text-muted-foreground">Description</label>
+                                    <p className="mt-1 p-3 bg-muted rounded">{selectedProvider.description}</p>
+                                  </div>
+                                )}
+
+                                {/* Documents */}
+                                {selectedProvider.documents && selectedProvider.documents.length > 0 && (
+                                  <div>
+                                    <label className="text-sm font-medium text-muted-foreground">Documents</label>
+                                    <div className="mt-2 space-y-2">
+                                      {selectedProvider.documents.map((doc: any) => (
+                                        <div key={doc.id} className="flex justify-between items-center p-2 bg-muted rounded">
+                                          <div>
+                                            <p className="text-sm font-medium">{doc.document_type}</p>
+                                            <p className="text-xs text-muted-foreground">{doc.file_name}</p>
+                                          </div>
+                                          <Badge variant={doc.status === 'approved' ? 'default' : 'secondary'}>
+                                            {doc.status}
+                                          </Badge>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Missions récentes */}
+                                {selectedProvider.bookings && selectedProvider.bookings.length > 0 && (
+                                  <div>
+                                    <label className="text-sm font-medium text-muted-foreground">Missions récentes</label>
+                                    <div className="mt-2 space-y-2 max-h-48 overflow-y-auto">
+                                      {selectedProvider.bookings.slice(0, 5).map((booking: any) => (
+                                        <div key={booking.id} className="flex justify-between items-center p-2 bg-muted rounded">
+                                          <div>
+                                            <p className="text-sm font-medium">{booking.services?.name}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                              {format(new Date(booking.booking_date), 'dd/MM/yyyy', { locale: fr })}
+                                            </p>
+                                          </div>
+                                          <div className="text-right">
+                                            <Badge variant="outline" className="text-xs">
+                                              {booking.status}
+                                            </Badge>
+                                            <p className="text-sm font-semibold">{booking.total_price}€</p>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Actions */}
+                                <div className="flex gap-2 pt-4">
+                                  {selectedProvider.status === 'pending' && (
+                                    <>
+                                      <Button 
+                                        variant="default" 
+                                        size="sm"
+                                        onClick={() => handleProviderAction(selectedProvider.id, 'approve')}
+                                      >
+                                        <CheckCircle className="w-4 h-4 mr-2" />
+                                        Approuver
+                                      </Button>
+                                      <Button 
+                                        variant="destructive" 
+                                        size="sm"
+                                        onClick={() => handleProviderAction(selectedProvider.id, 'reject')}
+                                      >
+                                        <XCircle className="w-4 h-4 mr-2" />
+                                        Rejeter
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </DialogContent>
+                        </Dialog>
                         
                         {provider.status === 'pending' && (
                           <>

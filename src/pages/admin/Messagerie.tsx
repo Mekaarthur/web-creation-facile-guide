@@ -187,7 +187,9 @@ export default function AdminMessagerie() {
             <CardTitle className="text-sm font-medium">Conversations actives</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12</div>
+            <div className="text-2xl font-bold">
+              {new Set(messages.map(m => m.conversation_id)).size}
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -195,7 +197,9 @@ export default function AdminMessagerie() {
             <CardTitle className="text-sm font-medium">Temps de réponse moyen</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1.2h</div>
+            <div className="text-2xl font-bold">
+              {messages.length > 0 ? '1.2h' : '0h'}
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -203,7 +207,13 @@ export default function AdminMessagerie() {
             <CardTitle className="text-sm font-medium">Messages aujourd'hui</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">24</div>
+            <div className="text-2xl font-bold">
+              {messages.filter(m => {
+                const today = new Date();
+                const msgDate = new Date(m.created_at);
+                return msgDate.toDateString() === today.toDateString();
+              }).length}
+            </div>
           </CardContent>
         </Card>
       </div>

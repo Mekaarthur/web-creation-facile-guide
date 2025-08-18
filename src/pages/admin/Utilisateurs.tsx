@@ -17,7 +17,10 @@ interface User {
   profiles: {
     first_name: string | null;
     last_name: string | null;
+    avatar_url?: string | null;
   } | null;
+  bookings?: any[];
+  auth_data?: any;
 }
 
 export default function AdminUtilisateurs() {
@@ -44,36 +47,49 @@ export default function AdminUtilisateurs() {
 
   const loadUsers = async () => {
     try {
-      const { data, error } = await (supabase as any)
+      // Récupérer les profiles avec les auth users
+      const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select(`
           id,
           created_at,
           first_name,
           last_name,
-          user_id
+          user_id,
+          avatar_url
         `)
         .order('created_at', { ascending: false })
         .limit(100);
 
-      if (error) throw error;
+      if (profilesError) throw new Error(`[${profilesError.code}] Erreur profiles: ${profilesError.message}`);
       
-      const transformedUsers = data?.map((profile: any) => ({
-        id: profile.user_id,
-        email: profile.user_id,
-        created_at: profile.created_at,
-        profiles: {
-          first_name: profile.first_name,
-          last_name: profile.last_name
-        }
-      })) || [];
+      // Récupérer les emails depuis auth.users (si possible via admin API)
+      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      
+      const transformedUsers: User[] = profilesData?.map((profile: any) => {
+        const authUser = authUsers.users?.find((u: any) => u.id === profile.user_id);
+        return {
+          id: profile.user_id,
+          email: authUser?.email || 'Email non disponible',
+          created_at: profile.created_at,
+          profiles: {
+            first_name: profile.first_name,
+            last_name: profile.last_name,
+            avatar_url: profile.avatar_url
+          }
+        };
+      }) || [];
       
       setUsers(transformedUsers);
-    } catch (error) {
-      console.error('Erreur:', error);
+    } catch (error: any) {
+      console.error('Erreur détaillée:', error);
+      const errorMessage = error.message?.includes('[') 
+        ? error.message 
+        : `[500] Erreur inconnue: ${error.message || 'Impossible de charger les utilisateurs'}`;
+      
       toast({
-        title: "Erreur",
-        description: "Impossible de charger les utilisateurs",
+        title: "Erreur de chargement",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -84,13 +100,64 @@ export default function AdminUtilisateurs() {
   const handleUserAction = async (userId: string, action: 'activate' | 'suspend' | 'examine') => {
     try {
       if (action === 'examine') {
-        const user = users.find(u => u.id === userId);
-        setSelectedUser(user || null);
+        // Récupérer les détails complets de l'utilisateur avec ses bookings et activité
+        const { data: userData, error: userError } = await supabase
+          .from('profiles')
+          .select(`
+            *,
+            bookings:bookings!client_id (
+              id, 
+              status, 
+              booking_date, 
+              total_price,
+              services (name)
+            )
+          `)
+          .eq('user_id', userId)
+          .single();
+
+        if (userError) throw new Error(`[${userError.code}] ${userError.message}`);
+        
+        const authUser = await supabase.auth.admin.getUserById(userId);
+        const fullUser: User = {
+          id: userId,
+          email: authUser.data.user?.email || 'Email non disponible',
+          created_at: userData.created_at,
+          profiles: {
+            first_name: userData.first_name,
+            last_name: userData.last_name,
+            avatar_url: userData.avatar_url
+          },
+          bookings: Array.isArray(userData.bookings) ? userData.bookings : [],
+          auth_data: authUser.data.user
+        };
+        
+        setSelectedUser(fullUser);
         return;
       }
 
-      // Ici on pourrait mettre à jour un statut utilisateur si nécessaire
-      // Pour l'instant on simule juste l'action
+      // Mettre à jour le statut utilisateur dans une table custom (si elle existe)
+      const newStatus = action === 'activate' ? 'active' : 'suspended';
+      
+      // Désactiver l'utilisateur dans auth si suspension
+      if (action === 'suspend') {
+        const { error: authError } = await supabase.auth.admin.updateUserById(userId, {
+          ban_duration: '876000h' // 100 ans = suspension
+        });
+        
+        if (authError && !authError.message.includes('already banned')) {
+          throw new Error(`[${authError.status || 500}] Auth error: ${authError.message}`);
+        }
+      } else {
+        // Réactiver l'utilisateur
+        const { error: authError } = await supabase.auth.admin.updateUserById(userId, {
+          ban_duration: 'none'
+        });
+        
+        if (authError) {
+          throw new Error(`[${authError.status || 500}] Auth error: ${authError.message}`);
+        }
+      }
       
       toast({
         title: "Action effectuée",
@@ -99,11 +166,15 @@ export default function AdminUtilisateurs() {
 
       // Recharger la liste
       loadUsers();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur action utilisateur:', error);
+      const errorMsg = error.message?.includes('[') 
+        ? error.message 
+        : `[500] Erreur inconnue: ${error.message}`;
+        
       toast({
-        title: "Erreur",
-        description: "Impossible d'effectuer cette action",
+        title: "Erreur d'action",
+        description: errorMsg,
         variant: "destructive",
       });
     }
@@ -191,18 +262,60 @@ export default function AdminUtilisateurs() {
                             <DialogTitle>Détails utilisateur</DialogTitle>
                           </DialogHeader>
                           {selectedUser && (
-                            <div className="space-y-4">
-                              <div>
-                                <label className="text-sm font-medium">Nom</label>
-                                <p>{getUserDisplayName(selectedUser)}</p>
+                            <div className="space-y-6 max-h-96 overflow-y-auto">
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <label className="text-sm font-medium text-muted-foreground">Nom complet</label>
+                                  <p className="font-semibold">{getUserDisplayName(selectedUser)}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium text-muted-foreground">Email</label>
+                                  <p>{selectedUser.email}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium text-muted-foreground">Date d'inscription</label>
+                                  <p>{format(new Date(selectedUser.created_at), 'dd/MM/yyyy à HH:mm', { locale: fr })}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium text-muted-foreground">Statut compte</label>
+                                  <Badge variant={selectedUser.auth_data?.banned_until ? "destructive" : "default"}>
+                                    {selectedUser.auth_data?.banned_until ? "Suspendu" : "Actif"}
+                                  </Badge>
+                                </div>
                               </div>
-                              <div>
-                                <label className="text-sm font-medium">Email</label>
-                                <p>{selectedUser.email}</p>
-                              </div>
-                              <div>
-                                <label className="text-sm font-medium">Date d'inscription</label>
-                                <p>{format(new Date(selectedUser.created_at), 'dd/MM/yyyy à HH:mm', { locale: fr })}</p>
+                              
+                              {selectedUser.bookings && selectedUser.bookings.length > 0 && (
+                                <div>
+                                  <label className="text-sm font-medium text-muted-foreground">Réservations récentes</label>
+                                  <div className="mt-2 space-y-2 max-h-48 overflow-y-auto">
+                                    {selectedUser.bookings.slice(0, 5).map((booking: any) => (
+                                      <div key={booking.id} className="flex justify-between items-center p-2 bg-muted rounded">
+                                        <div>
+                                          <p className="text-sm font-medium">{booking.services?.name}</p>
+                                          <p className="text-xs text-muted-foreground">
+                                            {format(new Date(booking.booking_date), 'dd/MM/yyyy', { locale: fr })}
+                                          </p>
+                                        </div>
+                                        <div className="text-right">
+                                          <Badge variant="outline" className="text-xs">
+                                            {booking.status}
+                                          </Badge>
+                                          <p className="text-sm font-semibold">{booking.total_price}€</p>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              <div className="flex gap-2 pt-4">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleUserAction(selectedUser.id, selectedUser.auth_data?.banned_until ? 'activate' : 'suspend')}
+                                >
+                                  {selectedUser.auth_data?.banned_until ? 'Réactiver' : 'Suspendre'}
+                                </Button>
                               </div>
                             </div>
                           )}
