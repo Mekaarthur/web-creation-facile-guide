@@ -65,8 +65,63 @@ export default function AdminMessagerie() {
     }
   };
 
+  const handleMarkAsRead = async (messageId: string) => {
+    try {
+      const { error } = await supabase
+        .from('internal_messages')
+        .update({ is_read: true })
+        .eq('id', messageId);
+
+      if (error) throw error;
+
+      // Mettre à jour localement
+      setMessages(messages.map(m => 
+        m.id === messageId ? { ...m, is_read: true } : m
+      ));
+
+      toast({
+        title: "Message marqué comme lu",
+      });
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de marquer comme lu",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleReply = (messageId: string) => {
+    toast({
+      title: "Réponse",
+      description: "Ouverture de l'interface de réponse",
+    });
+  };
+
+  const handleRefresh = () => {
+    setLoading(true);
+    loadMessages();
+    toast({
+      title: "Actualisation",
+      description: "Messages actualisés",
+    });
+  };
+
   useEffect(() => {
     loadMessages();
+
+    // Abonnement temps réel aux nouveaux messages
+    const channel = supabase
+      .channel('admin-messages')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'internal_messages' }, () => {
+        loadMessages();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const filteredMessages = messages.filter(message => {
@@ -155,8 +210,11 @@ export default function AdminMessagerie() {
 
       {/* Recherche */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">Rechercher dans les messages</CardTitle>
+          <Button variant="outline" size="sm" onClick={handleRefresh}>
+            Actualiser
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="relative">
@@ -224,11 +282,20 @@ export default function AdminMessagerie() {
                         </p>
                       </div>
                       <div className="flex items-center gap-2 ml-4">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleMarkAsRead(message.id)}
+                          disabled={message.is_read}
+                        >
                           <Eye className="w-4 h-4 mr-2" />
-                          Voir
+                          {message.is_read ? 'Lu' : 'Marquer lu'}
                         </Button>
-                        <Button variant="default" size="sm">
+                        <Button 
+                          variant="default" 
+                          size="sm"
+                          onClick={() => handleReply(message.id)}
+                        >
                           <Send className="w-4 h-4 mr-2" />
                           Répondre
                         </Button>

@@ -37,6 +37,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useWorkflowEmails } from "@/hooks/useWorkflowEmails";
 
 interface User {
   id: string;
@@ -120,6 +121,9 @@ export const AdminDashboard = () => {
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
   const [selectedApplication, setSelectedApplication] = useState<JobApplication | null>(null);
   const { toast } = useToast();
+  
+  // Initialiser les emails du workflow
+  useWorkflowEmails();
 
   useEffect(() => {
     loadDashboardData();

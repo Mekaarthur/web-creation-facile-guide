@@ -48,8 +48,69 @@ export default function AdminPrestataires() {
     }
   };
 
+  const handleProviderAction = async (providerId: string, action: 'approve' | 'reject' | 'examine') => {
+    try {
+      if (action === 'examine') {
+        // Ouvrir les détails du prestataire
+        toast({
+          title: "Consultation",
+          description: "Ouverture des détails du prestataire",
+        });
+        return;
+      }
+
+      const newStatus = action === 'approve' ? 'approved' : 'rejected';
+      
+      const { error } = await supabase
+        .from('providers')
+        .update({ 
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', providerId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Statut mis à jour",
+        description: `Prestataire ${action === 'approve' ? 'approuvé' : 'rejeté'} avec succès`,
+      });
+
+      // Recharger la liste
+      loadProviders();
+    } catch (error) {
+      console.error('Erreur action prestataire:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'effectuer cette action",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRefresh = () => {
+    setLoading(true);
+    loadProviders();
+    toast({
+      title: "Actualisation",
+      description: "Liste des prestataires actualisée",
+    });
+  };
+
   useEffect(() => {
     loadProviders();
+
+    // Abonnement temps réel aux changements de prestataires
+    const channel = supabase
+      .channel('admin-providers')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'providers' }, () => {
+        loadProviders();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const filteredProviders = providers.filter(provider => {
@@ -103,8 +164,11 @@ export default function AdminPrestataires() {
 
       {/* Filtres et recherche */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">Filtres et recherche</CardTitle>
+          <Button variant="outline" size="sm" onClick={handleRefresh}>
+            Actualiser
+          </Button>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-4">
@@ -170,10 +234,33 @@ export default function AdminPrestataires() {
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleProviderAction(provider.id, 'examine')}
+                        >
                           <Eye className="w-4 h-4 mr-2" />
                           Voir détails
                         </Button>
+                        
+                        {provider.status === 'pending' && (
+                          <>
+                            <Button 
+                              variant="default" 
+                              size="sm"
+                              onClick={() => handleProviderAction(provider.id, 'approve')}
+                            >
+                              Approuver
+                            </Button>
+                            <Button 
+                              variant="destructive" 
+                              size="sm"
+                              onClick={() => handleProviderAction(provider.id, 'reject')}
+                            >
+                              Rejeter
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </div>
                   </CardContent>
