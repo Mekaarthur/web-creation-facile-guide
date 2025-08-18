@@ -284,15 +284,15 @@ const ServicesPackages = () => {
         </div>
 
         {/* Services Packages Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-16 lg:mb-20">
           {packages.map((pkg, index) => {
             const IconComponent = pkg.icon;
             return (
               <Card 
                 key={pkg.id} 
-                className={`relative p-6 hover:shadow-glow transition-all duration-300 hover:scale-[1.02] group border ${
+                className={`relative p-4 lg:p-6 hover:shadow-glow transition-all duration-300 hover:scale-[1.02] group border ${
                   pkg.popular ? 'border-accent' : 'border-border'
-                } animate-fade-in-up`}
+                } animate-fade-in-up services-mobile`}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 {pkg.popular && (
@@ -302,29 +302,30 @@ const ServicesPackages = () => {
                 )}
                 
                 <div className="space-y-4">
-                  {/* Service Image */}
+                  {/* Service Image - responsive height */}
                   {pkg.image && (
-                    <div className="w-full h-32 rounded-lg overflow-hidden">
+                    <div className="w-full h-28 lg:h-32 rounded-lg overflow-hidden">
                       <img 
                         src={pkg.image} 
                         alt={pkg.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
                       />
                     </div>
                   )}
                   
                   {/* Icon & Title */}
-                  <div className="space-y-3">
-                    <div className={`w-12 h-12 rounded-lg ${
+                  <div className="space-y-2 lg:space-y-3">
+                    <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-lg ${
                       pkg.color === 'primary' ? 'bg-gradient-primary' : 'bg-gradient-accent'
                     } flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                      <IconComponent className="w-6 h-6 text-white" />
+                      <IconComponent className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
+                      <h3 className="text-lg lg:text-xl font-bold text-foreground group-hover:text-primary transition-colors">
                         {pkg.title}
                       </h3>
-                      <p className="text-sm font-medium text-accent">{pkg.subtitle}</p>
+                      <p className="text-xs lg:text-sm font-medium text-accent">{pkg.subtitle}</p>
                     </div>
                   </div>
 
@@ -355,11 +356,11 @@ const ServicesPackages = () => {
                     <span className="text-sm font-semibold text-foreground">{pkg.price}</span>
                   </div>
 
-                    {/* CTA */}
+                    {/* CTA - Mobile optimized */}
                     <div className="space-y-2">
                         <Button 
                           variant={pkg.popular ? "accent" : "outline"} 
-                          className="w-full group/btn"
+                          className="w-full group/btn touch-target cta-mobile text-sm lg:text-base"
                           onClick={() => {
                             navigate(`/payment?service=${encodeURIComponent(pkg.title)}&price=${typeof pkg.services[0] === 'object' ? pkg.services[0].price : 22}&description=${encodeURIComponent(pkg.description)}&type=one-time&duration=1h`);
                           }}
@@ -370,7 +371,7 @@ const ServicesPackages = () => {
                        
                        <Button 
                          variant="secondary"
-                         className="w-full group/btn"
+                         className="w-full group/btn touch-target cta-mobile text-sm lg:text-base"
                          onClick={() => {
                            const subscriptionPrice = pkg.id === 'plus' ? 1500 : (pkg.id === 'pro' ? 800 : 200);
                            navigate(`/payment?service=${encodeURIComponent(pkg.title + ' - Abonnement')}&price=${subscriptionPrice}&description=${encodeURIComponent(pkg.description)}&type=subscription`);
@@ -397,11 +398,11 @@ const ServicesPackages = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-            <Card className="p-6 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-12 lg:mb-16">
+            <Card className="p-4 lg:p-6 space-y-3 lg:space-y-4 card-mobile">
               <div className="space-y-2">
-                <h4 className="text-lg font-semibold text-foreground">À la carte</h4>
-                <div className="text-2xl font-bold text-primary">22-25€/h</div>
+                <h4 className="text-base lg:text-lg font-semibold text-foreground">À la carte</h4>
+                <div className="text-xl lg:text-2xl font-bold text-primary">22-25€/h</div>
               </div>
               <p className="text-sm text-muted-foreground mb-3">
                 Choisir n'importe quel service Bikawo selon vos besoins ponctuels.

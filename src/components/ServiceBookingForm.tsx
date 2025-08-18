@@ -178,7 +178,7 @@ const ServiceBookingForm = ({ service, packageTitle, onClose }: ServiceBookingFo
                   </Button>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 form-mobile">
                   {/* Date */}
                   <div className="space-y-2">
                     <Label>Date</Label>
@@ -187,15 +187,17 @@ const ServiceBookingForm = ({ service, packageTitle, onClose }: ServiceBookingFo
                         <Button
                           variant="outline"
                           className={cn(
-                            "w-full justify-start text-left font-normal",
+                            "w-full justify-start text-left font-normal touch-target",
                             !slot.date && "text-muted-foreground"
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {slot.date ? format(slot.date, "PPP", { locale: fr }) : "Sélectionner une date"}
+                          <span className="truncate">
+                            {slot.date ? format(slot.date, "PPP", { locale: fr }) : "Sélectionner une date"}
+                          </span>
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
+                      <PopoverContent className="w-auto p-0 mobile-dialog" align="start">
                         <Calendar
                           mode="single"
                           selected={slot.date}
@@ -220,12 +222,12 @@ const ServiceBookingForm = ({ service, packageTitle, onClose }: ServiceBookingFo
                       value={slot.startTime}
                       onValueChange={(value) => updateBookingSlot(slot.id, { startTime: value })}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="touch-target">
                         <SelectValue placeholder="Sélectionner l'heure" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="mobile-dialog">
                         {timeSlots.map((time) => (
-                          <SelectItem key={time} value={time}>
+                          <SelectItem key={time} value={time} className="touch-target">
                             {time}
                           </SelectItem>
                         ))}
@@ -240,12 +242,12 @@ const ServiceBookingForm = ({ service, packageTitle, onClose }: ServiceBookingFo
                       value={slot.endTime}
                       onValueChange={(value) => updateBookingSlot(slot.id, { endTime: value })}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="touch-target">
                         <SelectValue placeholder="Sélectionner l'heure de fin" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="mobile-dialog">
                         {timeSlots.map((time) => (
-                          <SelectItem key={time} value={time}>
+                          <SelectItem key={time} value={time} className="touch-target">
                             {time}
                           </SelectItem>
                         ))}
@@ -324,11 +326,11 @@ const ServiceBookingForm = ({ service, packageTitle, onClose }: ServiceBookingFo
       )}
 
       {/* Actions */}
-      <div className="flex gap-3">
-        <Button onClick={onClose} variant="outline" className="flex-1">
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Button onClick={onClose} variant="outline" className="flex-1 touch-target">
           Annuler
         </Button>
-        <Button onClick={handleSubmit} className="flex-1">
+        <Button onClick={handleSubmit} className="flex-1 touch-target">
           Ajouter au panier
         </Button>
       </div>
