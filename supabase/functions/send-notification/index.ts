@@ -53,6 +53,9 @@ const getEmailTemplate = (type: string, details: any) => {
               </div>
               
               <p style="color: #666; font-size: 14px; margin-top: 30px;">
+                Nous vous recontactons sous 48h pour la suite.
+              </p>
+              <p style="color: #666; font-size: 14px; margin-top: 8px;">
                 Vous recevrez une notification dès qu'un prestataire acceptera votre demande.
               </p>
               

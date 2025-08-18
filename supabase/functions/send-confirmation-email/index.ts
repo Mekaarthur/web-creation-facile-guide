@@ -35,14 +35,19 @@ const handler = async (req: Request): Promise<Response> => {
     
     console.log(`📧 Processing confirmation email for: ${userEmail}`);
 
-    // Générer l'URL de confirmation
-    let confirmationUrl;
-    if (confirmationToken) {
-      confirmationUrl = `${supabaseUrl}/auth/v1/verify?token=${confirmationToken}&type=signup&redirect_to=${encodeURIComponent('https://bikawo.com/espace-personnel')}`;
-    } else {
-      // Fallback: utiliser un lien direct vers la page d'authentification
-      confirmationUrl = `https://bikawo.com/auth?message=Veuillez confirmer votre email puis vous connecter`;
+    // Générer un lien de confirmation via l'API Admin de Supabase (plus fiable)
+    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+      type: 'signup',
+      email: userEmail,
+      options: { redirectTo: 'https://bikawo.com/espace-personnel' }
+    });
+
+    if (linkError) {
+      console.error('❌ Error generating confirmation link:', linkError);
     }
+
+    const confirmationUrl = linkData?.properties?.action_link ||
+      `https://bikawo.com/auth?message=Veuillez confirmer votre email puis vous connecter`;
 
     console.log('🔗 Confirmation URL generated:', confirmationUrl);
 
