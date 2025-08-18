@@ -1,5 +1,6 @@
 import { Quote, Heart } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useAnimations";
+import foundersIllustration from "@/assets/founders-illustration.jpg";
 
 const FounderTestimonial = () => {
   const { setRef, isInView } = useScrollAnimation();
@@ -23,8 +24,8 @@ const FounderTestimonial = () => {
               <div className="md:col-span-1 text-center">
                 <div className="relative inline-block">
                   <img
-                    src="/lovable-uploads/7289c795-0ba4-4e3f-86dc-cd0e3310a306.png"
-                    alt="Sarah, fondatrice de Bikawo"
+                    src={foundersIllustration}
+                    alt="Illustration représentant l'entraide et le soutien familial"
                     className="w-32 h-32 rounded-full object-cover shadow-elegant border-4 border-white"
                   />
                   <div className="absolute -top-2 -right-2 bg-accent text-white p-2 rounded-full">
@@ -56,7 +57,7 @@ const FounderTestimonial = () => {
             {/* Statistiques rapides */}
             <div className="grid grid-cols-3 gap-8 mt-12 pt-8 border-t border-border">
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary">2018</div>
+                <div className="text-3xl font-bold text-primary">2025</div>
                 <div className="text-sm text-muted-foreground">Année de création</div>
               </div>
               <div className="text-center">
