@@ -84,7 +84,7 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
+          <div className="hidden lg:flex items-center space-x-4">
             {navItems.map((item) => (
               item.submenu ? (
                 <DropdownMenu key={item.name}>
@@ -92,21 +92,21 @@ const Navbar = () => {
                     <Button 
                       variant="ghost" 
                       className={cn(
-                        "relative px-3 py-2 text-sm font-medium transition-all duration-200 rounded-md group",
-                        "text-foreground hover:text-primary"
+                        "relative px-2 py-2 text-sm font-medium transition-all duration-200 rounded-md group",
+                        "text-foreground hover:text-primary whitespace-nowrap"
                       )}
                     >
                       {item.name}
-                      <ChevronDown className="ml-1 h-4 w-4" />
+                      <ChevronDown className="ml-1 h-4 w-4 flex-shrink-0" />
                       <div className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-primary rounded-full scale-x-0 transition-transform duration-200 group-hover:scale-x-100" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-64">
+                  <DropdownMenuContent align="start" className="w-64 bg-background border z-50 shadow-lg">
                     {item.submenu.map((subItem) => (
                       <DropdownMenuItem key={subItem.name} asChild>
                         <Link 
                           to={subItem.href}
-                          className="w-full cursor-pointer"
+                          className="w-full cursor-pointer text-foreground hover:bg-muted"
                         >
                           {subItem.name}
                         </Link>
@@ -131,8 +131,8 @@ const Navbar = () => {
                   key={item.name}
                   to={item.href}
                   className={cn(
-                    "relative px-3 py-2 text-sm font-medium transition-all duration-200 rounded-md group",
-                    "text-foreground hover:text-primary"
+                    "relative px-2 py-2 text-sm font-medium transition-all duration-200 rounded-md group",
+                    "text-foreground hover:text-primary whitespace-nowrap"
                   )}
                 >
                   {item.name}

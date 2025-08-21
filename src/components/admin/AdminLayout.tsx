@@ -319,15 +319,15 @@ useEffect(() => {
 
       <div className="flex min-h-[calc(100vh-3.5rem)]">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:block w-72 border-r bg-background/95 shadow-sm">
-          <nav className="h-full p-4">
+        <aside className="hidden lg:block w-64 xl:w-72 border-r bg-background/95 shadow-sm">
+          <nav className="h-full p-3 xl:p-4">
             <NavigationItems />
           </nav>
         </aside>
 
         {/* Main Content */}
         <main className="flex-1 overflow-auto bg-muted/30">
-          <div className="container mx-auto p-6 max-w-7xl">
+          <div className="container mx-auto p-3 sm:p-4 lg:p-6 max-w-7xl">
             <Outlet />
           </div>
         </main>

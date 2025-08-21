@@ -284,15 +284,15 @@ const ServicesPackages = () => {
         </div>
 
         {/* Services Packages Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-16 lg:mb-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 mb-16 lg:mb-20">
           {packages.map((pkg, index) => {
             const IconComponent = pkg.icon;
             return (
               <Card 
                 key={pkg.id} 
-                className={`relative p-4 lg:p-6 hover:shadow-glow transition-all duration-300 hover:scale-[1.02] group border ${
+                className={`relative p-3 sm:p-4 lg:p-6 hover:shadow-glow transition-all duration-300 hover:scale-[1.02] group border ${
                   pkg.popular ? 'border-accent' : 'border-border'
-                } animate-fade-in-up services-mobile`}
+                } animate-fade-in-up h-full flex flex-col`}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 {pkg.popular && (
@@ -301,10 +301,10 @@ const ServicesPackages = () => {
                   </div>
                 )}
                 
-                <div className="space-y-4">
+                <div className="space-y-3 lg:space-y-4 flex flex-col h-full">
                   {/* Service Image - responsive height */}
                   {pkg.image && (
-                    <div className="w-full h-28 lg:h-32 rounded-lg overflow-hidden">
+                    <div className="w-full h-24 sm:h-28 lg:h-32 rounded-lg overflow-hidden flex-shrink-0">
                       <img 
                         src={pkg.image} 
                         alt={pkg.title}
@@ -315,22 +315,22 @@ const ServicesPackages = () => {
                   )}
                   
                   {/* Icon & Title */}
-                  <div className="space-y-2 lg:space-y-3">
-                    <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-lg ${
+                  <div className="space-y-2">
+                    <div className={`w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-lg ${
                       pkg.color === 'primary' ? 'bg-gradient-primary' : 'bg-gradient-accent'
-                    } flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                      <IconComponent className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
+                    } flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0`}>
+                      <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-lg lg:text-xl font-bold text-foreground group-hover:text-primary transition-colors">
+                      <h3 className="text-base sm:text-lg lg:text-xl font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
                         {pkg.title}
                       </h3>
-                      <p className="text-xs lg:text-sm font-medium text-accent">{pkg.subtitle}</p>
+                      <p className="text-xs sm:text-sm font-medium text-accent line-clamp-1">{pkg.subtitle}</p>
                     </div>
                   </div>
 
                   {/* Description */}
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-muted-foreground text-xs sm:text-sm line-clamp-3 flex-grow">
                     {pkg.description}
                   </p>
 
@@ -356,31 +356,31 @@ const ServicesPackages = () => {
                     <span className="text-sm font-semibold text-foreground">{pkg.price}</span>
                   </div>
 
-                    {/* CTA - Mobile optimized */}
-                    <div className="space-y-2">
+                     {/* CTA - Mobile optimized */}
+                     <div className="space-y-2 mt-auto pt-2">
+                         <Button 
+                           variant={pkg.popular ? "accent" : "outline"} 
+                           className="w-full group/btn min-h-10 text-xs sm:text-sm lg:text-base px-2 sm:px-4"
+                           onClick={() => {
+                             navigate(`/payment?service=${encodeURIComponent(pkg.title)}&price=${typeof pkg.services[0] === 'object' ? pkg.services[0].price : 22}&description=${encodeURIComponent(pkg.description)}&type=one-time&duration=1h`);
+                           }}
+                         >
+                          <span className="truncate">Réserver à l'heure</span>
+                          <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 transition-transform group-hover/btn:translate-x-1 flex-shrink-0" />
+                        </Button>
+                        
                         <Button 
-                          variant={pkg.popular ? "accent" : "outline"} 
-                          className="w-full group/btn touch-target cta-mobile text-sm lg:text-base"
+                          variant="secondary"
+                          className="w-full group/btn min-h-10 text-xs sm:text-sm lg:text-base px-2 sm:px-4"
                           onClick={() => {
-                            navigate(`/payment?service=${encodeURIComponent(pkg.title)}&price=${typeof pkg.services[0] === 'object' ? pkg.services[0].price : 22}&description=${encodeURIComponent(pkg.description)}&type=one-time&duration=1h`);
+                            const subscriptionPrice = pkg.id === 'plus' ? 1500 : (pkg.id === 'pro' ? 800 : 200);
+                            navigate(`/payment?service=${encodeURIComponent(pkg.title + ' - Abonnement')}&price=${subscriptionPrice}&description=${encodeURIComponent(pkg.description)}&type=subscription`);
                           }}
                         >
-                         Réserver à l'heure
-                         <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
-                       </Button>
-                       
-                       <Button 
-                         variant="secondary"
-                         className="w-full group/btn touch-target cta-mobile text-sm lg:text-base"
-                         onClick={() => {
-                           const subscriptionPrice = pkg.id === 'plus' ? 1500 : (pkg.id === 'pro' ? 800 : 200);
-                           navigate(`/payment?service=${encodeURIComponent(pkg.title + ' - Abonnement')}&price=${subscriptionPrice}&description=${encodeURIComponent(pkg.description)}&type=subscription`);
-                         }}
-                       >
-                         S'abonner 
-                         <Calendar className="w-4 h-4 ml-1 transition-transform group-hover/btn:translate-x-1" />
-                       </Button>
-                     </div>
+                          <span className="truncate">S'abonner</span>
+                          <Calendar className="w-3 h-3 sm:w-4 sm:h-4 ml-1 transition-transform group-hover/btn:translate-x-1 flex-shrink-0" />
+                        </Button>
+                      </div>
                 </div>
                </Card>
              );

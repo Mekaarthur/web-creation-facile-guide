@@ -188,38 +188,38 @@ const EspacePersonnel = () => {
             }
             window.history.replaceState({}, '', newUrl);
           }} className="w-full">
-            <TabsList className={`grid w-full mb-8 ${user ? 'grid-cols-6' : 'grid-cols-1'}`}>
+            <TabsList className={`w-full mb-8 grid gap-1 ${user ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6' : 'grid-cols-1'}`}>
               {!user && (
-                <TabsTrigger value="connexion" className="flex items-center gap-2">
+                <TabsTrigger value="connexion" className="flex items-center gap-2 min-h-12">
                   <Lock className="w-4 h-4" />
                   Se connecter
                 </TabsTrigger>
               )}
               {user && (
                 <>
-                  <TabsTrigger value="reservations" className="flex items-center gap-2">
-                    <History className="w-4 h-4" />
-                    Réservations & Prestations
+                  <TabsTrigger value="reservations" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
+                    <History className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">Réservations</span>
                   </TabsTrigger>
-                  <TabsTrigger value="factures" className="flex items-center gap-2">
-                    <FileText className="w-4 h-4" />
-                    Factures
+                  <TabsTrigger value="factures" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
+                    <FileText className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">Factures</span>
                   </TabsTrigger>
-                  <TabsTrigger value="profil" className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    Mon Profil
+                  <TabsTrigger value="profil" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
+                    <User className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">Profil</span>
                   </TabsTrigger>
-                  <TabsTrigger value="recompenses" className="flex items-center gap-2">
-                    <Gift className="w-4 h-4" />
-                    Récompenses
+                  <TabsTrigger value="recompenses" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
+                    <Gift className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">Récompenses</span>
                   </TabsTrigger>
-                  <TabsTrigger value="calendrier" className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    Calendrier
+                  <TabsTrigger value="calendrier" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
+                    <Calendar className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">Calendrier</span>
                   </TabsTrigger>
-                  <TabsTrigger value="parrainage" className="flex items-center gap-2">
-                    <UserPlus className="w-4 h-4" />
-                    Parrainage
+                  <TabsTrigger value="parrainage" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
+                    <UserPlus className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">Parrainage</span>
                   </TabsTrigger>
                 </>
               )}
@@ -283,7 +283,7 @@ const EspacePersonnel = () => {
 
             {/* Profil utilisateur */}
             <TabsContent value="profil" className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -298,52 +298,57 @@ const EspacePersonnel = () => {
                       </div>
                     ) : (
                       <>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="prenom-profil">Prénom</Label>
+                            <Label htmlFor="prenom-profil" className="text-sm font-medium">Prénom</Label>
                             <Input 
                               id="prenom-profil" 
                               value={profileData.first_name}
                               onChange={(e) => setProfileData(prev => ({ ...prev, first_name: e.target.value }))}
+                              className="min-h-12"
                             />
                           </div>
                           <div>
-                            <Label htmlFor="nom-profil">Nom</Label>
+                            <Label htmlFor="nom-profil" className="text-sm font-medium">Nom</Label>
                             <Input 
                               id="nom-profil" 
                               value={profileData.last_name}
                               onChange={(e) => setProfileData(prev => ({ ...prev, last_name: e.target.value }))}
+                              className="min-h-12"
                             />
                           </div>
                         </div>
                         <div>
-                          <Label htmlFor="email-profil">Email</Label>
+                          <Label htmlFor="email-profil" className="text-sm font-medium">Email</Label>
                           <Input 
                             id="email-profil" 
                             type="email" 
                             value={profileData.email}
                             onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
+                            className="min-h-12"
                           />
                         </div>
                         <div>
-                          <Label htmlFor="telephone-profil">Téléphone</Label>
+                          <Label htmlFor="telephone-profil" className="text-sm font-medium">Téléphone</Label>
                           <Input 
                             id="telephone-profil" 
                             value={profileData.phone}
                             onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
+                            className="min-h-12"
                           />
                         </div>
                         <div>
-                          <Label htmlFor="adresse-profil">Adresse</Label>
+                          <Label htmlFor="adresse-profil" className="text-sm font-medium">Adresse</Label>
                           <Input 
                             id="adresse-profil" 
                             value={profileData.address}
                             onChange={(e) => setProfileData(prev => ({ ...prev, address: e.target.value }))}
+                            className="min-h-12"
                           />
                         </div>
                       </>
                     )}
-                    <Button className="w-full" onClick={async () => {
+                    <Button className="w-full min-h-12" onClick={async () => {
                       try {
                         if (!user) {
                           toast({ variant: "destructive", title: "Non connecté", description: "Veuillez vous connecter pour mettre à jour vos informations." });
