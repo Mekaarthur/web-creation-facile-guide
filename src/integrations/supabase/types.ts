@@ -218,6 +218,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "bookings_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "bookings_service_id_fkey"
             columns: ["service_id"]
             isOneToOne: false
@@ -264,6 +271,13 @@ export type Database = {
             columns: ["provider_id"]
             isOneToOne: false
             referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_responses_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1111,6 +1125,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "mission_assignments_assigned_provider_id_fkey"
+            columns: ["assigned_provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "mission_assignments_client_request_id_fkey"
             columns: ["client_request_id"]
             isOneToOne: false
@@ -1413,6 +1434,13 @@ export type Database = {
             referencedRelation: "providers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "provider_availability_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       provider_documents: {
@@ -1461,6 +1489,13 @@ export type Database = {
             columns: ["provider_id"]
             isOneToOne: false
             referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_documents_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1529,6 +1564,13 @@ export type Database = {
             referencedRelation: "providers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "provider_invoices_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       provider_locations: {
@@ -1579,6 +1621,13 @@ export type Database = {
             referencedRelation: "providers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "provider_locations_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: true
+            referencedRelation: "providers_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       provider_notifications: {
@@ -1625,6 +1674,13 @@ export type Database = {
             columns: ["provider_id"]
             isOneToOne: false
             referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_notifications_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1714,6 +1770,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "provider_services_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "provider_services_service_id_fkey"
             columns: ["service_id"]
             isOneToOne: false
@@ -1756,6 +1819,13 @@ export type Database = {
             columns: ["provider_id"]
             isOneToOne: false
             referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_status_history_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public"
             referencedColumns: ["id"]
           },
         ]
@@ -2190,7 +2260,45 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      providers_public: {
+        Row: {
+          business_name: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          is_verified: boolean | null
+          location: string | null
+          price_range: string | null
+          rating: number | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          business_name?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          is_verified?: boolean | null
+          location?: string | null
+          price_range?: never
+          rating?: number | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          business_name?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          is_verified?: boolean | null
+          location?: string | null
+          price_range?: never
+          rating?: number | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       assign_mission_manually: {
