@@ -57,6 +57,9 @@ import Payment from "./pages/Payment";
 
 import NotFound from "./pages/NotFound";
 
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -76,8 +79,8 @@ const App = () => (
             <Route path="/email/verify/:token" element={<AuthComplete />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/update-password" element={<UpdatePassword />} />
-            <Route path="/espace-personnel" element={<EspacePersonnel />} />
-            <Route path="/espace-prestataire" element={<EspacePrestataire />} />
+            <Route path="/espace-personnel" element={<ProtectedRoute><EspacePersonnel /></ProtectedRoute>} />
+            <Route path="/espace-prestataire" element={<ProtectedRoute><EspacePrestataire /></ProtectedRoute>} />
             <Route path="/nous-recrutons" element={<NousRecrutons />} />
             <Route path="/gestion-demandes" element={<GestionDemandes />} />
             <Route path="/services" element={<ServicesPage />} />
@@ -99,9 +102,9 @@ const App = () => (
              <Route path="/bika-animals-ile-de-france" element={<BikaAnimals />} />
              <Route path="/bika-seniors-ile-de-france" element={<BikaSeniors />} />
              <Route path="/bika-pro-ile-de-france" element={<BikaPro />} />
-             <Route path="/payment" element={<Payment />} />
+             <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
              {/* Admin Routes with Layout */}
-            <Route path="/admin" element={<AdminLayout />}>
+            <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
               <Route index element={<AdminDashboard />} />
               <Route path="alertes" element={<AdminAlertes />} />
               <Route path="kanban" element={<AdminKanban />} />

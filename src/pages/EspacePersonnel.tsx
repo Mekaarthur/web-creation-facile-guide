@@ -17,10 +17,13 @@ import InvoiceManagement from "@/components/InvoiceManagement";
 import { RewardsSection } from "@/components/RewardsSection";
 import { useAuth } from "@/hooks/useAuth";
 import Auth from "./Auth";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const EspacePersonnel = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [selectedTab, setSelectedTab] = useState("connexion");
 
   // Rediriger vers connexion si pas authentifié et tentative d'accès à un onglet protégé
@@ -265,7 +268,44 @@ const EspacePersonnel = () => {
                       <Label htmlFor="adresse-profil">Adresse</Label>
                       <Input id="adresse-profil" defaultValue="123 rue de la Paix, 75001 Paris" />
                     </div>
-                    <Button className="w-full">
+<Button className="w-full" onClick={async () => {
+                      try {
+                        if (!user) {
+                          toast({ variant: "destructive", title: "Non connecté", description: "Veuillez vous connecter pour mettre à jour vos informations." });
+                          setSelectedTab("connexion");
+                          return;
+                        }
+                        const firstName = (document.getElementById('prenom-profil') as HTMLInputElement)?.value.trim();
+                        const lastName = (document.getElementById('nom-profil') as HTMLInputElement)?.value.trim();
+                        if (!firstName && !lastName) {
+                          toast({ variant: "destructive", title: "Champs vides", description: "Veuillez saisir au moins un nom ou prénom." });
+                          return;
+                        }
+                        // Vérifier si un profil existe déjà
+                        const { data: existing, error: fetchError } = await supabase
+                          .from('profiles')
+                          .select('id')
+                          .eq('user_id', user.id)
+                          .maybeSingle();
+                        if (fetchError) throw fetchError;
+                        if (existing) {
+                          const { error: updateError } = await supabase
+                            .from('profiles')
+                            .update({ first_name: firstName || null, last_name: lastName || null })
+                            .eq('user_id', user.id);
+                          if (updateError) throw updateError;
+                        } else {
+                          const { error: insertError } = await supabase
+                            .from('profiles')
+                            .insert({ user_id: user.id, first_name: firstName || null, last_name: lastName || null });
+                          if (insertError) throw insertError;
+                        }
+                        toast({ title: "Profil mis à jour", description: "Vos informations ont été enregistrées." });
+                      } catch (e: any) {
+                        console.error('Erreur maj profil', e);
+                        toast({ variant: "destructive", title: "Erreur", description: e?.message || "Impossible de mettre à jour le profil." });
+                      }
+                    }}>
                       <Settings className="w-4 h-4 mr-2" />
                       Mettre à jour mes informations
                     </Button>
