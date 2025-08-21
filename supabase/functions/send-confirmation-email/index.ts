@@ -35,11 +35,16 @@ const handler = async (req: Request): Promise<Response> => {
     
     console.log(`📧 Processing confirmation email for: ${userEmail}`);
 
+    // Obtenir l'URL de base dynamiquement selon l'environnement
+    const baseUrl = Deno.env.get("SUPABASE_URL")?.includes("sandbox") 
+      ? `https://ed681ca2-74aa-4970-8c41-139ffb8c8152.sandbox.lovable.dev`
+      : `https://bikawo.com`;
+    
     // Générer un lien de confirmation via l'API Admin de Supabase (plus fiable)
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: 'signup',
       email: userEmail,
-      options: { redirectTo: 'https://bikawo.com/auth/complete' }
+      options: { redirectTo: `${baseUrl}/auth/complete` }
     });
 
     if (linkError) {
@@ -47,9 +52,10 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const confirmationUrl = linkData?.properties?.action_link ||
-      `https://bikawo.com/auth/complete?message=Veuillez confirmer votre email puis vous connecter`;
+      `${baseUrl}/auth/complete?message=Veuillez confirmer votre email puis vous connecter`;
 
     console.log('🔗 Confirmation URL generated:', confirmationUrl);
+    console.log('🌍 Base URL used:', baseUrl);
 
     // Render l'email avec React Email
     const emailHtml = await renderAsync(
