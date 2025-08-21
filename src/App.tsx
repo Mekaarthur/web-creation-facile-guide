@@ -56,6 +56,7 @@ import AdminNotifications from "./pages/admin/Notifications";
 import Payment from "./pages/Payment";
 
 import NotFound from "./pages/NotFound";
+import AuditReport from "./components/AuditReport";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
@@ -103,6 +104,7 @@ const App = () => (
              <Route path="/bika-seniors-ile-de-france" element={<BikaSeniors />} />
              <Route path="/bika-pro-ile-de-france" element={<BikaPro />} />
              <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
+             <Route path="/audit-qualite" element={<AdminRoute><AuditReport /></AdminRoute>} />
              {/* Admin Routes with Layout */}
             <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
               <Route index element={<AdminDashboard />} />
@@ -123,6 +125,7 @@ const App = () => (
               <Route path="zones" element={<div>Zones géographiques - En développement</div>} />
               <Route path="statistiques" element={<div>Statistiques - En développement</div>} />
               <Route path="parametres" element={<div>Paramètres - En développement</div>} />
+              <Route path="audit" element={<AuditReport />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

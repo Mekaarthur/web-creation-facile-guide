@@ -25,6 +25,52 @@ const EspacePersonnel = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedTab, setSelectedTab] = useState("connexion");
+  const [profileData, setProfileData] = useState({
+    first_name: "",
+    last_name: "", 
+    email: "",
+    phone: "",
+    address: ""
+  });
+  const [loadingProfile, setLoadingProfile] = useState(false);
+
+  // Charger les données du profil utilisateur
+  useEffect(() => {
+    const loadProfileData = async () => {
+      if (!user) return;
+      
+      setLoadingProfile(true);
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, email, phone, address')
+          .eq('user_id', user.id)
+          .maybeSingle();
+          
+        if (error && error.code !== 'PGRST116') throw error;
+        
+        if (data) {
+          setProfileData({
+            first_name: data.first_name || "",
+            last_name: data.last_name || "",
+            email: data.email || user.email || "",
+            phone: data.phone || "",
+            address: data.address || ""
+          });
+        } else {
+          // Profil inexistant, utiliser l'email de auth.users
+          setProfileData(prev => ({ ...prev, email: user.email || "" }));
+        }
+      } catch (e: any) {
+        console.error('Erreur chargement profil:', e);
+        toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger vos informations." });
+      } finally {
+        setLoadingProfile(false);
+      }
+    };
+    
+    loadProfileData();
+  }, [user, toast]);
 
   // Rediriger vers connexion si pas authentifié et tentative d'accès à un onglet protégé
   useEffect(() => {
@@ -246,41 +292,74 @@ const EspacePersonnel = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="prenom-profil">Prénom</Label>
-                        <Input id="prenom-profil" defaultValue="Jean" />
+                    {loadingProfile ? (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                       </div>
-                      <div>
-                        <Label htmlFor="nom-profil">Nom</Label>
-                        <Input id="nom-profil" defaultValue="Dupont" />
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="email-profil">Email</Label>
-                      <Input id="email-profil" type="email" defaultValue="jean.dupont@exemple.com" />
-                    </div>
-                    <div>
-                      <Label htmlFor="telephone-profil">Téléphone</Label>
-                      <Input id="telephone-profil" defaultValue="06 12 34 56 78" />
-                    </div>
-                    <div>
-                      <Label htmlFor="adresse-profil">Adresse</Label>
-                      <Input id="adresse-profil" defaultValue="123 rue de la Paix, 75001 Paris" />
-                    </div>
-<Button className="w-full" onClick={async () => {
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="prenom-profil">Prénom</Label>
+                            <Input 
+                              id="prenom-profil" 
+                              value={profileData.first_name}
+                              onChange={(e) => setProfileData(prev => ({ ...prev, first_name: e.target.value }))}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="nom-profil">Nom</Label>
+                            <Input 
+                              id="nom-profil" 
+                              value={profileData.last_name}
+                              onChange={(e) => setProfileData(prev => ({ ...prev, last_name: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor="email-profil">Email</Label>
+                          <Input 
+                            id="email-profil" 
+                            type="email" 
+                            value={profileData.email}
+                            onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="telephone-profil">Téléphone</Label>
+                          <Input 
+                            id="telephone-profil" 
+                            value={profileData.phone}
+                            onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="adresse-profil">Adresse</Label>
+                          <Input 
+                            id="adresse-profil" 
+                            value={profileData.address}
+                            onChange={(e) => setProfileData(prev => ({ ...prev, address: e.target.value }))}
+                          />
+                        </div>
+                      </>
+                    )}
+                    <Button className="w-full" onClick={async () => {
                       try {
                         if (!user) {
                           toast({ variant: "destructive", title: "Non connecté", description: "Veuillez vous connecter pour mettre à jour vos informations." });
                           setSelectedTab("connexion");
                           return;
                         }
-                        const firstName = (document.getElementById('prenom-profil') as HTMLInputElement)?.value.trim();
-                        const lastName = (document.getElementById('nom-profil') as HTMLInputElement)?.value.trim();
-                        if (!firstName && !lastName) {
+                        
+                        setLoadingProfile(true);
+                        
+                        // Validation basique
+                        const { first_name, last_name, email, phone, address } = profileData;
+                        if (!first_name.trim() && !last_name.trim()) {
                           toast({ variant: "destructive", title: "Champs vides", description: "Veuillez saisir au moins un nom ou prénom." });
                           return;
                         }
+                        
                         // Vérifier si un profil existe déjà
                         const { data: existing, error: fetchError } = await supabase
                           .from('profiles')
@@ -288,26 +367,42 @@ const EspacePersonnel = () => {
                           .eq('user_id', user.id)
                           .maybeSingle();
                         if (fetchError) throw fetchError;
+                        
                         if (existing) {
                           const { error: updateError } = await supabase
                             .from('profiles')
-                            .update({ first_name: firstName || null, last_name: lastName || null })
+                            .update({ 
+                              first_name: first_name.trim() || null, 
+                              last_name: last_name.trim() || null,
+                              email: email.trim() || null,
+                              phone: phone.trim() || null,
+                              address: address.trim() || null
+                            })
                             .eq('user_id', user.id);
                           if (updateError) throw updateError;
                         } else {
                           const { error: insertError } = await supabase
                             .from('profiles')
-                            .insert({ user_id: user.id, first_name: firstName || null, last_name: lastName || null });
+                            .insert({ 
+                              user_id: user.id, 
+                              first_name: first_name.trim() || null, 
+                              last_name: last_name.trim() || null,
+                              email: email.trim() || null,
+                              phone: phone.trim() || null,
+                              address: address.trim() || null
+                            });
                           if (insertError) throw insertError;
                         }
-                        toast({ title: "Profil mis à jour", description: "Vos informations ont été enregistrées." });
+                        toast({ title: "Profil mis à jour", description: "Vos informations ont été enregistrées avec succès." });
                       } catch (e: any) {
                         console.error('Erreur maj profil', e);
                         toast({ variant: "destructive", title: "Erreur", description: e?.message || "Impossible de mettre à jour le profil." });
+                      } finally {
+                        setLoadingProfile(false);
                       }
-                    }}>
+                    }} disabled={loadingProfile}>
                       <Settings className="w-4 h-4 mr-2" />
-                      Mettre à jour mes informations
+                      {loadingProfile ? "Enregistrement..." : "Mettre à jour mes informations"}
                     </Button>
                   </CardContent>
                 </Card>

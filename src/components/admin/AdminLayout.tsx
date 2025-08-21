@@ -70,12 +70,13 @@ const navigationGroupsStatic = [
   {
     title: 'Finance & Configuration',
     items: [
-      { name: 'Paiements', href: '/admin/paiements', icon: CreditCard, badge: null },
-      { name: 'Factures clients', href: '/admin/factures', icon: FileText, badge: null },
-      { name: 'Fiches rémunération', href: '/admin/remunerations', icon: Building2, badge: null },
-      { name: 'Zones', href: '/admin/zones', icon: MapPin, badge: null },
-      { name: 'Statistiques', href: '/admin/statistiques', icon: BarChart3, badge: null },
-      { name: 'Paramètres', href: '/admin/parametres', icon: Settings, badge: null },
+        { name: 'Paiements', href: '/admin/paiements', icon: CreditCard, badge: null },
+        { name: 'Factures clients', href: '/admin/factures', icon: FileText, badge: null },
+        { name: 'Fiches rémunération', href: '/admin/remunerations', icon: Building2, badge: null },
+        { name: 'Audit Qualité', href: '/admin/audit', icon: Shield, badge: null },
+        { name: 'Zones', href: '/admin/zones', icon: MapPin, badge: null },
+        { name: 'Statistiques', href: '/admin/statistiques', icon: BarChart3, badge: null },
+        { name: 'Paramètres', href: '/admin/parametres', icon: Settings, badge: null },
     ]
   }
 ];
@@ -214,12 +215,13 @@ useEffect(() => {
     {
       title: 'Finance & Configuration',
       items: [
-        { name: 'Paiements', href: '/admin/paiements', icon: CreditCard, badge: null },
-        { name: 'Factures clients', href: '/admin/factures', icon: FileText, badge: null },
-        { name: 'Fiches rémunération', href: '/admin/remunerations', icon: Building2, badge: null },
-        { name: 'Zones', href: '/admin/zones', icon: MapPin, badge: null },
-        { name: 'Statistiques', href: '/admin/statistiques', icon: BarChart3, badge: null },
-        { name: 'Paramètres', href: '/admin/parametres', icon: Settings, badge: null },
+      { name: 'Paiements', href: '/admin/paiements', icon: CreditCard, badge: null },
+      { name: 'Factures clients', href: '/admin/factures', icon: FileText, badge: null },
+      { name: 'Fiches rémunération', href: '/admin/remunerations', icon: Building2, badge: null },
+      { name: 'Audit Qualité', href: '/admin/audit', icon: Shield, badge: null },
+      { name: 'Zones', href: '/admin/zones', icon: MapPin, badge: null },
+      { name: 'Statistiques', href: '/admin/statistiques', icon: BarChart3, badge: null },
+      { name: 'Paramètres', href: '/admin/parametres', icon: Settings, badge: null },
       ]
     }
   ];
