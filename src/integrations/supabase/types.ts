@@ -1374,6 +1374,36 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_access_audit: {
+        Row: {
+          access_type: string
+          accessed_at: string
+          accessed_request_id: string
+          id: string
+          ip_address: unknown | null
+          provider_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          access_type: string
+          accessed_at?: string
+          accessed_request_id: string
+          id?: string
+          ip_address?: unknown | null
+          provider_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          access_type?: string
+          accessed_at?: string
+          accessed_request_id?: string
+          id?: string
+          ip_address?: unknown | null
+          provider_id?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       provider_availability: {
         Row: {
           created_at: string

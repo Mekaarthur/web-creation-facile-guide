@@ -46,20 +46,24 @@ enable_confirmations = true
 [edge_functions]
 enabled = true
 
-[functions.google-forms-webhook]
-verify_jwt = false
+# Security: Enable JWT verification for all edge functions by default
+# Only public webhooks should have verify_jwt = false
 
+[functions.google-forms-webhook]
+verify_jwt = false  # Public webhook - needs to be accessible without auth
+
+# SECURITY FIX: Enable JWT verification for critical functions
 [functions.match-providers]
-verify_jwt = false
+verify_jwt = true  # Now requires authentication
 
 [functions.convert-request-to-booking]
-verify_jwt = false
+verify_jwt = true  # Now requires authentication
 
 [functions.send-notification]
-verify_jwt = false
+verify_jwt = true  # Now requires authentication
 
 [functions.send-notification-email]
-verify_jwt = false
+verify_jwt = true  # Now requires authentication
 
 [functions.send-confirmation-email]
-verify_jwt = false
+verify_jwt = false  # Email confirmation needs to work without auth
