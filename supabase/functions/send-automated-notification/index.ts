@@ -27,7 +27,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (type === 'email') {
       const emailResponse = await resend.emails.send({
-        from: "Bikawo <notifications@resend.dev>",
+        from: "Bikawo <contact@bikawo.com>",
         to: [email],
         subject: subject,
         html: `

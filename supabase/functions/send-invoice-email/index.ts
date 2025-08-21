@@ -51,7 +51,7 @@ serve(async (req) => {
 
     // Send email
     const emailResponse = await resend.emails.send({
-      from: "Bikawo <factures@bikawo.com>",
+      from: "Bikawo <contact@bikawo.com>",
       to: [invoice.profiles.email],
       subject: `Votre facture Bikawo ${invoice.invoice_number}`,
       html: `

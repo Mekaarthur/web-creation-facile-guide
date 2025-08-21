@@ -200,7 +200,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailContent = getEmailContent({ email, firstName, lastName, oldStatus, newStatus, comments, language });
 
     const emailResponse = await resend.emails.send({
-      from: "Bikawo RH <recrutement@bikawo.com>",
+      from: "Bikawo <contact@bikawo.com>",
       to: [email],
       subject: emailContent.subject,
       html: emailContent.html,

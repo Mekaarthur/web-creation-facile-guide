@@ -15,11 +15,14 @@ import { Menu, X, MessageCircle, Phone, LogOut, User, ChevronDown } from "lucide
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { cn } from "@/lib/utils";
+import Cart from "@/components/Cart";
+import CartIndicator from "@/components/CartIndicator";
 
 const Navbar = () => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -144,6 +147,9 @@ const Navbar = () => {
 
           {/* Actions Desktop */}
           <div className="hidden lg:flex items-center space-x-4">
+            {/* Indicateur Panier */}
+            <CartIndicator onOpenCart={() => setIsCartOpen(true)} />
+
             <LanguageSwitcher />
             <NotificationCenter />
             
@@ -179,6 +185,9 @@ const Navbar = () => {
           <MobileNavigation />
         </div>
       </div>
+      
+      {/* Panier Modal */}
+      <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </nav>
   );
 };

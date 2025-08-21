@@ -18,10 +18,12 @@ import {
   Bell,
   CreditCard,
   FileText,
-  Shield
+  Shield,
+  ShoppingCart
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { useCart } from "@/components/Cart";
 
 interface MobileNavItem {
   title: string;
@@ -78,11 +80,11 @@ const clientNavItems: MobileNavItem[] = [
     description: "Gérer mes réservations"
   },
   {
-    title: "Messages",
-    href: "/espace-personnel",
-    icon: MessageCircle,
-    badge: "3",
-    description: "Conversations avec prestataires"
+    title: "Mon panier",
+    href: "/espace-personnel?tab=panier",
+    icon: ShoppingCart,
+    badge: getCartItemsCount() > 0 ? getCartItemsCount().toString() : undefined,
+    description: "Mes services sélectionnés"
   },
   {
     title: "Factures",
@@ -159,6 +161,7 @@ export const MobileNavigation = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
+  const { getCartItemsCount } = useCart();
 
   // Déterminer le type d'utilisateur et les éléments de navigation
   const getUserNavItems = () => {
