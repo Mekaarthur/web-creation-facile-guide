@@ -95,8 +95,11 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
   const getTotalHours = () => {
     return timeSlots.reduce((total, slot) => {
       const startHour = parseInt(slot.startTime.split(':')[0]);
+      const startMinutes = parseInt(slot.startTime.split(':')[1]);
       const endHour = parseInt(slot.endTime.split(':')[0]);
-      return total + (endHour - startHour);
+      const endMinutes = parseInt(slot.endTime.split(':')[1]);
+      const duration = (endHour + endMinutes/60) - (startHour + startMinutes/60);
+      return total + duration;
     }, 0);
   };
 
@@ -109,6 +112,15 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
       toast({
         title: "Erreur",
         description: "Veuillez ajouter au moins un créneau et renseigner l'adresse",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (getTotalHours() < 2) {
+      toast({
+        title: "Durée insuffisante",
+        description: "Durée minimum : 2 heures par service",
         variant: "destructive",
       });
       return;
@@ -177,7 +189,7 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
           {/* Time Slots Section */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <Label className="text-base font-semibold">Créneaux de réservation</Label>
+              <Label className="text-base font-semibold">Créneaux de réservation (minimum 2h au total)</Label>
               <Button 
                 onClick={addTimeSlot}
                 size="sm"

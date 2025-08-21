@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 const HourlyBooking = () => {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [startTime, setStartTime] = useState("");
-  const [hours, setHours] = useState(1);
+  const [hours, setHours] = useState(2);
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
   const [serviceType, setServiceType] = useState("");
@@ -60,6 +60,15 @@ const HourlyBooking = () => {
       return;
     }
 
+    if (hours < 2) {
+      toast({
+        title: "Durée insuffisante",
+        description: "Durée minimum : 2 heures par service",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const service = serviceTypes.find(s => s.value === serviceType);
     if (!service) return;
 
@@ -85,7 +94,7 @@ const HourlyBooking = () => {
     // Reset form
     setSelectedDate(undefined);
     setStartTime("");
-    setHours(1);
+    setHours(2);
     setAddress("");
     setNotes("");
     setServiceType("");
@@ -177,22 +186,22 @@ const HourlyBooking = () => {
           </div>
 
           <div className="space-y-2">
-            <Label>Nombre d'heures *</Label>
+            <Label>Nombre d'heures * (minimum 2h)</Label>
             <div className="flex items-center space-x-2">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setHours(Math.max(1, hours - 1))}
-                disabled={hours <= 1}
+                onClick={() => setHours(Math.max(2, hours - 1))}
+                disabled={hours <= 2}
               >
                 -
               </Button>
               <Input
                 type="number"
-                min="1"
+                min="2"
                 max="12"
                 value={hours}
-                onChange={(e) => setHours(Math.max(1, parseInt(e.target.value) || 1))}
+                onChange={(e) => setHours(Math.max(2, parseInt(e.target.value) || 2))}
                 className="text-center"
               />
               <Button

@@ -113,16 +113,16 @@ const ServiceReservationForm = ({ service, packageTitle, onClose }: ServiceReser
       packageTitle,
       price: service.price,
       description: service.description,
-      customBooking: {
-        date: reservationDetails.preferredDate,
-        time: "À définir",
-        hours: 1,
-        address: reservationDetails.address,
-        notes: reservationDetails.description,
-        clientInfo,
-        serviceType: reservationDetails.serviceType,
-        budget: reservationDetails.budget
-      }
+        customBooking: {
+          date: reservationDetails.preferredDate,
+          time: "À définir",
+          hours: 2, // Durée minimum 2h
+          address: reservationDetails.address,
+          notes: reservationDetails.description,
+          clientInfo,
+          serviceType: reservationDetails.serviceType,
+          budget: reservationDetails.budget
+        }
     });
 
     // Sauvegarder la demande en base (simulation avec localStorage pour le moment)
