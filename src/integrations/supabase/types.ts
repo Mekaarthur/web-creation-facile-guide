@@ -218,13 +218,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "bookings_provider_id_fkey"
-            columns: ["provider_id"]
-            isOneToOne: false
-            referencedRelation: "providers_public"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "bookings_service_id_fkey"
             columns: ["service_id"]
             isOneToOne: false
@@ -271,13 +264,6 @@ export type Database = {
             columns: ["provider_id"]
             isOneToOne: false
             referencedRelation: "providers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "provider_responses_provider_id_fkey"
-            columns: ["provider_id"]
-            isOneToOne: false
-            referencedRelation: "providers_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1125,13 +1111,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "mission_assignments_assigned_provider_id_fkey"
-            columns: ["assigned_provider_id"]
-            isOneToOne: false
-            referencedRelation: "providers_public"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "mission_assignments_client_request_id_fkey"
             columns: ["client_request_id"]
             isOneToOne: false
@@ -1434,13 +1413,6 @@ export type Database = {
             referencedRelation: "providers"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "provider_availability_provider_id_fkey"
-            columns: ["provider_id"]
-            isOneToOne: false
-            referencedRelation: "providers_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       provider_documents: {
@@ -1489,13 +1461,6 @@ export type Database = {
             columns: ["provider_id"]
             isOneToOne: false
             referencedRelation: "providers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "provider_documents_provider_id_fkey"
-            columns: ["provider_id"]
-            isOneToOne: false
-            referencedRelation: "providers_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1564,13 +1529,6 @@ export type Database = {
             referencedRelation: "providers"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "provider_invoices_provider_id_fkey"
-            columns: ["provider_id"]
-            isOneToOne: false
-            referencedRelation: "providers_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       provider_locations: {
@@ -1621,13 +1579,6 @@ export type Database = {
             referencedRelation: "providers"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "provider_locations_provider_id_fkey"
-            columns: ["provider_id"]
-            isOneToOne: true
-            referencedRelation: "providers_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       provider_notifications: {
@@ -1674,13 +1625,6 @@ export type Database = {
             columns: ["provider_id"]
             isOneToOne: false
             referencedRelation: "providers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "provider_notifications_provider_id_fkey"
-            columns: ["provider_id"]
-            isOneToOne: false
-            referencedRelation: "providers_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1770,13 +1714,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "provider_services_provider_id_fkey"
-            columns: ["provider_id"]
-            isOneToOne: false
-            referencedRelation: "providers_public"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "provider_services_service_id_fkey"
             columns: ["service_id"]
             isOneToOne: false
@@ -1819,13 +1756,6 @@ export type Database = {
             columns: ["provider_id"]
             isOneToOne: false
             referencedRelation: "providers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "provider_status_history_provider_id_fkey"
-            columns: ["provider_id"]
-            isOneToOne: false
-            referencedRelation: "providers_public"
             referencedColumns: ["id"]
           },
         ]
@@ -2260,66 +2190,7 @@ export type Database = {
       }
     }
     Views: {
-      profiles_display: {
-        Row: {
-          display_avatar_url: string | null
-          display_first_name: string | null
-          display_last_name: string | null
-          id: string | null
-          user_id: string | null
-        }
-        Insert: {
-          display_avatar_url?: never
-          display_first_name?: never
-          display_last_name?: never
-          id?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          display_avatar_url?: never
-          display_first_name?: never
-          display_last_name?: never
-          id?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      providers_public: {
-        Row: {
-          business_name: string | null
-          created_at: string | null
-          description: string | null
-          id: string | null
-          is_verified: boolean | null
-          location: string | null
-          price_range: string | null
-          rating: number | null
-          status: string | null
-        }
-        Insert: {
-          business_name?: string | null
-          created_at?: string | null
-          description?: string | null
-          id?: string | null
-          is_verified?: boolean | null
-          location?: string | null
-          price_range?: never
-          rating?: number | null
-          status?: string | null
-        }
-        Update: {
-          business_name?: string | null
-          created_at?: string | null
-          description?: string | null
-          id?: string | null
-          is_verified?: boolean | null
-          location?: string | null
-          price_range?: never
-          rating?: number | null
-          status?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       assign_mission_manually: {
@@ -2430,6 +2301,27 @@ export type Database = {
           location: string
           match_score: number
           provider_id: string
+          rating: number
+        }[]
+      }
+      get_profile_display_info: {
+        Args: { p_user_id: string }
+        Returns: {
+          display_avatar_url: string
+          display_first_name: string
+          display_last_name: string
+          id: string
+          user_id: string
+        }[]
+      }
+      get_provider_display_info: {
+        Args: { p_provider_id: string }
+        Returns: {
+          business_name: string
+          description: string
+          id: string
+          location: string
+          price_range: string
           rating: number
         }[]
       }
