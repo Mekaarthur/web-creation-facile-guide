@@ -66,7 +66,7 @@ const publicNavItems: MobileNavItem[] = [
   }
 ];
 
-const clientNavItems: MobileNavItem[] = [
+const getClientNavItems = (cartCount: number): MobileNavItem[] => [
   {
     title: "Mon espace",
     href: "/espace-personnel",
@@ -83,7 +83,7 @@ const clientNavItems: MobileNavItem[] = [
     title: "Mon panier",
     href: "/espace-personnel?tab=panier",
     icon: ShoppingCart,
-    badge: getCartItemsCount() > 0 ? getCartItemsCount().toString() : undefined,
+    badge: cartCount > 0 ? cartCount.toString() : undefined,
     description: "Mes services sélectionnés"
   },
   {
@@ -166,6 +166,7 @@ export const MobileNavigation = () => {
   // Déterminer le type d'utilisateur et les éléments de navigation
   const getUserNavItems = () => {
     const currentPath = location.pathname;
+    const cartCount = getCartItemsCount();
     
     if (currentPath.startsWith('/admin')) {
       return [...publicNavItems, ...adminNavItems];
@@ -176,7 +177,7 @@ export const MobileNavigation = () => {
     }
     
     if (currentPath.startsWith('/espace-personnel') && user) {
-      return [...publicNavItems, ...clientNavItems];
+      return [...publicNavItems, ...getClientNavItems(cartCount)];
     }
     
     return publicNavItems;
