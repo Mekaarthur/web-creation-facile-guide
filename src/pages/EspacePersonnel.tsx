@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -14,11 +15,40 @@ import ReferralProgram from "@/components/ReferralProgram";
 import PaymentMethodsManager from "@/components/PaymentMethodsManager";
 import InvoiceManagement from "@/components/InvoiceManagement";
 import { RewardsSection } from "@/components/RewardsSection";
+import { useAuth } from "@/hooks/useAuth";
+import Auth from "./Auth";
 
 const EspacePersonnel = () => {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState("connexion");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoginMode, setIsLoginMode] = useState(true);
+
+  // Rediriger vers connexion si pas authentifié et tentative d'accès à un onglet protégé
+  useEffect(() => {
+    const protectedTabs = ["reservations", "factures", "profil", "recompenses", "calendrier", "parrainage"];
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabFromUrl = urlParams.get('tab') || selectedTab;
+    
+    if (!user && protectedTabs.includes(tabFromUrl)) {
+      setSelectedTab("connexion");
+    } else if (user && tabFromUrl && tabFromUrl !== "connexion") {
+      setSelectedTab(tabFromUrl);
+    } else if (user && selectedTab === "connexion") {
+      setSelectedTab("reservations");
+    }
+  }, [user, selectedTab]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="pt-20 pb-16 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   const reservations = [
     {
@@ -92,106 +122,89 @@ const EspacePersonnel = () => {
           </div>
 
           {/* Tabs Navigation */}
-          <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-7 mb-8">
-              <TabsTrigger value="connexion" className="flex items-center gap-2">
-                <Bell className="w-4 h-4" />
-                Connexion
-              </TabsTrigger>
-              <TabsTrigger value="reservations" className="flex items-center gap-2">
-                <History className="w-4 h-4" />
-                Réservations & Prestations
-              </TabsTrigger>
-              <TabsTrigger value="factures" className="flex items-center gap-2">
-                <FileText className="w-4 h-4" />
-                Factures
-              </TabsTrigger>
-              <TabsTrigger value="profil" className="flex items-center gap-2">
-                <User className="w-4 h-4" />
-                Mon Profil
-              </TabsTrigger>
-              <TabsTrigger value="recompenses" className="flex items-center gap-2">
-                <Gift className="w-4 h-4" />
-                Récompenses
-              </TabsTrigger>
-              <TabsTrigger value="calendrier" className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Calendrier
-              </TabsTrigger>
-              <TabsTrigger value="parrainage" className="flex items-center gap-2">
-                <UserPlus className="w-4 h-4" />
-                Parrainage
-              </TabsTrigger>
+          <Tabs value={selectedTab} onValueChange={(tab) => {
+            // Vérifier l'authentification pour les onglets protégés
+            const protectedTabs = ["reservations", "factures", "profil", "recompenses", "calendrier", "parrainage"];
+            if (!user && protectedTabs.includes(tab)) {
+              setSelectedTab("connexion");
+              return;
+            }
+            setSelectedTab(tab);
+            // Mettre à jour l'URL pour navigation directe
+            const newUrl = new URL(window.location.href);
+            if (tab === "connexion") {
+              newUrl.searchParams.delete('tab');
+            } else {
+              newUrl.searchParams.set('tab', tab);
+            }
+            window.history.replaceState({}, '', newUrl);
+          }} className="w-full">
+            <TabsList className={`grid w-full mb-8 ${user ? 'grid-cols-6' : 'grid-cols-1'}`}>
+              {!user && (
+                <TabsTrigger value="connexion" className="flex items-center gap-2">
+                  <Lock className="w-4 h-4" />
+                  Se connecter
+                </TabsTrigger>
+              )}
+              {user && (
+                <>
+                  <TabsTrigger value="reservations" className="flex items-center gap-2">
+                    <History className="w-4 h-4" />
+                    Réservations & Prestations
+                  </TabsTrigger>
+                  <TabsTrigger value="factures" className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    Factures
+                  </TabsTrigger>
+                  <TabsTrigger value="profil" className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    Mon Profil
+                  </TabsTrigger>
+                  <TabsTrigger value="recompenses" className="flex items-center gap-2">
+                    <Gift className="w-4 h-4" />
+                    Récompenses
+                  </TabsTrigger>
+                  <TabsTrigger value="calendrier" className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    Calendrier
+                  </TabsTrigger>
+                  <TabsTrigger value="parrainage" className="flex items-center gap-2">
+                    <UserPlus className="w-4 h-4" />
+                    Parrainage
+                  </TabsTrigger>
+                </>
+              )}
             </TabsList>
 
             {/* Connexion / Inscription */}
             <TabsContent value="connexion" className="space-y-6">
-              <Card className="max-w-md mx-auto">
-                <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                    <UserRound className="w-8 h-8 text-white" />
-                  </div>
-                  <CardTitle className="text-2xl">
-                    {isLoginMode ? "Se connecter" : "S'inscrire"}
-                  </CardTitle>
-                  <p className="text-muted-foreground">
-                    {isLoginMode 
-                      ? "Accédez à votre espace client Assist'mw" 
-                      : "Créez votre compte pour profiter de nos services"
-                    }
-                  </p>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {!isLoginMode && (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="prenom">Prénom</Label>
-                        <Input id="prenom" placeholder="Votre prénom" />
-                      </div>
-                      <div>
-                        <Label htmlFor="nom">Nom</Label>
-                        <Input id="nom" placeholder="Votre nom" />
-                      </div>
+              {!user ? (
+                <Auth />
+              ) : (
+                <Card className="max-w-md mx-auto">
+                  <CardHeader className="text-center">
+                    <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
+                      <User className="w-8 h-8 text-accent-foreground" />
                     </div>
-                  )}
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="votre.email@exemple.com" />
-                  </div>
-                  <div>
-                    <Label htmlFor="password">Mot de passe</Label>
-                    <Input id="password" type="password" placeholder="••••••••" />
-                  </div>
-                  {!isLoginMode && (
-                    <div>
-                      <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
-                      <Input id="confirm-password" type="password" placeholder="••••••••" />
-                    </div>
-                  )}
-                  <Button 
-                    variant="hero" 
-                    className="w-full"
-                    onClick={() => {
-                      setIsLoggedIn(true);
-                      setSelectedTab("reservations");
-                    }}
-                  >
-                    <Lock className="w-4 h-4 mr-2" />
-                    {isLoginMode ? "Se connecter" : "Créer mon compte"}
-                  </Button>
-                  <div className="text-center">
+                    <CardTitle className="text-2xl">Bienvenue !</CardTitle>
+                    <p className="text-muted-foreground">
+                      Vous êtes connecté à votre espace client
+                    </p>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-center">
+                      Email : <span className="font-medium">{user.email}</span>
+                    </p>
                     <Button 
-                      variant="ghost" 
-                      onClick={() => setIsLoginMode(!isLoginMode)}
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => setSelectedTab("reservations")}
                     >
-                      {isLoginMode 
-                        ? "Pas encore de compte ? S'inscrire" 
-                        : "Déjà un compte ? Se connecter"
-                      }
+                      Accéder à mes réservations
                     </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             {/* Réservations et Prestations combinées */}
