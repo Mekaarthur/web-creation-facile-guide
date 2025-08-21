@@ -30,7 +30,7 @@ file_size_limit = "50MiB"
 enabled = true
 port = 54328
 site_url = "https://bikawo.com"
-additional_redirect_urls = ["http://localhost:3000", "http://localhost:5173", "https://bikawo.com"]
+additional_redirect_urls = ["http://localhost:3000", "http://localhost:5173", "https://bikawo.com", "https://ed681ca2-74aa-4970-8c41-139ffb8c8152.sandbox.lovable.dev"]
 jwt_expiry = 3600
 refresh_token_rotation_enabled = true
 secure_password_change_enabled = true
@@ -67,3 +67,9 @@ verify_jwt = true  # Now requires authentication
 
 [functions.send-confirmation-email]
 verify_jwt = false  # Email confirmation needs to work without auth
+
+[functions.check-email-exists]
+verify_jwt = false  # Public endpoint to pre-check email existence
+
+[functions.send-password-reset]
+verify_jwt = false  # Public endpoint if used from unauthenticated pages

@@ -19,13 +19,12 @@ const ResetPassword = () => {
     setLoading(true);
 
     try {
-      // Vérifier d'abord si l'email existe
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .ilike('email', email);
+      // Vérifier l'existence de l'email via la fonction Edge
+      const { data: existsResp } = await supabase.functions.invoke('check-email-exists', {
+        body: { email }
+      });
 
-      if (!profiles || profiles.length === 0) {
+      if (!(existsResp as any)?.exists) {
         throw new Error('Aucun compte trouvé avec cet email');
       }
 

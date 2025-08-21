@@ -52,14 +52,20 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      // Vérifier d'abord si l'email existe déjà
-      const { data: existingProfiles } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .ilike('email', email);
-
-      if (existingProfiles && existingProfiles.length > 0) {
-        throw new Error('Cet email est déjà utilisé. Vous avez déjà un compte.');
+      // Vérifier d'abord si l'email existe déjà via fonction Edge (sans exposer la BDD)
+      try {
+        const { data: existsResp, error: existsErr } = await supabase.functions.invoke('check-email-exists', {
+          body: { email }
+        });
+        if (existsErr) {
+          console.warn('check-email-exists error:', existsErr);
+        }
+        if ((existsResp as any)?.exists) {
+          throw new Error('Cet email est déjà utilisé. Vous avez déjà un compte.');
+        }
+      } catch (err) {
+        // En cas d’erreur réseau de la fonction, on continue le flux normal
+        console.warn('check-email-exists invocation failed:', err);
       }
 
       const redirectUrl = `${window.location.origin}/auth/complete`;
@@ -81,6 +87,11 @@ const Auth = () => {
           throw new Error('Cet email est déjà utilisé. Vous avez déjà un compte.');
         }
         throw error;
+      }
+
+      // Vérifier si Supabase indique un email déjà existant (identities vide)
+      if (data.user && Array.isArray((data.user as any).identities) && (data.user as any).identities.length === 0) {
+        throw new Error('Cet email est déjà utilisé. Vous avez déjà un compte.');
       }
 
       // Déclencher l'envoi de l'email de confirmation personnalisé
