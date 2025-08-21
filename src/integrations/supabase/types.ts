@@ -2260,6 +2260,30 @@ export type Database = {
       }
     }
     Views: {
+      profiles_display: {
+        Row: {
+          display_avatar_url: string | null
+          display_first_name: string | null
+          display_last_name: string | null
+          id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          display_avatar_url?: never
+          display_first_name?: never
+          display_last_name?: never
+          id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          display_avatar_url?: never
+          display_first_name?: never
+          display_last_name?: never
+          id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       providers_public: {
         Row: {
           business_name: string | null
