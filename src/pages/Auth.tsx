@@ -52,6 +52,16 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      // Vérifier d'abord si l'email existe déjà
+      const { data: existingProfiles } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .ilike('email', email);
+
+      if (existingProfiles && existingProfiles.length > 0) {
+        throw new Error('Cet email est déjà utilisé. Vous avez déjà un compte.');
+      }
+
       const redirectUrl = `${window.location.origin}/auth/complete`;
       
       const { data, error } = await supabase.auth.signUp({
@@ -65,7 +75,13 @@ const Auth = () => {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Gestion spécifique de l'erreur email existant
+        if (error.message.includes('already') || error.message.includes('exists')) {
+          throw new Error('Cet email est déjà utilisé. Vous avez déjà un compte.');
+        }
+        throw error;
+      }
 
       // Déclencher l'envoi de l'email de confirmation personnalisé
       if (data.user && !data.user.email_confirmed_at) {
@@ -92,11 +108,35 @@ const Auth = () => {
         description: "Un email de confirmation a été envoyé à votre adresse. Veuillez cliquer sur le lien pour activer votre compte.",
       });
     } catch (error: any) {
-      toast({
-        title: "Erreur d'inscription",
-        description: error.message,
-        variant: "destructive",
-      });
+      // Gestion spécifique des erreurs d'email existant
+      if (error.message.includes('Cet email est déjà utilisé')) {
+        toast({
+          title: "❌ Cet email est déjà utilisé",
+          description: "Vous avez déjà un compte. Essayez de vous connecter.",
+          variant: "destructive",
+          action: (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                // Basculer vers l'onglet connexion
+                const loginTab = document.querySelector('[value="login"]') as HTMLElement;
+                if (loginTab) {
+                  loginTab.click();
+                }
+              }}
+            >
+              💡 Se connecter
+            </Button>
+          ),
+        });
+      } else {
+        toast({
+          title: "Erreur d'inscription",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -161,6 +201,17 @@ const Auth = () => {
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Connexion..." : "Se connecter"}
                 </Button>
+
+                <div className="text-center">
+                  <Button 
+                    type="button" 
+                    variant="link" 
+                    className="text-sm text-muted-foreground"
+                    onClick={() => navigate('/reset-password')}
+                  >
+                    Mot de passe oublié ?
+                  </Button>
+                </div>
               </form>
             </TabsContent>
 

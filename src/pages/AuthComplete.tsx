@@ -58,10 +58,18 @@ const AuthComplete = () => {
           return;
         }
 
-        // Si pas de session, afficher un message d'info
-        if (type === 'signup') {
+        // Si pas de session, vérifier les paramètres d'URL pour confirmation manuelle
+        const email = searchParams.get('email');
+        const urlType = searchParams.get('type');
+        
+        if (email && urlType === 'signup') {
           setStatus('success');
-          setMessage("Votre email est confirmé. Vous pouvez maintenant vous connecter.");
+          setMessage(`Votre email ${email} est maintenant confirmé. Vous pouvez vous connecter.`);
+          
+          toast({
+            title: "Email confirmé ! ✅",
+            description: "Votre compte est activé. Vous pouvez maintenant vous connecter.",
+          });
           return;
         }
 

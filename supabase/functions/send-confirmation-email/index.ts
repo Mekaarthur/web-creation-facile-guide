@@ -40,19 +40,30 @@ const handler = async (req: Request): Promise<Response> => {
       ? `https://ed681ca2-74aa-4970-8c41-139ffb8c8152.sandbox.lovable.dev`
       : `https://bikawo.com`;
     
-    // Générer un lien de confirmation via l'API Admin de Supabase (plus fiable)
-    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-      type: 'signup',
-      email: userEmail,
-      options: { redirectTo: `${baseUrl}/auth/complete` }
-    });
+    // Vérifier d'abord si l'utilisateur existe déjà
+    const { data: existingUser } = await supabase.auth.admin.getUserById(userId);
+    
+    let confirmationUrl: string;
+    
+    if (existingUser && !existingUser.email_confirmed_at) {
+      // Utilisateur non confirmé - générer un nouveau lien
+      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+        type: 'signup',
+        email: userEmail,
+        options: { redirectTo: `${baseUrl}/auth/complete` }
+      });
 
-    if (linkError) {
-      console.error('❌ Error generating confirmation link:', linkError);
+      if (linkError) {
+        console.error('❌ Error generating confirmation link:', linkError);
+        // Si erreur "email_exists", créer un lien manuel de confirmation
+        confirmationUrl = `${baseUrl}/auth/complete?type=signup&email=${encodeURIComponent(userEmail)}`;
+      } else {
+        confirmationUrl = linkData?.properties?.action_link || `${baseUrl}/auth/complete?type=signup`;
+      }
+    } else {
+      // Lien de fallback pour réactivation manuelle
+      confirmationUrl = `${baseUrl}/auth/complete?type=signup&email=${encodeURIComponent(userEmail)}`;
     }
-
-    const confirmationUrl = linkData?.properties?.action_link ||
-      `${baseUrl}/auth/complete?message=Veuillez confirmer votre email puis vous connecter`;
 
     console.log('🔗 Confirmation URL generated:', confirmationUrl);
     console.log('🌍 Base URL used:', baseUrl);

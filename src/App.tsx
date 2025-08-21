@@ -9,6 +9,8 @@ import { AuthProvider } from "./hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import AuthComplete from "./pages/AuthComplete";
+import ResetPassword from "./pages/ResetPassword";
+import UpdatePassword from "./pages/UpdatePassword";
 import EspacePersonnel from "./pages/EspacePersonnel";
 import EspacePrestataire from "./pages/EspacePrestataire";
 import NousRecrutons from "./pages/NousRecrutons";
@@ -72,6 +74,8 @@ const App = () => (
             <Route path="/auth/complete" element={<AuthComplete />} />
             <Route path="/email/verify" element={<AuthComplete />} />
             <Route path="/email/verify/:token" element={<AuthComplete />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/update-password" element={<UpdatePassword />} />
             <Route path="/espace-personnel" element={<EspacePersonnel />} />
             <Route path="/espace-prestataire" element={<EspacePrestataire />} />
             <Route path="/nous-recrutons" element={<NousRecrutons />} />
