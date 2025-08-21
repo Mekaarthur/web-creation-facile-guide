@@ -46,18 +46,32 @@ export const StripePaymentIntegration: React.FC<PaymentIntegrationProps> = ({
     }
   }, [user]);
 
+  // Recharger les moyens de paiement au retour de Stripe (focus de l'onglet)
+  useEffect(() => {
+    const onFocus = () => {
+      if (user) loadPaymentMethods();
+    };
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [user]);
+
   const loadPaymentMethods = async () => {
     try {
       const { data, error } = await supabase.functions.invoke('get-payment-methods');
-      
       if (error) throw error;
-      
-      setPaymentMethods(data.payment_methods || []);
-      if (data.payment_methods?.length > 0) {
-        setSelectedMethod(data.payment_methods[0].id);
+
+      const methods = data?.paymentMethods || [];
+      setPaymentMethods(methods);
+      if (methods.length > 0) {
+        setSelectedMethod(methods[0].id);
       }
     } catch (error) {
       console.error('Erreur lors du chargement des moyens de paiement:', error);
+      toast({
+        variant: "destructive",
+        title: "Paiement",
+        description: "Impossible de charger les moyens de paiement."
+      });
     }
   };
 
