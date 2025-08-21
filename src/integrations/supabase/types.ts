@@ -2271,7 +2271,6 @@ export type Database = {
           price_range: string | null
           rating: number | null
           status: string | null
-          user_id: string | null
         }
         Insert: {
           business_name?: string | null
@@ -2283,7 +2282,6 @@ export type Database = {
           price_range?: never
           rating?: number | null
           status?: string | null
-          user_id?: string | null
         }
         Update: {
           business_name?: string | null
@@ -2295,7 +2293,6 @@ export type Database = {
           price_range?: never
           rating?: number | null
           status?: string | null
-          user_id?: string | null
         }
         Relationships: []
       }
