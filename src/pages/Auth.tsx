@@ -52,7 +52,7 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const redirectUrl = `${window.location.origin}/espace-personnel`;
+      const redirectUrl = `${window.location.origin}/auth/complete`;
       
       const { data, error } = await supabase.auth.signUp({
         email,

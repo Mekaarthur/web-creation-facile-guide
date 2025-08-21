@@ -16,57 +16,58 @@ const AuthComplete = () => {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Récupérer les paramètres d'URL
-        const token = searchParams.get('token');
-        const type = searchParams.get('type');
-        const error = searchParams.get('error');
-        const errorDescription = searchParams.get('error_description');
+        // Lire paramètres d'URL (query + hash)
+        const url = new URL(window.location.href);
+        const error = searchParams.get('error') || undefined;
+        const errorDescription = searchParams.get('error_description') || undefined;
+        const type = searchParams.get('type') || undefined;
 
-        if (error) {
+        // Extraire éventuels paramètres dans le hash (#)
+        const hashParams = new URLSearchParams(url.hash.replace(/^#/, ''));
+        const hashError = hashParams.get('error');
+        const hashErrorDescription = hashParams.get('error_description');
+
+        if (error || hashError) {
           setStatus('error');
-          setMessage(errorDescription || 'Une erreur est survenue lors de la confirmation');
+          setMessage(errorDescription || hashErrorDescription || 'Une erreur est survenue lors de la confirmation');
           return;
         }
 
-        if (token && type === 'signup') {
-          // Vérifier la session utilisateur
-          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-          
-          if (sessionError) {
-            console.error('Erreur session:', sessionError);
-            setStatus('error');
-            setMessage('Erreur lors de la vérification de votre session');
-            return;
-          }
-
-          if (session?.user) {
-            setStatus('success');
-            setMessage('Votre email a été confirmé avec succès !');
-            
-            toast({
-              title: "Email confirmé ! 🎉",
-              description: "Votre compte est maintenant activé. Bienvenue chez Bikawo !",
-            });
-
-            // Rediriger vers l'espace personnel après 3 secondes
-            setTimeout(() => {
-              navigate('/espace-personnel');
-            }, 3000);
-          } else {
-            setStatus('error');
-            setMessage('Session utilisateur non trouvée. Veuillez vous connecter.');
-          }
-        } else {
-          // Pas de token, probablement une visite directe
-          const urlMessage = searchParams.get('message');
-          if (urlMessage) {
-            setStatus('error');
-            setMessage(urlMessage);
-          } else {
-            setStatus('error');
-            setMessage('Lien de confirmation invalide ou expiré');
-          }
+        // Vérifier la session utilisateur (la confirmation crée souvent une session)
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) {
+          console.error('Erreur session:', sessionError);
+          setStatus('error');
+          setMessage('Erreur lors de la vérification de votre session');
+          return;
         }
+
+        if (session?.user) {
+          setStatus('success');
+          setMessage('Votre email a été confirmé avec succès !');
+
+          toast({
+            title: "Email confirmé ! 🎉",
+            description: "Votre compte est maintenant activé. Bienvenue chez Bikawo !",
+          });
+
+          // Redirection automatique vers l'espace personnel
+          setTimeout(() => {
+            navigate('/espace-personnel');
+          }, 2500);
+          return;
+        }
+
+        // Si pas de session, afficher un message d'info
+        if (type === 'signup') {
+          setStatus('success');
+          setMessage("Votre email est confirmé. Vous pouvez maintenant vous connecter.");
+          return;
+        }
+
+        // Cas par défaut
+        setStatus('error');
+        setMessage('Lien de confirmation invalide ou expiré');
       } catch (error: any) {
         console.error('Erreur lors de la confirmation:', error);
         setStatus('error');

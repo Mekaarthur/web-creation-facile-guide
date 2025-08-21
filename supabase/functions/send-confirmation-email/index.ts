@@ -39,7 +39,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: 'signup',
       email: userEmail,
-      options: { redirectTo: 'https://bikawo.com/espace-personnel' }
+      options: { redirectTo: 'https://bikawo.com/auth/complete' }
     });
 
     if (linkError) {
@@ -47,7 +47,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const confirmationUrl = linkData?.properties?.action_link ||
-      `https://bikawo.com/auth?message=Veuillez confirmer votre email puis vous connecter`;
+      `https://bikawo.com/auth/complete?message=Veuillez confirmer votre email puis vous connecter`;
 
     console.log('🔗 Confirmation URL generated:', confirmationUrl);
 
