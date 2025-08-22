@@ -36,6 +36,8 @@ import BikaPlus from "./pages/BikaPlus";
 import BikaAnimals from "./pages/BikaAnimals";
 import BikaSeniors from "./pages/BikaSeniors";
 import BikaPro from "./pages/BikaPro";
+import Reservation from "./pages/Reservation";
+import ReservationConfirmee from "./pages/ReservationConfirmee";
 
 // Admin Layout and Pages
 import { AdminLayout } from "./components/admin/AdminLayout";
@@ -103,6 +105,8 @@ const App = () => (
              <Route path="/bika-animals-ile-de-france" element={<BikaAnimals />} />
              <Route path="/bika-seniors-ile-de-france" element={<BikaSeniors />} />
              <Route path="/bika-pro-ile-de-france" element={<BikaPro />} />
+             <Route path="/reservation" element={<Reservation />} />
+             <Route path="/reservation-confirmee" element={<ReservationConfirmee />} />
              <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
              <Route path="/audit-qualite" element={<AdminRoute><AuditReport /></AdminRoute>} />
              {/* Admin Routes with Layout */}

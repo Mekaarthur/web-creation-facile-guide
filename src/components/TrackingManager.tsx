@@ -40,6 +40,10 @@ const TrackingManager = () => {
 
     // Facebook Pixel
     const initFacebookPixel = () => {
+      // Skip Facebook Pixel if ID not configured
+      const pixelId = 'YOUR_FACEBOOK_PIXEL_ID'; // Replace with actual ID when configured
+      if (pixelId === 'YOUR_FACEBOOK_PIXEL_ID') return;
+      
       const fbScript = document.createElement('script');
       fbScript.innerHTML = `
         !function(f,b,e,v,n,t,s)
@@ -51,14 +55,14 @@ const TrackingManager = () => {
         s.parentNode.insertBefore(t,s)}(window, document,'script',
         'https://connect.facebook.net/en_US/fbevents.js');
         
-        fbq('init', 'FACEBOOK_PIXEL_ID');
+        fbq('init', '${pixelId}');
         fbq('track', 'PageView');
       `;
       document.head.appendChild(fbScript);
 
       // NoScript fallback
       const noscript = document.createElement('noscript');
-      noscript.innerHTML = '<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=FACEBOOK_PIXEL_ID&ev=PageView&noscript=1" />';
+      noscript.innerHTML = `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1" />`;
       document.body.appendChild(noscript);
     };
 
@@ -87,11 +91,15 @@ const TrackingManager = () => {
 
     // Hotjar
     const initHotjar = () => {
+      // Skip Hotjar if ID not configured
+      const hotjarId = 'YOUR_HOTJAR_ID'; // Replace with actual ID when configured
+      if (hotjarId === 'YOUR_HOTJAR_ID') return;
+      
       const hotjarScript = document.createElement('script');
       hotjarScript.innerHTML = `
         (function(h,o,t,j,a,r){
             h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
-            h._hjSettings={hjid:HOTJAR_ID,hjsv:6};
+            h._hjSettings={hjid:${hotjarId},hjsv:6};
             a=o.getElementsByTagName('head')[0];
             r=o.createElement('script');r.async=1;
             r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;

@@ -105,13 +105,14 @@ const Cart = ({ isOpen = false, onClose }: CartProps) => {
       return;
     }
 
-    // Déclencher l'événement pour ouvrir l'interface de réservation
-    window.dispatchEvent(new CustomEvent('openBookingFromCart', { 
-      detail: { cartItems } 
-    }));
+    // Sauvegarder le panier dans sessionStorage pour la page de réservation
+    sessionStorage.setItem('bikawo-booking-cart', JSON.stringify(cartItems));
+    
+    // Redirection directe vers la page de réservation
+    window.location.href = '/reservation';
     
     toast({
-      title: "Réservation initiée",
+      title: "Redirection en cours",
       description: "Redirection vers l'interface de réservation...",
     });
   };
