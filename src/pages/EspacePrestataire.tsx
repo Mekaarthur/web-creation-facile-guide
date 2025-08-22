@@ -18,9 +18,12 @@ import ReferralProgram from "@/components/ReferralProgram";
 import { RewardsSection } from "@/components/RewardsSection";
 import { PrestationsRealisees } from "@/components/PrestationsRealisees";
 import ProviderInvoiceManagement from "@/components/ProviderInvoiceManagement";
+import ProviderDashboard from "@/components/ProviderDashboard";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import ProviderNavbar from "@/components/ProviderNavbar";
+import Footer from "@/components/Footer";
 
 const EspacePrestataire = () => {
   const { user, loading } = useAuth();
@@ -398,8 +401,10 @@ const EspacePrestataire = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-background">
+      <ProviderNavbar />
+      <div className="pt-20 pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="space-y-6 mb-8">
           <div className="flex items-center justify-between">
@@ -473,8 +478,9 @@ const EspacePrestataire = () => {
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-11">
+        <Tabs defaultValue="dashboard" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-12">
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="profile">Profil</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="missions">Missions</TabsTrigger>
@@ -487,6 +493,17 @@ const EspacePrestataire = () => {
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="settings">Paramètres</TabsTrigger>
           </TabsList>
+
+          {/* Dashboard Tab */}
+          <TabsContent value="dashboard" className="space-y-6">
+            <ProviderDashboard onNavigateToTab={(tab) => {
+              // Trouver et cliquer sur l'onglet correspondant
+              const tabElement = document.querySelector(`[value="${tab}"]`) as HTMLElement;
+              if (tabElement) {
+                tabElement.click();
+              }
+            }} />
+          </TabsContent>
 
           {/* Profile Tab */}
           <TabsContent value="profile" className="space-y-6">
@@ -917,7 +934,9 @@ const EspacePrestataire = () => {
             </Card>
           </TabsContent>
         </Tabs>
+        </div>
       </div>
+      <Footer />
     </div>
   );
 };

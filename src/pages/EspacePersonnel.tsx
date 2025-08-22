@@ -15,6 +15,7 @@ import ReferralProgram from "@/components/ReferralProgram";
 import PaymentMethodsManager from "@/components/PaymentMethodsManager";
 import InvoiceManagement from "@/components/InvoiceManagement";
 import { RewardsSection } from "@/components/RewardsSection";
+import ClientDashboard from "@/components/ClientDashboard";
 import { useAuth } from "@/hooks/useAuth";
 import Auth from "./Auth";
 import { useToast } from "@/hooks/use-toast";
@@ -25,7 +26,7 @@ const EspacePersonnel = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [selectedTab, setSelectedTab] = useState("connexion");
+  const [selectedTab, setSelectedTab] = useState(user ? "dashboard" : "connexion");
   const [profileData, setProfileData] = useState({
     first_name: "",
     last_name: "", 
@@ -75,7 +76,7 @@ const EspacePersonnel = () => {
 
   // Rediriger vers connexion si pas authentifié et tentative d'accès à un onglet protégé
   useEffect(() => {
-    const protectedTabs = ["reservations", "panier", "factures", "profil", "recompenses", "calendrier", "parrainage"];
+    const protectedTabs = ["dashboard", "reservations", "panier", "factures", "profil", "recompenses", "calendrier", "parrainage"];
     const urlParams = new URLSearchParams(window.location.search);
     const tabFromUrl = urlParams.get('tab') || selectedTab;
     
@@ -84,7 +85,7 @@ const EspacePersonnel = () => {
     } else if (user && tabFromUrl && tabFromUrl !== "connexion") {
       setSelectedTab(tabFromUrl);
     } else if (user && selectedTab === "connexion") {
-      setSelectedTab("reservations");
+      setSelectedTab("dashboard");
     }
   }, [user, selectedTab]);
 
@@ -174,7 +175,7 @@ const EspacePersonnel = () => {
           {/* Tabs Navigation */}
           <Tabs value={selectedTab} onValueChange={(tab) => {
             // Vérifier l'authentification pour les onglets protégés
-            const protectedTabs = ["reservations", "panier", "factures", "profil", "recompenses", "calendrier", "parrainage"];
+            const protectedTabs = ["dashboard", "reservations", "panier", "factures", "profil", "recompenses", "calendrier", "parrainage"];
             if (!user && protectedTabs.includes(tab)) {
               setSelectedTab("connexion");
               return;
@@ -189,7 +190,7 @@ const EspacePersonnel = () => {
             }
             window.history.replaceState({}, '', newUrl);
           }} className="w-full">
-            <TabsList className={`w-full mb-8 grid gap-1 ${user ? 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-7' : 'grid-cols-1'}`}>
+            <TabsList className={`w-full mb-8 grid gap-1 ${user ? 'grid-cols-3 sm:grid-cols-4 lg:grid-cols-8' : 'grid-cols-1'}`}>
               {!user && (
                 <TabsTrigger value="connexion" className="flex items-center gap-2 min-h-12">
                   <Lock className="w-4 h-4" />
@@ -198,6 +199,10 @@ const EspacePersonnel = () => {
               )}
               {user && (
                 <>
+                  <TabsTrigger value="dashboard" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
+                    <User className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">Tableau de bord</span>
+                  </TabsTrigger>
                   <TabsTrigger value="reservations" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
                     <History className="w-4 h-4 flex-shrink-0" />
                     <span className="truncate">Réservations</span>
@@ -252,13 +257,18 @@ const EspacePersonnel = () => {
                     <Button 
                       variant="outline" 
                       className="w-full"
-                      onClick={() => setSelectedTab("reservations")}
+                      onClick={() => setSelectedTab("dashboard")}
                     >
-                      Accéder à mes réservations
+                      Accéder à mon tableau de bord
                     </Button>
                   </CardContent>
                 </Card>
               )}
+            </TabsContent>
+
+            {/* Dashboard */}
+            <TabsContent value="dashboard" className="space-y-6">
+              <ClientDashboard onNavigateToTab={setSelectedTab} />
             </TabsContent>
 
             {/* Réservations et Prestations combinées */}

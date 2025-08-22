@@ -19,7 +19,7 @@ import Cart from "@/components/Cart";
 import CartIndicator from "@/components/CartIndicator";
 import UserProfileMenu from "@/components/UserProfileMenu";
 
-const Navbar = () => {
+const ProviderNavbar = () => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -148,14 +148,11 @@ const Navbar = () => {
 
           {/* Actions Desktop */}
           <div className="hidden lg:flex items-center space-x-4">
-            {/* Indicateur Panier */}
-            <CartIndicator onOpenCart={() => setIsCartOpen(true)} />
-
             <LanguageSwitcher />
             <NotificationCenter />
             
             {user ? (
-              <UserProfileMenu userType="client" />
+              <UserProfileMenu userType="provider" />
             ) : (
               <div className="flex items-center space-x-3">
                 <Link to="/auth">
@@ -176,11 +173,8 @@ const Navbar = () => {
           <MobileNavigation />
         </div>
       </div>
-      
-      {/* Panier Modal */}
-      <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </nav>
   );
 };
 
-export default Navbar;
+export default ProviderNavbar;
