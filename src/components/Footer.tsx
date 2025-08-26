@@ -36,10 +36,10 @@ const Footer = () => {
     {
       title: "Légal",
       links: [
+        { name: "Candidature", href: "/nous-recrutons" },
         { name: "Mentions légales", href: "/aide" },
-        { name: "Confidentialité", href: "/aide" },
-        { name: "CGU", href: "/aide" },
-        { name: "Cookies", href: "/aide" }
+        { name: "Politique de confidentialité", href: "/aide" },
+        { name: "CGU", href: "/aide" }
       ]
     }
   ];

@@ -57,16 +57,7 @@ const Navbar = () => {
       ]
     },
     { name: "À propos", href: "/a-propos-de-nous" },
-    { name: "Espace client", href: "/espace-personnel" },
-    { name: "Espace prestataire", href: "/espace-prestataire" },
-    ...(isAdmin ? [
-      { name: "Candidatures", href: "/admin/candidatures" },
-      { name: "Demandes clients", href: "/admin/demandes" },
-      { name: "Gestion demandes", href: "/gestion-demandes" }
-    ] : []),
-    { name: "Nous recrutons", href: "/nous-recrutons" },
     { name: "Contact", href: "/contact" },
-    { name: "Aide", href: "/aide" },
   ];
 
   return (
@@ -157,18 +148,11 @@ const Navbar = () => {
             {user ? (
               <UserProfileMenu userType="client" />
             ) : (
-              <div className="flex items-center space-x-3">
-                <Link to="/auth">
-                  <Button variant="ghost" size="sm" className="transition-all duration-200 hover:bg-primary/10">
-                    Se connecter
-                  </Button>
-                </Link>
-                <Link to="/auth">
-                  <Button size="sm" className="transition-all duration-200 hover:scale-105">
-                    S'inscrire
-                  </Button>
-                </Link>
-              </div>
+              <Link to="/auth">
+                <Button size="sm" className="transition-all duration-200 hover:scale-105">
+                  Connexion
+                </Button>
+              </Link>
             )}
           </div>
 

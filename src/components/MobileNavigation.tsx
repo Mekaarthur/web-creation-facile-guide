@@ -41,7 +41,7 @@ const publicNavItems: MobileNavItem[] = [
     description: "Retour à l'accueil"
   },
   {
-    title: "Services",
+    title: "Nos services",
     href: "/services",
     icon: Briefcase,
     description: "Nos services disponibles"
@@ -57,12 +57,6 @@ const publicNavItems: MobileNavItem[] = [
     href: "/contact",
     icon: Phone,
     description: "Nous contacter"
-  },
-  {
-    title: "Aide",
-    href: "/aide",
-    icon: HelpCircle,
-    description: "Centre d'aide et FAQ"
   }
 ];
 
@@ -285,7 +279,7 @@ export const MobileNavigation = () => {
                 <div className="space-y-2">
                   <Link to="/auth" onClick={() => setOpen(false)}>
                     <Button className="w-full" size="sm">
-                      Se connecter
+                      Connexion
                     </Button>
                   </Link>
                   <p className="text-xs text-center text-muted-foreground">

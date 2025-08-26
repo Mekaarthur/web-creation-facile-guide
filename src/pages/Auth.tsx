@@ -35,6 +35,9 @@ const Auth = () => {
         description: "Vous êtes maintenant connecté",
       });
 
+      // Redirection automatique selon le type d'utilisateur
+      // Pour l'instant, rediriger vers l'espace client par défaut
+      // TODO: Implémenter la logique pour détecter le type d'utilisateur (client/prestataire)
       navigate('/espace-personnel');
     } catch (error: any) {
       toast({
@@ -213,7 +216,7 @@ const Auth = () => {
                   {loading ? "Connexion..." : "Se connecter"}
                 </Button>
 
-                <div className="text-center">
+                <div className="text-center space-y-2">
                   <Button 
                     type="button" 
                     variant="link" 
@@ -222,6 +225,20 @@ const Auth = () => {
                   >
                     Mot de passe oublié ?
                   </Button>
+                  <div className="text-sm text-muted-foreground">
+                    Pas encore de compte ?{" "}
+                    <Button 
+                      type="button" 
+                      variant="link" 
+                      className="text-primary p-0 h-auto"
+                      onClick={() => {
+                        const signupTab = document.querySelector('[value="signup"]') as HTMLElement;
+                        if (signupTab) signupTab.click();
+                      }}
+                    >
+                      Créer un compte
+                    </Button>
+                  </div>
                 </div>
               </form>
             </TabsContent>
