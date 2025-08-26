@@ -1,29 +1,29 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import FileUpload from "@/components/FileUpload";
-import ProviderNotifications from "@/components/ProviderNotifications";
-import { ProviderAvailabilityCalendar } from "@/components/ProviderAvailabilityCalendar";
-import { ClientRequestsList } from "@/components/ClientRequestsList";
-import { Calendar, MapPin, Star, DollarSign, Clock, User, FileText, Settings, BarChart3, MessageSquare, Upload, CheckCircle, AlertCircle, XCircle, Camera, Check, X, Bell, Share2, Copy, UserPlus, Gift } from "lucide-react";
-import ReferralProgram from "@/components/ReferralProgram";
-import { RewardsSection } from "@/components/RewardsSection";
-import { PrestationsRealisees } from "@/components/PrestationsRealisees";
-import ProviderInvoiceManagement from "@/components/ProviderInvoiceManagement";
-import ProviderDashboard from "@/components/ProviderDashboard";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import ProviderNavbar from "@/components/ProviderNavbar";
-import Footer from "@/components/Footer";
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  User, 
+  Calendar, 
+  FileText, 
+  Star, 
+  MapPin, 
+  Clock,
+  Briefcase,
+  Settings,
+  DollarSign,
+  TrendingUp,
+  Lock
+} from 'lucide-react';
+import ProviderDashboard from '@/components/ProviderDashboard';
+import ProfileUpdateForm from '@/components/ProfileUpdateForm';
+import PasswordChangeForm from '@/components/PasswordChangeForm';
 
 const EspacePrestataire = () => {
   const { user, loading } = useAuth();
@@ -479,19 +479,35 @@ const EspacePrestataire = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-12">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="profile">Profil</TabsTrigger>
-            <TabsTrigger value="documents">Documents</TabsTrigger>
-            <TabsTrigger value="missions">Missions</TabsTrigger>
-            <TabsTrigger value="calendar">Calendrier</TabsTrigger>
-            <TabsTrigger value="client-requests">Demandes</TabsTrigger>
-            <TabsTrigger value="prestations">Prestations</TabsTrigger>
-            <TabsTrigger value="invoices">Rémunération</TabsTrigger>
-            <TabsTrigger value="rewards">Récompenses</TabsTrigger>
-            <TabsTrigger value="referral">Parrainage</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
-            <TabsTrigger value="settings">Paramètres</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-7">
+            <TabsTrigger value="dashboard" className="flex items-center gap-2">
+              <Briefcase className="h-4 w-4" />
+              Dashboard
+            </TabsTrigger>
+            <TabsTrigger value="missions" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Missions
+            </TabsTrigger>
+            <TabsTrigger value="revenus" className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4" />
+              Revenus
+            </TabsTrigger>
+            <TabsTrigger value="calendrier" className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Calendrier
+            </TabsTrigger>
+            <TabsTrigger value="evaluations" className="flex items-center gap-2">
+              <Star className="h-4 w-4" />
+              Évaluations
+            </TabsTrigger>
+            <TabsTrigger value="profil" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Profil
+            </TabsTrigger>
+            <TabsTrigger value="mot-de-passe" className="flex items-center gap-2">
+              <Lock className="h-4 w-4" />
+              Mot de passe
+            </TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}
@@ -505,438 +521,66 @@ const EspacePrestataire = () => {
             }} />
           </TabsContent>
 
-          {/* Profile Tab */}
-          <TabsContent value="profile" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="w-5 h-5" />
-                  Informations personnelles
-                </CardTitle>
-                <CardDescription>
-                  Mettez à jour vos informations professionnelles
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Photo de profil */}
-                <div className="flex items-center space-x-6">
-                  <Avatar className="w-24 h-24">
-                    <AvatarImage src={profile.avatar_url} />
-                    <AvatarFallback className="text-lg">
-                      {profile.first_name?.charAt(0)}{profile.last_name?.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="space-y-2">
-                    <Label>Photo de profil</Label>
-                    <FileUpload 
-                      bucketName="provider-documents"
-                      path="avatar"
-                      title="Changer la photo"
-                      description="JPG, PNG jusqu'à 2MB"
-                      acceptedTypes=".jpg,.jpeg,.png"
-                      maxSize={2}
-                      onUploadComplete={(url) => {
-                        if (url) {
-                          setProfile(prev => ({ ...prev, avatar_url: url }));
-                          toast({
-                            title: "Photo mise à jour",
-                            description: "Votre photo de profil a été mise à jour",
-                          });
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="first_name">Prénom</Label>
-                    <Input
-                      id="first_name"
-                      value={profile.first_name}
-                      onChange={(e) => setProfile(prev => ({ ...prev, first_name: e.target.value }))}
-                      placeholder="Votre prénom"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="last_name">Nom</Label>
-                    <Input
-                      id="last_name"
-                      value={profile.last_name}
-                      onChange={(e) => setProfile(prev => ({ ...prev, last_name: e.target.value }))}
-                      placeholder="Votre nom"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="business_name">Nom de l'entreprise</Label>
-                    <Input
-                      id="business_name"
-                      value={profile.business_name}
-                      onChange={(e) => setProfile(prev => ({ ...prev, business_name: e.target.value }))}
-                      placeholder="Mon entreprise"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="siret_number">Numéro SIRET</Label>
-                    <Input
-                      id="siret_number"
-                      value={profile.siret_number}
-                      onChange={(e) => setProfile(prev => ({ ...prev, siret_number: e.target.value }))}
-                      placeholder="12345678901234"
-                      maxLength={14}
-                    />
-                  </div>
-
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="location">Localisation</Label>
-                    <Input
-                      id="location"
-                      value={profile.location}
-                      onChange={(e) => setProfile(prev => ({ ...prev, location: e.target.value }))}
-                      placeholder="Paris, France"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description de vos services</Label>
-                  <Textarea
-                    id="description"
-                    value={profile.description}
-                    onChange={(e) => setProfile(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder="Décrivez votre expérience et vos spécialisations..."
-                    rows={4}
-                  />
-                </div>
-
-                <Button onClick={saveProfile} disabled={isLoading} className="w-full">
-                  {isLoading ? "Sauvegarde..." : "Sauvegarder le profil"}
-                </Button>
-              </CardContent>
-            </Card>
+          {/* Profil utilisateur */}
+          <TabsContent value="profil" className="space-y-6">
+            <ProfileUpdateForm userType="provider" />
           </TabsContent>
 
-          {/* Documents Tab */}
-          <TabsContent value="documents" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
-                  Gestion des documents
-                </CardTitle>
-                <CardDescription>
-                  Téléchargez vos documents professionnels et justificatifs
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {/* Documents existants */}
-                  {documents.length > 0 && (
-                    <div className="space-y-4">
-                      <Label className="text-base font-semibold">Documents téléchargés</Label>
-                      <div className="grid gap-3">
-                        {documents.map((doc) => (
-                          <div key={doc.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                            <div className="flex items-center gap-3">
-                              {getDocumentIcon(doc.status)}
-                              <div>
-                                <p className="font-medium">{doc.file_name}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {doc.document_type.replace('_', ' ').toUpperCase()} - {doc.status === 'pending' ? 'En attente' : doc.status === 'approved' ? 'Approuvé' : 'Rejeté'}
-                                </p>
-                              </div>
-                            </div>
-                            <Badge variant={doc.status === 'approved' ? 'default' : doc.status === 'rejected' ? 'destructive' : 'secondary'}>
-                              {doc.status === 'pending' ? 'En attente' : doc.status === 'approved' ? 'Approuvé' : 'Rejeté'}
-                            </Badge>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Upload de nouveaux documents */}
-                  <div className="grid gap-6">
-                    <FileUpload 
-                      bucketName="provider-documents"
-                      path="auto_entrepreneur"
-                      title="Document d'auto-entrepreneur"
-                      description="Téléchargez votre document d'auto-entrepreneur (PDF, JPG, PNG)"
-                      acceptedTypes=".pdf,.jpg,.jpeg,.png"
-                      maxSize={10}
-                      onUploadComplete={(url) => {
-                        if (url) {
-                          loadProviderProfile();
-                          toast({
-                            title: "Document téléchargé",
-                            description: "Votre document d'auto-entrepreneur a été téléchargé avec succès",
-                          });
-                        }
-                      }}
-                    />
-                    
-                    <FileUpload 
-                      bucketName="provider-documents"
-                      path="casier_judiciaire"
-                      title="Casier judiciaire"
-                      description="Téléchargez votre casier judiciaire (PDF, JPG, PNG)"
-                      acceptedTypes=".pdf,.jpg,.jpeg,.png"
-                      maxSize={10}
-                      onUploadComplete={(url) => {
-                        if (url) {
-                          loadProviderProfile();
-                          toast({
-                            title: "Document téléchargé",
-                            description: "Votre casier judiciaire a été téléchargé avec succès",
-                          });
-                        }
-                      }}
-                    />
-                    
-                    <FileUpload 
-                      bucketName="provider-documents"
-                      path="autres_autorisations"
-                      title="Autres autorisations"
-                      description="Téléchargez vos autres autorisations professionnelles (PDF, JPG, PNG)"
-                      acceptedTypes=".pdf,.jpg,.jpeg,.png"
-                      maxSize={10}
-                      onUploadComplete={(url) => {
-                        if (url) {
-                          loadProviderProfile();
-                          toast({
-                            title: "Document téléchargé",
-                            description: "Votre document a été téléchargé avec succès",
-                          });
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Mot de passe */}
+          <TabsContent value="mot-de-passe" className="space-y-6">
+            <PasswordChangeForm />
           </TabsContent>
 
           {/* Missions Tab */}
           <TabsContent value="missions" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  Gestion des missions
-                </CardTitle>
-                <CardDescription>
-                  Visualisez et gérez vos missions assignées
-                </CardDescription>
+                <CardTitle>Missions disponibles</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {missions.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">
-                      Aucune mission assignée pour le moment
-                    </p>
-                  ) : (
-                    missions.map((mission) => (
-                      <div key={mission.id} className="p-4 border rounded-lg space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-semibold">Mission #{mission.id.slice(0, 8)}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {new Date(mission.booking_date).toLocaleDateString()} - {mission.start_time}
-                            </p>
-                          </div>
-                          <Badge variant={
-                            mission.status === 'pending' ? 'secondary' :
-                            mission.status === 'accepted' ? 'default' :
-                            mission.status === 'completed' ? 'default' :
-                            'destructive'
-                          }>
-                            {mission.status === 'pending' ? 'En attente' :
-                             mission.status === 'accepted' ? 'Acceptée' :
-                             mission.status === 'completed' ? 'Terminée' :
-                             'Refusée'}
-                          </Badge>
-                        </div>
-                        
-                        <div className="text-sm space-y-1">
-                          <p><strong>Adresse:</strong> {mission.location}</p>
-                          <p><strong>Prix:</strong> {mission.total_price}€</p>
-                          {mission.notes && <p><strong>Notes:</strong> {mission.notes}</p>}
-                        </div>
-
-                        {mission.status === 'pending' && (
-                          <div className="flex gap-2">
-                            <Button 
-                              size="sm" 
-                              onClick={() => acceptMission(mission.id)}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              <Check className="w-4 h-4 mr-1" />
-                              Accepter
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="destructive" 
-                              onClick={() => refuseMission(mission.id)}
-                            >
-                              <X className="w-4 h-4 mr-1" />
-                              Refuser
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    ))
-                  )}
-                </div>
+                <p>Liste des missions à venir</p>
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Calendar Tab */}
-          <TabsContent value="calendar" className="space-y-6">
-            <ProviderAvailabilityCalendar providerId={profile.provider_id || ''} />
-          </TabsContent>
-
-          {/* Client Requests Tab */}
-          <TabsContent value="client-requests" className="space-y-6">
-            <ClientRequestsList />
-          </TabsContent>
-
-          {/* Paiements Tab */}
-          <TabsContent value="payments" className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="w-5 h-5" />
-                    Revenus mensuels
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center">
-                    <p className="text-3xl font-bold text-green-600">{monthlyEarnings}€</p>
-                    <p className="text-muted-foreground">Ce mois-ci</p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Revenus totaux</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center">
-                    <p className="text-3xl font-bold text-primary">{totalEarnings}€</p>
-                    <p className="text-muted-foreground">Total gagné</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
+          {/* Revenus Tab */}
+          <TabsContent value="revenus" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Historique des paiements</CardTitle>
+                <CardTitle>Mes revenus</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {missions
-                    .filter(m => m.status === 'completed')
-                    .map((mission) => (
-                      <div key={mission.id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div>
-                          <p className="font-medium">Mission #{mission.id.slice(0, 8)}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(mission.booking_date).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-green-600">+{mission.total_price}€</p>
-                          <p className="text-xs text-muted-foreground">Payé</p>
-                        </div>
-                      </div>
-                    ))}
-                  {missions.filter(m => m.status === 'completed').length === 0 && (
-                    <p className="text-center text-muted-foreground py-8">
-                      Aucun paiement reçu pour le moment
-                    </p>
-                  )}
-                </div>
+                <p>Revenus mensuels: {monthlyEarnings}€</p>
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Prestations Tab */}
-          <TabsContent value="prestations" className="space-y-6">
-            <PrestationsRealisees />
-          </TabsContent>
-
-          {/* Rémunération Tab */}
-          <TabsContent value="invoices" className="space-y-6">
-            <ProviderInvoiceManagement />
-          </TabsContent>
-
-          {/* Récompenses Tab */}
-          <TabsContent value="rewards" className="space-y-6">
-            <RewardsSection userType="provider" />
-          </TabsContent>
-
-          {/* Notifications Tab */}
-          <TabsContent value="notifications" className="space-y-6">
-            <ProviderNotifications />
-          </TabsContent>
-
-          {/* Parrainage Tab */}
-          <TabsContent value="referral" className="space-y-6">
-            <ReferralProgram />
-          </TabsContent>
-
-          {/* Settings Tab */}
-          <TabsContent value="settings" className="space-y-6">
+          {/* Calendrier Tab */}
+          <TabsContent value="calendrier" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="w-5 h-5" />
-                  Paramètres
-                </CardTitle>
-                <CardDescription>
-                  Configurez vos préférences et notifications
-                </CardDescription>
+                <CardTitle>Mon calendrier</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>Notifications par email</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Recevoir des notifications pour les nouvelles missions
-                      </p>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={configureNotifications}>
-                      Configurer
-                    </Button>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>Disponibilité</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Définir vos créneaux de disponibilité
-                      </p>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={modifyAvailability}>
-                      Modifier
-                    </Button>
-                  </div>
-                </div>
+                <p>Gestion des disponibilités</p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Evaluations Tab */}
+          <TabsContent value="evaluations" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Mes évaluations</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>Note moyenne: {profile.rating}/5</p>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };

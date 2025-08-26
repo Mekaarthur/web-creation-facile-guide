@@ -1,26 +1,43 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, CreditCard, Bell, History, FileText, UserRound, Lock, User, Settings, UserPlus, Gift, ShoppingCart } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import BookingsList from "@/components/BookingsList";
-import FileUpload from "@/components/FileUpload";
-import ReferralProgram from "@/components/ReferralProgram";
-import PaymentMethodsManager from "@/components/PaymentMethodsManager";
-import InvoiceManagement from "@/components/InvoiceManagement";
-import { RewardsSection } from "@/components/RewardsSection";
-import ClientDashboard from "@/components/ClientDashboard";
-import { useAuth } from "@/hooks/useAuth";
-import Auth from "./Auth";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import EnhancedCart from "@/components/EnhancedCart";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  User, 
+  Calendar, 
+  FileText, 
+  Gift, 
+  Users, 
+  CreditCard, 
+  Settings,
+  Lock,
+  Download,
+  MapPin,
+  Clock,
+  Star,
+  History,
+  ShoppingCart,
+  UserPlus
+} from 'lucide-react';
+import ClientDashboard from '@/components/ClientDashboard';
+import ProfileUpdateForm from '@/components/ProfileUpdateForm';
+import PasswordChangeForm from '@/components/PasswordChangeForm';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import Auth from './Auth';
+import BookingsList from '@/components/BookingsList';
+import EnhancedCart from '@/components/EnhancedCart';
+import InvoiceManagement from '@/components/InvoiceManagement';
+import PaymentMethodsManager from '@/components/PaymentMethodsManager';
+import { RewardsSection } from '@/components/RewardsSection';
+import ReferralProgram from '@/components/ReferralProgram';
 
 const EspacePersonnel = () => {
   const { user, loading } = useAuth();
@@ -201,35 +218,31 @@ const EspacePersonnel = () => {
                 <>
                   <TabsTrigger value="dashboard" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
                     <User className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">Tableau de bord</span>
+                    <span className="truncate">Dashboard</span>
                   </TabsTrigger>
                   <TabsTrigger value="reservations" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
-                    <History className="w-4 h-4 flex-shrink-0" />
+                    <Calendar className="w-4 h-4 flex-shrink-0" />
                     <span className="truncate">Réservations</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="panier" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
-                    <ShoppingCart className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">Mon Panier</span>
                   </TabsTrigger>
                   <TabsTrigger value="factures" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
                     <FileText className="w-4 h-4 flex-shrink-0" />
                     <span className="truncate">Factures</span>
                   </TabsTrigger>
-                  <TabsTrigger value="profil" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
-                    <User className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">Profil</span>
-                  </TabsTrigger>
                   <TabsTrigger value="recompenses" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
                     <Gift className="w-4 h-4 flex-shrink-0" />
                     <span className="truncate">Récompenses</span>
                   </TabsTrigger>
-                  <TabsTrigger value="calendrier" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
-                    <Calendar className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">Calendrier</span>
-                  </TabsTrigger>
                   <TabsTrigger value="parrainage" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
-                    <UserPlus className="w-4 h-4 flex-shrink-0" />
+                    <Users className="w-4 h-4 flex-shrink-0" />
                     <span className="truncate">Parrainage</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="profil" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
+                    <Settings className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">Profil</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="mot-de-passe" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
+                    <Lock className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">Mot de passe</span>
                   </TabsTrigger>
                 </>
               )}
