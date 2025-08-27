@@ -29,29 +29,29 @@ const BikaTravel = () => {
 
   const services = [
     {
-      name: "Aide pré-voyage",
-      price: 25,
-      description: "Vérification documents, check-in en ligne, préparation valises optimale"
-    },
-    {
-      name: "Transfert aéroport",
-      price: 32,
-      description: "Transfert sécurisé domicile-aéroport avec service Fast-Track"
-    },
-    {
-      name: "Veille de vols",
-      price: 35,
-      description: "Surveillance de vos vols, rebooking automatique en cas d'imprévu"
-    },
-    {
-      name: "Travel-Kids",
+      name: "Préparation voyage",
       price: 30,
-      description: "Service spécialisé familles : kit enfant, poussette voyage, divertissements"
+      description: "Recherche et réservation billets d'avion/train, réservation hébergements (hôtels, locations), réservation activités et excursions"
     },
     {
-      name: "Préparation retour",
-      price: 27,
-      description: "Courses de première nécessité avant votre retour de voyage"
+      name: "Vérification documents",
+      price: 30,
+      description: "Vérification documents de voyage, organisation itinéraires personnalisés"
+    },
+    {
+      name: "Formalités & Documents",
+      price: 30,
+      description: "Assistance renouvellement passeports/visas, vérification et rappel validité documents, réservation transfert in/out aéroport"
+    },
+    {
+      name: "Assurances voyage",
+      price: 30,
+      description: "Recherche et souscription assurances voyage et rapatriement, aide au change de devises"
+    },
+    {
+      name: "Assistance 24h/7j",
+      price: 30,
+      description: "Aide à la modification réservations en urgence, gestion des imprévus et retards, support multilingue à destination"
     }
   ];
 

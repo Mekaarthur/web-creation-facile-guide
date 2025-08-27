@@ -27,34 +27,34 @@ const BikaMaison = () => {
 
   const services = [
     {
-      name: "Courses planifiées",
-      price: 22,
-      description: "Courses hebdomadaires selon votre liste personnalisée et vos habitudes"
-    },
-    {
-      name: "Courses express",
-      price: 27,
-      description: "Courses urgentes réalisées en moins de 2h pour vos besoins imprévus"
-    },
-    {
-      name: "Récupération colis",
-      price: 24,
-      description: "Récupération colis, pressing, cordonnerie et toutes commissions"
-    },
-    {
-      name: "Petits travaux",
-      price: 28,
-      description: "Montage de meubles simples, changement d'ampoules, petites réparations"
-    },
-    {
-      name: "Garde d'animaux",
-      price: 23,
-      description: "Garde courte durée de vos animaux domestiques pendant vos absences"
-    },
-    {
-      name: "Rangement",
+      name: "Courses & Approvisionnement",
       price: 25,
-      description: "Rangement dressing, tri des jouets, organisation optimale de vos espaces"
+      description: "Courses alimentaires hebdomadaires, courses de première nécessité, achats spécialisés (bio, sans gluten), gestion des stocks"
+    },
+    {
+      name: "Courses urgentes et de nuit",
+      price: 25,
+      description: "Courses urgentes (livraison express), courses de nuit et livraison"
+    },
+    {
+      name: "Logistique & Organisation",
+      price: 25,
+      description: "Retrait des colis et livraisons, gestion des rendez-vous artisans/techniciens, coordination des travaux"
+    },
+    {
+      name: "Aide au déménagement",
+      price: 30,
+      description: "Faire les cartons, aide au transport des cartons et meubles, rangement et organisation d'espaces"
+    },
+    {
+      name: "Entretien jardins",
+      price: 25,
+      description: "Entretien des jardins et espaces verts (sur demande)"
+    },
+    {
+      name: "Maintenance",
+      price: 25,
+      description: "Aide au montage des meubles, aide à la plomberie de base"
     }
   ];
 

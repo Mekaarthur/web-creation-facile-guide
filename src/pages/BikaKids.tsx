@@ -28,38 +28,43 @@ const BikaKids = () => {
   const services = [
     {
       name: "Garde ponctuelle",
-      price: 22,
-      description: "Garde d'enfants à domicile pour quelques heures, soirées ou après-midi"
-    },
-    {
-      name: "Garde de nuit",
       price: 25,
-      description: "Surveillance et garde d'enfants toute la nuit pour vos déplacements"
+      description: "Garde régulière (après-école, vacances scolaires), garde partagée entre familles"
     },
     {
-      name: "Garde d'urgence",
-      price: 27,
-      description: "Intervention rapide en cas d'imprévu ou urgence familiale"
+      name: "Récupération quotidienne",
+      price: 25,
+      description: "Récupération quotidienne à la sortie d'école, transport vers activités extrascolaires"
     },
     {
-      name: "Sorties éducatives",
-      price: 24,
-      description: "Accompagnement au musée, médiathèque, parcs et activités culturelles"
-    },
-    {
-      name: "Accompagnement scolaire",
-      price: 23,
-      description: "Trajets école-maison-activités extrascolaires sécurisés"
+      name: "Accompagnement sorties",
+      price: 25,
+      description: "Sorties culturelles (musées, cinéma, parcs), accompagnement aux activités sportives"
     },
     {
       name: "Aide aux devoirs",
       price: 25,
-      description: "Soutien scolaire personnalisé et préparation du cartable"
+      description: "Aide aux devoirs et soutien scolaire personnalisé"
     },
     {
-      name: "Organisation anniversaire",
+      name: "Gardes de nuit ou d'urgence",
       price: 30,
-      description: "Pré-organisation complète d'anniversaires enfants"
+      description: "Nuit complète, garde de nuit, urgences (soirée, weekend), accompagnement enfants malades"
+    },
+    {
+      name: "Accompagnement médical",
+      price: 30,
+      description: "Accompagnement aux rendez-vous médicaux"
+    },
+    {
+      name: "Anniversaires & Évènements",
+      price: 30,
+      description: "Animation et jeux pour enfants, décoration thématique personnalisée, gestion des invitations"
+    },
+    {
+      name: "Soutien scolaire",
+      price: 30,
+      description: "Cours particuliers à domicile, préparation aux examens"
     }
   ];
 

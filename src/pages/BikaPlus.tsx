@@ -27,24 +27,24 @@ const BikaPlus = () => {
 
   const features = [
     {
-      name: "Chef Family Officer dédié",
-      description: "Votre interlocuteur unique qui coordonne tous vos besoins familiaux"
+      name: "Projets personnalisés",
+      description: "Étude besoins spécifiques clients, conception solutions sur mesure, coordination équipes multidisciplinaires"
     },
     {
-      name: "Ligne prioritaire + WhatsApp instantané",
-      description: "Contact direct 24h/24 pour toutes vos urgences"
+      name: "Services exclusifs",
+      description: "Majordome personnel à temps plein/partiel, gestionnaire de patrimoine familial, organisateur de grands événements privés"
     },
     {
-      name: "Organisation complète planning familial",
-      description: "Gestion totale des agendas, rendez-vous, activités"
+      name: "Coordinateur résidences",
+      description: "Coordinateur de résidences multiples, assistant personnel haute qualité"
     },
     {
-      name: "Garde soir, week-end, nuit",
-      description: "Disponibilité maximale pour tous vos besoins de garde"
+      name: "Formules premium",
+      description: "Service 24h/24 et 7j/7, équipe dédiée à une famille, interventions d'urgence prioritaires"
     },
     {
-      name: "Accès illimité",
-      description: "Utilisation libre de tous les autres services Bikawo sans limitation"
+      name: "Accès services exclusifs",
+      description: "Accès services partenaires exclusifs, reporting détaillé et personnalisé"
     }
   ];
 

@@ -24,11 +24,12 @@ const BikaSeniors = () => {
   };
 
   const services = [
-    { name: "Aide quotidienne", price: 24, description: "Assistance dans les activités quotidiennes, toilette, habillage, préparation repas" },
-    { name: "Accompagnement médical", price: 27, description: "Accompagnement aux rendez-vous médicaux, suivi des traitements" },
-    { name: "Courses seniors", price: 26, description: "Courses alimentaires et pharmaceutiques adaptées aux besoins spécifiques" },
-    { name: "Compagnie", price: 24, description: "Temps de compagnie, conversation, jeux, lecture, sorties de proximité" },
-    { name: "Aide mobilité", price: 28, description: "Aide à la mobilité, transferts sécurisés, assistance pour les repas" }
+    { name: "Assistance quotidienne", price: 30, description: "Aide aux courses et préparation repas, accompagnement sorties et promenades, aide à la toilette et soins d'hygiène" },
+    { name: "Administration médicaments", price: 30, description: "Administration médicaments, compagnie et conversation, gestion administrative et courrier" },
+    { name: "Support médical", price: 30, description: "Accompagnement rendez-vous médicaux, coordination avec équipe soignante, gestion des traitements" },
+    { name: "Surveillance santé", price: 30, description: "Surveillance état de santé, liaison avec famille et médecins" },
+    { name: "Maintien à domicile", price: 30, description: "Aménagement sécurisé du logement, installation équipements adaptés, ménage et entretien domicile" },
+    { name: "Lien social", price: 30, description: "Visites régulières et écoute, accompagnement activités culturelles, aide utilisation nouvelles technologies" }
   ];
 
   const structuredData = {

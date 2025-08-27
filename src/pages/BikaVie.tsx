@@ -29,29 +29,29 @@ const BikaVie = () => {
 
   const services = [
     {
-      name: "Rendez-vous médicaux",
-      price: 24,
-      description: "Prise, modification et gestion de tous vos rendez-vous médicaux"
+      name: "Services administratifs familiaux",
+      price: 25,
+      description: "Gestion du courrier et documents, prise de rendez-vous médicaux/administratifs, suivi des contrats et abonnements"
     },
     {
-      name: "Dossiers administratifs",
-      price: 28,
-      description: "Constitution et dépôt de dossiers CAF, CPAM, préfecture"
+      name: "Accompagnement rendez-vous",
+      price: 25,
+      description: "Accompagnement aux rendez-vous, archivage et classement documents personnels"
     },
     {
-      name: "Gestion d'agenda",
-      price: 26,
-      description: "Gestion d'agenda partagé familial, rappels vaccins et échéances"
+      name: "Services personnels",
+      price: 25,
+      description: "Dépôt et retrait de pressing, dépôts et retrait cordonnerie, réservations restaurants et spectacles"
     },
     {
-      name: "Organisation événements",
-      price: 32,
-      description: "Organisation complète de fêtes familiales, baby-showers, célébrations"
+      name: "Recherche de prestataires",
+      price: 25,
+      description: "Recherche et réservation de prestataires spécialisés"
     },
     {
-      name: "Aide administrative",
-      price: 30,
-      description: "Gestion administrative complète, suivi de dossiers complexes"
+      name: "Assistance quotidienne",
+      price: 25,
+      description: "Gestion de planning personnel, interface avec administrations et services, résolution de problèmes du quotidien"
     }
   ];
 

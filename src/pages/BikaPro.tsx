@@ -26,11 +26,11 @@ const BikaPro = () => {
   };
 
   const services = [
-    { name: "Expert administratif", price: 35, description: "Experts administratifs externalisés pour vos besoins ponctuels ou récurrents" },
-    { name: "Executive expert", price: 45, description: "Expert executive à la carte pour missions stratégiques et management" },
-    { name: "Organisation événements", price: 50, description: "Organisation professionnelle de séminaires, boards, événements corporate" },
-    { name: "Gestion déplacements", price: 40, description: "Gestion complète des déplacements d'équipe, logistique voyages d'affaires" },
-    { name: "Support business", price: 55, description: "Support business personnalisé, assistant de direction externalisé" }
+    { name: "Support administratif", price: 50, description: "Gestion agenda dirigeants, coordination déplacements professionnels, gestion réservations et logistique" },
+    { name: "Interface partenaires", price: 50, description: "Interface avec partenaires externes" },
+    { name: "Conciergerie d'entreprise", price: 50, description: "Services personnels pour employés, pressing et petites courses, réservations restaurants d'affaires" },
+    { name: "Organisation cadeaux", price: 50, description: "Organisation cadeaux clients/partenaires" },
+    { name: "Gestion urgences", price: 50, description: "Gestion des urgences personnelles salariés" }
   ];
 
   const structuredData = {

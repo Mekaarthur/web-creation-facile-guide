@@ -24,11 +24,12 @@ const BikaAnimals = () => {
   };
 
   const services = [
-    { name: "Promenade animaux", price: 20, description: "Balades matinales et du soir adaptées aux besoins de votre animal" },
-    { name: "Visite vétérinaire", price: 25, description: "Accompagnement chez le vétérinaire, gestion des rendez-vous santé" },
-    { name: "Courses animaux", price: 22, description: "Achat nourriture, accessoires, produits d'hygiène spécialisés" },
-    { name: "Garde d'animaux", price: 24, description: "Garde ponctuelle à domicile respectant les habitudes de l'animal" },
-    { name: "Toilettage", price: 30, description: "Toilettage et soins de base, brossage, nettoyage oreilles et yeux" }
+    { name: "Soins quotidiens", price: 25, description: "Promenades et sorties régulières, nourrissage et soins à domicile, administration médicaments" },
+    { name: "Brossage et hygiène", price: 25, description: "Brossage et soins d'hygiène, compagnie pour animaux seuls" },
+    { name: "Services vétérinaires", price: 30, description: "Transport chez le vétérinaire, accompagnement rendez-vous médicaux, gestion des urgences vétérinaires" },
+    { name: "Suivi traitements", price: 30, description: "Suivi traitements et convalescence, coordination avec professionnels animaliers" },
+    { name: "Garde & Pension", price: 30, description: "Garde à domicile (propriétaire absent), pension dans famille d'accueil agréée, garde pendant vacances/déplacements" },
+    { name: "Sorties et exercice", price: 30, description: "Sorties et exercice adaptés, envoi de nouvelles et photos quotidiennes" }
   ];
 
   const structuredData = {
