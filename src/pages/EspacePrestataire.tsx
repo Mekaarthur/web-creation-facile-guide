@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -19,9 +20,13 @@ import {
   Settings,
   DollarSign,
   TrendingUp,
-  Lock
+  Lock,
+  CheckCircle,
+  XCircle,
+  AlertCircle
 } from 'lucide-react';
 import ProviderDashboard from '@/components/ProviderDashboard';
+import ProviderNavbar from '@/components/ProviderNavbar';
 import ProfileUpdateForm from '@/components/ProfileUpdateForm';
 import PasswordChangeForm from '@/components/PasswordChangeForm';
 
