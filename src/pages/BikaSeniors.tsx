@@ -159,26 +159,6 @@ const BikaSeniors = () => {
           </div>
         </section>
 
-        <section className="py-16 bg-white">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12">Nos services Bika Seniors</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-              {services.map((service, index) => (
-                <Card key={index} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg">{service.name}</CardTitle>
-                      <Badge variant="outline" className="text-blue-600 border-blue-200 font-semibold">{`${service.price}€/h`}</Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-sm">{service.description}</CardDescription>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
 
         {/* Services en action */}
         <section className="py-16 bg-gray-50">

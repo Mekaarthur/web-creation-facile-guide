@@ -85,21 +85,24 @@ const ServicesPackages = () => {
       id: "kids",
       icon: Baby,
       title: "Bika Kids",
-      subtitle: "Enfants & Parentalité",
+      subtitle: "Services dédiés aux enfants",
       description: "Garde, sorties éducatives, aide aux devoirs et organisation d'anniversaires pour vos enfants.",
       image: serviceChildcareEducation,
       services: [
-        { name: "Garde ponctuelle", description: "Garde d'enfant à domicile pour quelques heures", price: 22 },
-        { name: "Garde de nuit", description: "Garde d'enfant toute la nuit", price: 25 },
-        { name: "Garde d'urgence", description: "Garde d'enfant en cas d'urgence", price: 27 },
-        { name: "Sorties éducatives", description: "Accompagnement au musée, médiathèque, etc.", price: 24 },
-        { name: "Accompagnement scolaire", description: "Trajet école-maison-activités", price: 23 },
-        { name: "Aide aux devoirs", description: "Aide aux devoirs et préparation cartable", price: 25 },
-        { name: "Organisation anniversaire", description: "Pré-organisation d'anniversaire enfant", price: 30 }
+        { name: "Garde ponctuelle", description: "Garde à domicile, après école, vacances", price: 25 },
+        { name: "Garde partagée", description: "Entre familles, sortie d'école", price: 25 },
+        { name: "Transport & sorties", description: "Activités extrascolaires, sport, culture", price: 25 },
+        { name: "Aide aux devoirs", description: "Aide personnalisée et suivi", price: 25 },
+        { name: "Gardes de nuit", description: "Nuit complète, urgences soir/week-end", price: 30 },
+        { name: "Enfants malades", description: "Accompagnement et soins légers", price: 30 },
+        { name: "Rendez-vous médicaux", description: "Accompagnement aux RDV", price: 30 },
+        { name: "Anniversaires", description: "Animation, déco, logistique", price: 30 },
+        { name: "Photographe & souvenirs", description: "Souvenirs photo/vidéo", price: 30 },
+        { name: "Cours particuliers", description: "Soutien scolaire et examens", price: 30 }
       ],
       color: "primary",
       popular: false,
-      price: "À partir de 22€/h"
+      price: "À partir de 25€/h"
     },
     {
       id: "maison",
@@ -109,52 +112,58 @@ const ServicesPackages = () => {
       description: "Courses, récupération de colis, petits travaux et organisation pour alléger votre quotidien.",
       image: serviceHouseLogistics,
       services: [
-        { name: "Courses planifiées", description: "Courses hebdomadaires selon votre liste", price: 22 },
-        { name: "Courses express", description: "Courses urgentes en moins de 2h", price: 27 },
-        { name: "Récupération colis", description: "Récupération colis, pressing, cordonnerie", price: 24 },
-        { name: "Petits travaux", description: "Montage meuble simple, changement d'ampoule", price: 28 },
-        { name: "Garde d'animaux", description: "Garde courte d'animaux domestiques", price: 23 },
-        { name: "Rangement", description: "Rangement dressing, tri jouets", price: 25 }
+        { name: "Courses alimentaires", description: "Hebdo, bio/sans gluten", price: 25 },
+        { name: "Gestion stocks", description: "Frigo/placards, urgentes/nuit", price: 25 },
+        { name: "Retrait colis", description: "Colis, livraisons, RDV artisans", price: 25 },
+        { name: "Coordination travaux", description: "Travaux/rénovations", price: 30 },
+        { name: "Déménagement léger", description: "Cartons, descente meubles/cartons", price: 30 },
+        { name: "Rangement espaces", description: "Organisation et tri", price: 30 },
+        { name: "Entretien jardins", description: "Espaces verts (sur demande)", price: 25 },
+        { name: "Petits travaux", description: "Montage meubles, plomberie légère", price: 30 }
       ],
       color: "accent",
       popular: true,
-      price: "À partir de 22€/h"
+      price: "25–30€/h"
     },
     {
       id: "vie",
       icon: FileText,
       title: "Bika Vie",
-      subtitle: "Conciergerie & Administration",
+      subtitle: "Conciergerie complète",
       description: "Gestion de vos rendez-vous, démarches administratives et organisation d'événements familiaux.",
       image: serviceAdminSupport,
       services: [
-        { name: "Rendez-vous médicaux", description: "Prise et report de rendez-vous médicaux", price: 24 },
-        { name: "Dossiers administratifs", description: "Constitution et dépôt de dossiers CAF, CPAM", price: 28 },
-        { name: "Gestion d'agenda", description: "Gestion d'agenda partagé, rappels vaccins", price: 26 },
-        { name: "Organisation événements", description: "Organisation fête familiale, baby-shower", price: 32 },
-        { name: "Aide administrative", description: "Gestion administrative complète", price: 30 }
+        { name: "Courrier & documents", description: "Prise RDV médicaux/administratifs", price: 25 },
+        { name: "Suivi abonnements", description: "Archivage documents", price: 25 },
+        { name: "Accompagnement RDV", description: "Déplacements, classement", price: 25 },
+        { name: "Pressing & cordonnerie", description: "Dépôt / retrait", price: 25 },
+        { name: "Réservations", description: "Restaurants / spectacles", price: 25 },
+        { name: "Gestion planning", description: "Interface administrations", price: 25 },
+        { name: "Résolution problèmes", description: "Aide quotidienne", price: 25 }
       ],
       color: "primary",
       popular: false,
-      price: "24€/h"
+      price: "25€/h"
     },
     {
       id: "travel",
       icon: Plane,
       title: "Bika Travel",
-      subtitle: "Aide Voyageurs",
+      subtitle: "Assistance voyage",
       description: "Accompagnement complet pour vos voyages : avant, pendant et après votre déplacement.",
       image: serviceTravelAssistance,
       services: [
-        { name: "Aide pré-voyage", description: "Vérification documents, check-in en ligne", price: 25 },
-        { name: "Transfert aéroport", description: "Transfert domicile-aéroport, Fast-Track", price: 32 },
-        { name: "Veille de vols", description: "Veille vols, rebooking imprévu", price: 35 },
-        { name: "Travel-Kids", description: "Service Travel-Kids : kit enfant, poussette", price: 30 },
-        { name: "Préparation retour", description: "Récupération courses avant retour", price: 27 }
+        { name: "Réservations transports", description: "Billets avion/train", price: 30 },
+        { name: "Hébergements & activités", description: "Hôtels, locations, excursions", price: 30 },
+        { name: "Itinéraires personnalisés", description: "Organisation détaillée", price: 30 },
+        { name: "Passeports & visas", description: "Renouvellement, validité", price: 30 },
+        { name: "Assurances & change", description: "Voyage/rapatriement, devises", price: 30 },
+        { name: "Gestion imprévus", description: "Retards, rebooking urgent", price: 30 },
+        { name: "Support multilingue", description: "À destination", price: 30 }
       ],
       color: "accent",
       popular: false,
-      price: "25€/h"
+      price: "30€/h"
     },
     {
       id: "plus",
@@ -178,55 +187,62 @@ const ServicesPackages = () => {
       id: "animals",
       icon: PawPrint,
       title: "Bika Animals",
-      subtitle: "Services pour animaux",
+      subtitle: "Univers animalier",
       description: "Promenade, soins et accompagnement pour vos compagnons à quatre pattes.",
       image: servicePetCare,
       services: [
-        { name: "Promenade animaux", description: "Balade matinale et du soir", price: 20 },
-        { name: "Visite vétérinaire", description: "Accompagnement chez le vétérinaire", price: 25 },
-        { name: "Courses animaux", description: "Courses pour animaux (nourriture, accessoires)", price: 22 },
-        { name: "Garde d'animaux", description: "Garde ponctuelle d'animaux", price: 24 },
-        { name: "Toilettage", description: "Toilettage et soins de base", price: 30 }
+        { name: "Promenades", description: "Promenades régulières", price: 25 },
+        { name: "Nourrissage & soins", description: "À domicile", price: 25 },
+        { name: "Médicaments", description: "Administration et compagnie", price: 25 },
+        { name: "Transport vétérinaire", description: "RDV et urgences", price: 30 },
+        { name: "Suivi traitements", description: "Coordination soignants", price: 30 },
+        { name: "Garde à domicile", description: "Ou famille agréée", price: 30 },
+        { name: "Garde vacances", description: "+ Nouvelles/photos", price: 30 }
       ],
       color: "primary",
       popular: false,
-      price: "À partir de 20€/h"
+      price: "25–30€/h"
     },
     {
       id: "seniors",
       icon: UserCheck,
-      title: "Bika Personnes Âgées",
-      subtitle: "Aide seniors",
+      title: "Bika Seniors",
+      subtitle: "Accompagnement personnes âgées",
       description: "Accompagnement bienveillant et aide quotidienne pour nos aînés.",
       image: serviceSeniorsAssistance,
       services: [
-        { name: "Aide quotidienne", description: "Aide aux activités quotidiennes", price: 24 },
-        { name: "Accompagnement médical", description: "Accompagnement aux rendez-vous médicaux", price: 27 },
-        { name: "Courses seniors", description: "Courses et commissions", price: 26 },
-        { name: "Compagnie", description: "Compagnie et conversation", price: 24 },
-        { name: "Aide mobilité", description: "Aide à la mobilité et aux repas", price: 28 }
+        { name: "Courses & repas", description: "Sorties & promenades", price: 30 },
+        { name: "Toilette & hygiène", description: "Administration médicaments", price: 30 },
+        { name: "Compagnie", description: "Présence et échanges", price: 30 },
+        { name: "Rdv médicaux", description: "Suivi traitements", price: 30 },
+        { name: "Coordination soignants", description: "Lien famille/médecins", price: 30 },
+        { name: "Aménagement logement", description: "Équipements adaptés", price: 35 },
+        { name: "Ménage & entretien", description: "Entretien domicile", price: 35 },
+        { name: "Lien social", description: "Visites, activités", price: 30 },
+        { name: "Technologies", description: "Aide outils + appels vidéo", price: 30 }
       ],
       color: "accent",
       popular: false,
-      price: "24€/h"
+      price: "30–35€/h"
     },
     {
       id: "pro",
       icon: Briefcase,
       title: "Bika Pro",
-      subtitle: "Aide Entreprise",
+      subtitle: "Services aux entreprises",
       description: "Solutions d'aide administrative et executive pour votre entreprise.",
       image: serviceBusinessExecutive,
       services: [
-        { name: "Expert administratif", description: "Experts administratifs externalisés", price: 35 },
-        { name: "Executive expert", description: "Executive expert à la carte", price: 45 },
-        { name: "Organisation événements", description: "Organisation séminaires, boards", price: 50 },
-        { name: "Gestion déplacements", description: "Gestion déplacements d'équipe", price: 40 },
-        { name: "Support business", description: "Support business personnalisé", price: 55 }
+        { name: "Agenda dirigeants", description: "Gestion et coordination", price: 50 },
+        { name: "Déplacements", description: "Réservations & logistique", price: 50 },
+        { name: "Interface partenaires", description: "Relations externes", price: 50 },
+        { name: "Services personnels employés", description: "Pressing, courses", price: 50 },
+        { name: "Resto d'affaires", description: "Réservations", price: 50 },
+        { name: "Cadeaux clients", description: "Organisation", price: 50 }
       ],
       color: "accent",
       popular: false,
-      price: "Sur devis"
+      price: "À partir de 50€/h"
     }
   ];
 
