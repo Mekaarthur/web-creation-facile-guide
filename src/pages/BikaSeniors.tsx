@@ -24,12 +24,22 @@ const BikaSeniors = () => {
   };
 
   const services = [
-    { name: "Assistance quotidienne", price: 30, description: "Aide aux courses et préparation repas, accompagnement sorties et promenades, aide à la toilette et soins d'hygiène" },
-    { name: "Administration médicaments", price: 30, description: "Administration médicaments, compagnie et conversation, gestion administrative et courrier" },
-    { name: "Support médical", price: 30, description: "Accompagnement rendez-vous médicaux, coordination avec équipe soignante, gestion des traitements" },
-    { name: "Surveillance santé", price: 30, description: "Surveillance état de santé, liaison avec famille et médecins" },
-    { name: "Maintien à domicile", price: 30, description: "Aménagement sécurisé du logement, installation équipements adaptés, ménage et entretien domicile" },
-    { name: "Lien social", price: 30, description: "Visites régulières et écoute, accompagnement activités culturelles, aide utilisation nouvelles technologies" }
+    // a) Assistance quotidienne (30€/h)
+    { name: "Courses et repas", price: 30, description: "Courses & préparation repas, sorties & promenades" },
+    { name: "Aide toilette et hygiène", price: 30, description: "Aide toilette & hygiène de base, administration médicaments" },
+    { name: "Compagnie", price: 30, description: "Compagnie et conversation quotidienne" },
+    
+    // b) Support médical (30€/h)
+    { name: "Rdv médicaux", price: 30, description: "Accompagnement rdv médicaux, suivi traitements" },
+    { name: "Coordination soignants", price: 30, description: "Coordination avec soignants, liaison famille/médecins" },
+    
+    // c) Maintien à domicile (35€/h)
+    { name: "Aménagement logement", price: 35, description: "Aménagement logement sécurisé, équipements adaptés" },
+    { name: "Ménage et entretien", price: 35, description: "Ménage & entretien domicile" },
+    
+    // d) Lien social (30€/h)
+    { name: "Visites régulières", price: 30, description: "Visites régulières, accompagnement activités culturelles" },
+    { name: "Aide nouvelles technologies", price: 30, description: "Aide nouvelles technologies, appels vidéo avec famille" }
   ];
 
   const structuredData = {

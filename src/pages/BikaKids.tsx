@@ -26,43 +26,55 @@ const BikaKids = () => {
   };
 
   const services = [
+    // a) Garde d'enfants & Baby-sitting (25€/h)
     {
       name: "Garde ponctuelle",
       price: 25,
-      description: "Garde régulière (après-école, vacances scolaires), garde partagée entre familles"
+      description: "Garde ponctuelle, garde régulière (après-école, vacances scolaires)"
     },
     {
-      name: "Récupération quotidienne",
+      name: "Garde partagée",
       price: 25,
-      description: "Récupération quotidienne à la sortie d'école, transport vers activités extrascolaires"
+      description: "Garde partagée entre familles, récupération quotidienne à la sortie d'école"
     },
     {
-      name: "Accompagnement sorties",
+      name: "Transport et sorties",
       price: 25,
-      description: "Sorties culturelles (musées, cinéma, parcs), accompagnement aux activités sportives"
+      description: "Transport vers activités extrascolaires, accompagnement aux activités sportives, sorties culturelles"
     },
     {
       name: "Aide aux devoirs",
       price: 25,
-      description: "Aide aux devoirs et soutien scolaire personnalisé"
+      description: "Aide aux devoirs personnalisée"
     },
+    
+    // b) Gardes de nuit ou d'urgence (30€/h)
     {
-      name: "Gardes de nuit ou d'urgence",
+      name: "Gardes de nuit",
       price: 30,
-      description: "Nuit complète, garde de nuit, urgences (soirée, weekend), accompagnement enfants malades"
+      description: "Nuit complète / gardes urgentes (soirée, weekend)"
     },
     {
-      name: "Accompagnement médical",
+      name: "Accompagnement enfants malades",
       price: 30,
-      description: "Accompagnement aux rendez-vous médicaux"
+      description: "Accompagnement enfants malades, accompagnement aux rendez-vous médicaux"
     },
+    
+    // c) Anniversaires & Événements (30€/h)
     {
-      name: "Anniversaires & Évènements",
+      name: "Animation anniversaires",
       price: 30,
-      description: "Animation et jeux pour enfants, décoration thématique personnalisée, gestion des invitations"
+      description: "Animation et jeux pour enfants, décoration thématique personnalisée"
     },
     {
-      name: "Soutien scolaire",
+      name: "Organisation événements",
+      price: 30,
+      description: "Gestion des invitations et logistique, photographe et souvenirs"
+    },
+    
+    // d) Soutien scolaire (30€/h)
+    {
+      name: "Cours particuliers",
       price: 30,
       description: "Cours particuliers à domicile, préparation aux examens"
     }

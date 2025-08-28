@@ -28,30 +28,45 @@ const BikaVie = () => {
   };
 
   const services = [
+    // a) Services administratifs familiaux (25€/h)
     {
-      name: "Services administratifs familiaux",
+      name: "Gestion courrier et documents",
       price: 25,
-      description: "Gestion du courrier et documents, prise de rendez-vous médicaux/administratifs, suivi des contrats et abonnements"
+      description: "Gestion courrier et documents, prise rdv médicaux/administratifs"
+    },
+    {
+      name: "Suivi abonnements",
+      price: 25,
+      description: "Suivi abonnements, archivage documents"
     },
     {
       name: "Accompagnement rendez-vous",
       price: 25,
       description: "Accompagnement aux rendez-vous, archivage et classement documents personnels"
     },
+    
+    // b) Services personnels (25€/h)
     {
-      name: "Services personnels",
+      name: "Pressing et cordonnerie",
       price: 25,
-      description: "Dépôt et retrait de pressing, dépôts et retrait cordonnerie, réservations restaurants et spectacles"
+      description: "Dépôt/retrait pressing & cordonnerie"
     },
     {
-      name: "Recherche de prestataires",
+      name: "Réservations",
       price: 25,
-      description: "Recherche et réservation de prestataires spécialisés"
+      description: "Réservations restaurants / spectacles"
+    },
+    
+    // Assistance quotidienne
+    {
+      name: "Gestion planning",
+      price: 25,
+      description: "Gestion planning personnel, interface avec administrations"
     },
     {
-      name: "Assistance quotidienne",
+      name: "Résolution problèmes",
       price: 25,
-      description: "Gestion de planning personnel, interface avec administrations et services, résolution de problèmes du quotidien"
+      description: "Résolution de problèmes du quotidien"
     }
   ];
 

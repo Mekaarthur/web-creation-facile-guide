@@ -26,25 +26,38 @@ const BikaPlus = () => {
   };
 
   const features = [
+    // Projets personnalisés
     {
-      name: "Projets personnalisés",
-      description: "Étude besoins spécifiques clients, conception solutions sur mesure, coordination équipes multidisciplinaires"
+      name: "Étude besoins clients",
+      description: "Étude besoins clients, solutions sur mesure"
     },
     {
-      name: "Services exclusifs",
-      description: "Majordome personnel à temps plein/partiel, gestionnaire de patrimoine familial, organisateur de grands événements privés"
+      name: "Coordination équipes",
+      description: "Coordination équipes, suivi projet A–Z"
+    },
+    
+    // Services exclusifs
+    {
+      name: "Majordome personnel",
+      description: "Majordome personnel, gestion patrimoine familial"
     },
     {
-      name: "Coordinateur résidences",
-      description: "Coordinateur de résidences multiples, assistant personnel haute qualité"
+      name: "Organisation grands événements",
+      description: "Organisation grands événements, coordinateur résidences multiples"
+    },
+    
+    // Formules premium
+    {
+      name: "Service 24h/7",
+      description: "Service 24h/7, équipe dédiée à une famille"
     },
     {
-      name: "Formules premium",
-      description: "Service 24h/24 et 7j/7, équipe dédiée à une famille, interventions d'urgence prioritaires"
+      name: "Urgences prioritaires",
+      description: "Urgences prioritaires, accès partenaires exclusifs"
     },
     {
-      name: "Accès services exclusifs",
-      description: "Accès services partenaires exclusifs, reporting détaillé et personnalisé"
+      name: "Reporting personnalisé",
+      description: "Reporting détaillé et personnalisé"
     }
   ];
 

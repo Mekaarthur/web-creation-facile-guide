@@ -28,30 +28,45 @@ const BikaTravel = () => {
   };
 
   const services = [
+    // a) Préparation voyage (30€/h)
     {
-      name: "Préparation voyage",
+      name: "Réservations transports",
       price: 30,
-      description: "Recherche et réservation billets d'avion/train, réservation hébergements (hôtels, locations), réservation activités et excursions"
+      description: "Recherche et réservation billets avion/train"
     },
     {
-      name: "Vérification documents",
+      name: "Hébergements et activités",
       price: 30,
-      description: "Vérification documents de voyage, organisation itinéraires personnalisés"
+      description: "Réservation hébergements (hôtels, locations), activités & excursions"
     },
     {
-      name: "Formalités & Documents",
+      name: "Itinéraires personnalisés",
       price: 30,
-      description: "Assistance renouvellement passeports/visas, vérification et rappel validité documents, réservation transfert in/out aéroport"
+      description: "Organisation itinéraires personnalisés"
+    },
+    
+    // b) Formalités & Documents (30€/h)
+    {
+      name: "Passeports et visas",
+      price: 30,
+      description: "Assistance renouvellement passeports/visas, validité documents voyage"
     },
     {
-      name: "Assurances voyage",
+      name: "Assurances et change",
       price: 30,
-      description: "Recherche et souscription assurances voyage et rapatriement, aide au change de devises"
+      description: "Assurances voyage & rapatriement, change devises"
+    },
+    
+    // c) Assistance 24/7
+    {
+      name: "Gestion imprévus",
+      price: 30,
+      description: "Gestion imprévus & retards, modification réservation urgente"
     },
     {
-      name: "Assistance 24h/7j",
+      name: "Support multilingue",
       price: 30,
-      description: "Aide à la modification réservations en urgence, gestion des imprévus et retards, support multilingue à destination"
+      description: "Support multilingue à destination"
     }
   ];
 

@@ -26,35 +26,52 @@ const BikaMaison = () => {
   };
 
   const services = [
+    // a) Courses & Approvisionnement (25€/h)
     {
-      name: "Courses & Approvisionnement",
+      name: "Courses alimentaires",
       price: 25,
-      description: "Courses alimentaires hebdomadaires, courses de première nécessité, achats spécialisés (bio, sans gluten), gestion des stocks"
+      description: "Courses alimentaires hebdomadaires, produits bio / sans gluten"
     },
     {
-      name: "Courses urgentes et de nuit",
+      name: "Gestion stocks",
       price: 25,
-      description: "Courses urgentes (livraison express), courses de nuit et livraison"
+      description: "Gestion stocks et frigo/placards, courses urgentes / de nuit"
+    },
+    
+    // b) Logistique & Organisation (25€/h - 30€/h selon service)
+    {
+      name: "Retrait colis",
+      price: 25,
+      description: "Retrait colis et livraisons, gestion rdv artisans / techniciens"
     },
     {
-      name: "Logistique & Organisation",
-      price: 25,
-      description: "Retrait des colis et livraisons, gestion des rendez-vous artisans/techniciens, coordination des travaux"
-    },
-    {
-      name: "Aide au déménagement",
+      name: "Coordination travaux",
       price: 30,
-      description: "Faire les cartons, aide au transport des cartons et meubles, rangement et organisation d'espaces"
+      description: "Coordination travaux / rénovations"
     },
+    
+    // c) Aide au déménagement et aménagement (30€/h)
+    {
+      name: "Déménagement",
+      price: 30,
+      description: "Faire les cartons, transport des meubles et cartons jusqu'au pied de l'immeuble"
+    },
+    {
+      name: "Rangement espaces",
+      price: 30,
+      description: "Rangement et organisation espaces"
+    },
+    
+    // d) Entretien & Maintenance (sur demande / 25–30€/h)
     {
       name: "Entretien jardins",
       price: 25,
-      description: "Entretien des jardins et espaces verts (sur demande)"
+      description: "Entretien jardins & espaces verts"
     },
     {
-      name: "Maintenance",
-      price: 25,
-      description: "Aide au montage des meubles, aide à la plomberie de base"
+      name: "Petits travaux",
+      price: 30,
+      description: "Montage de meubles, petits travaux plomberie"
     }
   ];
 

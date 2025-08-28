@@ -26,11 +26,14 @@ const BikaPro = () => {
   };
 
   const services = [
-    { name: "Support administratif", price: 50, description: "Gestion agenda dirigeants, coordination déplacements professionnels, gestion réservations et logistique" },
-    { name: "Interface partenaires", price: 50, description: "Interface avec partenaires externes" },
-    { name: "Conciergerie d'entreprise", price: 50, description: "Services personnels pour employés, pressing et petites courses, réservations restaurants d'affaires" },
-    { name: "Organisation cadeaux", price: 50, description: "Organisation cadeaux clients/partenaires" },
-    { name: "Gestion urgences", price: 50, description: "Gestion des urgences personnelles salariés" }
+    // Support administratif (50€/h)
+    { name: "Gestion agenda dirigeants", price: 50, description: "Gestion agenda dirigeants, coordination déplacements" },
+    { name: "Réservations et logistique", price: 50, description: "Réservations & logistique, interface partenaires externes" },
+    
+    // Conciergerie entreprise (50€/h)
+    { name: "Services personnels employés", price: 50, description: "Services personnels employés, pressing, courses" },
+    { name: "Réservations restos affaires", price: 50, description: "Réservations restos affaires, organisation cadeaux clients" },
+    { name: "Gestion urgences salariés", price: 50, description: "Gestion des urgences personnelles salariés" }
   ];
 
   const structuredData = {

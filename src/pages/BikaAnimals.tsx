@@ -24,12 +24,18 @@ const BikaAnimals = () => {
   };
 
   const services = [
-    { name: "Soins quotidiens", price: 25, description: "Promenades et sorties régulières, nourrissage et soins à domicile, administration médicaments" },
-    { name: "Brossage et hygiène", price: 25, description: "Brossage et soins d'hygiène, compagnie pour animaux seuls" },
-    { name: "Services vétérinaires", price: 30, description: "Transport chez le vétérinaire, accompagnement rendez-vous médicaux, gestion des urgences vétérinaires" },
-    { name: "Suivi traitements", price: 30, description: "Suivi traitements et convalescence, coordination avec professionnels animaliers" },
-    { name: "Garde & Pension", price: 30, description: "Garde à domicile (propriétaire absent), pension dans famille d'accueil agréée, garde pendant vacances/déplacements" },
-    { name: "Sorties et exercice", price: 30, description: "Sorties et exercice adaptés, envoi de nouvelles et photos quotidiennes" }
+    // a) Soins quotidiens (25€/h)
+    { name: "Promenades régulières", price: 25, description: "Promenades régulières, nourrissage & soins" },
+    { name: "Administration médicaments", price: 25, description: "Administration médicaments, compagnie" },
+    { name: "Brossage et hygiène", price: 25, description: "Brossage et soins d'hygiène" },
+    
+    // b) Services vétérinaires (30€/h)
+    { name: "Transport vétérinaire", price: 30, description: "Transport vétérinaire, gestion urgences vétérinaires" },
+    { name: "Suivi traitements", price: 30, description: "Suivi traitements, coordination avec soignants" },
+    
+    // c) Garde & Pension (30€/h)
+    { name: "Garde à domicile", price: 30, description: "Garde à domicile, pension famille agréée" },
+    { name: "Garde vacances", price: 30, description: "Garde vacances/déplacements, envoi de nouvelles/photos quotidiennes" }
   ];
 
   const structuredData = {
