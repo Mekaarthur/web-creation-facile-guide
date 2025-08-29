@@ -15,6 +15,7 @@ import ClientSpace from "@/components/ClientSpace";
 import { useAuth } from "@/hooks/useAuth";
 import serviceVieCalendar from "@/assets/service-vie-calendar.jpg";
 import serviceVieEvents from "@/assets/service-vie-events.jpg";
+import ServiceSubgrid from "@/components/ServiceSubgrid";
 
 const BikaVie = () => {
   const navigate = useNavigate();
@@ -238,6 +239,8 @@ const BikaVie = () => {
                 </div>
               </div>
             </section>
+
+            <ServiceSubgrid categoryKey="vie" />
 
             {/* Services List */}
             <section className="py-16 bg-white">

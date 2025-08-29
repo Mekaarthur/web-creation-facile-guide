@@ -14,6 +14,7 @@ import CallToActionButtons from "@/components/CallToActionButtons";
 import ClientSpace from "@/components/ClientSpace";
 import serviceMaisonErrands from "@/assets/service-maison-errands.jpg";
 import serviceMaisonRepairs from "@/assets/service-maison-repairs.jpg";
+import ServiceSubgrid from "@/components/ServiceSubgrid";
 
 const BikaMaison = () => {
   const navigate = useNavigate();
@@ -243,6 +244,8 @@ const BikaMaison = () => {
             </div>
           </div>
         </section>
+
+        <ServiceSubgrid categoryKey="maison" />
 
         {/* Quick Actions Section */}
         <section className="py-16 bg-white">

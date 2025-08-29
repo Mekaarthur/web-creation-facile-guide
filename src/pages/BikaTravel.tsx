@@ -15,6 +15,7 @@ import ClientSpace from "@/components/ClientSpace";
 import { useAuth } from "@/hooks/useAuth";
 import serviceTravelAirport from "@/assets/service-travel-airport.jpg";
 import serviceTravelKids from "@/assets/service-travel-kids.jpg";
+import ServiceSubgrid from "@/components/ServiceSubgrid";
 
 const BikaTravel = () => {
   const navigate = useNavigate();
@@ -241,6 +242,8 @@ const BikaTravel = () => {
                 </div>
               </div>
             </section>
+
+            <ServiceSubgrid categoryKey="travel" />
 
             {/* Services List */}
             <section className="py-16 bg-white">

@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import CallToActionButtons from "@/components/CallToActionButtons";
 import ClientSpace from "@/components/ClientSpace";
+import ServiceSubgrid from "@/components/ServiceSubgrid";
 
 const BikaAnimals = () => {
   const navigate = useNavigate();
@@ -162,6 +163,8 @@ const BikaAnimals = () => {
             </div>
           </div>
         </section>
+
+        <ServiceSubgrid categoryKey="animals" />
 
         <section className="py-16 bg-white">
           <div className="container mx-auto px-4">

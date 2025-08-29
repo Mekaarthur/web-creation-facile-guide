@@ -37,7 +37,9 @@ import BikaAnimals from "./pages/BikaAnimals";
 import BikaSeniors from "./pages/BikaSeniors";
 import BikaPro from "./pages/BikaPro";
 import Reservation from "./pages/Reservation";
+import Reservation from "./pages/Reservation";
 import ReservationConfirmee from "./pages/ReservationConfirmee";
+import SubServicePage from "./pages/SubService";
 
 // Admin Layout and Pages
 import { AdminLayout } from "./components/admin/AdminLayout";
@@ -86,7 +88,8 @@ const App = () => (
             <Route path="/espace-prestataire" element={<ProtectedRoute><EspacePrestataire /></ProtectedRoute>} />
             <Route path="/nous-recrutons" element={<NousRecrutons />} />
             <Route path="/gestion-demandes" element={<GestionDemandes />} />
-            <Route path="/services" element={<ServicesPage />} />
+              <Route path="/services" element={<ServicesPage />} />
+              <Route path="/services/:category/:slug" element={<SubServicePage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/aide" element={<Aide />} />
             <Route path="/a-propos-de-nous" element={<AProposDeNous />} />

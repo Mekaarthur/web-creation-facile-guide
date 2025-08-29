@@ -13,6 +13,7 @@ import { useState } from "react";
 import CallToActionButtons from "@/components/CallToActionButtons";
 import ClientSpace from "@/components/ClientSpace";
 import { useAuth } from "@/hooks/useAuth";
+import ServiceSubgrid from "@/components/ServiceSubgrid";
 
 const BikaPro = () => {
   const navigate = useNavigate();
@@ -154,6 +155,8 @@ const BikaPro = () => {
                 </div>
               </div>
             </section>
+
+            <ServiceSubgrid categoryKey="pro" />
 
             <section className="py-16 bg-white">
               <div className="container mx-auto px-4">

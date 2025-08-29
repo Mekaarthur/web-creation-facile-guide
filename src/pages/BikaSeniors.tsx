@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import CallToActionButtons from "@/components/CallToActionButtons";
 import ClientSpace from "@/components/ClientSpace";
+import ServiceSubgrid from "@/components/ServiceSubgrid";
 
 const BikaSeniors = () => {
   const navigate = useNavigate();
@@ -158,6 +159,8 @@ const BikaSeniors = () => {
             </div>
           </div>
         </section>
+
+        <ServiceSubgrid categoryKey="seniors" />
 
 
         {/* Services en action */}
