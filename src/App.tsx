@@ -37,7 +37,6 @@ import BikaAnimals from "./pages/BikaAnimals";
 import BikaSeniors from "./pages/BikaSeniors";
 import BikaPro from "./pages/BikaPro";
 import Reservation from "./pages/Reservation";
-import Reservation from "./pages/Reservation";
 import ReservationConfirmee from "./pages/ReservationConfirmee";
 import SubServicePage from "./pages/SubService";
 
