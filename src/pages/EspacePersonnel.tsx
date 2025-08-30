@@ -1,15 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import FileUpload from '@/components/FileUpload';
 import { 
   User, 
   Calendar, 
@@ -17,84 +14,33 @@ import {
   Gift, 
   Users, 
   CreditCard, 
-  Settings,
   Lock,
   Download,
-  MapPin,
-  Clock,
-  Star,
-  History,
-  ShoppingCart,
-  UserPlus
+  LayoutDashboard,
+  Receipt,
+  UserCheck
 } from 'lucide-react';
-import ClientDashboard from '@/components/ClientDashboard';
-import ProfileUpdateForm from '@/components/ProfileUpdateForm';
-import PasswordChangeForm from '@/components/PasswordChangeForm';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Auth from './Auth';
+import ClientDashboardNew from '@/components/ClientDashboardNew';
 import BookingsList from '@/components/BookingsList';
-import EnhancedCart from '@/components/EnhancedCart';
 import InvoiceManagement from '@/components/InvoiceManagement';
 import PaymentMethodsManager from '@/components/PaymentMethodsManager';
 import { RewardsSection } from '@/components/RewardsSection';
 import ReferralProgram from '@/components/ReferralProgram';
+import ProfileUpdateForm from '@/components/ProfileUpdateForm';
+import AttestationsManager from '@/components/AttestationsManager';
 
 const EspacePersonnel = () => {
   const { user, loading } = useAuth();
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedTab, setSelectedTab] = useState(user ? "dashboard" : "connexion");
-  const [profileData, setProfileData] = useState({
-    first_name: "",
-    last_name: "", 
-    email: "",
-    phone: "",
-    address: ""
-  });
-  const [loadingProfile, setLoadingProfile] = useState(false);
 
-  // Charger les données du profil utilisateur
-  useEffect(() => {
-    const loadProfileData = async () => {
-      if (!user) return;
-      
-      setLoadingProfile(true);
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('first_name, last_name, email, phone, address')
-          .eq('user_id', user.id)
-          .maybeSingle();
-          
-        if (error && error.code !== 'PGRST116') throw error;
-        
-        if (data) {
-          setProfileData({
-            first_name: data.first_name || "",
-            last_name: data.last_name || "",
-            email: data.email || user.email || "",
-            phone: data.phone || "",
-            address: data.address || ""
-          });
-        } else {
-          // Profil inexistant, utiliser l'email de auth.users
-          setProfileData(prev => ({ ...prev, email: user.email || "" }));
-        }
-      } catch (e: any) {
-        console.error('Erreur chargement profil:', e);
-        toast({ variant: "destructive", title: "Erreur", description: "Impossible de charger vos informations." });
-      } finally {
-        setLoadingProfile(false);
-      }
-    };
-    
-    loadProfileData();
-  }, [user, toast]);
 
   // Rediriger vers connexion si pas authentifié et tentative d'accès à un onglet protégé
   useEffect(() => {
-    const protectedTabs = ["dashboard", "reservations", "panier", "factures", "profil", "recompenses", "calendrier", "parrainage"];
+    const protectedTabs = ["dashboard", "rendez-vous", "factures", "parrainage", "profil", "paiement", "attestations"];
     const urlParams = new URLSearchParams(window.location.search);
     const tabFromUrl = urlParams.get('tab') || selectedTab;
     
@@ -186,7 +132,7 @@ const EspacePersonnel = () => {
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-foreground mb-4">Mon Espace Client</h1>
             <p className="text-muted-foreground text-lg">
-              Gérez vos réservations, suivez vos prestations et accédez à vos factures
+              {user ? `Bienvenue ${user.email}` : "Connectez-vous pour accéder à votre espace personnel"}
             </p>
           </div>
 
@@ -208,7 +154,7 @@ const EspacePersonnel = () => {
             }
             window.history.replaceState({}, '', newUrl);
           }} className="w-full">
-            <TabsList className={`w-full mb-8 grid gap-1 ${user ? 'grid-cols-3 sm:grid-cols-4 lg:grid-cols-8' : 'grid-cols-1'}`}>
+            <TabsList className={`w-full mb-8 grid gap-1 ${user ? 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-7' : 'grid-cols-1'}`}>
               {!user && (
                 <TabsTrigger value="connexion" className="flex items-center gap-2 min-h-12">
                   <Lock className="w-4 h-4" />
@@ -218,32 +164,32 @@ const EspacePersonnel = () => {
               {user && (
                 <>
                   <TabsTrigger value="dashboard" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
-                    <User className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">Dashboard</span>
+                    <LayoutDashboard className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">Tableau de Bord</span>
                   </TabsTrigger>
-                  <TabsTrigger value="reservations" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
+                  <TabsTrigger value="rendez-vous" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
                     <Calendar className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">Réservations</span>
+                    <span className="truncate">Rendez-vous</span>
                   </TabsTrigger>
                   <TabsTrigger value="factures" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
                     <FileText className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">Factures</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="recompenses" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
-                    <Gift className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">Récompenses</span>
+                    <span className="truncate">Historique & Factures</span>
                   </TabsTrigger>
                   <TabsTrigger value="parrainage" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
                     <Users className="w-4 h-4 flex-shrink-0" />
                     <span className="truncate">Parrainage</span>
                   </TabsTrigger>
                   <TabsTrigger value="profil" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
-                    <Settings className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">Profil</span>
+                    <User className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">Mon Profil</span>
                   </TabsTrigger>
-                  <TabsTrigger value="mot-de-passe" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
-                    <Lock className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">Mot de passe</span>
+                  <TabsTrigger value="paiement" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
+                    <CreditCard className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">Paiement</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="attestations" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
+                    <Receipt className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">Attestations</span>
                   </TabsTrigger>
                 </>
               )}
@@ -282,251 +228,50 @@ const EspacePersonnel = () => {
 
             {/* Dashboard */}
             <TabsContent value="dashboard" className="space-y-6">
-              <ClientDashboard onNavigateToTab={setSelectedTab} />
+              <ClientDashboardNew onNavigateToTab={setSelectedTab} />
             </TabsContent>
 
-            {/* Réservations et Prestations combinées */}
-            <TabsContent value="reservations" className="space-y-6">
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <History className="w-5 h-5 text-primary" />
-                      Mes réservations
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <BookingsList userType="client" />
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            {/* Onglet Panier */}
-            <TabsContent value="panier" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <ShoppingCart className="w-5 h-5 text-primary" />
-                    Mon Panier
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <EnhancedCart isOpen={true} />
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Factures et paiements */}
-            <TabsContent value="factures" className="space-y-6">
-              <div className="grid lg:grid-cols-2 gap-6">
-                <InvoiceManagement />
-                <PaymentMethodsManager />
-              </div>
-            </TabsContent>
-
-            {/* Profil utilisateur */}
-            <TabsContent value="profil" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <User className="w-5 h-5 text-primary" />
-                      Informations personnelles
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {loadingProfile ? (
-                      <div className="flex items-center justify-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="prenom-profil" className="text-sm font-medium">Prénom</Label>
-                            <Input 
-                              id="prenom-profil" 
-                              value={profileData.first_name}
-                              onChange={(e) => setProfileData(prev => ({ ...prev, first_name: e.target.value }))}
-                              className="min-h-12"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="nom-profil" className="text-sm font-medium">Nom</Label>
-                            <Input 
-                              id="nom-profil" 
-                              value={profileData.last_name}
-                              onChange={(e) => setProfileData(prev => ({ ...prev, last_name: e.target.value }))}
-                              className="min-h-12"
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <Label htmlFor="email-profil" className="text-sm font-medium">Email</Label>
-                          <Input 
-                            id="email-profil" 
-                            type="email" 
-                            value={profileData.email}
-                            onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
-                            className="min-h-12"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="telephone-profil" className="text-sm font-medium">Téléphone</Label>
-                          <Input 
-                            id="telephone-profil" 
-                            value={profileData.phone}
-                            onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
-                            className="min-h-12"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="adresse-profil" className="text-sm font-medium">Adresse</Label>
-                          <Input 
-                            id="adresse-profil" 
-                            value={profileData.address}
-                            onChange={(e) => setProfileData(prev => ({ ...prev, address: e.target.value }))}
-                            className="min-h-12"
-                          />
-                        </div>
-                      </>
-                    )}
-                    <Button className="w-full min-h-12" onClick={async () => {
-                      try {
-                        if (!user) {
-                          toast({ variant: "destructive", title: "Non connecté", description: "Veuillez vous connecter pour mettre à jour vos informations." });
-                          setSelectedTab("connexion");
-                          return;
-                        }
-                        
-                        setLoadingProfile(true);
-                        
-                        // Validation basique
-                        const { first_name, last_name, email, phone, address } = profileData;
-                        if (!first_name.trim() && !last_name.trim()) {
-                          toast({ variant: "destructive", title: "Champs vides", description: "Veuillez saisir au moins un nom ou prénom." });
-                          return;
-                        }
-                        
-                        // Vérifier si un profil existe déjà
-                        const { data: existing, error: fetchError } = await supabase
-                          .from('profiles')
-                          .select('id')
-                          .eq('user_id', user.id)
-                          .maybeSingle();
-                        if (fetchError) throw fetchError;
-                        
-                        if (existing) {
-                          const { error: updateError } = await supabase
-                            .from('profiles')
-                            .update({ 
-                              first_name: first_name.trim() || null, 
-                              last_name: last_name.trim() || null,
-                              email: email.trim() || null,
-                              phone: phone.trim() || null,
-                              address: address.trim() || null
-                            })
-                            .eq('user_id', user.id);
-                          if (updateError) throw updateError;
-                        } else {
-                          const { error: insertError } = await supabase
-                            .from('profiles')
-                            .insert({ 
-                              user_id: user.id, 
-                              first_name: first_name.trim() || null, 
-                              last_name: last_name.trim() || null,
-                              email: email.trim() || null,
-                              phone: phone.trim() || null,
-                              address: address.trim() || null
-                            });
-                          if (insertError) throw insertError;
-                        }
-                        toast({ title: "Profil mis à jour", description: "Vos informations ont été enregistrées avec succès." });
-                      } catch (e: any) {
-                        console.error('Erreur maj profil', e);
-                        toast({ variant: "destructive", title: "Erreur", description: e?.message || "Impossible de mettre à jour le profil." });
-                      } finally {
-                        setLoadingProfile(false);
-                      }
-                    }} disabled={loadingProfile}>
-                      <Settings className="w-4 h-4 mr-2" />
-                      {loadingProfile ? "Enregistrement..." : "Mettre à jour mes informations"}
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                <div className="space-y-6">
-                  <FileUpload
-                    bucketName="profiles"
-                    path="avatars"
-                    acceptedTypes="image/*"
-                    maxSize={2}
-                    title="Photo de profil"
-                    description="Téléchargez votre photo de profil (JPEG, PNG, max 2MB)"
-                    onUploadComplete={(url) => {
-                      console.log('Avatar uploadé:', url);
-                    }}
-                  />
-                  
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Préférences</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">Notifications par email</p>
-                          <p className="text-sm text-muted-foreground">Recevoir les confirmations de réservation</p>
-                        </div>
-                        <Button variant="outline" size="sm">Activé</Button>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">Notifications SMS</p>
-                          <p className="text-sm text-muted-foreground">Rappels de rendez-vous</p>
-                        </div>
-                        <Button variant="outline" size="sm">Désactivé</Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </TabsContent>
-
-            {/* Récompenses */}
-            <TabsContent value="recompenses" className="space-y-6">
-              <RewardsSection userType="client" />
-            </TabsContent>
-
-            {/* Calendrier familial */}
-            <TabsContent value="calendrier" className="space-y-6">
+            {/* Mes Rendez-vous à Venir */}
+            <TabsContent value="rendez-vous" className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-primary" />
-                    Calendrier familial partagé
-                    <Badge className="bg-gradient-primary text-white">Assist'Plus</Badge>
+                    Mes Rendez-vous à Venir
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8">
-                    <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
-                      Calendrier familial
-                    </h3>
-                    <p className="text-muted-foreground mb-4">
-                      Synchronisez vos rendez-vous familiaux et prestations Assist'mw
-                    </p>
-                    <Button variant="hero">Activer le calendrier</Button>
-                  </div>
+                  <BookingsList userType="client" />
                 </CardContent>
               </Card>
             </TabsContent>
 
-            {/* Programme de parrainage */}
+            {/* Historique et Mes Factures */}
+            <TabsContent value="factures" className="space-y-6">
+              <InvoiceManagement />
+            </TabsContent>
+
+            {/* Parrainage */}
             <TabsContent value="parrainage" className="space-y-6">
-              <ReferralProgram />
+              <div className="grid gap-6">
+                <RewardsSection userType="client" />
+                <ReferralProgram />
+              </div>
+            </TabsContent>
+
+            {/* Mon Profil */}
+            <TabsContent value="profil" className="space-y-6">
+              <ProfileUpdateForm />
+            </TabsContent>
+
+            {/* Mes Moyens de Paiement */}
+            <TabsContent value="paiement" className="space-y-6">
+              <PaymentMethodsManager />
+            </TabsContent>
+
+            {/* Attestations Crédit d'Impôt et CAF */}
+            <TabsContent value="attestations" className="space-y-6">
+              <AttestationsManager />
             </TabsContent>
           </Tabs>
         </div>
