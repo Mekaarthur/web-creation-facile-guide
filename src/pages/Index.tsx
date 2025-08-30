@@ -1,8 +1,9 @@
 import Navbar from "@/components/Navbar";
-import Hero from "@/components/Hero";
-import SolutionSection from "@/components/SolutionSection";
-import FounderTestimonial from "@/components/FounderTestimonial";
-import FinalCTA from "@/components/FinalCTA";
+import NewHero from "@/components/NewHero";
+import ServicesGrid from "@/components/ServicesGrid";
+import WhyBikawo from "@/components/WhyBikawo";
+import TestimonialsSection from "@/components/TestimonialsSection";
+import FinalCTABiface from "@/components/FinalCTABiface";
 import Footer from "@/components/Footer";
 import ChatBot from "@/components/ChatBot";
 import SEOComponent from "@/components/SEOComponent";
@@ -34,10 +35,11 @@ const Index = () => {
       />
       
       <Navbar />
-      <Hero />
-      <SolutionSection />
-      <FounderTestimonial />
-      <FinalCTA />
+      <NewHero />
+      <ServicesGrid />
+      <WhyBikawo />
+      <TestimonialsSection />
+      <FinalCTABiface />
       <Footer />
       <ChatBot />
     </div>
