@@ -27,7 +27,6 @@ import {
 } from 'lucide-react';
 import ProviderDashboard from '@/components/ProviderDashboard';
 import ProviderDashboardNew from '@/components/ProviderDashboardNew';
-import ProviderNavbar from '@/components/ProviderNavbar';
 import ProfileUpdateForm from '@/components/ProfileUpdateForm';
 import PasswordChangeForm from '@/components/PasswordChangeForm';
 
@@ -70,10 +69,7 @@ const EspacePrestataire = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <ProviderNavbar />
-      <div className="pt-20">
-        <ProviderDashboardNew />
-      </div>
+      <ProviderDashboardNew />
     </div>
   );
 };
