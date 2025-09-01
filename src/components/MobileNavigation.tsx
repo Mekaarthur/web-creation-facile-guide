@@ -19,7 +19,13 @@ import {
   CreditCard,
   FileText,
   Shield,
-  ShoppingCart
+  ShoppingCart,
+  Heart,
+  Building2,
+  DollarSign,
+  GraduationCap,
+  BookOpen,
+  Plane
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -41,11 +47,98 @@ const publicNavItems: MobileNavItem[] = [
     description: "Retour à l'accueil"
   },
   {
-    title: "Nos services",
+    title: "Tous nos services",
     href: "/services",
     icon: Briefcase,
-    description: "Nos services disponibles"
+    description: "Catalogue complet"
+  }
+];
+
+const servicesNavItems: MobileNavItem[] = [
+  {
+    title: "Bika Kids",
+    href: "/services/bika-kids",
+    icon: User,
+    description: "Garde d'enfants"
   },
+  {
+    title: "Bika Maison",
+    href: "/services/bika-maison", 
+    icon: Home,
+    description: "Ménage & entretien"
+  },
+  {
+    title: "Bika Vie",
+    href: "/services/bika-vie",
+    icon: ShoppingCart,
+    description: "Courses & démarches"
+  },
+  {
+    title: "Bika Travel",
+    href: "/services/bika-travel",
+    icon: Plane,
+    description: "Assistance voyage"
+  },
+  {
+    title: "Bika Plus",
+    href: "/services/bika-plus",
+    icon: Star,
+    description: "Services premium"
+  },
+  {
+    title: "Bika Animals",
+    href: "/services/bika-animals",
+    icon: Heart,
+    description: "Garde d'animaux"
+  },
+  {
+    title: "Bika Seniors",
+    href: "/services/bika-seniors",
+    icon: User,
+    description: "Aide aux seniors"
+  },
+  {
+    title: "Bika Pro",
+    href: "/services/bika-pro",
+    icon: Building2,
+    description: "Solutions entreprises"
+  }
+];
+
+const providerNavItems: MobileNavItem[] = [
+  {
+    title: "Devenir Prestataire",
+    href: "/devenir-prestataire",
+    icon: Briefcase,
+    description: "Rejoindre notre équipe"
+  },
+  {
+    title: "Espace Prestataire", 
+    href: "/espace-prestataire",
+    icon: User,
+    description: "Dashboard prestataire"
+  },
+  {
+    title: "Tarifs & Rémunération",
+    href: "/prestataire/tarifs",
+    icon: DollarSign,
+    description: "Grille tarifaire"
+  },
+  {
+    title: "Formation",
+    href: "/prestataire/formation",
+    icon: GraduationCap,
+    description: "Modules de formation"
+  },
+  {
+    title: "Postuler Maintenant",
+    href: "/inscription-prestataire",
+    icon: FileText,
+    description: "Inscription rapide"
+  }
+];
+
+const aboutNavItems: MobileNavItem[] = [
   {
     title: "À propos",
     href: "/a-propos-de-nous",
@@ -57,6 +150,12 @@ const publicNavItems: MobileNavItem[] = [
     href: "/contact",
     icon: Phone,
     description: "Nous contacter"
+  },
+  {
+    title: "Blog", 
+    href: "/blog",
+    icon: BookOpen,
+    description: "Actualités & conseils"
   }
 ];
 
@@ -95,7 +194,7 @@ const getClientNavItems = (cartCount: number): MobileNavItem[] => [
   }
 ];
 
-const providerNavItems: MobileNavItem[] = [
+const mobileProviderNavItems: MobileNavItem[] = [
   {
     title: "Mon espace",
     href: "/espace-prestataire",
