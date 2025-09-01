@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import Cart, { useCart } from "@/components/Cart";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, Link } from "react-router-dom";
+import { servicesData } from "@/utils/servicesData";
 
 // Import des images
 import serviceChildcareEducation from "@/assets/service-childcare-education.jpg";
@@ -80,171 +81,44 @@ const ServicesPackages = () => {
     }
   };
   
-  const packages = [
-    {
-      id: "kids",
-      icon: Baby,
-      title: "Bika Kids",
-      subtitle: "Services dédiés aux enfants",
-      description: "Garde, sorties éducatives, aide aux devoirs et organisation d'anniversaires pour vos enfants.",
-      image: serviceChildcareEducation,
-      services: [
-        { name: "Garde ponctuelle", description: "Garde à domicile, après école, vacances", price: 25 },
-        { name: "Garde partagée", description: "Entre familles, sortie d'école", price: 25 },
-        { name: "Transport & sorties", description: "Activités extrascolaires, sport, culture", price: 25 },
-        { name: "Aide aux devoirs", description: "Aide personnalisée et suivi", price: 25 },
-        { name: "Gardes de nuit", description: "Nuit complète, urgences soir/week-end", price: 30 },
-        { name: "Enfants malades", description: "Accompagnement et soins légers", price: 30 },
-        { name: "Rendez-vous médicaux", description: "Accompagnement aux RDV", price: 30 },
-        { name: "Anniversaires", description: "Animation, déco, logistique", price: 30 },
-        { name: "Photographe & souvenirs", description: "Souvenirs photo/vidéo", price: 30 },
-        { name: "Cours particuliers", description: "Soutien scolaire et examens", price: 30 }
-      ],
-      color: "primary",
-      popular: false,
-      price: "À partir de 25€/h"
-    },
-    {
-      id: "maison",
-      icon: Home,
-      title: "Bika Maison",
-      subtitle: "Logistique quotidienne",
-      description: "Courses, récupération de colis, petits travaux et organisation pour alléger votre quotidien.",
-      image: serviceHouseLogistics,
-      services: [
-        { name: "Courses alimentaires", description: "Hebdo, bio/sans gluten", price: 25 },
-        { name: "Gestion stocks", description: "Frigo/placards, urgentes/nuit", price: 25 },
-        { name: "Retrait colis", description: "Colis, livraisons, RDV artisans", price: 25 },
-        { name: "Coordination travaux", description: "Travaux/rénovations", price: 30 },
-        { name: "Déménagement léger", description: "Cartons, descente meubles/cartons", price: 30 },
-        { name: "Rangement espaces", description: "Organisation et tri", price: 30 },
-        { name: "Entretien jardins", description: "Espaces verts (sur demande)", price: 25 },
-        { name: "Petits travaux", description: "Montage meubles, plomberie légère", price: 30 }
-      ],
-      color: "accent",
-      popular: true,
-      price: "25–30€/h"
-    },
-    {
-      id: "vie",
-      icon: FileText,
-      title: "Bika Vie",
-      subtitle: "Conciergerie complète",
-      description: "Gestion de vos rendez-vous, démarches administratives et organisation d'événements familiaux.",
-      image: serviceAdminSupport,
-      services: [
-        { name: "Courrier & documents", description: "Prise RDV médicaux/administratifs", price: 25 },
-        { name: "Suivi abonnements", description: "Archivage documents", price: 25 },
-        { name: "Accompagnement RDV", description: "Déplacements, classement", price: 25 },
-        { name: "Pressing & cordonnerie", description: "Dépôt / retrait", price: 25 },
-        { name: "Réservations", description: "Restaurants / spectacles", price: 25 },
-        { name: "Gestion planning", description: "Interface administrations", price: 25 },
-        { name: "Résolution problèmes", description: "Aide quotidienne", price: 25 }
-      ],
-      color: "primary",
-      popular: false,
-      price: "25€/h"
-    },
-    {
-      id: "travel",
-      icon: Plane,
-      title: "Bika Travel",
-      subtitle: "Assistance voyage",
-      description: "Accompagnement complet pour vos voyages : avant, pendant et après votre déplacement.",
-      image: serviceTravelAssistance,
-      services: [
-        { name: "Réservations transports", description: "Billets avion/train", price: 30 },
-        { name: "Hébergements & activités", description: "Hôtels, locations, excursions", price: 30 },
-        { name: "Itinéraires personnalisés", description: "Organisation détaillée", price: 30 },
-        { name: "Passeports & visas", description: "Renouvellement, validité", price: 30 },
-        { name: "Assurances & change", description: "Voyage/rapatriement, devises", price: 30 },
-        { name: "Gestion imprévus", description: "Retards, rebooking urgent", price: 30 },
-        { name: "Support multilingue", description: "À destination", price: 30 }
-      ],
-      color: "accent",
-      popular: false,
-      price: "30€/h"
-    },
-    {
-      id: "plus",
-      icon: Crown,
-      title: "Bika Plus",
-      subtitle: "Premium 7j/7",
-      description: "Service haut de gamme avec Chef Family Officer dédié et aide prioritaire.",
-      image: servicePremiumConcierge,
-      services: [
-        { name: "Chef Family Officer", description: "Chef Family Officer dédié", price: 0 },
-        { name: "Ligne prioritaire", description: "Ligne prioritaire + WhatsApp instantané", price: 0 },
-        { name: "Planning familial", description: "Organisation complète planning familial", price: 0 },
-        { name: "Garde premium", description: "Garde soir, week-end, nuit", price: 0 },
-        { name: "Accès illimité", description: "Accès à tous les autres services", price: 0 }
-      ],
-      color: "primary",
-      popular: false,
-      price: "À partir de 1500€/mois"
-    },
-    {
-      id: "animals",
-      icon: PawPrint,
-      title: "Bika Animals",
-      subtitle: "Univers animalier",
-      description: "Promenade, soins et accompagnement pour vos compagnons à quatre pattes.",
-      image: servicePetCare,
-      services: [
-        { name: "Promenades", description: "Promenades régulières", price: 25 },
-        { name: "Nourrissage & soins", description: "À domicile", price: 25 },
-        { name: "Médicaments", description: "Administration et compagnie", price: 25 },
-        { name: "Transport vétérinaire", description: "RDV et urgences", price: 30 },
-        { name: "Suivi traitements", description: "Coordination soignants", price: 30 },
-        { name: "Garde à domicile", description: "Ou famille agréée", price: 30 },
-        { name: "Garde vacances", description: "+ Nouvelles/photos", price: 30 }
-      ],
-      color: "primary",
-      popular: false,
-      price: "25–30€/h"
-    },
-    {
-      id: "seniors",
-      icon: UserCheck,
-      title: "Bika Seniors",
-      subtitle: "Accompagnement personnes âgées",
-      description: "Accompagnement bienveillant et aide quotidienne pour nos aînés.",
-      image: serviceSeniorsAssistance,
-      services: [
-        { name: "Courses & repas", description: "Sorties & promenades", price: 30 },
-        { name: "Toilette & hygiène", description: "Administration médicaments", price: 30 },
-        { name: "Compagnie", description: "Présence et échanges", price: 30 },
-        { name: "Rdv médicaux", description: "Suivi traitements", price: 30 },
-        { name: "Coordination soignants", description: "Lien famille/médecins", price: 30 },
-        { name: "Aménagement logement", description: "Équipements adaptés", price: 35 },
-        { name: "Ménage & entretien", description: "Entretien domicile", price: 35 },
-        { name: "Lien social", description: "Visites, activités", price: 30 },
-        { name: "Technologies", description: "Aide outils + appels vidéo", price: 30 }
-      ],
-      color: "accent",
-      popular: false,
-      price: "30–35€/h"
-    },
-    {
-      id: "pro",
-      icon: Briefcase,
-      title: "Bika Pro",
-      subtitle: "Services aux entreprises",
-      description: "Solutions d'aide administrative et executive pour votre entreprise.",
-      image: serviceBusinessExecutive,
-      services: [
-        { name: "Agenda dirigeants", description: "Gestion et coordination", price: 50 },
-        { name: "Déplacements", description: "Réservations & logistique", price: 50 },
-        { name: "Interface partenaires", description: "Relations externes", price: 50 },
-        { name: "Services personnels employés", description: "Pressing, courses", price: 50 },
-        { name: "Resto d'affaires", description: "Réservations", price: 50 },
-        { name: "Cadeaux clients", description: "Organisation", price: 50 }
-      ],
-      color: "accent",
-      popular: false,
-      price: "À partir de 50€/h"
-    }
-  ];
+  const iconMapping = {
+    kids: Baby,
+    maison: Home,
+    vie: FileText,
+    travel: Plane,
+    animals: PawPrint,
+    seniors: UserCheck,
+    pro: Briefcase,
+    plus: Crown
+  };
+
+  const imageMapping = {
+    kids: serviceChildcareEducation,
+    maison: serviceHouseLogistics,
+    vie: serviceAdminSupport,
+    travel: serviceTravelAssistance,
+    animals: servicePetCare,
+    seniors: serviceSeniorsAssistance,
+    pro: serviceBusinessExecutive,
+    plus: servicePremiumConcierge
+  };
+
+  const packages = Object.values(servicesData).map((serviceCategory) => ({
+    id: serviceCategory.key,
+    icon: iconMapping[serviceCategory.key],
+    title: serviceCategory.packageTitle,
+    subtitle: serviceCategory.title.split(' - ')[1] || serviceCategory.title,
+    description: `${serviceCategory.subservices.length} services disponibles dans cette catégorie`,
+    image: imageMapping[serviceCategory.key],
+    services: serviceCategory.subservices.map(sub => ({
+      name: sub.title,
+      description: sub.description.split('.')[0] + '.',
+      price: sub.price
+    })),
+    color: serviceCategory.key === 'maison' || serviceCategory.key === 'seniors' || serviceCategory.key === 'travel' || serviceCategory.key === 'pro' ? "accent" : "primary",
+    popular: serviceCategory.key === 'maison',
+    price: serviceCategory.subservices[0]?.priceDisplay || `À partir de ${serviceCategory.subservices[0]?.price}€/h`
+  }));
 
   const pricingOptions = [
     {
