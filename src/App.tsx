@@ -99,14 +99,22 @@ const App = () => (
             <Route path="/demande-personnalisee" element={<CustomRequest />} />
             <Route path="/custom-request" element={<CustomRequest />} />
             <Route path="/candidature-prestataire" element={<ProviderSignup />} />
+            <Route path="/bika-kids" element={<BikaKids />} />
+            <Route path="/bika-maison" element={<BikaMaison />} />
+            <Route path="/bika-vie" element={<BikaVie />} />
+            <Route path="/bika-travel" element={<BikaTravel />} />
+            <Route path="/bika-plus" element={<BikaPlus />} />
+            <Route path="/bika-animals" element={<BikaAnimals />} />
+            <Route path="/bika-seniors" element={<BikaSeniors />} />
+            <Route path="/bika-pro" element={<BikaPro />} />
             <Route path="/bika-kids-ile-de-france" element={<BikaKids />} />
             <Route path="/bika-maison-ile-de-france" element={<BikaMaison />} />
             <Route path="/bika-vie-ile-de-france" element={<BikaVie />} />
             <Route path="/bika-travel-ile-de-france" element={<BikaTravel />} />
             <Route path="/bika-plus-ile-de-france" element={<BikaPlus />} />
-             <Route path="/bika-animals-ile-de-france" element={<BikaAnimals />} />
-             <Route path="/bika-seniors-ile-de-france" element={<BikaSeniors />} />
-             <Route path="/bika-pro-ile-de-france" element={<BikaPro />} />
+            <Route path="/bika-animals-ile-de-france" element={<BikaAnimals />} />
+            <Route path="/bika-seniors-ile-de-france" element={<BikaSeniors />} />
+            <Route path="/bika-pro-ile-de-france" element={<BikaPro />} />
              <Route path="/reservation" element={<Reservation />} />
              <Route path="/reservation-confirmee" element={<ReservationConfirmee />} />
              <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
