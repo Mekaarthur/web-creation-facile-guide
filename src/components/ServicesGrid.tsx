@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import { servicesData, ServiceCategoryKey } from "@/utils/servicesData";
 
 // Import existing service images
 import serviceKids from "@/assets/service-kids.jpg";
@@ -11,64 +12,30 @@ import serviceAnimals from "@/assets/service-animals.jpg";
 import serviceSeniors from "@/assets/service-seniors.jpg";
 import serviceBusiness from "@/assets/service-business.jpg";
 
-const services = [
-  {
-    id: "kids",
-    title: "Bika Kids",
-    subtitle: "Garde d'enfants & activités",
-    image: serviceKids,
-    path: "/bika-kids"
-  },
-  {
-    id: "maison",
-    title: "Bika Maison", 
-    subtitle: "Ménage, repassage & entretien",
-    image: serviceMaison,
-    path: "/bika-maison"
-  },
-  {
-    id: "vie",
-    title: "Bika Vie",
-    subtitle: "Courses & démarches administratives", 
-    image: serviceVie,
-    path: "/bika-vie"
-  },
-  {
-    id: "travel",
-    title: "Bika Travel",
-    subtitle: "Assistance voyage & conciergerie",
-    image: serviceTravel,
-    path: "/bika-travel"
-  },
-  {
-    id: "plus",
-    title: "Bika Plus",
-    subtitle: "Services premium & sur-mesure",
-    image: servicePlus,
-    path: "/bika-plus"
-  },
-  {
-    id: "animals",
-    title: "Bika Animals",
-    subtitle: "Garde & soins pour animaux",
-    image: serviceAnimals,
-    path: "/bika-animals"
-  },
-  {
-    id: "seniors",
-    title: "Bika Seniors", 
-    subtitle: "Accompagnement personnes âgées",
-    image: serviceSeniors,
-    path: "/bika-seniors"
-  },
-  {
-    id: "pro",
-    title: "Bika Pro",
-    subtitle: "Solutions pour entreprises",
-    image: serviceBusiness,
-    path: "/bika-pro"
-  }
-];
+const imageMap: Record<ServiceCategoryKey, string> = {
+  kids: serviceKids,
+  maison: serviceMaison,
+  vie: serviceVie,
+  travel: serviceTravel,
+  animals: serviceAnimals,
+  seniors: serviceSeniors,
+  pro: serviceBusiness,
+  plus: servicePlus
+};
+
+const services = Object.values(servicesData).map(service => ({
+  id: service.key,
+  title: service.packageTitle,
+  subtitle: service.title.replace(/🧸|🏠|🛒|✈️|🐾|👴|💼|💎/, '').trim().split(' - ')[1] || 'Services spécialisés',
+  image: imageMap[service.key],
+  path: `/${service.key === 'kids' ? 'bika-kids' : 
+         service.key === 'maison' ? 'bika-maison' :
+         service.key === 'vie' ? 'bika-vie' :
+         service.key === 'travel' ? 'bika-travel' :
+         service.key === 'animals' ? 'bika-animals' :
+         service.key === 'seniors' ? 'bika-seniors' :
+         service.key === 'pro' ? 'bika-pro' : 'bika-plus'}`
+}));
 
 const ServicesGrid = () => {
   return (

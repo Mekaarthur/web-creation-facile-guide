@@ -11,13 +11,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, X, MessageCircle, Phone, LogOut, User, ChevronDown } from "lucide-react";
+import { Menu, X, MessageCircle, Phone, LogOut, User, ChevronDown, BookOpen } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { cn } from "@/lib/utils";
 import Cart from "@/components/Cart";
 import CartIndicator from "@/components/CartIndicator";
 import UserProfileMenu from "@/components/UserProfileMenu";
+import { servicesData } from "@/utils/servicesData";
 
 const Navbar = () => {
   const { t } = useTranslation();
@@ -48,16 +49,18 @@ const Navbar = () => {
     { name: "Blog", href: "/blog" },
   ];
 
-  const servicesItems = [
-    { name: "Bika Kids", icon: "🧸", href: "/services/bika-kids", description: "Garde d'enfants" },
-    { name: "Bika Maison", icon: "🏠", href: "/services/bika-maison", description: "Ménage & entretien" },
-    { name: "Bika Vie", icon: "🛒", href: "/services/bika-vie", description: "Courses & démarches" },
-    { name: "Bika Travel", icon: "✈️", href: "/services/bika-travel", description: "Assistance voyage" },
-    { name: "Bika Plus", icon: "⭐", href: "/services/bika-plus", description: "Services premium" },
-    { name: "Bika Animals", icon: "🐾", href: "/services/bika-animals", description: "Garde d'animaux" },
-    { name: "Bika Seniors", icon: "👴", href: "/services/bika-seniors", description: "Aide aux seniors" },
-    { name: "Bika Pro", icon: "🏢", href: "/services/bika-pro", description: "Solutions entreprises" }
-  ];
+  const servicesItems = Object.values(servicesData).map(service => ({
+    name: service.packageTitle,
+    icon: service.title.split(' ')[0], // Extract the emoji
+    href: `/${service.key === 'kids' ? 'bika-kids' : 
+           service.key === 'maison' ? 'bika-maison' :
+           service.key === 'vie' ? 'bika-vie' :
+           service.key === 'travel' ? 'bika-travel' :
+           service.key === 'animals' ? 'bika-animals' :
+           service.key === 'seniors' ? 'bika-seniors' :
+           service.key === 'pro' ? 'bika-pro' : 'bika-plus'}`,
+    description: service.title.replace(/🧸|🏠|🛒|✈️|🐾|👴|💼|💎/, '').trim().split(' - ')[1] || 'Services spécialisés'
+  }));
 
   const providerItems = [
     { name: "Devenir Prestataire", href: "/devenir-prestataire", icon: "💼" },
