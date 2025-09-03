@@ -1,17 +1,19 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { MobileNavigation } from "@/components/MobileNavigation";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Menu, X, MessageCircle, Phone, LogOut, User, ChevronDown, BookOpen } from "lucide-react";
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
+import { ChevronDown, Sparkles, ArrowRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { cn } from "@/lib/utils";
@@ -22,12 +24,9 @@ import { servicesData } from "@/utils/servicesData";
 
 const Navbar = () => {
   const { t } = useTranslation();
-  const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [showMegaMenu, setShowMegaMenu] = useState(false);
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
 
   // Détection du scroll pour effet glassmorphism
   useEffect(() => {
@@ -49,181 +48,236 @@ const Navbar = () => {
     { name: "Blog", href: "/blog" },
   ];
 
-  const servicesItems = Object.values(servicesData).map(service => ({
-    name: service.packageTitle,
-    icon: service.title.split(' ')[0], // Extract the emoji
-    href: `/${service.key === 'kids' ? 'bika-kids' : 
-           service.key === 'maison' ? 'bika-maison' :
-           service.key === 'vie' ? 'bika-vie' :
-           service.key === 'travel' ? 'bika-travel' :
-           service.key === 'animals' ? 'bika-animals' :
-           service.key === 'seniors' ? 'bika-seniors' :
-           service.key === 'pro' ? 'bika-pro' : 'bika-plus'}`,
-    description: service.title.replace(/🧸|🏠|🛒|✈️|🐾|👴|💼|💎/, '').trim().split(' - ')[1] || 'Services spécialisés'
-  }));
+  // Structure organisée des services avec émojis et descriptions
+  const servicesCategories = [
+    {
+      title: "Services Personnel & Famille",
+      services: [
+        {
+          key: "kids",
+          name: "Bika Kids",
+          icon: "🧸",
+          href: "/bika-kids",
+          description: "Garde d'enfants et baby-sitting professionnel"
+        },
+        {
+          key: "maison",
+          name: "Bika Maison", 
+          icon: "🏠",
+          href: "/bika-maison",
+          description: "Gestion complète de votre foyer"
+        },
+        {
+          key: "seniors",
+          name: "Bika Seniors",
+          icon: "👴",
+          href: "/bika-seniors", 
+          description: "Accompagnement personnalisé des seniors"
+        },
+        {
+          key: "animals",
+          name: "Bika Animal",
+          icon: "🐾",
+          href: "/bika-animals",
+          description: "Soins et garde de vos animaux"
+        }
+      ]
+    },
+    {
+      title: "Services Conciergerie & Premium",
+      services: [
+        {
+          key: "vie",
+          name: "Bika Vie",
+          icon: "🔑",
+          href: "/bika-vie",
+          description: "Conciergerie complète du quotidien"
+        },
+        {
+          key: "travel",
+          name: "Bika Travel",
+          icon: "✈️",
+          href: "/bika-travel",
+          description: "Organisation et assistance voyage"
+        },
+        {
+          key: "pro",
+          name: "Bika Pro",
+          icon: "💼",
+          href: "/bika-pro",
+          description: "Services aux entreprises"
+        },
+        {
+          key: "plus",
+          name: "Bika Plus",
+          icon: "💎",
+          href: "/bika-plus",
+          description: "Services sur mesure haut de gamme"
+        }
+      ]
+    }
+  ];
 
   const providerItems = [
-    { name: "Devenir Prestataire", href: "/devenir-prestataire", icon: "💼" },
-    { name: "Espace Prestataire", href: user ? "/espace-prestataire" : "/auth?type=provider", icon: "👤" },
-    { name: "Tarifs & Rémunération", href: "/prestataire/tarifs", icon: "💰" },
-    { name: "Formation", href: "/prestataire/formation", icon: "🎓" },
-    { name: "Postuler Maintenant", href: "/inscription-prestataire", icon: "📋" }
+    { name: "Devenir Prestataire", href: "/devenir-prestataire", icon: "💼", description: "Rejoignez notre réseau" },
+    { name: "Espace Prestataire", href: user ? "/espace-prestataire" : "/auth?type=provider", icon: "👤", description: "Accédez à votre espace" },
+    { name: "Nous Recrutons", href: "/nous-recrutons", icon: "🚀", description: "Découvrez nos opportunités" }
   ];
 
   return (
     <nav className={cn(
-      "fixed top-0 w-full z-50 transition-all duration-300",
+      "fixed top-0 w-full z-50 transition-smooth",
       isScrolled 
-        ? "bg-white/80 backdrop-blur-lg border-b border-border/50 shadow-sm" 
-        : "bg-white/95 backdrop-blur-sm border-b border-border shadow-glow"
+        ? "bg-white/90 backdrop-blur-lg border-b border-border/50 shadow-elegant" 
+        : "bg-white/95 backdrop-blur-md border-b border-border shadow-soft"
     )}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <div className="flex items-center space-x-3 group">
-            <Link to="/">
+            <Link to="/" className="flex items-center">
               <img 
                 src="/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png" 
                 alt="Bikawô Logo" 
-                className="h-12 w-auto transition-all duration-300 group-hover:scale-105"
+                className="h-12 w-auto transition-smooth group-hover:scale-105"
               />
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-4">
-            {/* Services Mega Menu */}
-            <div 
-              className="relative"
-              onMouseEnter={() => setShowMegaMenu(true)}
-              onMouseLeave={() => setShowMegaMenu(false)}
-            >
-              <Button 
-                variant="ghost" 
-                className={cn(
-                  "relative px-2 py-2 text-sm font-medium transition-all duration-200 rounded-md group",
-                  "text-foreground hover:text-primary whitespace-nowrap"
-                )}
-              >
-                Services
-                <ChevronDown className="ml-1 h-4 w-4 flex-shrink-0" />
-                <div className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-primary rounded-full scale-x-0 transition-transform duration-200 group-hover:scale-x-100" />
-              </Button>
-
-              {/* Mega Menu */}
-              {showMegaMenu && (
-                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-[800px] bg-white/95 backdrop-blur-lg border border-border/50 rounded-lg shadow-xl p-6 z-50">
-                  <div className="text-center mb-6">
-                    <h3 className="text-xl font-bold text-foreground">SERVICES BIKAWO</h3>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-8">
-                    {/* Services Pour Vos Besoins */}
-                    <div>
-                      <h4 className="text-lg font-semibold text-foreground mb-4 flex items-center">
-                        🛒 POUR VOS BESOINS
-                      </h4>
-                      <div className="space-y-2">
-                        {servicesItems.map((service) => (
+          <div className="hidden lg:flex items-center space-x-1">
+            {/* Services Navigation Menu */}
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="bg-transparent hover:bg-muted/50 hover:text-primary data-[state=open]:bg-muted/50 data-[state=open]:text-primary">
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Services
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="grid w-[800px] gap-3 p-6 md:grid-cols-2">
+                      {servicesCategories.map((category) => (
+                        <div key={category.title} className="space-y-3">
+                          <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider border-b border-border pb-2">
+                            {category.title}
+                          </h4>
+                          <div className="space-y-1">
+                            {category.services.map((service) => (
+                              <NavigationMenuLink key={service.key} asChild>
+                                <Link
+                                  to={service.href}
+                                  className="group block select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                                >
+                                  <div className="flex items-center space-x-3">
+                                    <span className="text-lg">{service.icon}</span>
+                                    <div>
+                                      <div className="text-sm font-medium leading-none group-hover:text-primary transition-colors">
+                                        {service.name}
+                                      </div>
+                                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                        {service.description}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </Link>
+                              </NavigationMenuLink>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {/* Action de fin */}
+                      <div className="col-span-2 mt-4 pt-4 border-t border-border">
+                        <NavigationMenuLink asChild>
                           <Link
-                            key={service.name}
-                            to={service.href}
-                            className="flex items-center p-3 rounded-lg hover:bg-muted/50 transition-colors group"
-                            onClick={() => setShowMegaMenu(false)}
+                            to="/services"
+                            className="group flex items-center justify-center space-x-2 w-full rounded-lg bg-gradient-primary p-3 text-primary-foreground hover:opacity-90 transition-opacity"
                           >
-                            <span className="text-xl mr-3">{service.icon}</span>
-                            <div>
-                              <div className="font-medium text-foreground group-hover:text-primary">
-                                {service.name}
-                              </div>
-                              <div className="text-sm text-muted-foreground">
-                                {service.description}
-                              </div>
-                            </div>
+                            <span>Découvrir tous nos services</span>
+                            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                           </Link>
-                        ))}
-                        
-                        <Link
-                          to="/services"
-                          className="flex items-center p-3 mt-4 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors text-primary font-medium"
-                          onClick={() => setShowMegaMenu(false)}
-                        >
-                          📖 Voir tous nos services
-                        </Link>
+                        </NavigationMenuLink>
                       </div>
                     </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
 
-                    {/* Rejoignez-Nous */}
-                    <div>
-                      <h4 className="text-lg font-semibold text-foreground mb-4 flex items-center">
-                        💼 REJOIGNEZ-NOUS
-                      </h4>
-                      <div className="space-y-2">
-                        {providerItems.map((item) => (
-                          <Link
-                            key={item.name}
-                            to={item.href}
-                            className="flex items-center p-3 rounded-lg hover:bg-muted/50 transition-colors group"
-                            onClick={() => setShowMegaMenu(false)}
-                          >
-                            <span className="text-xl mr-3">{item.icon}</span>
-                            <div className="font-medium text-foreground group-hover:text-primary">
-                              {item.name}
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Navigation Items */}
+            {/* Standard Navigation Items */}
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
                 className={cn(
-                  "relative px-2 py-2 text-sm font-medium transition-all duration-200 rounded-md group",
-                  "text-foreground hover:text-primary whitespace-nowrap"
+                  "relative px-3 py-2 text-sm font-medium transition-smooth rounded-lg group",
+                  "text-foreground hover:text-primary hover:bg-muted/50"
                 )}
               >
                 {item.name}
-                <div className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-primary rounded-full scale-x-0 transition-transform duration-200 group-hover:scale-x-100" />
+                <div className="absolute inset-x-1 -bottom-1 h-0.5 bg-gradient-primary rounded-full scale-x-0 transition-transform duration-200 group-hover:scale-x-100" />
               </Link>
             ))}
+
+            {/* Provider Section */}
+            <div className="ml-4 pl-4 border-l border-border">
+              <NavigationMenu>
+                <NavigationMenuList>
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className="bg-transparent hover:bg-muted/50 hover:text-primary data-[state=open]:bg-muted/50 data-[state=open]:text-primary">
+                      💼 Prestataires
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <div className="grid w-[400px] gap-3 p-4">
+                        <div className="space-y-2">
+                          {providerItems.map((item) => (
+                            <NavigationMenuLink key={item.name} asChild>
+                              <Link
+                                to={item.href}
+                                className="group block select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                              >
+                                <div className="flex items-center space-x-3">
+                                  <span className="text-lg">{item.icon}</span>
+                                  <div>
+                                    <div className="text-sm font-medium leading-none group-hover:text-primary transition-colors">
+                                      {item.name}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      {item.description}
+                                    </p>
+                                  </div>
+                                </div>
+                              </Link>
+                            </NavigationMenuLink>
+                          ))}
+                        </div>
+                      </div>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                </NavigationMenuList>
+              </NavigationMenu>
+            </div>
           </div>
 
           {/* Actions Desktop */}
-          <div className="hidden lg:flex items-center space-x-4">
-            {/* Panier uniquement pour les clients */}
-            {(!user || user) && <CartIndicator onOpenCart={() => setIsCartOpen(true)} />}
-
+          <div className="hidden lg:flex items-center space-x-3">
+            <CartIndicator onOpenCart={() => setIsCartOpen(true)} />
             <LanguageSwitcher />
             <NotificationCenter />
             
             {user ? (
               <UserProfileMenu userType="client" />
             ) : (
-              /* Bouton Split Réserver | Devenir Prestataire */
-              <div className="flex divide-x divide-border border border-border rounded-lg overflow-hidden">
+              <div className="flex items-center space-x-2">
                 <Link to="/services">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="rounded-none border-0 bg-primary text-primary-foreground hover:bg-primary/90"
-                  >
-                    🛒 Réserver
+                  <Button size="sm" className="bg-gradient-primary hover:opacity-90 transition-opacity">
+                    <Sparkles className="mr-1 h-3 w-3" />
+                    Réserver
                   </Button>
                 </Link>
                 <Link to="/devenir-prestataire">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="rounded-none border-0 bg-secondary text-secondary-foreground hover:bg-secondary/90"
-                  >
-                    💼 Devenir Prestataire
+                  <Button variant="outline" size="sm" className="hover:bg-accent hover:text-accent-foreground">
+                    Devenir Prestataire
                   </Button>
                 </Link>
               </div>
@@ -234,14 +288,6 @@ const Navbar = () => {
           <MobileNavigation />
         </div>
       </div>
-      
-      {/* Overlay pour fermer le mega menu */}
-      {showMegaMenu && (
-        <div 
-          className="fixed inset-0 bg-black/20 z-40"
-          onClick={() => setShowMegaMenu(false)}
-        />
-      )}
       
       {/* Panier Modal */}
       <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
