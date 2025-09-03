@@ -280,6 +280,12 @@ const Navbar = () => {
                     Devenir Prestataire
                   </Button>
                 </Link>
+                <div className="h-6 w-px bg-border mx-2" />
+                <Link to="/auth">
+                  <Button variant="ghost" size="sm" className="hover:bg-accent hover:text-accent-foreground">
+                    Connexion
+                  </Button>
+                </Link>
               </div>
             )}
           </div>
