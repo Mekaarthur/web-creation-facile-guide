@@ -119,7 +119,6 @@ const Navbar = () => {
   ];
 
   const providerItems = [
-    { name: "Devenir Prestataire", href: "/devenir-prestataire", icon: "💼", description: "Rejoignez notre réseau" },
     { name: "Espace Prestataire", href: user ? "/espace-prestataire" : "/auth?type=provider", icon: "👤", description: "Accédez à votre espace" },
     { name: "Nous Recrutons", href: "/nous-recrutons", icon: "🚀", description: "Découvrez nos opportunités" }
   ];

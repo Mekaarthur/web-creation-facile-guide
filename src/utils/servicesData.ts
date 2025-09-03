@@ -428,7 +428,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Projets personnalisés",
         price: 0,
         priceDisplay: "Sur devis",
-        image: "/src/assets/service-premium.jpg",
+        image: "service-premium.jpg",
         description: "Étude besoins spécifiques clients, conception solutions sur mesure, coordination équipes multidisciplinaires, suivi projet de A à Z, adaptation en temps réel.",
         options: [
           "Étude besoins spécifiques clients",
@@ -443,7 +443,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Services exclusifs",
         price: 0,
         priceDisplay: "Sur devis",
-        image: "/src/assets/service-premium-concierge.jpg",
+        image: "service-premium-concierge.jpg",
         description: "Majordome personnel à temps plein/partiel, gestionnaire de patrimoine familial, organisateur de grands événements privés, coordinateur de résidences multiples, assistant personnel haute qualité.",
         options: [
           "Majordome personnel à temps plein/partiel",
@@ -458,7 +458,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Formules premium",
         price: 1500,
         priceDisplay: "À partir de 1500€/mois",
-        image: "/src/assets/service-premium-full.jpg",
+        image: "service-premium-full.jpg",
         description: "Service 24h/24 et 7j/7, équipe dédiée à une famille, interventions d'urgence prioritaires, accès services partenaires exclusifs, reporting détaillé et personnalisé.",
         options: [
           "Service 24h/24 et 7j/7",
