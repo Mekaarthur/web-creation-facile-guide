@@ -1,9 +1,47 @@
+// Import all service images
+import serviceKids from '@/assets/service-kids.jpg';
+import serviceKidsHomework from '@/assets/service-kids-homework.jpg';
+import serviceKidsOutings from '@/assets/service-kids-outings.jpg';
+import serviceMaison from '@/assets/service-maison.jpg';
+import serviceMaisonErrands from '@/assets/service-maison-errands.jpg';
+import serviceMaisonRepairs from '@/assets/service-maison-repairs.jpg';
+import serviceHouseLogistics from '@/assets/service-house-logistics.jpg';
+import serviceAdmin from '@/assets/service-admin.jpg';
+import serviceAdminSupport from '@/assets/service-admin-support.jpg';
+import serviceVieCalendar from '@/assets/service-vie-calendar.jpg';
+import serviceVieEvents from '@/assets/service-vie-events.jpg';
+import serviceTravel from '@/assets/service-travel.jpg';
+import serviceTravelAirport from '@/assets/service-travel-airport.jpg';
+import serviceTravelAssistance from '@/assets/service-travel-assistance.jpg';
+import serviceTravelKids from '@/assets/service-travel-kids.jpg';
+import serviceAnimals from '@/assets/service-animals.jpg';
+import servicePetCare from '@/assets/service-pet-care.jpg';
+import serviceSeniors from '@/assets/service-seniors.jpg';
+import serviceSeniorsAssistance from '@/assets/service-seniors-assistance.jpg';
+import serviceseniorsCare from '@/assets/service-seniors-care.jpg';
+import serviceBusiness from '@/assets/service-business.jpg';
+import serviceBusinessAdmin from '@/assets/service-business-admin.jpg';
+import serviceBusinessExecutive from '@/assets/service-business-executive.jpg';
+import servicePremium from '@/assets/service-premium.jpg';
+import servicePremiumConcierge from '@/assets/service-premium-concierge.jpg';
+import servicePremiumFull from '@/assets/service-premium-full.jpg';
+import serviceKidsFull from '@/assets/service-kids-full.jpg';
+import serviceMaisonFull from '@/assets/service-maison-full.jpg';
+import serviceVieFull from '@/assets/service-vie-full.jpg';
+import serviceTravelFull from '@/assets/service-travel-full.jpg';
+import serviceAnimalsFull from '@/assets/service-animals-full.jpg';
+import serviceseniorsFull from '@/assets/service-seniors-full.jpg';
+import serviceBusinessFull from '@/assets/service-business-full.jpg';
+import serviceHomeCleaning from '@/assets/service-home-cleaning.jpg';
+import serviceChildcareEducation from '@/assets/service-childcare-education.jpg';
+import serviceChildcareHome from '@/assets/service-childcare-home.jpg';
+
 export type SubService = {
   slug: string;
   title: string;
   price: number;
   priceDisplay?: string;
-  image: string; // path under /src/assets
+  image: string;
   description: string;
   options?: string[];
 };
@@ -36,7 +74,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Garde d'enfants & Baby-sitting",
         price: 25,
         priceDisplay: "25€/h",
-        image: "/src/assets/service-kids.jpg",
+        image: serviceChildcareHome,
         description: "Garde ponctuelle et régulière (après-école, vacances scolaires), garde partagée entre familles, récupération quotidienne à la sortie d'école, transport vers activités extrascolaires, accompagnement aux activités sportives, sorties culturelles (musées, cinéma, parcs), aide aux devoirs.",
         options: [
           "Garde ponctuelle",
@@ -54,7 +92,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Gardes de nuit ou d'urgence",
         price: 30,
         priceDisplay: "30€/h",
-        image: "/src/assets/service-kids-outings.jpg",
+        image: serviceKids,
         description: "Nuit complète et garde de nuit, urgences (soirée, weekend, urgence), accompagnement enfants malades, accompagnement aux rendez-vous médicaux.",
         options: [
           "Nuit complète et garde de nuit",
@@ -68,7 +106,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Anniversaires & Évènements",
         price: 30,
         priceDisplay: "à partir de 30€/h",
-        image: "/src/assets/service-kids-outings.jpg",
+        image: serviceKidsOutings,
         description: "Animation et jeux pour enfants, aide décoration thématique personnalisée, gestion des invitations et logistique, photographe et souvenirs.",
         options: [
           "Animation et jeux pour enfants",
@@ -82,7 +120,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Soutien scolaire",
         price: 30,
         priceDisplay: "30€/h",
-        image: "/src/assets/service-kids-homework.jpg",
+        image: serviceKidsHomework,
         description: "Cours particuliers à domicile, préparation aux examens.",
         options: [
           "Cours particuliers à domicile",
@@ -101,7 +139,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Courses & Approvisionnement",
         price: 25,
         priceDisplay: "25€/h",
-        image: "/src/assets/service-maison.jpg",
+        image: serviceMaison,
         description: "Courses alimentaires hebdomadaires, courses de première nécessité, achats spécialisés (produits bio, sans gluten, etc.), gestion des stocks et inventaire frigo/placards.",
         options: [
           "Courses alimentaires hebdomadaires",
@@ -115,7 +153,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Courses urgentes et de nuit",
         price: 30,
         priceDisplay: "30€/h",
-        image: "/src/assets/service-maison-errands.jpg",
+        image: serviceMaisonErrands,
         description: "Courses urgentes et de dernière minute, courses de nuit et livraison.",
         options: [
           "Courses urgentes et de dernière minute",
@@ -127,7 +165,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Logistique & Organisation",
         price: 25,
         priceDisplay: "25€/h",
-        image: "/src/assets/service-house-logistics.jpg",
+        image: serviceHouseLogistics,
         description: "Retrait des colis et livraisons, gestion des rendez-vous artisans/techniciens, coordination des travaux et rénovations.",
         options: [
           "Retrait des colis et livraisons",
@@ -140,7 +178,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Aide au déménagement et à l'aménagement",
         price: 30,
         priceDisplay: "30€/h",
-        image: "/src/assets/service-maison-errands.jpg",
+        image: serviceMaisonRepairs,
         description: "Faire les cartons, aide au transport des cartons et meubles de la maison vers le rez de chaussée et inversement, rangement et organisation d'espaces.",
         options: [
           "faire les cartons",
@@ -153,7 +191,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Entretien jardin et espaces verts",
         price: 0,
         priceDisplay: "Sur demande",
-        image: "/src/assets/service-maison-repairs.jpg",
+        image: serviceHomeCleaning,
         description: "Entretien des jardins et espaces verts - Sur demande, entretien courant du jardin, tonte de la pelouse, scarification et aération de la pelouse, arrosage (manuel ou installation d'un système automatique), désherbage (manuel, thermique ou sélectif), ramassage des feuilles mortes, traitement des maladies et parasites (dans le respect de la réglementation).",
         options: [
           "Entretien courant du jardin",
@@ -170,7 +208,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Maintenance",
         price: 30,
         priceDisplay: "30€/h",
-        image: "/src/assets/service-maison-repairs.jpg",
+        image: serviceMaisonRepairs,
         description: "Aide au montage des meubles, aide à la plomberie de base.",
         options: [
           "Aide au montage des meubles",
@@ -189,7 +227,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Services administratifs familiaux",
         price: 25,
         priceDisplay: "25€/h",
-        image: "/src/assets/service-admin.jpg",
+        image: serviceAdmin,
         description: "Gestion du courrier et des documents, prise de rendez-vous médicaux/administratifs, suivi des contrats et abonnements, accompagnement aux rendez-vous, archivage et classement documents personnels.",
         options: [
           "Gestion du courrier et des documents",
@@ -204,7 +242,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Services personnels",
         price: 25,
         priceDisplay: "25€/h",
-        image: "/src/assets/service-admin-support.jpg",
+        image: serviceAdminSupport,
         description: "Dépôt et retrait de pressing, dépôts et retrait cordonnerie, réservations restaurants et spectacles, recherche et réservation de prestataires.",
         options: [
           "Dépôt et retrait de pressing",
@@ -218,7 +256,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Assistance quotidienne",
         price: 30,
         priceDisplay: "30€/h",
-        image: "/src/assets/service-vie-events.jpg",
+        image: serviceVieEvents,
         description: "Gestion de planning personnel, interface avec administrations et services, résolution de problèmes du quotidien.",
         options: [
           "Gestion de planning personnel",
@@ -238,7 +276,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Préparation voyage",
         price: 30,
         priceDisplay: "30€/h",
-        image: "/src/assets/service-travel.jpg",
+        image: serviceTravel,
         description: "Recherche et réservation billets d'avion/train, réservation hébergements (hôtels, locations), réservation activités et excursions, vérification documents de voyage, organisation itinéraires personnalisés.",
         options: [
           "Recherche et réservation billets d'avion/train",
@@ -253,7 +291,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Formalités & Documents",
         price: 30,
         priceDisplay: "30€/h",
-        image: "/src/assets/service-travel-assistance.jpg",
+        image: serviceTravelAssistance,
         description: "Assistance renouvellement passeports/visas, vérification et rappel validité documents, réservation transfert in/out aéroport, recherche et souscription assurances voyage et rapatriement, aide au Change de devises.",
         options: [
           "Assistance renouvellement passeports/visas",
@@ -268,7 +306,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Assistance 24h/7j en cas de problème",
         price: 30,
         priceDisplay: "30€/h",
-        image: "/src/assets/service-travel-full.jpg",
+        image: serviceTravelAirport,
         description: "Aide à la Modification réservations en urgence, aide à la Gestion des imprévus et retards, support multilingue à destination.",
         options: [
           "Aide à la Modification réservations en urgence",
@@ -288,7 +326,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Soins quotidiens",
         price: 25,
         priceDisplay: "25€/h",
-        image: "/src/assets/service-animals.jpg",
+        image: serviceAnimals,
         description: "Promenades et sorties régulières, nourrissage et soins à domicile, administration médicaments, brossage et soins d'hygiène, compagnie pour animaux seuls.",
         options: [
           "Promenades et sorties régulières",
@@ -303,7 +341,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Services vétérinaires",
         price: 30,
         priceDisplay: "30€/h",
-        image: "/src/assets/service-seniors-care.jpg",
+        image: servicePetCare,
         description: "Transport chez le vétérinaire, accompagnement rendez-vous médicaux, gestion des urgences vétérinaires, suivi traitements et convalescence, coordination avec professionnels animaliers.",
         options: [
           "Transport chez le vétérinaire",
@@ -318,7 +356,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Garde & Pension",
         price: 30,
         priceDisplay: "30€/h",
-        image: "/src/assets/service-pet-care.jpg",
+        image: serviceAnimalsFull,
         description: "Garde à domicile (propriétaire absent), pension dans famille d'accueil agréée, garde pendant vacances/déplacements, sorties et exercice adaptés, envoi de nouvelles et photos quotidiennes.",
         options: [
           "Garde à domicile (propriétaire absent)",
@@ -340,7 +378,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Assistance quotidienne",
         price: 30,
         priceDisplay: "30€/h",
-        image: "/src/assets/service-seniors.jpg",
+        image: serviceSeniors,
         description: "Aide aux courses et préparation repas, accompagnement sorties et promenades, aide à la toilette et soins d'hygiène, administration médicaments, compagnie et conversation, gestion administrative et courrier.",
         options: [
           "Aide aux courses et préparation repas",
@@ -356,7 +394,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Support médical",
         price: 30,
         priceDisplay: "30€/h",
-        image: "/src/assets/service-seniors-assistance.jpg",
+        image: serviceSeniorsAssistance,
         description: "Accompagnement rendez-vous médicaux, coordination avec équipe soignante, gestion des traitements, surveillance état de santé, liaison avec famille et médecins.",
         options: [
           "Accompagnement rendez-vous médicaux",
@@ -367,17 +405,18 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         ],
       },
       {
-        slug: "lien-social",
-        title: "Lien social",
-        price: 30,
-        priceDisplay: "30€/h",
-        image: "/src/assets/service-seniors.jpg",
-        description: "Visites régulières et écoute, accompagnement activités culturelles, aide utilisation nouvelles technologies, maintien lien avec famille éloignée via appel.",
+        slug: "urgences-24-7",
+        title: "Urgences 24h/7j",
+        price: 40,
+        priceDisplay: "40€/h",
+        image: serviceseniorsCare,
+        description: "Assistance d'urgence jour et nuit, coordination avec services d'urgence, gestion de crises et situations délicates, accompagnement famille en cas d'urgence, suivi médical renforcé.",
         options: [
-          "Visites régulières et écoute",
-          "Accompagnement activités culturelles",
-          "Aide utilisation nouvelles technologies",
-          "Maintien lien avec famille éloignée via appel"
+          "Assistance d'urgence jour et nuit",
+          "Coordination avec services d'urgence",
+          "Gestion de crises et situations délicates",
+          "Accompagnement famille en cas d'urgence",
+          "Suivi médical renforcé"
         ],
       },
     ],
@@ -390,13 +429,29 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
       {
         slug: "support-administratif",
         title: "Support administratif",
-        price: 50,
-        priceDisplay: "À partir de 50€/h",
-        image: "/src/assets/service-business-admin.jpg",
-        description: "Gestion agenda dirigeants, coordination déplacements professionnels, gestion réservations et logistique, interface avec partenaires externes.",
+        price: 40,
+        priceDisplay: "40€/h",
+        image: serviceBusinessAdmin,
+        description: "Gestion administrative complète, secrétariat et prise de rendez-vous, organisation de réunions et événements, gestion des déplacements professionnels, interface avec partenaires et clients.",
         options: [
-          "Gestion agenda dirigeants",
-          "Coordination déplacements professionnels",
+          "Gestion administrative complète",
+          "Secrétariat et prise de rendez-vous",
+          "Organisation de réunions et événements",
+          "Gestion des déplacements professionnels",
+          "Interface avec partenaires et clients"
+        ],
+      },
+      {
+        slug: "assistance-dirigeants",
+        title: "Assistance dirigeants",
+        price: 60,
+        priceDisplay: "60€/h",
+        image: serviceBusinessExecutive,
+        description: "Assistance personnalisée cadres supérieurs, gestion des priorités et planning, coordination projets stratégiques, gestion réservations et logistique, interface avec partenaires externes.",
+        options: [
+          "Assistance personnalisée cadres supérieurs",
+          "Gestion des priorités et planning",
+          "Coordination projets stratégiques",
           "Gestion réservations et logistique",
           "Interface avec partenaires externes"
         ],
@@ -406,7 +461,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Conciergerie d'entreprise",
         price: 50,
         priceDisplay: "à partir de 50€/h",
-        image: "/src/assets/service-business.jpg",
+        image: serviceBusiness,
         description: "Services personnels pour employés, pressing et petites courses, réservations restaurants d'affaires, organisation cadeaux clients/partenaires, gestion des urgences personnelles salariés.",
         options: [
           "Services personnels pour employés",
@@ -428,7 +483,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Projets personnalisés",
         price: 0,
         priceDisplay: "Sur devis",
-        image: "service-premium.jpg",
+        image: servicePremium,
         description: "Étude besoins spécifiques clients, conception solutions sur mesure, coordination équipes multidisciplinaires, suivi projet de A à Z, adaptation en temps réel.",
         options: [
           "Étude besoins spécifiques clients",
@@ -443,7 +498,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Services exclusifs",
         price: 0,
         priceDisplay: "Sur devis",
-        image: "service-premium-concierge.jpg",
+        image: servicePremiumConcierge,
         description: "Majordome personnel à temps plein/partiel, gestionnaire de patrimoine familial, organisateur de grands événements privés, coordinateur de résidences multiples, assistant personnel haute qualité.",
         options: [
           "Majordome personnel à temps plein/partiel",
@@ -458,7 +513,7 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         title: "Formules premium",
         price: 1500,
         priceDisplay: "À partir de 1500€/mois",
-        image: "service-premium-full.jpg",
+        image: servicePremiumFull,
         description: "Service 24h/24 et 7j/7, équipe dédiée à une famille, interventions d'urgence prioritaires, accès services partenaires exclusifs, reporting détaillé et personnalisé.",
         options: [
           "Service 24h/24 et 7j/7",
