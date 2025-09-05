@@ -21,6 +21,15 @@ import Cart from "@/components/Cart";
 import CartIndicator from "@/components/CartIndicator";
 import UserProfileMenu from "@/components/UserProfileMenu";
 import { servicesData } from "@/utils/servicesData";
+// Import service images
+import serviceKids from '@/assets/service-kids.jpg';
+import serviceMaison from '@/assets/service-maison.jpg';
+import serviceSeniors from '@/assets/service-seniors.jpg';
+import serviceAnimals from '@/assets/service-animals.jpg';
+import serviceAdmin from '@/assets/service-admin.jpg';
+import serviceTravel from '@/assets/service-travel.jpg';
+import serviceBusiness from '@/assets/service-business.jpg';
+import servicePremium from '@/assets/service-premium.jpg';
 
 const Navbar = () => {
   const { t } = useTranslation();
@@ -48,7 +57,7 @@ const Navbar = () => {
     { name: "Blog", href: "/blog" },
   ];
 
-  // Structure organisée des services avec émojis et descriptions
+  // Structure organisée des services avec images
   const servicesCategories = [
     {
       title: "Services Personnel & Famille",
@@ -56,28 +65,28 @@ const Navbar = () => {
         {
           key: "kids",
           name: "Bika Kids",
-          icon: "🧸",
+          image: serviceKids,
           href: "/bika-kids",
           description: "Garde d'enfants et baby-sitting professionnel"
         },
         {
           key: "maison",
           name: "Bika Maison", 
-          icon: "🏠",
+          image: serviceMaison,
           href: "/bika-maison",
           description: "Gestion complète de votre foyer"
         },
         {
           key: "seniors",
           name: "Bika Seniors",
-          icon: "👴",
+          image: serviceSeniors,
           href: "/bika-seniors", 
           description: "Accompagnement personnalisé des seniors"
         },
         {
           key: "animals",
           name: "Bika Animal",
-          icon: "🐾",
+          image: serviceAnimals,
           href: "/bika-animals",
           description: "Soins et garde de vos animaux"
         }
@@ -89,28 +98,28 @@ const Navbar = () => {
         {
           key: "vie",
           name: "Bika Vie",
-          icon: "🔑",
+          image: serviceAdmin,
           href: "/bika-vie",
           description: "Conciergerie complète du quotidien"
         },
         {
           key: "travel",
           name: "Bika Travel",
-          icon: "✈️",
+          image: serviceTravel,
           href: "/bika-travel",
           description: "Organisation et assistance voyage"
         },
         {
           key: "pro",
           name: "Bika Pro",
-          icon: "💼",
+          image: serviceBusiness,
           href: "/bika-pro",
           description: "Services aux entreprises"
         },
         {
           key: "plus",
           name: "Bika Plus",
-          icon: "💎",
+          image: servicePremium,
           href: "/bika-plus",
           description: "Services sur mesure haut de gamme"
         }
@@ -168,7 +177,13 @@ const Navbar = () => {
                                   className="group block select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                                 >
                                   <div className="flex items-center space-x-3">
-                                    <span className="text-lg">{service.icon}</span>
+                                    <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
+                                      <img 
+                                        src={service.image} 
+                                        alt={service.name}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </div>
                                     <div>
                                       <div className="text-sm font-medium leading-none group-hover:text-primary transition-colors">
                                         {service.name}
