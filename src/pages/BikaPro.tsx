@@ -14,6 +14,7 @@ import CallToActionButtons from "@/components/CallToActionButtons";
 import ClientSpace from "@/components/ClientSpace";
 import { useAuth } from "@/hooks/useAuth";
 import ServiceSubgrid from "@/components/ServiceSubgrid";
+import { servicesData } from "@/utils/servicesData";
 
 const BikaPro = () => {
   const navigate = useNavigate();
@@ -21,27 +22,18 @@ const BikaPro = () => {
   const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
   const { user } = useAuth();
 
+  const serviceData = servicesData.pro;
+
   const handleOpenBooking = (service) => {
     setSelectedService(service);
     setIsBookingFormOpen(true);
   };
 
-  const services = [
-    // Support administratif (50€/h)
-    { name: "Gestion agenda dirigeants", price: 50, description: "Gestion agenda dirigeants, coordination déplacements" },
-    { name: "Réservations et logistique", price: 50, description: "Réservations & logistique, interface partenaires externes" },
-    
-    // Conciergerie entreprise (50€/h)
-    { name: "Services personnels employés", price: 50, description: "Services personnels employés, pressing, courses" },
-    { name: "Réservations restos affaires", price: 50, description: "Réservations restos affaires, organisation cadeaux clients" },
-    { name: "Gestion urgences salariés", price: 50, description: "Gestion des urgences personnelles salariés" }
-  ];
-
   const structuredData = {
     "@context": "https://schema.org", "@type": "Service", "name": "Bika Pro - Services aux entreprises",
     "provider": { "@type": "Organization", "name": "Bikawo", "url": "https://bikawo.fr" },
     "areaServed": { "@type": "Place", "name": "Île-de-France" },
-    "offers": services.map(service => ({ "@type": "Offer", "name": service.name, "description": service.description, "price": service.price, "priceCurrency": "EUR" }))
+    "offers": serviceData.subservices.map(service => ({ "@type": "Offer", "name": service.title, "description": service.description, "price": service.price, "priceCurrency": "EUR" }))
   };
 
   return (
@@ -162,11 +154,11 @@ const BikaPro = () => {
               <div className="container mx-auto px-4">
                 <h2 className="text-3xl font-bold text-center mb-12">Nos services Bika Pro</h2>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-                  {services.map((service, index) => (
+                  {serviceData.subservices.map((service, index) => (
                     <Card key={index} className="hover:shadow-lg transition-shadow">
                       <CardHeader>
                         <div className="flex justify-between items-start">
-                          <CardTitle className="text-lg">{service.name}</CardTitle>
+                          <CardTitle className="text-lg">{service.title}</CardTitle>
                           <Badge variant="outline" className="text-slate-600 border-slate-200 font-semibold">{`${service.price}€/h`}</Badge>
                         </div>
                       </CardHeader>

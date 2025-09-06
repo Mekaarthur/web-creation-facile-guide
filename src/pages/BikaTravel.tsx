@@ -16,12 +16,15 @@ import { useAuth } from "@/hooks/useAuth";
 import serviceTravelAirport from "@/assets/service-travel-airport.jpg";
 import serviceTravelKids from "@/assets/service-travel-kids.jpg";
 import ServiceSubgrid from "@/components/ServiceSubgrid";
+import { servicesData } from "@/utils/servicesData";
 
 const BikaTravel = () => {
   const navigate = useNavigate();
   const [selectedService, setSelectedService] = useState(null);
   const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
   const { user } = useAuth();
+
+  const serviceData = servicesData.travel;
 
   const handleOpenBooking = (service) => {
     setSelectedService(service);
@@ -250,11 +253,11 @@ const BikaTravel = () => {
               <div className="container mx-auto px-4">
                 <h2 className="text-3xl font-bold text-center mb-12">Nos services Bika Travel</h2>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-                  {services.map((service, index) => (
+                  {serviceData.subservices.map((service, index) => (
                     <Card key={index} className="hover:shadow-lg transition-shadow">
                       <CardHeader>
                         <div className="flex justify-between items-start">
-                          <CardTitle className="text-lg">{service.name}</CardTitle>
+                          <CardTitle className="text-lg">{service.title}</CardTitle>
                           <Badge variant="outline" className="text-sky-600 border-sky-200 font-semibold">
                             {`${service.price}€/h`}
                           </Badge>

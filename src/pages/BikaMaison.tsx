@@ -14,12 +14,16 @@ import CallToActionButtons from "@/components/CallToActionButtons";
 import ClientSpace from "@/components/ClientSpace";
 import serviceMaisonErrands from "@/assets/service-maison-errands.jpg";
 import serviceMaisonRepairs from "@/assets/service-maison-repairs.jpg";
+import serviceMaison from "@/assets/service-maison.jpg";
+import { servicesData } from "@/utils/servicesData";
 import ServiceSubgrid from "@/components/ServiceSubgrid";
 
 const BikaMaison = () => {
   const navigate = useNavigate();
   const [selectedService, setSelectedService] = useState(null);
   const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
+
+  const serviceData = servicesData.maison;
 
   const handleOpenBooking = (service) => {
     setSelectedService(service);
@@ -332,7 +336,7 @@ const BikaMaison = () => {
               <div className="text-center">
                 <div className="mb-6">
                   <img 
-                    src="/src/assets/service-maison.jpg" 
+                    src={serviceMaison} 
                     alt="Courses et logistique" 
                     className="w-full h-48 object-cover rounded-lg"
                   />
@@ -379,11 +383,11 @@ const BikaMaison = () => {
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center mb-12">Nos services Bika Maison</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-              {services.map((service, index) => (
+              {serviceData.subservices.map((service, index) => (
                 <Card key={index} className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg">{service.name}</CardTitle>
+                      <CardTitle className="text-lg">{service.title}</CardTitle>
                       <Badge variant="outline" className="text-green-600 border-green-200 font-semibold">
                         {`${service.price}€/h`}
                       </Badge>

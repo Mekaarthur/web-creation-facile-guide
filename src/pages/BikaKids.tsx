@@ -74,7 +74,7 @@ const BikaKids = () => {
               <Card key={subService.slug} className="group hover:shadow-lg transition-all duration-300 border-primary/10 hover:border-primary/30">
                 <div className="aspect-[4/3] overflow-hidden rounded-t-lg">
                   <img 
-                    src="/src/assets/service-kids.jpg"
+                    src={subService.image}
                     alt={subService.title}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />

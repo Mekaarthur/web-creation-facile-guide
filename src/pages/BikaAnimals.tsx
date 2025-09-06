@@ -12,6 +12,10 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import CallToActionButtons from "@/components/CallToActionButtons";
 import ClientSpace from "@/components/ClientSpace";
+import serviceAnimals from "@/assets/service-animals.jpg";
+import servicePetCare from "@/assets/service-pet-care.jpg";
+import serviceseniorsCare from "@/assets/service-seniors-care.jpg";
+import { servicesData } from "@/utils/servicesData";
 import ServiceSubgrid from "@/components/ServiceSubgrid";
 
 const BikaAnimals = () => {
@@ -19,25 +23,12 @@ const BikaAnimals = () => {
   const [selectedService, setSelectedService] = useState(null);
   const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
 
+  const serviceData = servicesData.animals;
+
   const handleOpenBooking = (service) => {
     setSelectedService(service);
     setIsBookingFormOpen(true);
   };
-
-  const services = [
-    // a) Soins quotidiens (25€/h)
-    { name: "Promenades régulières", price: 25, description: "Promenades régulières, nourrissage & soins" },
-    { name: "Administration médicaments", price: 25, description: "Administration médicaments, compagnie" },
-    { name: "Brossage et hygiène", price: 25, description: "Brossage et soins d'hygiène" },
-    
-    // b) Services vétérinaires (30€/h)
-    { name: "Transport vétérinaire", price: 30, description: "Transport vétérinaire, gestion urgences vétérinaires" },
-    { name: "Suivi traitements", price: 30, description: "Suivi traitements, coordination avec soignants" },
-    
-    // c) Garde & Pension (30€/h)
-    { name: "Garde à domicile", price: 30, description: "Garde à domicile, pension famille agréée" },
-    { name: "Garde vacances", price: 30, description: "Garde vacances/déplacements, envoi de nouvelles/photos quotidiennes" }
-  ];
 
   const structuredData = {
     "@context": "https://schema.org",
@@ -45,8 +36,8 @@ const BikaAnimals = () => {
     "name": "Bika Animals - Services pour animaux",
     "provider": { "@type": "Organization", "name": "Bikawo", "url": "https://bikawo.fr" },
     "areaServed": { "@type": "Place", "name": "Île-de-France" },
-    "offers": services.map(service => ({
-      "@type": "Offer", "name": service.name, "description": service.description,
+    "offers": serviceData.subservices.map(service => ({
+      "@type": "Offer", "name": service.title, "description": service.description,
       "price": service.price, "priceCurrency": "EUR"
     }))
   };
@@ -170,11 +161,11 @@ const BikaAnimals = () => {
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center mb-12">Nos services Bika Animals</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-              {services.map((service, index) => (
+              {serviceData.subservices.map((service, index) => (
                 <Card key={index} className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg">{service.name}</CardTitle>
+                      <CardTitle className="text-lg">{service.title}</CardTitle>
                       <Badge variant="outline" className="text-green-600 border-green-200 font-semibold">{`${service.price}€/h`}</Badge>
                     </div>
                   </CardHeader>
@@ -206,7 +197,7 @@ const BikaAnimals = () => {
               <div className="text-center">
                 <div className="mb-6">
                   <img 
-                    src="/src/assets/service-animals.jpg" 
+                    src={serviceAnimals} 
                     alt="Service animaux professionnels" 
                     className="w-full h-48 object-cover rounded-lg"
                   />
@@ -220,7 +211,7 @@ const BikaAnimals = () => {
               <div className="text-center">
                 <div className="mb-6">
                   <img 
-                    src="/src/assets/service-pet-care.jpg" 
+                    src={servicePetCare} 
                     alt="Garde d'animaux" 
                     className="w-full h-48 object-cover rounded-lg"
                   />
@@ -234,7 +225,7 @@ const BikaAnimals = () => {
               <div className="text-center">
                 <div className="mb-6">
                   <img 
-                    src="/src/assets/service-seniors-care.jpg" 
+                    src={serviceseniorsCare} 
                     alt="Soins vétérinaires" 
                     className="w-full h-48 object-cover rounded-lg"
                   />
@@ -270,7 +261,7 @@ const BikaAnimals = () => {
             </p>
             <Button 
               size="lg" 
-              onClick={() => handleOpenBooking(services[0])}
+              onClick={() => handleOpenBooking(serviceData.subservices[0])}
               className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
             >
               <Calendar className="w-5 h-5 mr-2" />

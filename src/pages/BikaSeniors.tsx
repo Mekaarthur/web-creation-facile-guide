@@ -12,6 +12,10 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import CallToActionButtons from "@/components/CallToActionButtons";
 import ClientSpace from "@/components/ClientSpace";
+import serviceSeniors from "@/assets/service-seniors.jpg";
+import serviceSeniorsAssistance from "@/assets/service-seniors-assistance.jpg";
+import serviceseniorsCare from "@/assets/service-seniors-care.jpg";
+import { servicesData } from "@/utils/servicesData";
 import ServiceSubgrid from "@/components/ServiceSubgrid";
 
 const BikaSeniors = () => {
@@ -19,35 +23,18 @@ const BikaSeniors = () => {
   const [selectedService, setSelectedService] = useState(null);
   const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
 
+  const serviceData = servicesData.seniors;
+
   const handleOpenBooking = (service) => {
     setSelectedService(service);
     setIsBookingFormOpen(true);
   };
 
-  const services = [
-    // a) Assistance quotidienne (30€/h)
-    { name: "Courses et repas", price: 30, description: "Courses & préparation repas, sorties & promenades" },
-    { name: "Aide toilette et hygiène", price: 30, description: "Aide toilette & hygiène de base, administration médicaments" },
-    { name: "Compagnie", price: 30, description: "Compagnie et conversation quotidienne" },
-    
-    // b) Support médical (30€/h)
-    { name: "Rdv médicaux", price: 30, description: "Accompagnement rdv médicaux, suivi traitements" },
-    { name: "Coordination soignants", price: 30, description: "Coordination avec soignants, liaison famille/médecins" },
-    
-    // c) Maintien à domicile (35€/h)
-    { name: "Aménagement logement", price: 35, description: "Aménagement logement sécurisé, équipements adaptés" },
-    { name: "Ménage et entretien", price: 35, description: "Ménage & entretien domicile" },
-    
-    // d) Lien social (30€/h)
-    { name: "Visites régulières", price: 30, description: "Visites régulières, accompagnement activités culturelles" },
-    { name: "Aide nouvelles technologies", price: 30, description: "Aide nouvelles technologies, appels vidéo avec famille" }
-  ];
-
   const structuredData = {
     "@context": "https://schema.org", "@type": "Service", "name": "Bika Seniors - Aide personnes âgées",
     "provider": { "@type": "Organization", "name": "Bikawo", "url": "https://bikawo.fr" },
     "areaServed": { "@type": "Place", "name": "Île-de-France" },
-    "offers": services.map(service => ({ "@type": "Offer", "name": service.name, "description": service.description, "price": service.price, "priceCurrency": "EUR" }))
+    "offers": serviceData.subservices.map(service => ({ "@type": "Offer", "name": service.title, "description": service.description, "price": service.price, "priceCurrency": "EUR" }))
   };
 
   return (
@@ -175,7 +162,7 @@ const BikaSeniors = () => {
               <div className="text-center">
                 <div className="mb-6">
                   <img 
-                    src="/src/assets/service-seniors.jpg" 
+                    src={serviceSeniors} 
                     alt="Aide personnes âgées" 
                     className="w-full h-48 object-cover rounded-lg"
                   />
@@ -189,7 +176,7 @@ const BikaSeniors = () => {
               <div className="text-center">
                 <div className="mb-6">
                   <img 
-                    src="/src/assets/service-seniors-assistance.jpg" 
+                    src={serviceSeniorsAssistance} 
                     alt="Accompagnement médical" 
                     className="w-full h-48 object-cover rounded-lg"
                   />
@@ -203,7 +190,7 @@ const BikaSeniors = () => {
               <div className="text-center">
                 <div className="mb-6">
                   <img 
-                    src="/src/assets/service-seniors-care.jpg" 
+                    src={serviceseniorsCare} 
                     alt="Compagnie seniors" 
                     className="w-full h-48 object-cover rounded-lg"
                   />
@@ -222,11 +209,11 @@ const BikaSeniors = () => {
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center mb-12">Nos services Bika Seniors</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-              {services.map((service, index) => (
+              {serviceData.subservices.map((service, index) => (
                 <Card key={index} className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg">{service.name}</CardTitle>
+                      <CardTitle className="text-lg">{service.title}</CardTitle>
                       <Badge variant="outline" className="text-blue-600 border-blue-200 font-semibold">
                         {`${service.price}€/h`}
                       </Badge>
@@ -272,7 +259,7 @@ const BikaSeniors = () => {
             </p>
             <Button 
               size="lg" 
-              onClick={() => handleOpenBooking(services[0])}
+              onClick={() => handleOpenBooking(serviceData.subservices[0])}
               className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
             >
               <Calendar className="w-5 h-5 mr-2" />
