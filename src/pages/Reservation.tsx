@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
-import ServicesGrid from "@/components/ServicesGrid";
+import ServicesPackages from "@/components/ServicesPackages";
 import Footer from "@/components/Footer";
 import ChatBot from "@/components/ChatBot";
 import Cart from "@/components/Cart";
@@ -115,9 +115,9 @@ const Reservation = () => {
           </div>
         </section>
 
-        {/* Services Grid */}
+        {/* Services Packages */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <ServicesGrid />
+          <ServicesPackages />
         </div>
       </div>
       
