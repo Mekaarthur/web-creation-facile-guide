@@ -21,7 +21,7 @@ const ServiceSubgrid = ({ categoryKey }: ServiceSubgridProps) => {
     setOpen(true);
   };
 
-  const cards = useMemo(() => category.subservices.slice(0, 4), [category]);
+  const cards = useMemo(() => category.subservices, [category]);
 
   return (
     <>
