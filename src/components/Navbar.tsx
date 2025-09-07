@@ -211,18 +211,6 @@ const Navbar = () => {
                         </div>
                       ))}
                       
-                      {/* Action de fin */}
-                      <div className="col-span-2 mt-4 pt-4 border-t border-border">
-                        <NavigationMenuLink asChild>
-                          <Link
-                            to="/services"
-                            className="group flex items-center justify-center space-x-2 w-full rounded-lg bg-gradient-primary p-3 text-primary-foreground hover:opacity-90 transition-opacity"
-                          >
-                            <span>Découvrir tous nos services</span>
-                            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                          </Link>
-                        </NavigationMenuLink>
-                      </div>
                     </div>
                   </NavigationMenuContent>
                 </NavigationMenuItem>

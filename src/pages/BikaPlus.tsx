@@ -108,131 +108,119 @@ const BikaPlus = () => {
       <ServiceBreadcrumb serviceName="Bika Plus - Service Premium 7j/7" />
       
       <main className="pt-20">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-br from-yellow-50 to-amber-50 py-20">
+        {/* Hero Section - Style Wecasa */}
+        <section className="relative bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-600 py-20 overflow-hidden">
           <div className="container mx-auto px-4">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               {/* Left: Content */}
-              <div className="space-y-6">
-                <div className="text-sm text-blue-600 font-medium">
-                  ⭐ Services BIKA #1 en France
-                </div>
-                <div className="text-lg text-pink-500 italic">
-                  "La charge mentale en moins, la sérénité en plus"
-                </div>
-                <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
-                  Bika Plus
-                  <br />
-                  <span className="text-amber-600">Service Premium 7j/7</span>
-                </h1>
-                <div className="flex items-center space-x-2 mb-4">
-                  <Badge className="bg-gradient-to-r from-yellow-500 to-amber-600 text-white px-4 py-2">
-                    <Crown className="w-4 h-4 mr-2" />
-                    Service Premium
-                  </Badge>
-                </div>
-                <p className="text-lg text-gray-600 leading-relaxed">
-                  L'excellence du service premium familial avec Chef Family Officer dédié. 
-                  Organisation complète + ligne prioritaire + accès illimité tous services. 
-                  Sérénité absolue garantie.
-                </p>
+              <div className="text-white space-y-6">
+                <div>
+                  <h1 className="text-5xl lg:text-6xl font-bold leading-tight mb-4">
+                    Service Premium 7j/7
+                  </h1>
+                  
+                  {/* Rating */}
+                  <div className="flex items-center space-x-2 mb-4">
+                    <div className="flex items-center space-x-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="w-5 h-5 fill-white text-white" />
+                      ))}
+                    </div>
+                    <span className="text-white/90 font-medium">5,0/5 - Excellence garantie</span>
+                  </div>
 
-                {/* Features */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center">
-                      <Crown className="w-3 h-3 text-amber-600" />
-                    </div>
-                    <span className="text-sm text-gray-600">Chef dédié 24h/24</span>
+                  {/* Price */}
+                  <div className="text-2xl font-bold mb-2">
+                    À partir de 1500€/mois, crédit d'impôt applicable
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center">
-                      <MessageCircle className="w-3 h-3 text-yellow-600" />
-                    </div>
-                    <span className="text-sm text-gray-600">WhatsApp prioritaire</span>
+                </div>
+
+                {/* Key Benefits */}
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="w-5 h-5 text-white" />
+                    <span className="text-lg">Chef Family Officer dédié 24h/7</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center">
-                      <CheckCircle className="w-3 h-3 text-orange-600" />
-                    </div>
-                    <span className="text-sm text-gray-600">Accès illimité</span>
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="w-5 h-5 text-white" />
+                    <span className="text-lg">Accès illimité à tous nos services</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 bg-rose-100 rounded-full flex items-center justify-center">
-                      <Users className="w-3 h-3 text-rose-600" />
-                    </div>
-                    <span className="text-sm text-gray-600">Service sur-mesure</span>
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="w-5 h-5 text-white" />
+                    <span className="text-lg">Ligne prioritaire et service sur-mesure</span>
                   </div>
                 </div>
 
                 {/* CTA Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-col sm:flex-row gap-4 pt-4">
                   <Button 
                     size="lg" 
                     onClick={() => navigate('/custom-request')}
-                    className="bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-white px-8 py-3"
+                    className="bg-white text-amber-600 hover:bg-gray-100 px-8 py-4 shadow-lg text-lg font-semibold"
                   >
-                    Découvrir Bika Plus →
+                    Découvrir Bika Plus
                   </Button>
                   <Button 
                     size="lg" 
                     variant="outline"
-                    onClick={() => navigate('/custom-request')}
-                    className="border-amber-200 text-amber-600 hover:bg-amber-50 px-8 py-3"
+                    className="border-2 border-white text-white hover:bg-white/10 px-8 py-4 text-lg font-semibold"
                   >
                     Demander une présentation
                   </Button>
-                </div>
-
-                {/* Trust Indicators */}
-                <div className="flex items-center space-x-6">
-                  <div className="flex items-center space-x-2">
-                    <div className="flex -space-x-1">
-                      <div className="w-6 h-6 bg-yellow-500 rounded-full"></div>
-                      <div className="w-6 h-6 bg-amber-500 rounded-full"></div>
-                      <div className="w-6 h-6 bg-orange-500 rounded-full"></div>
-                      <div className="w-6 h-6 bg-rose-500 rounded-full"></div>
-                    </div>
-                    <span className="text-sm text-gray-600">Familles VIP</span>
-                  </div>
                 </div>
               </div>
 
               {/* Right: Image */}
               <div className="relative">
-                <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                   <img 
                     src="/src/assets/service-premium-full.jpg" 
                     alt="Service premium Bika Plus" 
                     className="w-full h-auto"
                   />
-                  {/* Status Badge */}
-                  <div className="absolute top-4 left-4 bg-gradient-to-r from-yellow-500 to-amber-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                    ⭐ Premium
-                  </div>
-                  {/* Rating Badge */}
-                  <div className="absolute bottom-4 right-4 bg-white rounded-lg p-3 shadow-lg">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-amber-600">5.0</div>
-                      <div className="text-xs text-gray-500">Excellence garantie</div>
-                      <div className="flex justify-center mt-1">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Actions rapides */}
-                <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
-                  <CallToActionButtons 
-                    size="sm" 
-                    variant="outline" 
-                    className="bg-white border-amber-200 text-amber-600 hover:bg-amber-50"
-                  />
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Pourquoi nous choisir - Style Wecasa */}
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Vous allez nous aimer</h2>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              <Card className="text-center border-0 bg-gradient-to-br from-yellow-50 to-amber-100 p-6 hover:shadow-lg transition-shadow">
+                <div className="w-16 h-16 bg-gradient-to-r from-yellow-500 to-amber-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Crown className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">On est premium</h3>
+                <p className="text-gray-600">
+                  Chef Family Officer dédié 24h/7 pour une qualité de service exceptionnelle.
+                </p>
+              </Card>
+
+              <Card className="text-center border-0 bg-gradient-to-br from-amber-50 to-orange-100 p-6 hover:shadow-lg transition-shadow">
+                <div className="w-16 h-16 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <MessageCircle className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">On est disponible</h3>
+                <p className="text-gray-600">
+                  Ligne prioritaire WhatsApp et accès illimité à tous nos services.
+                </p>
+              </Card>
+
+              <Card className="text-center border-0 bg-gradient-to-br from-orange-50 to-red-100 p-6 hover:shadow-lg transition-shadow">
+                <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Users className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">On est sur-mesure</h3>
+                <p className="text-gray-600">
+                  Service entièrement personnalisé selon vos besoins familiaux spécifiques.
+                </p>
+              </Card>
             </div>
           </div>
         </section>

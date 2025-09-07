@@ -75,128 +75,119 @@ const BikaTravel = () => {
       <ServiceBreadcrumb serviceName="Bika Travel - Services aux Voyageurs" />
       
       <main className="pt-20">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-br from-sky-50 to-blue-50 py-20">
+        {/* Hero Section - Style Wecasa */}
+        <section className="relative bg-gradient-to-br from-teal-400 via-blue-400 to-indigo-500 py-20 overflow-hidden">
           <div className="container mx-auto px-4">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               {/* Left: Content */}
-              <div className="space-y-6">
-                <div className="text-sm text-blue-600 font-medium">
-                  ⭐ Services BIKA #1 en France
-                </div>
-                <div className="text-lg text-pink-500 italic">
-                  "La charge mentale en moins, la sérénité en plus"
-                </div>
-                <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
-                  Bika Travel
-                  <br />
-                  <span className="text-sky-600">Services aux Voyageurs</span>
-                </h1>
-                <div className="flex items-center space-x-2 mb-4">
-                  <Badge className="bg-blue-100 text-blue-800">✈️ Innovation voyage</Badge>
-                </div>
-                <p className="text-lg text-gray-600 leading-relaxed">
-                  Conciergerie voyage unique avec le même expert de confiance. 
-                  Préparation + transferts + veille de vols + Travel-Kids. 
-                  Voyages sans stress garantis.
-                </p>
+              <div className="text-white space-y-6">
+                <div>
+                  <h1 className="text-5xl lg:text-6xl font-bold leading-tight mb-4">
+                    Services aux voyageurs
+                  </h1>
+                  
+                  {/* Rating */}
+                  <div className="flex items-center space-x-2 mb-4">
+                    <div className="flex items-center space-x-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="w-5 h-5 fill-white text-white" />
+                      ))}
+                    </div>
+                    <span className="text-white/90 font-medium">4,9/5 - 800+ avis vérifiés</span>
+                  </div>
 
-                {/* Features */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 bg-sky-100 rounded-full flex items-center justify-center">
-                      <Plane className="w-3 h-3 text-sky-600" />
-                    </div>
-                    <span className="text-sm text-gray-600">Expert voyage</span>
+                  {/* Price */}
+                  <div className="text-2xl font-bold mb-2">
+                    Dès 35€/h, soit 17,50€/h avec le crédit d'impôt
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                      <Smartphone className="w-3 h-3 text-blue-600" />
-                    </div>
-                    <span className="text-sm text-gray-600">Suivi temps réel</span>
+                </div>
+
+                {/* Key Benefits */}
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="w-5 h-5 text-white" />
+                    <span className="text-lg">Experts voyage et transferts</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center">
-                      <Shield className="w-3 h-3 text-indigo-600" />
-                    </div>
-                    <span className="text-sm text-gray-600">CDG & Orly</span>
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="w-5 h-5 text-white" />
+                    <span className="text-lg">Suivi temps réel et assistance</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
-                      <CheckCircle className="w-3 h-3 text-purple-600" />
-                    </div>
-                    <span className="text-sm text-gray-600">Rebooking auto</span>
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="w-5 h-5 text-white" />
+                    <span className="text-lg">CDG, Orly & toute l'Île-de-France</span>
                   </div>
                 </div>
 
                 {/* CTA Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-col sm:flex-row gap-4 pt-4">
                   <Button 
                     size="lg" 
                     onClick={() => navigate('/custom-request')}
-                    className="bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 text-white px-8 py-3"
+                    className="bg-white text-teal-600 hover:bg-gray-100 px-8 py-4 shadow-lg text-lg font-semibold"
                   >
-                    Démarrer maintenant →
+                    Réserver mon service
                   </Button>
                   <Button 
                     size="lg" 
                     variant="outline"
-                    onClick={() => navigate('/custom-request')}
-                    className="border-sky-200 text-sky-600 hover:bg-sky-50 px-8 py-3"
+                    className="border-2 border-white text-white hover:bg-white/10 px-8 py-4 text-lg font-semibold"
                   >
-                    Envoyer une demande personnalisée
+                    Devenir assistant voyage
                   </Button>
-                </div>
-
-                {/* Trust Indicators */}
-                <div className="flex items-center space-x-6">
-                  <div className="flex items-center space-x-2">
-                    <div className="flex -space-x-1">
-                      <div className="w-6 h-6 bg-sky-500 rounded-full"></div>
-                      <div className="w-6 h-6 bg-blue-500 rounded-full"></div>
-                      <div className="w-6 h-6 bg-indigo-500 rounded-full"></div>
-                      <div className="w-6 h-6 bg-purple-500 rounded-full"></div>
-                    </div>
-                    <span className="text-sm text-gray-600">2,500+ personnes nous font confiance</span>
-                  </div>
                 </div>
               </div>
 
               {/* Right: Image */}
               <div className="relative">
-                <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                   <img 
                     src="/src/assets/service-travel-full.jpg" 
                     alt="Service voyage Bika Travel" 
                     className="w-full h-auto"
                   />
-                  {/* Status Badge */}
-                  <div className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                    🟢 En ligne
-                  </div>
-                  {/* Rating Badge */}
-                  <div className="absolute bottom-4 right-4 bg-white rounded-lg p-3 shadow-lg">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-sky-600">4.9</div>
-                      <div className="text-xs text-gray-500">Note moyenne</div>
-                      <div className="flex justify-center mt-1">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Actions rapides */}
-                <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
-                  <CallToActionButtons 
-                    size="sm" 
-                    variant="outline" 
-                    className="bg-white border-sky-200 text-sky-600 hover:bg-sky-50"
-                  />
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Pourquoi nous choisir - Style Wecasa */}
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Vous allez nous aimer</h2>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              <Card className="text-center border-0 bg-gradient-to-br from-teal-50 to-blue-100 p-6 hover:shadow-lg transition-shadow">
+                <div className="w-16 h-16 bg-gradient-to-r from-teal-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Plane className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">On est expert</h3>
+                <p className="text-gray-600">
+                  Spécialistes du voyage avec une connaissance parfaite des aéroports parisiens.
+                </p>
+              </Card>
+
+              <Card className="text-center border-0 bg-gradient-to-br from-blue-50 to-indigo-100 p-6 hover:shadow-lg transition-shadow">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Smartphone className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">On est connecté</h3>
+                <p className="text-gray-600">
+                  Suivi en temps réel de vos vols, notifications automatiques et rebooking express.
+                </p>
+              </Card>
+
+              <Card className="text-center border-0 bg-gradient-to-br from-green-50 to-emerald-100 p-6 hover:shadow-lg transition-shadow">
+                <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Shield className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">On est fiable</h3>
+                <p className="text-gray-600">
+                  Assistance 24/7, gestion des imprévus et garantie de ponctualité pour vos vols.
+                </p>
+              </Card>
             </div>
           </div>
         </section>
