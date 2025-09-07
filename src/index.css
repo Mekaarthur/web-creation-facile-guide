@@ -12,18 +12,18 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    /* Primary palette - Warm professional blue */
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
-    --primary-glow: 221 83% 65%;
+    /* Primary palette - Confident forest green */
+    --primary: 154 61% 36%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 154 61% 48%;
 
-    /* Secondary palette - Sophisticated gray */
-    --secondary: 210 40% 96%;
+    /* Secondary palette - Warm light */
+    --secondary: 45 100% 97%;
     --secondary-foreground: 222.2 84% 4.9%;
 
-    /* Accent palette - Energetic coral */
-    --accent: 346 87% 65%;
-    --accent-foreground: 355 100% 98%;
+    /* Accent palette - Energetic orange */
+    --accent: 24 100% 58%;
+    --accent-foreground: 0 0% 100%;
 
     /* Muted colors */
     --muted: 210 40% 96%;
@@ -47,9 +47,9 @@
 
     /* Custom gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(346 87% 75%));
+    --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(24 100% 68%));
     --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
-    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(210 40% 98%));
+    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(45 100% 99%));
 
     /* Custom shadows */
     --shadow-soft: 0 4px 20px -2px hsl(var(--primary) / 0.1);
@@ -114,6 +114,8 @@
     border-color: hsl(var(--border));
   }
 
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap');
+  
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
@@ -123,7 +125,7 @@
 
   /* Mobile-optimized typography */
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+    font-family: 'Poppins', system-ui, -apple-system, sans-serif;
     font-weight: 600;
     line-height: 1.2;
   }
