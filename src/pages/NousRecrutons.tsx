@@ -1,58 +1,54 @@
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
-  Users, 
-  Shield, 
-  Star, 
-  CheckCircle, 
-  FileCheck, 
-  UserCheck, 
-  Award,
-  MessageCircle,
+  TrendingUp,
   Clock,
+  Euro,
+  Shield,
+  Star,
+  CheckCircle,
+  Phone,
+  Mail,
+  Calendar,
   MapPin,
-  PawPrint,
-  Heart
+  Users,
+  Award,
+  Zap,
+  Target,
+  ArrowRight
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const NousRecrutons = () => {
-  const { t, i18n } = useTranslation();
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedCategoryDetail, setSelectedCategoryDetail] = useState<any>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
     email: "",
     phone: "",
-    category: "",
-    experience_years: "",
-    availability: "",
+    services: [] as string[],
+    experience: "",
     motivation: "",
-    has_transport: false,
-    certifications: ""
+    availability: ""
   });
 
   const { toast } = useToast();
 
-  const handleJobApplication = async () => {
-    if (!formData.first_name || !formData.last_name || !formData.email || !formData.phone || !selectedCategory || !formData.availability || !formData.motivation) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.first_name || !formData.last_name || !formData.email || !formData.phone || !formData.motivation || formData.services.length === 0) {
       toast({
         variant: "destructive",
-        title: t('jobs.error'),
-        description: t('jobs.errorMessage')
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs obligatoires"
       });
       return;
     }
@@ -60,48 +56,40 @@ const NousRecrutons = () => {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('job_applications')
         .insert({
           first_name: formData.first_name,
           last_name: formData.last_name,
           email: formData.email,
           phone: formData.phone,
-          category: selectedCategory,
-          experience_years: parseInt(formData.experience_years) || 0,
+          category: formData.services.join(', '),
+          experience_years: parseInt(formData.experience) || 0,
           availability: formData.availability,
           motivation: formData.motivation,
-          has_transport: formData.has_transport,
-          certifications: formData.certifications,
           status: 'pending'
-        })
-        .select()
-        .single();
+        });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      // Envoyer l'email de confirmation automatique
+      // Envoyer email de confirmation
       try {
         await supabase.functions.invoke('send-job-application-confirmation', {
           body: {
             firstName: formData.first_name,
             lastName: formData.last_name,
             email: formData.email,
-            category: selectedCategory,
-            language: i18n.language
+            category: formData.services.join(', '),
+            language: 'fr'
           }
         });
-        console.log('Confirmation email sent successfully');
       } catch (emailError) {
         console.error('Error sending confirmation email:', emailError);
-        // Don't throw error for email failure, application was still saved
       }
 
       toast({
-        title: t('jobs.success'),
-        description: t('jobs.successMessage')
+        title: "Candidature envoyée !",
+        description: "Nous vous recontacterons sous 48h"
       });
 
       // Reset form
@@ -110,256 +98,121 @@ const NousRecrutons = () => {
         last_name: "",
         email: "",
         phone: "",
-        category: "",
-        experience_years: "",
-        availability: "",
+        services: [],
+        experience: "",
         motivation: "",
-        has_transport: false,
-        certifications: ""
+        availability: ""
       });
-      setSelectedCategory("");
 
     } catch (error) {
-      console.error('Error submitting job application:', error);
+      console.error('Error submitting application:', error);
       toast({
         variant: "destructive",
-        title: t('jobs.error'),
-        description: t('jobs.submitError')
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi"
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const categories = [
+  const toggleService = (service: string) => {
+    setFormData(prev => ({
+      ...prev,
+      services: prev.services.includes(service)
+        ? prev.services.filter(s => s !== service)
+        : [...prev.services, service]
+    }));
+  };
+
+  const services = [
+    "Garde d'enfants & baby-sitting",
+    "Ménage & entretien à domicile", 
+    "Courses & livraisons",
+    "Aide administrative & conciergerie",
+    "Bricolage & petites réparations",
+    "Jardinage & espaces verts",
+    "Aide aux personnes âgées",
+    "Garde d'animaux",
+    "Assistance voyage & aéroport",
+    "Services haut de gamme"
+  ];
+
+  const advantages = [
     {
-      id: "bika-kids",
-      title: "BIKA Kids",
-      description: "Spécialistes enfance et parentalité",
-      requirements: ["Expérience garde d'enfants", "Formation premiers secours", "Casier judiciaire vierge"],
+      icon: TrendingUp,
+      title: "Revenus attractifs",
+      description: "Jusqu'à 25€/h selon votre expertise",
+      highlight: "25€/h"
+    },
+    {
+      icon: Clock,
+      title: "Flexibilité totale",
+      description: "Vous choisissez vos horaires et missions",
+      highlight: "100% flexible"
+    },
+    {
       icon: Users,
-      color: "bg-blue-500",
-      activities: [
-        "Garde d'enfants à domicile (0-16 ans)",
-        "Accompagnement scolaire et aide aux devoirs",
-        "Activités créatives et ludiques",
-        "Sorties et accompagnements extérieurs",
-        "Baby-sitting ponctuel ou régulier",
-        "Préparation des repas adaptés aux enfants",
-        "Mise au lit et routines du soir"
-      ],
-      achievements: [
-        "Plus de 2500 familles accompagnées",
-        "98% de satisfaction client",
-        "Formation continue de nos prestataires",
-        "Suivi personnalisé de chaque enfant"
-      ]
+      title: "Clients vérifiés",
+      description: "Profils contrôlés, paiements sécurisés",
+      highlight: "Sécurisé"
     },
     {
-      id: "bika-maison",
-      title: "BIKA Maison", 
-      description: "Logisticiens du quotidien",
-      requirements: ["Permis recommandé", "Ponctualité exemplaire", "Sens du service", "Casier judiciaire vierge"],
       icon: Shield,
-      color: "bg-green-500",
-      activities: [
-        "Entretien ménager complet",
-        "Courses et approvisionnement",
-        "Livraisons et récupérations",
-        "Petit bricolage et maintenance",
-        "Organisation et rangement",
-        "Préparation de repas",
-        "Gestion du linge"
-      ],
-      achievements: [
-        "Plus de 5000 interventions par mois",
-        "Flexibilité 7j/7",
-        "Service d'urgence disponible",
-        "Équipement professionnel fourni"
-      ]
-    },
-    {
-      id: "bika-vie",
-      title: "BIKA Vie",
-      description: "Concierges administratifs",
-      requirements: ["Maîtrise bureautique", "Relationnel client", "Discrétion absolue", "Casier judiciaire vierge"],
-      icon: FileCheck,
-      color: "bg-purple-500",
-      activities: [
-        "Gestion administrative et paperasse",
-        "Rendez-vous médicaux et administratifs",
-        "Démarches officielles et formalités",
-        "Gestion des assurances",
-        "Organisation d'événements familiaux",
-        "Suivi administratif régulier",
-        "Assistance numérique"
-      ],
-      achievements: [
-        "Plus de 1000 dossiers traités par mois",
-        "Expertise réglementaire",
-        "Confidentialité garantie",
-        "Gain de temps de 15h/semaine en moyenne"
-      ]
-    },
-    {
-      id: "bika-travel",
-      title: "BIKA Travel",
-      description: "Agents aéroport et travel planners",
-      requirements: ["Connaissance aéroportuaire", "Langues étrangères", "Disponibilité horaires variables", "Casier judiciaire vierge"],
-      icon: MapPin,
-      color: "bg-orange-500",
-      activities: [
-        "Accompagnement aéroport VIP",
-        "Planification de voyages sur mesure",
-        "Gestion des transferts",
-        "Assistance aux formalités douanières",
-        "Réservations et modifications",
-        "Service de conciergerie voyage",
-        "Assistance multilingue"
-      ],
-      achievements: [
-        "Plus de 3000 voyages organisés",
-        "Partenariats avec 50+ compagnies",
-        "Service premium 24h/24",
-        "Taux de satisfaction 99%"
-      ]
-    },
-    {
-      id: "bika-plus",
-      title: "BIKA Plus",
-      description: "Majordomes et gouvernantes haut de gamme",
-      requirements: ["5 ans d'expérience ou Bac+3 en administration", "Références vérifiées", "Polyvalence exceptionnelle", "Casier judiciaire vierge"],
-      icon: Award,
-      color: "bg-yellow-500",
-      activities: [
-        "Gestion complète de propriété",
-        "Organisation d'événements privés",
-        "Coordination des équipes domestiques",
-        "Gestion des invités et protocole",
-        "Administration familiale complète",
-        "Conciergerie de luxe",
-        "Service personnalisé 24h/24"
-      ],
-      achievements: [
-        "Clientèle haut de gamme exclusive",
-        "Formation aux standards internationaux",
-        "Discrétion et professionnalisme absolus",
-        "Service sur-mesure garanti"
-      ]
-    },
-    {
-      id: "bika-pro",
-      title: "BIKA Pro",
-      description: "Assistants administratifs / direction",
-      requirements: ["Bac avec 2 ans d'expérience", "Expérience corporate", "Confidentialité", "Casier judiciaire vierge"],
-      icon: UserCheck,
-      color: "bg-red-500",
-      activities: [
-        "Assistance administrative dirigeants",
-        "Gestion d'agenda et planification",
-        "Organisation de réunions et événements",
-        "Gestion de la correspondance",
-        "Suivi des dossiers stratégiques",
-        "Interface avec les partenaires",
-        "Support aux équipes dirigeantes"
-      ],
-      achievements: [
-        "Plus de 200 dirigeants accompagnés",
-        "Expertise métiers spécialisés",
-        "Confidentialité niveau corporate",
-        "Optimisation productive +30%"
-      ]
-    },
-    {
-      id: "bika-animals",
-      title: "BIKA Animals",
-      description: "Spécialistes soins et garde d'animaux",
-      requirements: ["Formation animalière", "Expérience garde animaux", "Patience et douceur", "Casier judiciaire vierge"],
-      icon: PawPrint,
-      color: "bg-emerald-500",
-      activities: [
-        "Garde d'animaux à domicile",
-        "Promenades et exercices",
-        "Soins quotidiens et alimentation",
-        "Visites vétérinaires",
-        "Pet-sitting pendant les vacances",
-        "Éducation et dressage de base",
-        "Transport d'animaux"
-      ],
-      achievements: [
-        "Plus de 1500 animaux suivis",
-        "Vétérinaires partenaires",
-        "Service d'urgence vétérinaire",
-        "Bien-être animal garanti"
-      ]
-    },
-    {
-      id: "bika-seniors",
-      title: "BIKA Personnes âgées",
-      description: "Accompagnants seniors et aide à domicile",
-      requirements: ["Formation gériatrie ou aide à la personne", "Empathie et bienveillance", "Casier judiciaire vierge"],
-      icon: Heart,
-      color: "bg-rose-500",
-      activities: [
-        "Aide à la vie quotidienne",
-        "Accompagnement médical",
-        "Soutien moral et social",
-        "Aide aux repas et à l'hygiène",
-        "Sorties et activités",
-        "Médiation familiale",
-        "Veille et sécurité"
-      ],
-      achievements: [
-        "Plus de 800 seniors accompagnés",
-        "Formation spécialisée continue",
-        "Partenariat avec structures médicales",
-        "Maintien à domicile favorisé"
-      ]
+      title: "Protection complète",
+      description: "Assurance responsabilité civile incluse",
+      highlight: "Assuré"
     }
   ];
 
-  const processSteps = [
+  const testimonials = [
     {
-      step: 1,
-      title: "Candidature en ligne",
-      description: "Remplissez notre formulaire détaillé",
-      icon: MessageCircle
+      name: "Marie L.",
+      service: "Garde d'enfants",
+      text: "Grâce à Bikawo, j'ai trouvé des familles formidables. Les paiements sont ponctuels et l'équipe très réactive.",
+      rating: 5,
+      earnings: "1,800€/mois"
     },
     {
-      step: 2,
-      title: "Vérification du profil",
-      description: "Contrôle d'identité, références et pièces justificatives",
+      name: "Thomas B.",
+      service: "Bricolage & jardinage",
+      text: "Je manage mon planning comme je veux. Les clients sont sérieux et respectueux de mon travail.",
+      rating: 5,
+      earnings: "2,200€/mois"
+    },
+    {
+      name: "Sophie M.",
+      service: "Ménage & courses",
+      text: "Une vraie liberté ! Je travaille dans mon quartier avec des clients fidèles depuis 2 ans.",
+      rating: 5,
+      earnings: "1,650€/mois"
+    }
+  ];
+
+  const steps = [
+    {
+      number: "01",
+      title: "Inscription gratuite",
+      description: "Créez votre profil en 5 minutes",
+      icon: Target
+    },
+    {
+      number: "02", 
+      title: "Vérifications",
+      description: "Validation de votre identité et références",
       icon: Shield
     },
     {
-      step: 3,
-      title: "Formation Assist'mw",
-      description: "Formation aux méthodes et outils de la plateforme",
-      icon: Star
+      number: "03",
+      title: "Formation express",
+      description: "Découverte de la plateforme et outils",
+      icon: Zap
     },
     {
-      step: 4,
-      title: "Matching clients",
-      description: "Attribution automatisée selon profils et disponibilités",
-      icon: Users
-    }
-  ];
-
-  const indicators = [
-    {
-      title: "Taux de fiabilité",
-      description: "Basé sur la ponctualité et la qualité des prestations",
-      value: "95%"
-    },
-    {
-      title: "Score d'assiduité",
-      description: "Régularité et respect des engagements",
-      value: "4.8/5"
-    },
-    {
-      title: "Évaluations clients",
-      description: "Moyenne des notes attribuées par les familles",
-      value: "4.9/5"
+      number: "04",
+      title: "Première mission",
+      description: "Recevez vos premières demandes clients",
+      icon: Award
     }
   ];
 
@@ -367,366 +220,283 @@ const NousRecrutons = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="pt-20 pb-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Hero Section */}
-          <div className="text-center mb-16">
-            <h1 className="text-5xl font-bold text-foreground mb-6">
-              Rejoignez notre réseau de 
-              <span className="bg-gradient-primary bg-clip-text text-transparent"> prestataires</span>
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-              Devenez partenaire Assist'mw et accompagnez les familles de toute la France 
-              dans leur quotidien avec flexibilité et autonomie
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                variant="hero" 
-                size="xl"
-                onClick={() => {
-                  const element = document.getElementById('formulaire-candidature');
-                  if (element) {
-                    element.scrollIntoView({ behavior: 'smooth' });
-                  }
-                }}
-              >
-                Postuler maintenant
-              </Button>
-              <Button variant="outline" size="xl">
-                En savoir plus
-              </Button>
+      {/* Hero Section */}
+      <section className="relative overflow-hidden pt-24 pb-16">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/5" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
+                <Star className="w-4 h-4" />
+                Nouveau : Jusqu'à 25€/h
+              </div>
+              <h1 className="text-4xl lg:text-6xl font-bold text-foreground mb-6">
+                Devenez 
+                <span className="bg-gradient-primary bg-clip-text text-transparent"> auto-entrepreneur </span>
+                avec Bikawo
+              </h1>
+              <p className="text-xl text-muted-foreground mb-8 max-w-xl">
+                Rejoignez +5000 professionnels qui développent leur activité en toute liberté. 
+                Fixez vos tarifs, choisissez vos clients, gérez votre planning.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button 
+                  size="xl" 
+                  className="group"
+                  onClick={() => {
+                    document.getElementById('inscription')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  Commencer maintenant
+                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+                <Button variant="outline" size="xl">
+                  <Phone className="w-5 h-5 mr-2" />
+                  01 85 08 24 42
+                </Button>
+              </div>
             </div>
-          </div>
-
-          {/* Categories */}
-          <div className="mb-16">
-            <h2 className="text-3xl font-bold text-foreground text-center mb-12">
-              Nos catégories de prestataires
-            </h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {categories.map((category) => {
-                const IconComponent = category.icon;
-                return (
-                  <Card key={category.id} className="hover:shadow-soft transition-all duration-300 cursor-pointer">
-                    <CardHeader>
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className={`w-10 h-10 ${category.color} rounded-lg flex items-center justify-center`}>
-                          <IconComponent className="w-5 h-5 text-white" />
-                        </div>
-                        <CardTitle className="text-xl">{category.title}</CardTitle>
-                      </div>
-                      <p className="text-muted-foreground">{category.description}</p>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <p className="font-medium text-foreground mb-2">Prérequis :</p>
-                          {category.requirements.slice(0, 2).map((req, index) => (
-                            <div key={index} className="flex items-center gap-2">
-                              <CheckCircle className="w-4 h-4 text-accent" />
-                              <span className="text-sm text-muted-foreground">{req}</span>
-                            </div>
-                          ))}
-                          {category.requirements.length > 2 && (
-                            <p className="text-xs text-muted-foreground">+{category.requirements.length - 2} autres prérequis</p>
-                          )}
-                        </div>
-                        
-                        <div className="flex flex-col gap-2 pt-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="w-full"
-                            onClick={() => {
-                              setSelectedCategoryDetail(category);
-                              setIsDetailModalOpen(true);
-                            }}
-                          >
-                            Découvrir plus
-                          </Button>
-                          <Button 
-                            variant="hero" 
-                            size="sm" 
-                            className="w-full"
-                            onClick={() => {
-                              setSelectedCategory(category.id);
-                              const element = document.getElementById('formulaire-candidature');
-                              if (element) {
-                                element.scrollIntoView({ behavior: 'smooth' });
-                              }
-                            }}
-                          >
-                            Candidater
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Process */}
-          <div className="mb-16">
-            <h2 className="text-3xl font-bold text-foreground text-center mb-12">
-              Processus de recrutement
-            </h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {processSteps.map((step) => {
-                const IconComponent = step.icon;
-                return (
-                  <Card key={step.step} className="text-center">
-                    <CardContent className="p-6">
-                      <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span className="text-white font-bold">{step.step}</span>
-                      </div>
-                      <IconComponent className="w-8 h-8 text-primary mx-auto mb-3" />
-                      <h3 className="font-semibold text-foreground mb-2">{step.title}</h3>
-                      <p className="text-sm text-muted-foreground">{step.description}</p>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Indicators */}
-          <div className="mb-16">
-            <h2 className="text-3xl font-bold text-foreground text-center mb-12">
-              Nos indicateurs de performance
-            </h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              {indicators.map((indicator, index) => (
-                <Card key={index} className="text-center">
-                  <CardContent className="p-6">
-                    <div className="text-4xl font-bold text-primary mb-2">{indicator.value}</div>
-                    <h3 className="font-semibold text-foreground mb-2">{indicator.title}</h3>
-                    <p className="text-sm text-muted-foreground">{indicator.description}</p>
-                  </CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              {advantages.map((advantage, index) => (
+                <Card key={index} className="p-6 hover:shadow-soft transition-all duration-300">
+                  <advantage.icon className="w-8 h-8 text-primary mb-4" />
+                  <div className="text-2xl font-bold text-primary mb-2">{advantage.highlight}</div>
+                  <div className="font-semibold text-foreground mb-1">{advantage.title}</div>
+                  <div className="text-sm text-muted-foreground">{advantage.description}</div>
                 </Card>
               ))}
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Application Form */}
-          <Card id="formulaire-candidature" className="max-w-2xl mx-auto">
-            <CardHeader>
-              <CardTitle className="text-2xl text-center">Formulaire de candidature</CardTitle>
-              <p className="text-center text-muted-foreground">
-                Remplissez ce formulaire pour rejoindre notre équipe de prestataires
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-4">
+      {/* Témoignages */}
+      <section className="py-16 bg-muted/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              Ils ont rejoint Bikawo
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Découvrez l'expérience de nos partenaires qui ont développé leur activité d'auto-entrepreneur
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="p-6">
+                <div className="flex items-center gap-1 mb-4">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                <blockquote className="text-muted-foreground mb-4">
+                  "{testimonial.text}"
+                </blockquote>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-semibold text-foreground">{testimonial.name}</div>
+                    <div className="text-sm text-muted-foreground">{testimonial.service}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold text-primary">{testimonial.earnings}</div>
+                    <div className="text-xs text-muted-foreground">revenus moyens</div>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Comment ça marche */}
+      <section className="py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              Comment rejoindre Bikawo ?
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Un processus simple et rapide pour commencer à gagner de l'argent dès cette semaine
+            </p>
+          </div>
+          <div className="grid md:grid-cols-4 gap-8">
+            {steps.map((step, index) => (
+              <div key={index} className="text-center">
+                <div className="relative mb-6">
+                  <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                    <step.icon className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-primary text-white text-sm font-bold px-3 py-1 rounded-full">
+                    {step.number}
+                  </div>
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">{step.title}</h3>
+                <p className="text-sm text-muted-foreground">{step.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Formulaire d'inscription */}
+      <section id="inscription" className="py-16 bg-muted/20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              Rejoignez-nous maintenant
+            </h2>
+            <p className="text-muted-foreground">
+              Inscription gratuite et sans engagement. Commencez à recevoir vos premières missions sous 48h.
+            </p>
+          </div>
+
+          <Card className="p-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">Prénom</label>
-                  <Input 
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Prénom *
+                  </label>
+                  <Input
                     value={formData.first_name}
-                    onChange={(e) => setFormData({...formData, first_name: e.target.value})}
-                    placeholder="Votre prénom" 
+                    onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
+                    placeholder="Votre prénom"
+                    required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">Nom</label>
-                  <Input 
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Nom *
+                  </label>
+                  <Input
                     value={formData.last_name}
-                    onChange={(e) => setFormData({...formData, last_name: e.target.value})}
-                    placeholder="Votre nom" 
+                    onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
+                    placeholder="Votre nom"
+                    required
                   />
                 </div>
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Email</label>
-                <Input 
-                  type="email" 
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  placeholder="votre.email@exemple.com" 
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Téléphone</label>
-                <Input 
-                  value={formData.phone}
-                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                  placeholder="06 12 34 56 78" 
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Catégorie souhaitée</label>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choisissez une catégorie" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.title} - {category.description}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Années d'expérience</label>
-                <Input 
-                  type="number"
-                  value={formData.experience_years}
-                  onChange={(e) => setFormData({...formData, experience_years: e.target.value})}
-                  placeholder="Ex: 3"
-                  min="0"
-                />
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Email *
+                  </label>
+                  <Input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="votre@email.com"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Téléphone *
+                  </label>
+                  <Input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="06 12 34 56 78"
+                    required
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Disponibilités</label>
-                <Textarea 
-                  value={formData.availability}
-                  onChange={(e) => setFormData({...formData, availability: e.target.value})}
-                  placeholder="Indiquez vos créneaux de disponibilité..."
-                  rows={3}
-                />
+                <label className="block text-sm font-medium text-foreground mb-4">
+                  Services proposés * (sélectionnez plusieurs choix)
+                </label>
+                <div className="grid md:grid-cols-2 gap-3">
+                  {services.map((service) => (
+                    <div
+                      key={service}
+                      onClick={() => toggleService(service)}
+                      className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                        formData.services.includes(service)
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className={`w-4 h-4 ${
+                          formData.services.includes(service) ? 'text-primary' : 'text-muted-foreground'
+                        }`} />
+                        <span className="text-sm">{service}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Expérience
+                  </label>
+                  <Select value={formData.experience} onValueChange={(value) => setFormData(prev => ({ ...prev, experience: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Années d'expérience" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">Débutant</SelectItem>
+                      <SelectItem value="1">1-2 ans</SelectItem>
+                      <SelectItem value="3">3-5 ans</SelectItem>
+                      <SelectItem value="6">5+ ans</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Disponibilité
+                  </label>
+                  <Select value={formData.availability} onValueChange={(value) => setFormData(prev => ({ ...prev, availability: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Votre disponibilité" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="temps-plein">Temps plein</SelectItem>
+                      <SelectItem value="temps-partiel">Temps partiel</SelectItem>
+                      <SelectItem value="weekends">Week-ends uniquement</SelectItem>
+                      <SelectItem value="ponctuel">Ponctuellement</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Motivation</label>
-                <Textarea 
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Motivation *
+                </label>
+                <Textarea
                   value={formData.motivation}
-                  onChange={(e) => setFormData({...formData, motivation: e.target.value})}
-                  placeholder="Pourquoi souhaitez-vous rejoindre notre équipe ?"
+                  onChange={(e) => setFormData(prev => ({ ...prev, motivation: e.target.value }))}
+                  placeholder="Parlez-nous de votre motivation à rejoindre Bikawo..."
                   rows={4}
+                  required
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Certifications</label>
-                <Textarea 
-                  value={formData.certifications}
-                  onChange={(e) => setFormData({...formData, certifications: e.target.value})}
-                  placeholder="Listez vos certifications, formations, diplômes..."
-                  rows={2}
-                />
+              <div className="text-center">
+                <Button 
+                  type="submit" 
+                  size="xl" 
+                  disabled={loading}
+                  className="w-full sm:w-auto"
+                >
+                  {loading ? "Envoi en cours..." : "Envoyer ma candidature"}
+                </Button>
+                <p className="text-xs text-muted-foreground mt-4">
+                  En vous inscrivant, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.
+                </p>
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">CV (PDF)</label>
-                <Input 
-                  type="file" 
-                  accept=".pdf"
-                  className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-accent-foreground hover:file:bg-accent/80"
-                />
-                <p className="text-xs text-muted-foreground mt-1">Format PDF uniquement, taille maximale 5 Mo</p>
-              </div>
-              
-              <Button 
-                variant="hero" 
-                className="w-full" 
-                size="lg"
-                onClick={handleJobApplication}
-                disabled={loading}
-              >
-                {loading ? "Envoi en cours..." : "Envoyer ma candidature"}
-              </Button>
-            </CardContent>
+            </form>
           </Card>
         </div>
-      </div>
+      </section>
 
       <Footer />
-      
-      {/* Detail Modal */}
-      <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-          {selectedCategoryDetail && (
-            <>
-              <DialogHeader>
-                <div className="flex items-center gap-4 mb-4">
-                  <div className={`w-12 h-12 ${selectedCategoryDetail.color} rounded-lg flex items-center justify-center`}>
-                    <selectedCategoryDetail.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <DialogTitle className="text-2xl">{selectedCategoryDetail.title}</DialogTitle>
-                    <p className="text-muted-foreground">{selectedCategoryDetail.description}</p>
-                  </div>
-                </div>
-              </DialogHeader>
-              
-              <div className="space-y-6">
-                {/* Activities Section */}
-                <div>
-                  <h3 className="text-xl font-semibold text-foreground mb-4">Activités réalisées</h3>
-                  <div className="grid md:grid-cols-2 gap-3">
-                    {selectedCategoryDetail.activities.map((activity: string, index: number) => (
-                      <div key={index} className="flex items-start gap-2">
-                        <CheckCircle className="w-5 h-5 text-accent mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-foreground">{activity}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Achievements Section */}
-                <div>
-                  <h3 className="text-xl font-semibold text-foreground mb-4">Nos réalisations</h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {selectedCategoryDetail.achievements.map((achievement: string, index: number) => (
-                      <Card key={index}>
-                        <CardContent className="p-4">
-                          <div className="flex items-start gap-2">
-                            <Star className="w-5 h-5 text-accent mt-0.5 flex-shrink-0" />
-                            <span className="text-sm text-foreground">{achievement}</span>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Requirements Section */}
-                <div>
-                  <h3 className="text-xl font-semibold text-foreground mb-4">Prérequis complets</h3>
-                  <div className="space-y-2">
-                    {selectedCategoryDetail.requirements.map((req: string, index: number) => (
-                      <div key={index} className="flex items-start gap-2">
-                        <CheckCircle className="w-5 h-5 text-accent mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-foreground">{req}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t">
-                  <Button 
-                    variant="hero" 
-                    className="flex-1"
-                    onClick={() => {
-                      setSelectedCategory(selectedCategoryDetail.id);
-                      setIsDetailModalOpen(false);
-                      setTimeout(() => {
-                        const element = document.getElementById('formulaire-candidature');
-                        if (element) {
-                          element.scrollIntoView({ behavior: 'smooth' });
-                        }
-                      }, 100);
-                    }}
-                  >
-                    Candidater pour ce poste
-                  </Button>
-                  <Button variant="outline" className="flex-1" onClick={() => setIsDetailModalOpen(false)}>
-                    Fermer
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
