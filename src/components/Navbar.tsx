@@ -261,6 +261,11 @@ const Navbar = () => {
                     Réserver
                   </Button>
                 </Link>
+                <Link to="/nous-recrutons">
+                  <Button variant="outline" size="sm" className="hover:bg-accent hover:text-accent-foreground border-primary/20 text-primary hover:border-primary">
+                    Devenir pro
+                  </Button>
+                </Link>
                 <div className="h-6 w-px bg-border mx-2" />
                 <Link to="/auth">
                   <Button variant="ghost" size="sm" className="hover:bg-accent hover:text-accent-foreground">
