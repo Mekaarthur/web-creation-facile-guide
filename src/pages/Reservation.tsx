@@ -1,408 +1,151 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarIcon, ArrowLeft, User, Phone, Mail, MapPin, CreditCard } from "lucide-react";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
+import ServicesGrid from "@/components/ServicesGrid";
 import Footer from "@/components/Footer";
-import type { CartItem } from "@/components/Cart";
-
-interface ClientInfo {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  address: string;
-}
-
+import ChatBot from "@/components/ChatBot";
+import Cart from "@/components/Cart";
+import { Button } from "@/components/ui/button";
+import { ShoppingCart, Sparkles, Clock, Shield, Users } from "lucide-react";
+import { useCart } from "@/components/Cart";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import SEOComponent from "@/components/SEOComponent";
 const Reservation = () => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [clientInfo, setClientInfo] = useState<ClientInfo>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    address: ""
-  });
-  const [preferredDate, setPreferredDate] = useState<Date>();
-  const [preferredTime, setPreferredTime] = useState("");
-  const [additionalNotes, setAdditionalNotes] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const navigate = useNavigate();
-  const { toast } = useToast();
+  const [showCart, setShowCart] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const { getCartItemsCount } = useCart();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Charger le panier depuis sessionStorage
-    const savedCart = sessionStorage.getItem('bikawo-booking-cart');
-    if (savedCart) {
-      try {
-        const items = JSON.parse(savedCart);
-        setCartItems(items);
-      } catch (error) {
-        console.error('Erreur lors du chargement du panier:', error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger votre panier",
-          variant: "destructive",
-        });
-        navigate('/');
-      }
+    const timer = setTimeout(() => setIsLoaded(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleReservation = () => {
+    if (!user) {
+      navigate('/auth');
     } else {
-      // Pas de panier, rediriger vers l'accueil
-      toast({
-        title: "Panier vide",
-        description: "Aucun service à réserver",
-        variant: "destructive",
-      });
-      navigate('/');
+      setShowCart(true);
     }
+  };
 
-    // Pré-remplir avec les infos utilisateur si connecté
-    if (user?.user_metadata) {
-      setClientInfo(prev => ({
-        ...prev,
-        firstName: user.user_metadata.first_name || "",
-        lastName: user.user_metadata.last_name || "",
-        email: user.email || ""
-      }));
-    }
-  }, [navigate, toast, user]);
-
-  const timeSlots = [
-    "08:00", "09:00", "10:00", "11:00", "12:00", "13:00",
-    "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"
+  const trustIndicators = [
+    { icon: Shield, text: "Prestataires vérifiés", value: "100%" },
+    { icon: Users, text: "Clients satisfaits", value: "15k+" },
+    { icon: Clock, text: "Disponible", value: "24h/7j" },
   ];
 
-  const getTotalPrice = () => {
-    return cartItems.reduce((total, item) => {
-      if (item.customBooking?.hours) {
-        return total + (item.price * item.customBooking.hours * item.quantity);
-      }
-      return total + (item.price * item.quantity * 2); // Minimum 2h par service
-    }, 0);
-  };
-
-  const handleSubmitReservation = async () => {
-    // Validation
-    if (!clientInfo.firstName || !clientInfo.lastName || !clientInfo.email || !clientInfo.phone || !clientInfo.address) {
-      toast({
-        title: "Informations incomplètes",
-        description: "Veuillez remplir tous les champs obligatoires",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!preferredDate) {
-      toast({
-        title: "Date manquante",
-        description: "Veuillez sélectionner une date souhaitée",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      // Préparer les données de réservation
-      const reservationData = {
-        id: `RES-${Date.now()}`,
-        clientInfo,
-        preferredDate: preferredDate.toISOString(),
-        preferredTime,
-        additionalNotes,
-        services: cartItems,
-        totalEstimated: getTotalPrice(),
-        status: 'en_attente',
-        createdAt: new Date().toISOString()
-      };
-
-      // Sauvegarder dans localStorage (en attendant la base de données)
-      const existingReservations = localStorage.getItem('bikawo-reservations') || '[]';
-      const reservations = JSON.parse(existingReservations);
-      reservations.push(reservationData);
-      localStorage.setItem('bikawo-reservations', JSON.stringify(reservations));
-
-      // Vider le panier
-      localStorage.removeItem('bikawo-cart');
-      sessionStorage.removeItem('bikawo-booking-cart');
-
-      toast({
-        title: "Réservation confirmée !",
-        description: "Votre demande a été enregistrée. Nous vous contacterons rapidement.",
-      });
-
-      // Rediriger vers une page de confirmation
-      navigate('/reservation-confirmee', { 
-        state: { reservationId: reservationData.id } 
-      });
-
-    } catch (error) {
-      console.error('Erreur lors de la réservation:', error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de votre réservation",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (cartItems.length === 0) {
-    return null; // Le useEffect gère la redirection
-  }
-
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
+      <SEOComponent 
+        title="Réserver vos services BIKAWO - Solutions personnalisées"
+        description="Découvrez et réservez tous nos services BIKAWO : aide à domicile, garde d'enfants, assistance seniors, conciergerie et plus. Prestataires vérifiés, disponibles 24h/7j."
+        keywords="réservation services BIKAWO, aide domicile, garde enfants, assistance seniors, conciergerie, prestataires vérifiés"
+      />
       <Navbar />
       
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-6">
-          {/* Header */}
-          <div className="flex items-center gap-4 mb-8">
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate(-1)}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Retour au panier
-            </Button>
-            <h1 className="text-3xl font-bold">Finaliser votre réservation</h1>
+      <div className="pt-20 bg-background">
+        {/* Hero Section */}
+        <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden">
+          {/* Background avec effet vidéo */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10">
+            <div className="absolute inset-0 bg-gradient-pattern opacity-30 animate-pulse"></div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Formulaire de réservation */}
-            <div className="space-y-6">
-              {/* Informations client */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <User className="w-5 h-5" />
-                    Vos informations
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">Prénom *</Label>
-                      <Input
-                        id="firstName"
-                        value={clientInfo.firstName}
-                        onChange={(e) => setClientInfo(prev => ({ ...prev, firstName: e.target.value }))}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Nom *</Label>
-                      <Input
-                        id="lastName"
-                        value={clientInfo.lastName}
-                        onChange={(e) => setClientInfo(prev => ({ ...prev, lastName: e.target.value }))}
-                        required
-                      />
-                    </div>
-                  </div>
+          {/* Éléments flottants animés */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-20 left-10 w-20 h-20 rounded-full bg-primary/10 animate-[float_6s_ease-in-out_infinite]"></div>
+            <div className="absolute top-40 right-20 w-16 h-16 rounded-full bg-secondary/10 animate-[float_8s_ease-in-out_infinite_reverse]"></div>
+            <div className="absolute bottom-32 left-1/4 w-12 h-12 rounded-full bg-accent/10 animate-[float_7s_ease-in-out_infinite]"></div>
+            <div className="absolute bottom-40 right-1/3 w-14 h-14 rounded-full bg-primary/5 animate-[float_9s_ease-in-out_infinite_reverse]"></div>
+          </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="flex items-center gap-2">
-                      <Mail className="w-4 h-4" />
-                      Email *
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={clientInfo.email}
-                      onChange={(e) => setClientInfo(prev => ({ ...prev, email: e.target.value }))}
-                      required
-                    />
-                  </div>
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div className={`space-y-8 transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+              {/* Titre principal avec effet gradient */}
+              <div className="space-y-4">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">
+                  <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent animate-gradient-x">
+                    Réservez vos services
+                  </span>
+                  <span className="block mt-2 bg-gradient-hero bg-clip-text text-transparent">
+                    BIKAWO
+                  </span>
+                </h1>
+                <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                  Des solutions personnalisées pour vous accompagner au quotidien
+                </p>
+              </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="phone" className="flex items-center gap-2">
-                      <Phone className="w-4 h-4" />
-                      Téléphone *
-                    </Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={clientInfo.phone}
-                      onChange={(e) => setClientInfo(prev => ({ ...prev, phone: e.target.value }))}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="address" className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      Adresse complète *
-                    </Label>
-                    <Input
-                      id="address"
-                      value={clientInfo.address}
-                      onChange={(e) => setClientInfo(prev => ({ ...prev, address: e.target.value }))}
-                      placeholder="Numéro, rue, code postal, ville"
-                      required
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Préférences de planning */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CalendarIcon className="w-5 h-5" />
-                    Planning souhaité
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Date souhaitée *</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full justify-start text-left font-normal",
-                              !preferredDate && "text-muted-foreground"
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {preferredDate ? format(preferredDate, "PPP", { locale: fr }) : "Sélectionner une date"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={preferredDate}
-                            onSelect={setPreferredDate}
-                            disabled={(date) => date < new Date()}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Heure préférée</Label>
-                      <Select value={preferredTime} onValueChange={setPreferredTime}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Choisir une heure" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {timeSlots.map((time) => (
-                            <SelectItem key={time} value={time}>{time}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="notes">Notes complémentaires</Label>
-                    <Textarea
-                      id="notes"
-                      value={additionalNotes}
-                      onChange={(e) => setAdditionalNotes(e.target.value)}
-                      placeholder="Précisions sur vos besoins, contraintes particulières..."
-                      rows={3}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Récapitulatif de la commande */}
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Récapitulatif de votre commande</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {cartItems.map((item, index) => (
-                    <div key={item.id} className="space-y-3">
-                      {index > 0 && <Separator />}
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <h4 className="font-medium">{item.serviceName}</h4>
-                            <p className="text-sm text-muted-foreground">{item.packageTitle}</p>
-                            {item.description && (
-                              <p className="text-xs text-muted-foreground mt-1">{item.description}</p>
-                            )}
-                          </div>
-                          <Badge variant="secondary">
-                            {item.customBooking?.hours 
-                              ? `${item.price * item.customBooking.hours}€`
-                              : `${item.price * 2}€` // Minimum 2h
-                            }
-                          </Badge>
-                        </div>
-                        
-                        {item.customBooking && (
-                          <div className="text-xs text-muted-foreground space-y-1">
-                            <p>⏱️ {item.customBooking.hours || 2}h minimum</p>
-                            {item.customBooking.address && (
-                              <p>📍 {item.customBooking.address}</p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-
-                  <Separator />
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center text-lg font-semibold">
-                      <span>Total estimé :</span>
-                      <span className="text-primary">{getTotalPrice()}€</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Prix indicatif minimum basé sur 2h par service. Le tarif final sera ajusté selon la durée réelle.
-                    </p>
-                  </div>
-
-                  <Button 
-                    onClick={handleSubmitReservation}
-                    className="w-full"
-                    size="lg"
-                    disabled={isLoading}
+              {/* Indicateurs de confiance */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-2xl mx-auto">
+                {trustIndicators.map((indicator, index) => (
+                  <div 
+                    key={index}
+                    className={`flex items-center justify-center gap-3 p-4 rounded-lg bg-card/80 backdrop-blur-sm border border-border/50 transition-all duration-700 hover:scale-105 hover:shadow-lg ${
+                      isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
+                    }`}
+                    style={{ transitionDelay: `${index * 200}ms` }}
                   >
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    {isLoading ? "Traitement en cours..." : "Confirmer ma réservation"}
-                  </Button>
+                    <div className="p-2 rounded-full bg-primary/10">
+                      <indicator.icon className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="text-left">
+                      <div className="font-bold text-primary">{indicator.value}</div>
+                      <div className="text-sm text-muted-foreground">{indicator.text}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-                  <p className="text-xs text-center text-muted-foreground">
-                    En confirmant, vous acceptez nos conditions générales de vente.
-                  </p>
-                </CardContent>
-              </Card>
+              {/* Call-to-Action avec effet hover */}
+              <div className={`flex flex-col sm:flex-row gap-4 justify-center transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{ transitionDelay: '600ms' }}>
+                <Button 
+                  size="lg" 
+                  className="group px-8 py-4 text-lg font-semibold relative overflow-hidden transition-all duration-300 hover:scale-105"
+                  onClick={handleReservation}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/10 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                  <Sparkles className="w-5 h-5 mr-2 transition-transform group-hover:rotate-12" />
+                  Commencer maintenant
+                </Button>
+              </div>
             </div>
           </div>
+        </section>
+
+        {/* Services Grid */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <ServicesGrid />
         </div>
       </div>
+      
+      {/* Floating Cart Button */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <Button
+          onClick={handleReservation}
+          className="rounded-full w-14 h-14 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 group"
+          variant="hero"
+        >
+          <ShoppingCart className="w-5 h-5 transition-transform group-hover:scale-110" />
+          {getCartItemsCount() > 0 && (
+            <span className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-bounce">
+              {getCartItemsCount()}
+            </span>
+          )}
+        </Button>
+      </div>
 
+      {/* Cart Sidebar */}
+      {showCart && (
+        <div className="fixed bottom-24 right-6 z-40 w-96 max-w-[calc(100vw-3rem)]">
+          <Cart isOpen={showCart} onClose={() => setShowCart(false)} />
+        </div>
+      )}
+      
       <Footer />
+      <ChatBot />
     </div>
   );
 };
