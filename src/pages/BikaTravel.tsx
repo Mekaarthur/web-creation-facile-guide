@@ -31,49 +31,6 @@ const BikaTravel = () => {
     setIsBookingFormOpen(true);
   };
 
-  const services = [
-    // a) Préparation voyage (30€/h)
-    {
-      name: "Réservations transports",
-      price: 30,
-      description: "Recherche et réservation billets avion/train"
-    },
-    {
-      name: "Hébergements et activités",
-      price: 30,
-      description: "Réservation hébergements (hôtels, locations), activités & excursions"
-    },
-    {
-      name: "Itinéraires personnalisés",
-      price: 30,
-      description: "Organisation itinéraires personnalisés"
-    },
-    
-    // b) Formalités & Documents (30€/h)
-    {
-      name: "Passeports et visas",
-      price: 30,
-      description: "Assistance renouvellement passeports/visas, validité documents voyage"
-    },
-    {
-      name: "Assurances et change",
-      price: 30,
-      description: "Assurances voyage & rapatriement, change devises"
-    },
-    
-    // c) Assistance 24/7
-    {
-      name: "Gestion imprévus",
-      price: 30,
-      description: "Gestion imprévus & retards, modification réservation urgente"
-    },
-    {
-      name: "Support multilingue",
-      price: 30,
-      description: "Support multilingue à destination"
-    }
-  ];
-
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Service",
@@ -87,9 +44,9 @@ const BikaTravel = () => {
       "@type": "Place",
       "name": "Île-de-France"
     },
-    "offers": services.map(service => ({
+    "offers": serviceData.subservices.map(service => ({
       "@type": "Offer",
-      "name": service.name,
+      "name": service.title,
       "description": service.description,
       "price": service.price,
       "priceCurrency": "EUR"
@@ -246,38 +203,7 @@ const BikaTravel = () => {
 
         <ServiceSubgrid categoryKey="travel" />
 
-        {/* Services List */}
-        <section className="py-16 bg-white">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12">Nos services Bika Travel</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-              {serviceData.subservices.map((service, index) => (
-                <Card key={index} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg">{service.title}</CardTitle>
-                      <Badge variant="outline" className="text-sky-600 border-sky-200 font-semibold">
-                        {`${service.price}€/h`}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-sm mb-4">
-                      {service.description}
-                    </CardDescription>
-                    <Button 
-                      onClick={() => handleOpenBooking(service)}
-                      className="bg-sky-600 hover:bg-sky-700 text-white w-full"
-                      size="sm"
-                    >
-                      Réserver ce service
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* Services List - SUPPRIMÉ */}
         <RelatedServices currentService="travel" />
       </main>
 

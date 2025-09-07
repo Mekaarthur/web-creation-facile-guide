@@ -31,49 +31,6 @@ const BikaVie = () => {
     setIsBookingFormOpen(true);
   };
 
-  const services = [
-    // a) Services administratifs familiaux (25€/h)
-    {
-      name: "Gestion courrier et documents",
-      price: 25,
-      description: "Gestion courrier et documents, prise rdv médicaux/administratifs"
-    },
-    {
-      name: "Suivi abonnements",
-      price: 25,
-      description: "Suivi abonnements, archivage documents"
-    },
-    {
-      name: "Accompagnement rendez-vous",
-      price: 25,
-      description: "Accompagnement aux rendez-vous, archivage et classement documents personnels"
-    },
-    
-    // b) Services personnels (25€/h)
-    {
-      name: "Pressing et cordonnerie",
-      price: 25,
-      description: "Dépôt/retrait pressing & cordonnerie"
-    },
-    {
-      name: "Réservations",
-      price: 25,
-      description: "Réservations restaurants / spectacles"
-    },
-    
-    // Assistance quotidienne
-    {
-      name: "Gestion planning",
-      price: 25,
-      description: "Gestion planning personnel, interface avec administrations"
-    },
-    {
-      name: "Résolution problèmes",
-      price: 25,
-      description: "Résolution de problèmes du quotidien"
-    }
-  ];
-
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Service",
@@ -87,9 +44,9 @@ const BikaVie = () => {
       "@type": "Place",
       "name": "Île-de-France"
     },
-    "offers": services.map(service => ({
+    "offers": serviceData.subservices.map(service => ({
       "@type": "Offer",
-      "name": service.name,
+      "name": service.title,
       "description": service.description,
       "price": service.price,
       "priceCurrency": "EUR"
@@ -243,38 +200,7 @@ const BikaVie = () => {
 
         <ServiceSubgrid categoryKey="vie" />
 
-        {/* Services List */}
-        <section className="py-16 bg-white">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12">Nos services Bika Vie</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-              {serviceData.subservices.map((service, index) => (
-                <Card key={index} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg">{service.title}</CardTitle>
-                      <Badge variant="outline" className="text-purple-600 border-purple-200 font-semibold">
-                        {`${service.price}€/h`}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-sm mb-4">
-                      {service.description}
-                    </CardDescription>
-                    <Button 
-                      onClick={() => handleOpenBooking(service)}
-                      className="bg-purple-600 hover:bg-purple-700 text-white w-full"
-                      size="sm"
-                    >
-                      Réserver ce service
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* Services List - SUPPRIMÉ */}
         <RelatedServices currentService="vie" />
       </main>
 

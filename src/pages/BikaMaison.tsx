@@ -30,56 +30,6 @@ const BikaMaison = () => {
     setIsBookingFormOpen(true);
   };
 
-  const services = [
-    // a) Courses & Approvisionnement (25€/h)
-    {
-      name: "Courses alimentaires",
-      price: 25,
-      description: "Courses alimentaires hebdomadaires, produits bio / sans gluten"
-    },
-    {
-      name: "Gestion stocks",
-      price: 25,
-      description: "Gestion stocks et frigo/placards, courses urgentes / de nuit"
-    },
-    
-    // b) Logistique & Organisation (25€/h - 30€/h selon service)
-    {
-      name: "Retrait colis",
-      price: 25,
-      description: "Retrait colis et livraisons, gestion rdv artisans / techniciens"
-    },
-    {
-      name: "Coordination travaux",
-      price: 30,
-      description: "Coordination travaux / rénovations"
-    },
-    
-    // c) Aide au déménagement et aménagement (30€/h)
-    {
-      name: "Déménagement",
-      price: 30,
-      description: "Faire les cartons, transport des meubles et cartons jusqu'au pied de l'immeuble"
-    },
-    {
-      name: "Rangement espaces",
-      price: 30,
-      description: "Rangement et organisation espaces"
-    },
-    
-    // d) Entretien & Maintenance (sur demande / 25–30€/h)
-    {
-      name: "Entretien jardins",
-      price: 25,
-      description: "Entretien jardins & espaces verts"
-    },
-    {
-      name: "Petits travaux",
-      price: 30,
-      description: "Montage de meubles, petits travaux plomberie"
-    }
-  ];
-
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Service",
@@ -93,9 +43,9 @@ const BikaMaison = () => {
       "@type": "Place",
       "name": "Île-de-France"
     },
-    "offers": services.map(service => ({
+    "offers": serviceData.subservices.map(service => ({
       "@type": "Offer",
-      "name": service.name,
+      "name": service.title,
       "description": service.description,
       "price": service.price,
       "priceCurrency": "EUR"
@@ -416,38 +366,7 @@ const BikaMaison = () => {
           </div>
         </section>
 
-        {/* Services List */}
-        <section className="py-16 bg-white">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12">Nos services Bika Maison</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-              {serviceData.subservices.map((service, index) => (
-                <Card key={index} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg">{service.title}</CardTitle>
-                      <Badge variant="outline" className="text-green-600 border-green-200 font-semibold">
-                        {`${service.price}€/h`}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-sm mb-4">
-                      {service.description}
-                    </CardDescription>
-                    <Button 
-                      onClick={() => handleOpenBooking(service)}
-                      className="bg-green-600 hover:bg-green-700 text-white w-full"
-                      size="sm"
-                    >
-                      Réserver ce service
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* Services List - SUPPRIMÉ */}
 
         {/* Popularity Section */}
         <section className="py-16 bg-gradient-to-br from-yellow-50 to-orange-100">
@@ -495,7 +414,7 @@ const BikaMaison = () => {
             </p>
             <Button 
               size="lg" 
-              onClick={() => handleOpenBooking(services[0])}
+              onClick={() => navigate('/custom-request')}
               className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
             >
               <Calendar className="w-5 h-5 mr-2" />
