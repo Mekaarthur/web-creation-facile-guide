@@ -51,7 +51,6 @@ const Navbar = () => {
   const { isAdmin } = useAdminRole();
 
   const navItems = [
-    { name: "Accueil", href: "/" },
     { name: "À propos", href: "/a-propos-de-nous" },
     { name: "Contact", href: "/contact" },
     { name: "Blog", href: "/blog" },
@@ -154,6 +153,18 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-1">
+            {/* Accueil Link */}
+            <Link
+              to="/"
+              className={cn(
+                "relative px-3 py-2 text-sm font-medium transition-smooth rounded-lg group",
+                "text-foreground hover:text-primary hover:bg-muted/50"
+              )}
+            >
+              Accueil
+              <div className="absolute inset-x-1 -bottom-1 h-0.5 bg-gradient-primary rounded-full scale-x-0 transition-transform duration-200 group-hover:scale-x-100" />
+            </Link>
+
             {/* Services Navigation Menu */}
             <NavigationMenu>
               <NavigationMenuList>
@@ -232,45 +243,6 @@ const Navbar = () => {
                 <div className="absolute inset-x-1 -bottom-1 h-0.5 bg-gradient-primary rounded-full scale-x-0 transition-transform duration-200 group-hover:scale-x-100" />
               </Link>
             ))}
-
-            {/* Provider Section */}
-            <div className="ml-4 pl-4 border-l border-border">
-              <NavigationMenu>
-                <NavigationMenuList>
-                  <NavigationMenuItem>
-                    <NavigationMenuTrigger className="bg-transparent hover:bg-muted/50 hover:text-primary data-[state=open]:bg-muted/50 data-[state=open]:text-primary">
-                      💼 Prestataires
-                    </NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <div className="grid w-[400px] gap-3 p-4">
-                        <div className="space-y-2">
-                          {providerItems.map((item) => (
-                            <NavigationMenuLink key={item.name} asChild>
-                              <Link
-                                to={item.href}
-                                className="group block select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                              >
-                                <div className="flex items-center space-x-3">
-                                  <span className="text-lg">{item.icon}</span>
-                                  <div>
-                                    <div className="text-sm font-medium leading-none group-hover:text-primary transition-colors">
-                                      {item.name}
-                                    </div>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                      {item.description}
-                                    </p>
-                                  </div>
-                                </div>
-                              </Link>
-                            </NavigationMenuLink>
-                          ))}
-                        </div>
-                      </div>
-                    </NavigationMenuContent>
-                  </NavigationMenuItem>
-                </NavigationMenuList>
-              </NavigationMenu>
-            </div>
           </div>
 
           {/* Actions Desktop */}
@@ -287,11 +259,6 @@ const Navbar = () => {
                   <Button size="sm" className="bg-gradient-primary hover:opacity-90 transition-opacity">
                     <Sparkles className="mr-1 h-3 w-3" />
                     Réserver
-                  </Button>
-                </Link>
-                <Link to="/devenir-prestataire">
-                  <Button variant="outline" size="sm" className="hover:bg-accent hover:text-accent-foreground">
-                    Devenir Prestataire
                   </Button>
                 </Link>
                 <div className="h-6 w-px bg-border mx-2" />
