@@ -187,10 +187,10 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         ],
       },
       {
-        slug: "entretien-jardin-espaces-verts",
-        title: "Entretien jardin et espaces verts",
-        price: 0,
-        priceDisplay: "Sur demande",
+        slug: "entretien-jardins-espaces-verts",
+        title: "Entretien jardins et espaces verts",
+        price: 30,
+        priceDisplay: "30€/h",
         image: serviceHomeCleaning,
         description: "Entretien des jardins et espaces verts - Sur demande, entretien courant du jardin, tonte de la pelouse, scarification et aération de la pelouse, arrosage (manuel ou installation d'un système automatique), désherbage (manuel, thermique ou sélectif), ramassage des feuilles mortes, traitement des maladies et parasites (dans le respect de la réglementation).",
         options: [
