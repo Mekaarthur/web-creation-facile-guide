@@ -192,6 +192,10 @@ const ProviderDashboardNew = () => {
                 <CheckCircle className="h-3 w-3 mr-1" />
                 {profile?.is_verified ? 'Vérifié' : 'En attente'}
               </Badge>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Phone className="h-4 w-4" />
+                <span>Support: 06 09 08 53 90</span>
+              </div>
               <Button variant="outline" size="sm">
                 <Settings className="h-4 w-4 mr-2" />
                 Paramètres
