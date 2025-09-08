@@ -4,179 +4,155 @@ import { Link } from "react-router-dom";
 const Footer = () => {
   const footerSections = [
     {
-      title: "Nos services",
+      title: "Services",
       links: [
         { name: "Bika Kids", href: "/services" },
         { name: "Bika Maison", href: "/services" },
-        { name: "Bika Vie", href: "/services" },
+        { name: "Bika Seniors", href: "/services" },
         { name: "Bika Travel", href: "/services" },
-        { name: "Bika Plus", href: "/services" },
-        { name: "Bika Pro", href: "/services" }
+        { name: "Bika Pro", href: "/services" },
+        { name: "Bika Plus", href: "/services" }
       ]
     },
     {
-      title: "Entreprise",
+      title: "Entreprise", 
       links: [
         { name: "À propos", href: "/a-propos-de-nous" },
-        { name: "Notre équipe", href: "/a-propos-de-nous" },
         { name: "Carrières", href: "/nous-recrutons" },
-        { name: "Presse", href: "/blog" }
-      ]
-    },
-    {
-      title: "Ressources",
-      links: [
         { name: "Blog", href: "/blog" },
-        { name: "FAQ", href: "/aide" },
-        { name: "Documentation", href: "/aide" },
-        { name: "Guides", href: "/blog" },
-        { name: "Status", href: "/aide" }
+        { name: "Partenaires", href: "/contact" }
       ]
     },
     {
-      title: "Légal",
+      title: "Support",
       links: [
-        { name: "Candidature", href: "/nous-recrutons" },
-        { name: "Mentions légales", href: "/aide" },
-        { name: "Politique de confidentialité", href: "/aide" },
-        { name: "CGU", href: "/aide" }
+        { name: "Centre d'aide", href: "/aide" },
+        { name: "Contact", href: "/contact" },
+        { name: "FAQ", href: "/aide" },
+        { name: "Status", href: "/aide" }
       ]
     }
   ];
 
   const socialLinks = [
     { icon: Facebook, href: "https://facebook.com/bikawo", name: "Facebook" },
-    { icon: Twitter, href: "https://twitter.com/bikawo", name: "Twitter" },
+    { icon: Instagram, href: "https://instagram.com/bikawo", name: "Instagram" },
     { icon: Linkedin, href: "https://linkedin.com/company/bikawo", name: "LinkedIn" },
-    { icon: Instagram, href: "https://instagram.com/bikawo", name: "Instagram" }
+    { icon: Twitter, href: "https://twitter.com/bikawo", name: "Twitter" }
   ];
 
   return (
-    <footer className="bg-foreground text-white">
-      {/* Main Footer */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid lg:grid-cols-5 gap-8">
-          {/* Brand Section */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-                <MessageCircle className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold">Bikawô</span>
-            </div>
+    <footer className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.02)_50%,transparent_75%)] bg-[length:20px_20px]"></div>
+      
+      <div className="relative">
+        {/* Main Content */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+          <div className="grid lg:grid-cols-4 gap-8 lg:gap-12">
             
-            <p className="text-white/80 max-w-md">
-              Votre partenaire familial de confiance dans toute la France. 
-              Nous vous accompagnons avec humanité pour un quotidien plus serein et harmonieux.
-            </p>
-
-            {/* Contact Info */}
-            <div className="space-y-3">
+            {/* Brand Section */}
+            <div className="lg:col-span-2 space-y-6">
               <div className="flex items-center space-x-3">
-                <Phone className="w-5 h-5 text-primary" />
-                <span className="text-white/90">06 09 08 53 90</span>
+                <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center shadow-lg">
+                  <MessageCircle className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-2xl font-bold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">Bikawô</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <Mail className="w-5 h-5 text-primary" />
-                <span className="text-white/90">contact@bikawo.com</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <MapPin className="w-5 h-5 text-primary" />
-                <span className="text-white/90">123 Rue de la Tech, Paris</span>
-              </div>
-            </div>
-
-            {/* Social Links */}
-            <div className="flex space-x-4">
-              {socialLinks.map((social) => {
-                const IconComponent = social.icon;
-                return (
-                  <a
-                    key={social.name}
-                    href={social.href}
-                    className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center hover:bg-primary hover:scale-110 transition-all duration-300"
-                    aria-label={social.name}
-                  >
-                    <IconComponent className="w-5 h-5" />
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Links Sections */}
-          {footerSections.map((section) => (
-            <div key={section.title} className="space-y-4">
-              <h4 className="text-lg font-semibold text-white">{section.title}</h4>
-              <ul className="space-y-2">
-                {section.links.map((link) => (
-                  <li key={link.name}>
-                    <Link
-                      to={link.href}
-                      className="text-white/70 hover:text-white transition-colors duration-300"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Newsletter Section */}
-      <div className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid md:grid-cols-2 gap-6 items-center">
-            <div>
-              <h4 className="text-lg font-semibold text-white mb-2">
-                Restez informé de nos nouveautés
-              </h4>
-              <p className="text-white/70">
-                Recevez nos conseils techniques et nos mises à jour directement dans votre boîte mail.
+              
+              <p className="text-white/70 text-lg leading-relaxed max-w-lg">
+                Votre partenaire familial de confiance dans toute la France. 
+                Nous vous accompagnons avec humanité pour un quotidien plus serein.
               </p>
+
+              {/* Contact Cards */}
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:bg-white/10 transition-all duration-300">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center">
+                      <Phone className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-white/60">Téléphone</p>
+                      <p className="text-sm font-medium">06 09 08 53 90</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:bg-white/10 transition-all duration-300">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center">
+                      <Mail className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-white/60">Email</p>
+                      <p className="text-sm font-medium">contact@bikawo.com</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Social Links */}
+              <div className="flex space-x-3">
+                {socialLinks.map((social) => {
+                  const IconComponent = social.icon;
+                  return (
+                    <a
+                      key={social.name}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group w-10 h-10 bg-white/10 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/20 hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300"
+                      aria-label={social.name}
+                    >
+                      <IconComponent className="w-4 h-4 text-white group-hover:text-white transition-colors" />
+                    </a>
+                  );
+                })}
+              </div>
             </div>
-            <div className="flex space-x-2">
-              <input
-                type="email"
-                placeholder="Votre adresse email"
-                className="flex-1 px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-primary"
-                id="newsletter-email"
-              />
-              <button 
-                onClick={() => {
-                  const email = (document.getElementById('newsletter-email') as HTMLInputElement)?.value;
-                  if (email && email.includes('@')) {
-                    alert('Merci pour votre inscription ! Vous recevrez bientôt nos newsletters.');
-                    (document.getElementById('newsletter-email') as HTMLInputElement).value = '';
-                  } else {
-                    alert('Veuillez saisir une adresse email valide.');
-                  }
-                }}
-                className="px-6 py-2 bg-gradient-primary rounded-lg hover:shadow-glow transition-all duration-300 font-medium"
-              >
-                S'abonner
-              </button>
+
+            {/* Links Grid */}
+            <div className="lg:col-span-2">
+              <div className="grid sm:grid-cols-3 gap-8">
+                {footerSections.map((section) => (
+                  <div key={section.title} className="space-y-4">
+                    <h4 className="text-sm font-semibold text-white uppercase tracking-wider">{section.title}</h4>
+                    <ul className="space-y-3">
+                      {section.links.map((link) => (
+                        <li key={link.name}>
+                          <Link
+                            to={link.href}
+                            className="text-white/60 hover:text-white hover:translate-x-1 transition-all duration-300 text-sm inline-block"
+                          >
+                            {link.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Bottom Bar */}
-      <div className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6 text-white/70 text-sm">
-              <span>© 2024 Bikawô. Tous droits réservés.</span>
-              <div className="flex space-x-4">
-                <Link to="/aide" className="hover:text-white transition-colors">Politique de confidentialité</Link>
-                <Link to="/aide" className="hover:text-white transition-colors">Conditions d'utilisation</Link>
+        {/* Bottom Section */}
+        <div className="border-t border-white/10 bg-black/20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+              <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-8 text-white/50 text-sm">
+                <span>© 2024 Bikawô. Tous droits réservés.</span>
+                <div className="flex space-x-6">
+                  <Link to="/aide" className="hover:text-white transition-colors">Confidentialité</Link>
+                  <Link to="/aide" className="hover:text-white transition-colors">CGU</Link>
+                  <Link to="/aide" className="hover:text-white transition-colors">Mentions légales</Link>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center space-x-2 text-white/70 text-sm">
-              <div className="w-2 h-2 bg-accent rounded-full"></div>
-              <span>Support disponible 24h/24</span>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-white/60 text-sm">Support 24h/7j</span>
+              </div>
             </div>
           </div>
         </div>

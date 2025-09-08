@@ -229,31 +229,6 @@ const ServicesPackages = () => {
                     <span className="text-sm font-semibold text-foreground">{pkg.price}</span>
                   </div>
 
-                     {/* CTA - Mobile optimized */}
-                     <div className="space-y-2 mt-auto pt-2">
-                         <Button 
-                           variant={pkg.popular ? "accent" : "outline"} 
-                           className="w-full group/btn min-h-10 text-xs sm:text-sm lg:text-base px-2 sm:px-4"
-                           onClick={() => {
-                             navigate(`/payment?service=${encodeURIComponent(pkg.title)}&price=${typeof pkg.services[0] === 'object' ? pkg.services[0].price : 22}&description=${encodeURIComponent(pkg.description)}&type=one-time&duration=1h`);
-                           }}
-                         >
-                          <span className="truncate">Réserver à l'heure</span>
-                          <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 transition-transform group-hover/btn:translate-x-1 flex-shrink-0" />
-                        </Button>
-                        
-                        <Button 
-                          variant="secondary"
-                          className="w-full group/btn min-h-10 text-xs sm:text-sm lg:text-base px-2 sm:px-4"
-                          onClick={() => {
-                            const subscriptionPrice = pkg.id === 'plus' ? 1500 : (pkg.id === 'pro' ? 800 : 200);
-                            navigate(`/payment?service=${encodeURIComponent(pkg.title + ' - Abonnement')}&price=${subscriptionPrice}&description=${encodeURIComponent(pkg.description)}&type=subscription`);
-                          }}
-                        >
-                          <span className="truncate">S'abonner</span>
-                          <Calendar className="w-3 h-3 sm:w-4 sm:h-4 ml-1 transition-transform group-hover/btn:translate-x-1 flex-shrink-0" />
-                        </Button>
-                      </div>
                 </div>
                </Card>
              );
