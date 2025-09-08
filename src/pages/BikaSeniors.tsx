@@ -15,6 +15,7 @@ import ClientSpace from "@/components/ClientSpace";
 import serviceSeniors from "@/assets/service-seniors.jpg";
 import serviceSeniorsAssistance from "@/assets/service-seniors-assistance.jpg";
 import serviceseniorsCare from "@/assets/service-seniors-care.jpg";
+import serviceSeniorsImage from "@/assets/service-seniors.jpg";
 import { servicesData } from "@/utils/servicesData";
 import ServiceSubgrid from "@/components/ServiceSubgrid";
 
@@ -117,7 +118,7 @@ const BikaSeniors = () => {
               <div className="relative">
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                   <img 
-                    src="/src/assets/service-seniors-full.jpg" 
+                    src={serviceSeniorsImage} 
                     alt="Service seniors Bika Seniors" 
                     className="w-full h-auto"
                   />

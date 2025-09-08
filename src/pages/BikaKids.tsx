@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Star, CheckCircle, Shield, Heart, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { servicesData } from "@/utils/servicesData";
+import serviceKidsImage from "@/assets/service-kids.jpg";
 
 const BikaKids = () => {
   const navigate = useNavigate();
@@ -83,7 +84,7 @@ const BikaKids = () => {
               <div className="relative">
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                   <img 
-                    src="/src/assets/service-kids-full.jpg" 
+                    src={serviceKidsImage} 
                     alt="Service garde d'enfants Bika Kids" 
                     className="w-full h-auto"
                   />

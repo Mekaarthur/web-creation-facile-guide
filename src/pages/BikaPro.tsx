@@ -15,6 +15,7 @@ import ClientSpace from "@/components/ClientSpace";
 import { useAuth } from "@/hooks/useAuth";
 import ServiceSubgrid from "@/components/ServiceSubgrid";
 import { servicesData } from "@/utils/servicesData";
+import serviceBusinessImage from "@/assets/service-business.jpg";
 
 const BikaPro = () => {
   const navigate = useNavigate();
@@ -116,7 +117,7 @@ const BikaPro = () => {
               <div className="relative">
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                   <img 
-                    src="/src/assets/service-business-full.jpg" 
+                    src={serviceBusinessImage} 
                     alt="Service entreprise Bika Pro" 
                     className="w-full h-auto"
                   />

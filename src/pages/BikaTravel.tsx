@@ -15,6 +15,7 @@ import ClientSpace from "@/components/ClientSpace";
 import { useAuth } from "@/hooks/useAuth";
 import serviceTravelAirport from "@/assets/service-travel-airport.jpg";
 import serviceTravelKids from "@/assets/service-travel-kids.jpg";
+import serviceTravelImage from "@/assets/service-travel.jpg";
 import ServiceSubgrid from "@/components/ServiceSubgrid";
 import { servicesData } from "@/utils/servicesData";
 
@@ -141,7 +142,7 @@ const BikaTravel = () => {
               <div className="relative">
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                   <img 
-                    src="/src/assets/service-travel-full.jpg" 
+                    src={serviceTravelImage} 
                     alt="Service voyage Bika Travel" 
                     className="w-full h-auto"
                   />

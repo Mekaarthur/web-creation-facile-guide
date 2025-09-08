@@ -14,6 +14,7 @@ import { useState } from "react";
 import CallToActionButtons from "@/components/CallToActionButtons";
 import ClientSpace from "@/components/ClientSpace";
 import { useAuth } from "@/hooks/useAuth";
+import servicePremiumImage from "@/assets/service-premium.jpg";
 
 const BikaPlus = () => {
   const navigate = useNavigate();
@@ -174,7 +175,7 @@ const BikaPlus = () => {
               <div className="relative">
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                   <img 
-                    src="/src/assets/service-premium-full.jpg" 
+                    src={servicePremiumImage} 
                     alt="Service premium Bika Plus" 
                     className="w-full h-auto"
                   />

@@ -15,6 +15,7 @@ import ClientSpace from "@/components/ClientSpace";
 import { useAuth } from "@/hooks/useAuth";
 import serviceVieCalendar from "@/assets/service-vie-calendar.jpg";
 import serviceVieEvents from "@/assets/service-vie-events.jpg";
+import serviceVieImage from "@/assets/service-vie-full.jpg";
 import ServiceSubgrid from "@/components/ServiceSubgrid";
 import { servicesData } from "@/utils/servicesData";
 
@@ -141,7 +142,7 @@ const BikaVie = () => {
               <div className="relative">
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                   <img 
-                    src="/src/assets/service-vie-full.jpg" 
+                    src={serviceVieImage} 
                     alt="Service conciergerie Bika Vie" 
                     className="w-full h-auto"
                   />
