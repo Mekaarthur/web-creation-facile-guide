@@ -1,6 +1,6 @@
 import Navbar from "@/components/Navbar";
 import ServicesGrid from "@/components/ServicesGrid";
-import ServicesPackages from "@/components/ServicesPackages";
+
 import Footer from "@/components/Footer";
 import SEOComponent from "@/components/SEOComponent";
 
@@ -31,9 +31,6 @@ const Reservation = () => {
           <ServicesGrid />
         </section>
 
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <ServicesPackages />
-        </section>
       </main>
 
       <Footer />
