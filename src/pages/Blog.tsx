@@ -1,11 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEOComponent from "@/components/SEOComponent";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Clock, Calendar, User, ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import BlogPageLayout from "@/components/BlogPageLayout";
 import { seoStructuredData } from "@/utils/seoData";
 
 const blogPosts = [
@@ -60,14 +56,43 @@ const blogPosts = [
     author: "Claire Rousseau",
     image: "/lovable-uploads/1ac09068-74a1-4d44-bdc6-d342fcb10cd4.png",
     featured: false
+  },
+  {
+    id: 5,
+    title: "Comment organiser son planning familial efficacement",
+    slug: "organiser-planning-familial",
+    description: "Méthodes et outils pour créer un planning familial harmonieux qui fonctionne pour tous.",
+    excerpt: "Un planning familial bien organisé est la clé d'un quotidien serein. Découvrez nos méthodes éprouvées.",
+    category: "Organisation",
+    readTime: "6 min",
+    publishedAt: "2023-12-28",
+    author: "Marie Lefort",
+    image: "/lovable-uploads/3496ff80-ec42-436d-8734-200bcb42494f.png",
+    featured: false
+  },
+  {
+    id: 6,
+    title: "Les bienfaits de la méditation pour les parents",
+    slug: "meditation-parents-bienfaits",
+    description: "Comment la méditation peut aider les parents à mieux gérer le stress et la charge mentale.",
+    excerpt: "Quelques minutes de méditation quotidienne peuvent transformer votre approche de la parentalité.",
+    category: "Bien-être",
+    readTime: "7 min",
+    publishedAt: "2023-12-20",
+    author: "Dr. Marie Dubois",
+    image: "/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png",
+    featured: false
   }
 ];
 
 const categories = ["Tous", "Bien-être", "Organisation", "Économie", "Parentalité"];
 
 const Blog = () => {
+  const featuredPosts = blogPosts.filter(post => post.featured);
+  const allPosts = blogPosts;
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <SEOComponent 
         title="Blog Bikawo - Conseils pour réduire la charge mentale"
         description="Découvrez nos guides pratiques pour déléguer sans culpabiliser, organiser votre quotidien et réduire votre charge mentale familiale."
@@ -75,142 +100,14 @@ const Blog = () => {
         structuredData={seoStructuredData.faq}
       />
       <Navbar />
-      <div className="pt-20">
-        {/* Hero Section */}
-        <section className="bg-gradient-subtle py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-                Blog BIKAWO
-              </h1>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-                Conseils pratiques, astuces d'organisation et guides pour simplifier votre quotidien familial
-              </p>
-              <div className="flex flex-wrap justify-center gap-2">
-                {categories.map((category) => (
-                  <Badge key={category} variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground">
-                    {category}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Featured Posts */}
-        <section className="py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-foreground mb-8">Articles à la une</h2>
-            <div className="grid md:grid-cols-2 gap-8 mb-16">
-              {blogPosts.filter(post => post.featured).map((post) => (
-                <Card key={post.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <div className="aspect-video overflow-hidden">
-                    <img 
-                      src={post.image} 
-                      alt={post.title}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  <CardHeader>
-                    <div className="flex items-center justify-between mb-2">
-                      <Badge variant="secondary">{post.category}</Badge>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Clock className="w-4 h-4 mr-1" />
-                        {post.readTime}
-                      </div>
-                    </div>
-                    <CardTitle className="text-xl hover:text-primary transition-colors">
-                      <Link to={`/blog/${post.slug}`}>{post.title}</Link>
-                    </CardTitle>
-                    <CardDescription className="text-base">{post.excerpt}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <User className="w-4 h-4 mr-1" />
-                        {post.author}
-                        <Calendar className="w-4 h-4 ml-4 mr-1" />
-                        {new Date(post.publishedAt).toLocaleDateString('fr-FR')}
-                      </div>
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link to={`/blog/${post.slug}`}>
-                          Lire plus <ArrowRight className="w-4 h-4 ml-1" />
-                        </Link>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* All Posts */}
-        <section className="py-16 bg-muted/5">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-foreground mb-8">Tous les articles</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {blogPosts.map((post) => (
-                <Card key={post.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <div className="aspect-video overflow-hidden">
-                    <img 
-                      src={post.image} 
-                      alt={post.title}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  <CardHeader>
-                    <div className="flex items-center justify-between mb-2">
-                      <Badge variant="outline">{post.category}</Badge>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Clock className="w-4 h-4 mr-1" />
-                        {post.readTime}
-                      </div>
-                    </div>
-                    <CardTitle className="text-lg hover:text-primary transition-colors">
-                      <Link to={`/blog/${post.slug}`}>{post.title}</Link>
-                    </CardTitle>
-                    <CardDescription>{post.excerpt}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm text-muted-foreground">
-                        Par {post.author}
-                      </div>
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link to={`/blog/${post.slug}`}>
-                          Lire <ArrowRight className="w-4 h-4 ml-1" />
-                        </Link>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Newsletter */}
-        <section className="py-16">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <Card className="p-8">
-              <h3 className="text-2xl font-bold text-foreground mb-4">
-                Restez informé de nos derniers conseils
-              </h3>
-              <p className="text-muted-foreground mb-6">
-                Recevez chaque semaine nos meilleurs articles directement dans votre boîte mail
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-                <input 
-                  type="email" 
-                  placeholder="Votre adresse email"
-                  className="flex-1 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <Button>S'abonner</Button>
-              </div>
-            </Card>
-          </div>
-        </section>
+      <div className="pt-16">
+        <BlogPageLayout
+          title="Magazine du bien-être familial"
+          subtitle="Conseils pratiques, astuces d'organisation et guides pour simplifier votre quotidien et réduire votre charge mentale"
+          categories={categories}
+          featuredPosts={featuredPosts}
+          allPosts={allPosts}
+        />
       </div>
       <Footer />
     </div>
