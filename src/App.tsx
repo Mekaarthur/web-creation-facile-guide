@@ -61,6 +61,7 @@ import Payment from "./pages/Payment";
 import AdminZones from "./pages/admin/Zones";
 import AdminParametres from "./pages/admin/Parametres";
 import AdminMarque from "./pages/admin/Marque";
+import TestsSystems from "./pages/admin/TestsSystems";
 
 // Modern Admin Components
 import ModernAdminLayout from "./components/admin/ModernAdminLayout";
@@ -144,9 +145,10 @@ const App = () => (
               <Route path="paiements" element={<AdminPaiements />} />
               <Route path="messages" element={<ConfigMessages />} />
               <Route path="notifications" element={<AdminNotifications />} />
-              <Route path="zones" element={<div>Zones géographiques - En développement</div>} />
-              <Route path="statistiques" element={<div>Statistiques - En développement</div>} />
-              <Route path="parametres" element={<div>Paramètres - En développement</div>} />
+               <Route path="zones" element={<AdminZones />} />
+               <Route path="parametres" element={<AdminParametres />} />
+               <Route path="marque" element={<AdminMarque />} />
+               <Route path="tests-systems" element={<TestsSystems />} />
              <Route path="audit" element={<AuditReport />} />
             </Route>
             
