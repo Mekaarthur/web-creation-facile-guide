@@ -51,48 +51,23 @@ const AttestationsManager = () => {
 
   const loadAttestations = async () => {
     try {
-      console.log('Début du chargement des attestations pour:', user?.id);
-      
-      // Simuler des données d'attestations basées sur les factures
-      const { data: invoices } = await supabase
-        .from('invoices')
+      if (!user) {
+        setAttestations([]);
+        setLoading(false);
+        return;
+      }
+      console.log('Chargement des attestations (DB) pour:', user.id);
+
+      const { data, error } = await (supabase as any)
+        .from('attestations')
         .select('*')
-        .eq('client_id', user?.id)
-        .order('issued_date', { ascending: false });
+        .eq('client_id', user.id)
+        .order('created_at', { ascending: false });
 
-      console.log('Factures récupérées:', invoices?.length || 0);
+      if (error) throw error;
 
-      // Générer des attestations fictives basées sur les factures
-      const mockAttestations: Attestation[] = [
-        {
-          id: '1',
-          type: 'credit_impot',
-          year: 2024,
-          amount: 1250.00,
-          service_type: 'Services à la personne',
-          created_at: '2024-01-31T00:00:00Z'
-        },
-        {
-          id: '2',
-          type: 'caf',
-          year: 2024,
-          month: 12,
-          amount: 480.00,
-          service_type: 'Garde d\'enfants',
-          created_at: '2024-12-31T00:00:00Z'
-        },
-        {
-          id: '3',
-          type: 'credit_impot',
-          year: 2023,
-          amount: 890.00,
-          service_type: 'Services à la personne',
-          created_at: '2023-12-31T00:00:00Z'
-        }
-      ];
-
-      console.log('Attestations mockées générées:', mockAttestations.length);
-      setAttestations(mockAttestations);
+      console.log('Attestations récupérées:', data?.length || 0);
+      setAttestations((data || []) as Attestation[]);
     } catch (error) {
       console.error('Erreur lors du chargement des attestations:', error);
       toast({
@@ -101,24 +76,37 @@ const AttestationsManager = () => {
         variant: "destructive",
       });
     } finally {
-      console.log('Fin du chargement des attestations');
       setLoading(false);
     }
   };
 
   const downloadAttestation = async (attestation: Attestation) => {
     try {
-      // Simuler le téléchargement
-      toast({
-        title: "Téléchargement en cours",
-        description: `Attestation ${attestation.type} ${attestation.year} en cours de téléchargement...`,
-      });
-      
-      // Ici, vous appelleriez votre edge function pour générer le PDF
-      // const { data } = await supabase.functions.invoke('generate-attestation', {
-      //   body: { attestationId: attestation.id }
-      // });
-      
+      if (!attestation.file_url) {
+        toast({
+          title: "Fichier indisponible",
+          description: "Cette attestation n'a pas encore de PDF disponible.",
+        });
+        return;
+      }
+
+      // Si une URL complète est déjà stockée
+      if (attestation.file_url.startsWith('http')) {
+        window.open(attestation.file_url, '_blank');
+        return;
+      }
+
+      // Générer une URL signée depuis le bucket privé
+      const { data, error } = await supabase.storage
+        .from('attestations')
+        .createSignedUrl(attestation.file_url, 60);
+
+      if (error) throw error;
+      if (data?.signedUrl) {
+        window.open(data.signedUrl, '_blank');
+      } else {
+        throw new Error('URL signée introuvable');
+      }
     } catch (error) {
       console.error('Erreur lors du téléchargement:', error);
       toast({
@@ -261,6 +249,8 @@ const AttestationsManager = () => {
                     <Button
                       variant="outline"
                       size="sm"
+                      disabled={!attestation.file_url}
+                      title={attestation.file_url ? 'Télécharger le PDF' : 'PDF non disponible'}
                       onClick={() => downloadAttestation(attestation)}
                     >
                       <Download className="w-4 h-4 mr-1" />
@@ -314,6 +304,8 @@ const AttestationsManager = () => {
                     <Button
                       variant="outline"
                       size="sm"
+                      disabled={!attestation.file_url}
+                      title={attestation.file_url ? 'Télécharger le PDF' : 'PDF non disponible'}
                       onClick={() => downloadAttestation(attestation)}
                     >
                       <Download className="w-4 h-4 mr-1" />

@@ -92,6 +92,45 @@ export type Database = {
         }
         Relationships: []
       }
+      attestations: {
+        Row: {
+          amount: number
+          client_id: string
+          created_at: string
+          file_url: string | null
+          id: string
+          month: number | null
+          service_type: string
+          type: string
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          amount?: number
+          client_id: string
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          month?: number | null
+          service_type: string
+          type: string
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          amount?: number
+          client_id?: string
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          month?: number | null
+          service_type?: string
+          type?: string
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
       booking_slots: {
         Row: {
           booking_date: string
