@@ -7,8 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Edit, UserX, Users, History, Shield } from "lucide-react";
+import { Plus, Edit, UserX, Users, History, Shield, Search, RotateCcw } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import BinomesActions from "./BinomesActions";
 
 const binomesActifs = [
   {
@@ -36,6 +38,7 @@ const binomesActifs = [
 export const BinomesManagement = () => {
   const [selectedBinome, setSelectedBinome] = useState<any>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const { toast } = useToast();
 
   return (
     <div className="space-y-6">
@@ -143,6 +146,7 @@ export const BinomesManagement = () => {
                       Annuler
                     </Button>
                     <Button onClick={() => setIsCreateDialogOpen(false)}>
+                      <Users className="h-4 w-4 mr-2" />
                       Créer le Binôme
                     </Button>
                   </div>
@@ -188,22 +192,51 @@ export const BinomesManagement = () => {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => toast({
+                      title: "Historique",
+                      description: `Affichage de l'historique du binôme ${binome.client} - ${binome.prestataire}`,
+                    })}
+                  >
                     <History className="h-4 w-4 mr-2" />
                     Historique
                   </Button>
                   
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => toast({
+                      title: "Modification",
+                      description: `Ouverture de l'interface de modification pour ${binome.client}`,
+                    })}
+                  >
                     <Edit className="h-4 w-4 mr-2" />
                     Modifier
                   </Button>
                   
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => toast({
+                      title: "Changement de backup",
+                      description: `Modification du prestataire de backup pour ${binome.client}`,
+                    })}
+                  >
                     <Shield className="h-4 w-4 mr-2" />
                     Changer Backup
                   </Button>
                   
-                  <Button variant="destructive" size="sm">
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    onClick={() => toast({
+                      title: "Dissolution du binôme",
+                      description: `Confirmation de dissolution du binôme ${binome.client} - ${binome.prestataire}`,
+                      variant: "destructive",
+                    })}
+                  >
                     <UserX className="h-4 w-4 mr-2" />
                     Dissoudre
                   </Button>
