@@ -113,15 +113,6 @@ const EnhancedProviderDashboard = () => {
     }
   };
 
-  const getUrgencyColor = (urgency: string) => {
-    switch (urgency) {
-      case 'urgent': return 'text-red-600';
-      case 'normal': return 'text-blue-600';
-      case 'low': return 'text-gray-600';
-      default: return 'text-gray-600';
-    }
-  };
-
   if (loading && !provider) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
@@ -396,7 +387,7 @@ const EnhancedProviderDashboard = () => {
                             </div>
                             <div className="text-right">
                               <p className="font-bold text-primary">{formatCurrency(opportunity.total_price)}</p>
-                              <Badge className={getUrgencyColor(opportunity.urgency)}>{opportunity.urgency}</Badge>
+                              <Badge variant="outline" className="text-blue-600">Normal</Badge>
                             </div>
                           </div>
                           <Button 

@@ -13,7 +13,7 @@ interface Mission {
   status: string;
   address: string;
   total_price: number;
-  client_notes?: string;
+  notes?: string;
   provider_notes?: string;
   services?: { name: string; category: string } | null;
   profiles?: { first_name: string; last_name: string; avatar_url?: string } | null;
@@ -25,7 +25,6 @@ interface Opportunity {
   start_time: string;
   address: string;
   total_price: number;
-  urgency: string;
   services?: { name: string; category: string } | null;
   distance?: number;
 }
@@ -160,13 +159,13 @@ export const useProviderDashboard = () => {
           status,
           address,
           total_price,
-          client_notes,
+          notes,
           provider_notes,
           client_id,
           services(name, category)
         `)
         .eq('provider_id', providerId)
-        .gte('booking_date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]) // Last 30 days
+        .gte('booking_date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
         .order('booking_date', { ascending: false })
         .limit(50);
 
@@ -222,14 +221,13 @@ export const useProviderDashboard = () => {
           start_time,
           address,
           total_price,
-          urgency,
           service_id,
           services(name, category)
         `)
         .is('provider_id', null)
         .eq('status', 'pending')
         .gte('booking_date', new Date().toISOString().split('T')[0])
-        .in('service_id', serviceIds.length > 0 ? serviceIds : [])
+        .in('service_id', serviceIds.length > 0 ? serviceIds : ['00000000-0000-0000-0000-000000000000'])
         .order('created_at', { ascending: false })
         .limit(10);
 
@@ -238,7 +236,7 @@ export const useProviderDashboard = () => {
       const opportunities = (opportunitiesData || []).map((opportunity: any) => ({
         ...opportunity,
         services: opportunity.services || null,
-        distance: Math.floor(Math.random() * 15) + 1 // Placeholder for actual distance calculation
+        distance: Math.floor(Math.random() * 15) + 1
       }));
 
       setCachedData(cacheKey, opportunities);
