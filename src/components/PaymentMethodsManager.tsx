@@ -27,24 +27,31 @@ const PaymentMethodsManager = () => {
     }
   }, [user]);
 
-  const fetchPaymentMethods = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('get-payment-methods');
-      
-      if (error) throw error;
-      
-      setPaymentMethods(data.paymentMethods || []);
-    } catch (error) {
-      console.error('Erreur lors du chargement des méthodes de paiement:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les méthodes de paiement",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+const fetchPaymentMethods = async () => {
+  try {
+    console.log('Début de la récupération des méthodes de paiement');
+    const { data, error } = await supabase.functions.invoke('get-payment-methods');
+    
+    console.log('Réponse de get-payment-methods:', { data, error });
+    
+    if (error) {
+      console.error('Erreur fonction edge:', error);
+      throw error;
     }
-  };
+    
+    console.log('Méthodes de paiement récupérées:', data?.paymentMethods?.length || 0);
+    setPaymentMethods(data?.paymentMethods || []);
+  } catch (error) {
+    console.error('Erreur lors du chargement des méthodes de paiement:', error);
+    toast({
+      title: "Erreur",
+      description: "Impossible de charger les méthodes de paiement. Veuillez réessayer plus tard.",
+      variant: "destructive",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   const addPaymentMethod = async () => {
     try {
@@ -163,8 +170,31 @@ const PaymentMethodsManager = () => {
           )}
         </div>
 
-        {/* Autres méthodes */}
         <div className="space-y-3 pt-4 border-t">
+          <div className="flex items-center justify-between">
+            <h4 className="font-medium">Gestion avancée</h4>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                try {
+                  const { data, error } = await supabase.functions.invoke('customer-portal');
+                  if (error) throw error;
+                  window.open(data.url, '_blank');
+                } catch (error) {
+                  console.error('Erreur ouverture portail client:', error);
+                  toast({
+                    title: "Erreur",
+                    description: "Impossible d'ouvrir le portail de gestion",
+                    variant: "destructive",
+                  });
+                }
+              }}
+            >
+              Gérer via Stripe
+            </Button>
+          </div>
+          
           <h4 className="font-medium">Autres moyens de paiement</h4>
           <div className="p-4 border rounded-lg opacity-60">
             <p className="font-medium text-foreground">Prélèvement SEPA</p>

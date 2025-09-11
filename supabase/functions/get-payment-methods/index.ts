@@ -39,9 +39,11 @@ serve(async (req) => {
       });
     }
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2023-10-16",
-    });
+const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+  apiVersion: "2023-10-16",
+});
+
+console.log("Using Stripe key:", Deno.env.get("STRIPE_SECRET_KEY") ? "Key found" : "Key missing");
 
     // Récupérer le client Stripe
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });

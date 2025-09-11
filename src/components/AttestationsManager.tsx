@@ -41,18 +41,25 @@ const AttestationsManager = () => {
 
   useEffect(() => {
     if (user) {
+      console.log('Utilisateur connecté, chargement des attestations...');
       loadAttestations();
+    } else {
+      console.log('Pas d\'utilisateur connecté');
     }
   }, [user]);
 
   const loadAttestations = async () => {
     try {
+      console.log('Début du chargement des attestations pour:', user?.id);
+      
       // Simuler des données d'attestations basées sur les factures
       const { data: invoices } = await supabase
         .from('invoices')
         .select('*')
         .eq('client_id', user?.id)
         .order('issued_date', { ascending: false });
+
+      console.log('Factures récupérées:', invoices?.length || 0);
 
       // Générer des attestations fictives basées sur les factures
       const mockAttestations: Attestation[] = [
@@ -83,6 +90,7 @@ const AttestationsManager = () => {
         }
       ];
 
+      console.log('Attestations mockées générées:', mockAttestations.length);
       setAttestations(mockAttestations);
     } catch (error) {
       console.error('Erreur lors du chargement des attestations:', error);
@@ -92,6 +100,7 @@ const AttestationsManager = () => {
         variant: "destructive",
       });
     } finally {
+      console.log('Fin du chargement des attestations');
       setLoading(false);
     }
   };
