@@ -42,7 +42,7 @@ import { fr } from 'date-fns/locale';
 import ProviderCalendar from '@/components/ProviderCalendar';
 import ProviderDocuments from '@/components/ProviderDocuments';
 import ProfileUpdateForm from '@/components/ProfileUpdateForm';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { LoadingSkeleton, DashboardLoadingSkeleton } from '@/components/ui/loading-skeleton';
 import ProviderMissionManager from '@/components/ProviderMissionManager';
 
 const EnhancedProviderDashboard = () => {
@@ -126,7 +126,7 @@ const EnhancedProviderDashboard = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
         <div className="max-w-7xl mx-auto p-6">
-          <LoadingSkeleton />
+          <DashboardLoadingSkeleton />
         </div>
       </div>
     );
@@ -496,8 +496,8 @@ const EnhancedProviderDashboard = () => {
 
           {/* Profil Tab */}
           <TabsContent value="profil" className="space-y-6 mt-8">
-            <ProfileUpdateForm provider={provider} />
-            <ProviderDocuments providerId={provider?.id || ''} />
+            <ProfileUpdateForm />
+            <ProviderDocuments />
           </TabsContent>
 
           {/* Evaluations Tab */}

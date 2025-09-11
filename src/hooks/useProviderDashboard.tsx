@@ -122,8 +122,15 @@ export const useProviderDashboard = () => {
 
       if (error) throw error;
 
-      setCachedData(cacheKey, providerData);
-      return providerData as Provider;
+      const providerWithProfile = {
+        ...providerData,
+        profiles: providerData.profiles && typeof providerData.profiles === 'object' && !Array.isArray(providerData.profiles) 
+          ? providerData.profiles 
+          : null
+      };
+
+      setCachedData(cacheKey, providerWithProfile);
+      return providerWithProfile as Provider;
     } catch (error: any) {
       console.error('Error loading provider:', error);
       throw error;
