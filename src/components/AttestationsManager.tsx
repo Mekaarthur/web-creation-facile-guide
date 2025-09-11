@@ -44,7 +44,8 @@ const AttestationsManager = () => {
       console.log('Utilisateur connecté, chargement des attestations...');
       loadAttestations();
     } else {
-      console.log('Pas d\'utilisateur connecté');
+      console.log("Pas d'utilisateur connecté");
+      setLoading(false);
     }
   }, [user]);
 
