@@ -36,8 +36,8 @@ const AttestationsManager = () => {
   const [attestations, setAttestations] = useState<Attestation[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedYear, setSelectedYear] = useState<string>('');
-  const [selectedType, setSelectedType] = useState<string>('');
+  const [selectedYear, setSelectedYear] = useState<string>('all');
+  const [selectedType, setSelectedType] = useState<string>('all');
 
   useEffect(() => {
     if (user) {
@@ -119,8 +119,8 @@ const AttestationsManager = () => {
 
   const filteredAttestations = attestations.filter(attestation => {
     const matchesSearch = attestation.service_type.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesYear = !selectedYear || attestation.year.toString() === selectedYear;
-    const matchesType = !selectedType || attestation.type === selectedType;
+    const matchesYear = selectedYear === 'all' || attestation.year.toString() === selectedYear;
+    const matchesType = selectedType === 'all' || attestation.type === selectedType;
     
     return matchesSearch && matchesYear && matchesType;
   });
@@ -190,7 +190,7 @@ const AttestationsManager = () => {
                   <SelectValue placeholder="Toutes les années" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toutes les années</SelectItem>
+                  <SelectItem value="all">Toutes les années</SelectItem>
                   <SelectItem value="2024">2024</SelectItem>
                   <SelectItem value="2023">2023</SelectItem>
                   <SelectItem value="2022">2022</SelectItem>
@@ -205,7 +205,7 @@ const AttestationsManager = () => {
                   <SelectValue placeholder="Tous les types" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tous les types</SelectItem>
+                  <SelectItem value="all">Tous les types</SelectItem>
                   <SelectItem value="credit_impot">Crédit d'Impôt</SelectItem>
                   <SelectItem value="caf">CAF</SelectItem>
                 </SelectContent>
