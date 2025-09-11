@@ -58,6 +58,10 @@ import AdminPaniers from "./pages/admin/Paniers";
 import AdminNotifications from "./pages/admin/Notifications";
 import Payment from "./pages/Payment";
 
+import AdminZones from "./pages/admin/Zones";
+import AdminParametres from "./pages/admin/Parametres";
+import AdminMarque from "./pages/admin/Marque";
+
 // Modern Admin Components
 import ModernAdminLayout from "./components/admin/ModernAdminLayout";
 import ModernAdminDashboard from "./pages/admin/ModernAdminDashboard";
@@ -150,6 +154,11 @@ const App = () => (
             <Route path="/modern-admin" element={<AdminRoute><ModernAdminLayout /></AdminRoute>}>
               <Route index element={<ModernAdminDashboard />} />
               <Route path="dashboard" element={<ModernAdminDashboard />} />
+              <Route path="alertes" element={<AdminAlertes />} />
+              <Route path="zones" element={<AdminZones />} />
+              <Route path="parametres" element={<AdminParametres />} />
+              <Route path="marque" element={<AdminMarque />} />
+              <Route path="audit" element={<AuditReport />} />
             </Route>
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -22,7 +22,8 @@ import {
   Target, 
   Euro, 
   TrendingUp, 
-  Settings, 
+  Settings,
+  Palette,
   Wrench,
   Bell,
   Shield,
@@ -128,14 +129,20 @@ const navigationGroups = [
     items: [
       { 
         title: "Paramètres", 
-        href: "/admin/parametres", 
+        href: "/modern-admin/parametres", 
         icon: Settings,
         badge: null
       },
       { 
         title: "Zones", 
-        href: "/admin/zones", 
+        href: "/modern-admin/zones", 
         icon: MapPin,
+        badge: null
+      },
+      { 
+        title: "Marque", 
+        href: "/modern-admin/marque", 
+        icon: Palette,
         badge: null
       },
       { 
