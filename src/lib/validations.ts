@@ -1,28 +1,42 @@
 import { z } from "zod";
 
-// Schémas de validation réutilisables
-export const phoneSchema = z.string()
-  .regex(/^(?:\+33|0)[1-9](?:[0-9]{8})$/, "Numéro de téléphone français invalide");
+// Schémas de validation réutilisables pour les champs communs
+export const phoneSchema = z
+  .string()
+  .regex(/^(?:\+33|0)[1-9](?:[0-9]{8})$/, "Format de téléphone invalide");
 
-export const emailSchema = z.string()
-  .email("Format d'email invalide")
-  .min(1, "L'email est requis");
+export const emailSchema = z.string().email("Email invalide");
 
-export const nameSchema = z.string()
+export const nameSchema = z
+  .string()
   .min(2, "Le nom doit contenir au moins 2 caractères")
   .max(50, "Le nom ne peut pas dépasser 50 caractères");
 
-export const passwordSchema = z.string()
+// Schéma de validation robuste pour les mots de passe
+export const passwordSchema = z
+  .string()
   .min(8, "Le mot de passe doit contenir au moins 8 caractères")
-  .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 
-    "Le mot de passe doit contenir au moins une minuscule, une majuscule et un chiffre");
+  .max(128, "Le mot de passe ne peut pas dépasser 128 caractères")
+  .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une majuscule")
+  .regex(/[a-z]/, "Le mot de passe doit contenir au moins une minuscule")
+  .regex(/[0-9]/, "Le mot de passe doit contenir au moins un chiffre")
+  .regex(/[^A-Za-z0-9]/, "Le mot de passe doit contenir au moins un caractère spécial (!@#$%^&*)");
 
-// Schémas pour les formulaires principaux
+// Schéma pour le checkout invité
+export const guestCheckoutSchema = z.object({
+  email: emailSchema,
+  firstName: nameSchema,
+  lastName: nameSchema,
+  phone: phoneSchema.optional(),
+  address: z.string().min(5, "L'adresse doit contenir au moins 5 caractères"),
+  postalCode: z.string().regex(/^[0-9]{5}$/, "Code postal invalide"),
+  city: z.string().min(2, "Ville requise"),
+});
+
 export const authSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
-  firstName: nameSchema.optional(),
-  lastName: nameSchema.optional(),
+  name: nameSchema.optional(),
   phone: phoneSchema.optional(),
 });
 
@@ -62,7 +76,6 @@ export const contactSchema = z.object({
   message: z.string().min(10, "Message requis (minimum 10 caractères)"),
 });
 
-// Validation côté serveur pour les uploads
 export const fileUploadSchema = z.object({
   file: z.any().refine((file) => file instanceof File, "Fichier requis"),
   documentType: z.enum(["identity", "insurance", "certification", "other"]),
@@ -70,6 +83,7 @@ export const fileUploadSchema = z.object({
   allowedTypes: z.array(z.string()).default(["image/*", "application/pdf"]),
 });
 
+export type GuestCheckoutForm = z.infer<typeof guestCheckoutSchema>;
 export type AuthForm = z.infer<typeof authSchema>;
 export type ProfileForm = z.infer<typeof profileSchema>;
 export type BookingForm = z.infer<typeof bookingSchema>;

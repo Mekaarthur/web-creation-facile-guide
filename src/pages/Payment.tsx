@@ -3,7 +3,9 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StripePaymentIntegration } from '@/components/StripePaymentIntegration';
+import { GuestCheckout } from '@/components/GuestCheckout';
 import SubscriptionBooking from '@/components/SubscriptionBooking';
 import { useAuth } from '@/hooks/useAuth';
 import { 
@@ -14,7 +16,9 @@ import {
   Lock,
   Star,
   Calendar,
-  Clock
+  Clock,
+  User,
+  UserPlus
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { AnimatedCard } from '@/components/ui/animated-card';
@@ -26,6 +30,7 @@ const Payment = () => {
   const { toast } = useToast();
   
   const [paymentType, setPaymentType] = useState<'one-time' | 'subscription'>('one-time');
+  const [activeTab, setActiveTab] = useState<'guest' | 'account'>('guest');
   const [serviceData, setServiceData] = useState({
     name: '',
     price: 0,
@@ -49,11 +54,11 @@ const Payment = () => {
     });
     setPaymentType(type);
 
-    // Rediriger si pas connecté
-    if (!user) {
-      navigate('/auth?redirect=payment');
+    // Si l'utilisateur est déjà connecté, basculer vers l'onglet compte
+    if (user) {
+      setActiveTab('account');
     }
-  }, [searchParams, user, navigate]);
+  }, [searchParams, user]);
 
   const handlePaymentSuccess = () => {
     toast({
@@ -71,22 +76,9 @@ const Payment = () => {
     });
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <AnimatedCard className="max-w-md w-full text-center p-8">
-          <Lock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Connexion requise</h2>
-          <p className="text-muted-foreground mb-6">
-            Vous devez être connecté pour accéder à la page de paiement.
-          </p>
-          <Button onClick={() => navigate('/auth')} className="w-full">
-            Se connecter
-          </Button>
-        </AnimatedCard>
-      </div>
-    );
-  }
+  const handleSwitchToLogin = () => {
+    navigate('/auth?redirect=payment');
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -220,20 +212,68 @@ const Payment = () => {
               <SubscriptionBooking
                 isOpen={true}
                 onClose={() => navigate(-1)}
-                 selectedService={{
-                   id: 'subscription',
-                   title: serviceData.name,
-                   icon: Calendar,
-                   price: serviceData.price.toString()
-                 }}
+                selectedService={{
+                  id: 'subscription',
+                  title: serviceData.name,
+                  icon: Calendar,
+                  price: serviceData.price.toString()
+                }}
               />
             ) : (
-              <StripePaymentIntegration
-                amount={serviceData.price}
-                serviceDescription={serviceData.description}
-                onPaymentSuccess={handlePaymentSuccess}
-                onPaymentError={handlePaymentError}
-              />
+              <AnimatedCard className="animate-fade-in">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CreditCard className="h-5 w-5" />
+                    Choisissez votre mode de paiement
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'guest' | 'account')}>
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="guest" className="flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        Paiement rapide
+                      </TabsTrigger>
+                      <TabsTrigger value="account" className="flex items-center gap-2">
+                        <UserPlus className="h-4 w-4" />
+                        Avec compte
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="guest" className="mt-6">
+                      <GuestCheckout
+                        amount={serviceData.price}
+                        serviceDescription={serviceData.description}
+                        onPaymentSuccess={handlePaymentSuccess}
+                        onPaymentError={handlePaymentError}
+                        onSwitchToLogin={handleSwitchToLogin}
+                      />
+                    </TabsContent>
+
+                    <TabsContent value="account" className="mt-6">
+                      {user ? (
+                        <StripePaymentIntegration
+                          amount={serviceData.price}
+                          serviceDescription={serviceData.description}
+                          onPaymentSuccess={handlePaymentSuccess}
+                          onPaymentError={handlePaymentError}
+                        />
+                      ) : (
+                        <div className="text-center space-y-4 p-8">
+                          <Lock className="h-12 w-12 text-muted-foreground mx-auto" />
+                          <h3 className="text-lg font-semibold">Connexion requise</h3>
+                          <p className="text-muted-foreground">
+                            Connectez-vous pour accéder à vos moyens de paiement sauvegardés
+                          </p>
+                          <Button onClick={handleSwitchToLogin} size="lg">
+                            Se connecter
+                          </Button>
+                        </div>
+                      )}
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </AnimatedCard>
             )}
           </div>
         </div>
