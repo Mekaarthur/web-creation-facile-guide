@@ -74,7 +74,7 @@ const EnhancedAuth = () => {
         Object.entries(attempts).filter(([_, attempt]: [string, any]) => 
           now - attempt.lastAttempt < 24 * 60 * 60 * 1000
         )
-      );
+      ) as Record<string, LoginAttempt>;
       setLoginAttempts(cleaned);
       localStorage.setItem('loginAttempts', JSON.stringify(cleaned));
     }
