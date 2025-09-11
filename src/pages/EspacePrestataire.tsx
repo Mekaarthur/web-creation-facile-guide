@@ -25,8 +25,7 @@ import {
   XCircle,
   AlertCircle
 } from 'lucide-react';
-import ProviderDashboard from '@/components/ProviderDashboard';
-import ProviderDashboardNew from '@/components/ProviderDashboardNew';
+import EnhancedProviderDashboard from '@/components/EnhancedProviderDashboard';
 import ProfileUpdateForm from '@/components/ProfileUpdateForm';
 import PasswordChangeForm from '@/components/PasswordChangeForm';
 
@@ -69,7 +68,7 @@ const EspacePrestataire = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <ProviderDashboardNew />
+      <EnhancedProviderDashboard />
     </div>
   );
 };
