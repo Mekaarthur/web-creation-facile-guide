@@ -25,7 +25,7 @@ import Footer from '@/components/Footer';
 import Auth from './Auth';
 import EnhancedClientDashboard from '@/components/EnhancedClientDashboard';
 import SmartBookingsList from '@/components/SmartBookingsList';
-import InvoiceManagement from '@/components/InvoiceManagement';
+import ModernInvoiceManagement from '@/components/ModernInvoiceManagement';
 import PaymentMethodsManager from '@/components/PaymentMethodsManager';
 import { RewardsSection } from '@/components/RewardsSection';
 import ReferralProgram from '@/components/ReferralProgram';
@@ -279,7 +279,7 @@ const EspacePersonnel = () => {
 
             {/* Historique et Mes Factures */}
             <TabsContent value="factures" className="space-y-6">
-              <InvoiceManagement />
+              <ModernInvoiceManagement />
             </TabsContent>
 
             {/* Parrainage */}
