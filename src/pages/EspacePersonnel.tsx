@@ -126,17 +126,24 @@ const EspacePersonnel = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="pt-20 pb-16">
+      <div className="pt-20 pb-16 bg-gradient-to-br from-background via-background to-muted/20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-4">Mon Espace Client</h1>
-            <p className="text-muted-foreground text-lg">
-              {user ? `Bienvenue ${user.email}` : "Connectez-vous pour accéder à votre espace personnel"}
-            </p>
+          {/* Header moderne */}
+          <div className="mb-12 text-center">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-3xl blur-3xl transform -rotate-1"></div>
+              <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border">
+                <h1 className="text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-4">
+                  Mon Espace Client
+                </h1>
+                <p className="text-muted-foreground text-xl">
+                  {user ? `Bienvenue ${user.email?.split('@')[0]} chez Bikawo` : "Connectez-vous pour accéder à votre espace personnel"}
+                </p>
+              </div>
+            </div>
           </div>
 
-          {/* Tabs Navigation */}
+          {/* Tabs Navigation modernisées */}
           <Tabs value={selectedTab} onValueChange={(tab) => {
             // Vérifier l'authentification pour les onglets protégés
             const protectedTabs = ["dashboard", "reservations", "panier", "factures", "profil", "recompenses", "calendrier", "parrainage"];
@@ -154,42 +161,66 @@ const EspacePersonnel = () => {
             }
             window.history.replaceState({}, '', newUrl);
           }} className="w-full">
-            <TabsList className={`w-full mb-8 grid gap-1 ${user ? 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-7' : 'grid-cols-1'}`}>
+            <TabsList className={`w-full mb-12 grid gap-2 bg-white/80 backdrop-blur-sm p-2 shadow-lg rounded-xl border-0 ${user ? 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-7' : 'grid-cols-1'}`}>
               {!user && (
-                <TabsTrigger value="connexion" className="flex items-center gap-2 min-h-12">
+                <TabsTrigger 
+                  value="connexion" 
+                  className="flex items-center gap-2 min-h-12 py-3 px-4 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+                >
                   <Lock className="w-4 h-4" />
                   Se connecter
                 </TabsTrigger>
               )}
               {user && (
                 <>
-                  <TabsTrigger value="dashboard" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
+                  <TabsTrigger 
+                    value="dashboard" 
+                    className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm py-3 px-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+                  >
                     <LayoutDashboard className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">Tableau de Bord</span>
+                    <span className="truncate font-medium">Accueil</span>
                   </TabsTrigger>
-                  <TabsTrigger value="rendez-vous" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
+                  <TabsTrigger 
+                    value="rendez-vous" 
+                    className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm py-3 px-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+                  >
                     <Calendar className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">Rendez-vous</span>
+                    <span className="truncate font-medium">Rendez-vous</span>
                   </TabsTrigger>
-                  <TabsTrigger value="factures" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
+                  <TabsTrigger 
+                    value="factures" 
+                    className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm py-3 px-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+                  >
                     <FileText className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">Historique & Factures</span>
+                    <span className="truncate font-medium">Factures</span>
                   </TabsTrigger>
-                  <TabsTrigger value="parrainage" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
+                  <TabsTrigger 
+                    value="parrainage" 
+                    className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm py-3 px-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+                  >
                     <Users className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">Parrainage</span>
+                    <span className="truncate font-medium">Parrainage</span>
                   </TabsTrigger>
-                  <TabsTrigger value="profil" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
+                  <TabsTrigger 
+                    value="profil" 
+                    className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm py-3 px-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+                  >
                     <User className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">Mon Profil</span>
+                    <span className="truncate font-medium">Profil</span>
                   </TabsTrigger>
-                  <TabsTrigger value="paiement" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
+                  <TabsTrigger 
+                    value="paiement" 
+                    className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm py-3 px-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+                  >
                     <CreditCard className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">Paiement</span>
+                    <span className="truncate font-medium">Paiement</span>
                   </TabsTrigger>
-                  <TabsTrigger value="attestations" className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm">
+                  <TabsTrigger 
+                    value="attestations" 
+                    className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm py-3 px-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+                  >
                     <Receipt className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">Attestations</span>
+                    <span className="truncate font-medium">Attestations</span>
                   </TabsTrigger>
                 </>
               )}
