@@ -106,11 +106,11 @@ export const useProviderDashboard = () => {
     if (cached) return cached;
 
     try {
-      const { data: providerData, error } = await supabase
+      // Récupérer le profil prestataire
+      const { data: providerData, error: providerError } = await supabase
         .from('providers')
         .select(`
           *,
-          profiles!providers_user_id_fkey(first_name, last_name, avatar_url),
           provider_services(
             service_id,
             price_override,
@@ -120,17 +120,23 @@ export const useProviderDashboard = () => {
         .eq('user_id', user.id)
         .single();
 
-      if (error) throw error;
+      if (providerError) throw providerError;
 
-      const providerWithProfile = {
+      // Récupérer le profil utilisateur séparément
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('first_name, last_name, avatar_url')
+        .eq('user_id', user.id)
+        .single();
+
+      // Combine les données (même si le profil n'existe pas)
+      const combinedData = {
         ...providerData,
-        profiles: providerData.profiles && typeof providerData.profiles === 'object' && !Array.isArray(providerData.profiles) 
-          ? providerData.profiles 
-          : null
+        profiles: profileData || null
       };
 
-      setCachedData(cacheKey, providerWithProfile);
-      return providerWithProfile as Provider;
+      setCachedData(cacheKey, combinedData);
+      return combinedData as Provider;
     } catch (error: any) {
       console.error('Error loading provider:', error);
       throw error;
@@ -156,8 +162,8 @@ export const useProviderDashboard = () => {
           total_price,
           client_notes,
           provider_notes,
-          services(name, category),
-          profiles!bookings_client_id_fkey(first_name, last_name, avatar_url)
+          client_id,
+          services(name, category)
         `)
         .eq('provider_id', providerId)
         .gte('booking_date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]) // Last 30 days
@@ -166,10 +172,22 @@ export const useProviderDashboard = () => {
 
       if (error) throw error;
 
+      // Récupérer les profils clients séparément
+      const clientIds = [...new Set((missionsData || []).map((m: any) => m.client_id).filter(Boolean))];
+      const { data: clientProfiles } = await supabase
+        .from('profiles')
+        .select('user_id, first_name, last_name, avatar_url')
+        .in('user_id', clientIds);
+
+      const profilesMap = (clientProfiles || []).reduce((acc: any, profile: any) => {
+        acc[profile.user_id] = profile;
+        return acc;
+      }, {});
+
       const missions = (missionsData || []).map((mission: any) => ({
         ...mission,
         services: mission.services || null,
-        profiles: mission.profiles || null
+        profiles: profilesMap[mission.client_id] || null
       }));
 
       setCachedData(cacheKey, missions);
@@ -245,7 +263,7 @@ export const useProviderDashboard = () => {
           rating,
           comment,
           created_at,
-          profiles!reviews_client_id_fkey(first_name, last_name)
+          client_id
         `)
         .eq('provider_id', providerId)
         .eq('is_approved', true)
@@ -254,9 +272,21 @@ export const useProviderDashboard = () => {
 
       if (error) throw error;
 
+      // Récupérer les profils clients séparément
+      const reviewClientIds = [...new Set((reviewsData || []).map((r: any) => r.client_id).filter(Boolean))];
+      const { data: reviewClientProfiles } = await supabase
+        .from('profiles')
+        .select('user_id, first_name, last_name')
+        .in('user_id', reviewClientIds);
+
+      const reviewProfilesMap = (reviewClientProfiles || []).reduce((acc: any, profile: any) => {
+        acc[profile.user_id] = profile;
+        return acc;
+      }, {});
+
       const reviews = (reviewsData || []).map((review: any) => ({
         ...review,
-        profiles: review.profiles || null
+        profiles: reviewProfilesMap[review.client_id] || null
       }));
 
       setCachedData(cacheKey, reviews);
