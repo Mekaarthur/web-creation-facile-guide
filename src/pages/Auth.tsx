@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,10 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  
+  // Afficher l'option admin seulement si le paramètre admin=true est présent
+  const showAdminOption = searchParams.get('admin') === 'true';
 
   const handleUserTypeSelection = (type: UserType) => {
     setUserType(type);
@@ -187,16 +191,18 @@ const Auth = () => {
           <span className="text-lg font-medium">Je suis un Prestataire</span>
         </Button>
         
-        <div className="pt-4 border-t">
-          <Button
-            onClick={() => handleUserTypeSelection('admin')}
-            variant="ghost"
-            className="w-full h-10 flex items-center justify-center space-x-2 text-sm text-muted-foreground hover:text-primary"
-          >
-            <Lock className="h-4 w-4" />
-            <span>Administration</span>
-          </Button>
-        </div>
+        {showAdminOption && (
+          <div className="pt-4 border-t">
+            <Button
+              onClick={() => handleUserTypeSelection('admin')}
+              variant="ghost"
+              className="w-full h-10 flex items-center justify-center space-x-2 text-sm text-muted-foreground hover:text-primary"
+            >
+              <Lock className="h-4 w-4" />
+              <span>Administration</span>
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
