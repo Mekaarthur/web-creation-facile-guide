@@ -23,8 +23,8 @@ import {
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Auth from './Auth';
-import ClientDashboardNew from '@/components/ClientDashboardNew';
-import BookingsList from '@/components/BookingsList';
+import EnhancedClientDashboard from '@/components/EnhancedClientDashboard';
+import SmartBookingsList from '@/components/SmartBookingsList';
 import InvoiceManagement from '@/components/InvoiceManagement';
 import PaymentMethodsManager from '@/components/PaymentMethodsManager';
 import { RewardsSection } from '@/components/RewardsSection';
@@ -259,7 +259,7 @@ const EspacePersonnel = () => {
 
             {/* Dashboard */}
             <TabsContent value="dashboard" className="space-y-6">
-              <ClientDashboardNew onNavigateToTab={setSelectedTab} />
+              <EnhancedClientDashboard onNavigateToTab={setSelectedTab} />
             </TabsContent>
 
             {/* Mes Rendez-vous à Venir */}
@@ -272,7 +272,7 @@ const EspacePersonnel = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <BookingsList userType="client" />
+                  <SmartBookingsList userType="client" />
                 </CardContent>
               </Card>
             </TabsContent>
