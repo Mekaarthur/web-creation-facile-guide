@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Mail, Lock, User, UserCheck, Briefcase } from 'lucide-react';
 
-type UserType = 'client' | 'prestataire' | null;
+type UserType = 'client' | 'prestataire' | 'admin' | null;
 type AuthStep = 'userType' | 'login' | 'signup';
 
 const Auth = () => {
@@ -46,6 +46,8 @@ const Auth = () => {
       // Redirection selon le type d'utilisateur sélectionné
       if (userType === 'prestataire') {
         navigate('/espace-prestataire');
+      } else if (userType === 'admin') {
+        navigate('/modern-admin');
       } else {
         navigate('/espace-personnel');
       }
@@ -184,6 +186,17 @@ const Auth = () => {
           <Briefcase className="h-6 w-6 text-primary" />
           <span className="text-lg font-medium">Je suis un Prestataire</span>
         </Button>
+        
+        <div className="pt-4 border-t">
+          <Button
+            onClick={() => handleUserTypeSelection('admin')}
+            variant="ghost"
+            className="w-full h-10 flex items-center justify-center space-x-2 text-sm text-muted-foreground hover:text-primary"
+          >
+            <Lock className="h-4 w-4" />
+            <span>Administration</span>
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
@@ -199,7 +212,7 @@ const Auth = () => {
           ← Retour
         </Button>
         <CardTitle className="text-2xl font-bold text-center">
-          {userType === 'client' ? 'Espace Client' : 'Espace Prestataire'}
+          {userType === 'client' ? 'Espace Client' : userType === 'prestataire' ? 'Espace Prestataire' : 'Administration'}
         </CardTitle>
         <CardDescription className="text-center">
           {step === 'login' ? 'Connectez-vous à votre compte' : 'Créez votre compte'}
@@ -262,14 +275,16 @@ const Auth = () => {
               </Button>
               <div className="text-sm text-muted-foreground">
                 Pas encore de compte ?{" "}
-                <Button 
-                  type="button" 
-                  variant="link" 
-                  className="text-primary p-0 h-auto"
-                  onClick={() => setStep('signup')}
-                >
-                  Créer un compte {userType === 'client' ? 'Client' : 'Prestataire'}
-                </Button>
+                {userType !== 'admin' && (
+                  <Button 
+                    type="button" 
+                    variant="link" 
+                    className="text-primary p-0 h-auto"
+                    onClick={() => setStep('signup')}
+                  >
+                    Créer un compte {userType === 'client' ? 'Client' : 'Prestataire'}
+                  </Button>
+                )}
               </div>
             </div>
           </form>
