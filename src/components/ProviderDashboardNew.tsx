@@ -26,10 +26,14 @@ import {
   Phone,
   Mail,
   Eye,
-  Settings
+  Settings,
+  FileText
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import ProviderCalendar from '@/components/ProviderCalendar';
+import ProviderDocuments from '@/components/ProviderDocuments';
+import ProfileUpdateForm from '@/components/ProfileUpdateForm';
 
 const ProviderDashboardNew = () => {
   const { user } = useAuth();
@@ -543,40 +547,94 @@ const ProviderDashboardNew = () => {
           </TabsContent>
 
           <TabsContent value="planning" className="space-y-6 mt-8">
-            <h2 className="text-2xl font-bold">Mon Planning</h2>
-            <Card>
-              <CardContent className="p-12 text-center">
-                <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p className="text-muted-foreground">Calendrier interactif</p>
-                <p className="text-xs">Fonctionnalité disponible prochainement</p>
-              </CardContent>
-            </Card>
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">Mon Planning</h2>
+            </div>
+            <ProviderCalendar />
           </TabsContent>
 
           <TabsContent value="profil" className="space-y-6 mt-8">
-            <h2 className="text-2xl font-bold">Mon Profil</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">Mon Profil</h2>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Informations personnelles */}
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="w-5 h-5 text-primary" />
+                    Informations personnelles
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center space-x-4 mb-6">
+                    <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center">
+                      {profile?.profiles?.avatar_url ? (
+                        <img 
+                          src={profile.profiles.avatar_url} 
+                          alt="Photo de profil" 
+                          className="w-full h-full rounded-full object-cover"
+                        />
+                      ) : (
+                        <User className="h-8 w-8 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold">
+                        {profile?.profiles?.first_name} {profile?.profiles?.last_name}
+                      </h3>
+                      <p className="text-muted-foreground">{profile?.business_name || 'Prestataire Bikawo'}</p>
+                      <p className="text-sm text-muted-foreground">{profile?.location}</p>
+                    </div>
+                  </div>
+                  <ProfileUpdateForm />
+                </CardContent>
+              </Card>
+
+              {/* Statut du profil */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Statut du profil</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Profil vérifié</span>
+                      <Badge variant={profile?.is_verified ? "default" : "secondary"}>
+                        {profile?.is_verified ? <CheckCircle className="w-3 h-3 mr-1" /> : <AlertCircle className="w-3 h-3 mr-1" />}
+                        {profile?.is_verified ? 'Oui' : 'Non'}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Note moyenne</span>
+                      <div className="flex items-center gap-1">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="font-medium">{profile?.rating?.toFixed(1) || '4.8'}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Missions réalisées</span>
+                      <span className="font-medium">{profile?.missions_completed || 0}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Section Documents */}
             <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-4">
-                  <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center">
-                    {profile?.profiles?.avatar_url ? (
-                      <img 
-                        src={profile.profiles.avatar_url} 
-                        alt="Photo de profil" 
-                        className="w-full h-full rounded-full object-cover"
-                      />
-                    ) : (
-                      <User className="h-8 w-8 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold">
-                      {profile?.profiles?.first_name} {profile?.profiles?.last_name}
-                    </h3>
-                    <p className="text-muted-foreground">{profile?.business_name || 'Prestataire Bikawo'}</p>
-                    <p className="text-sm text-muted-foreground">{profile?.location}</p>
-                  </div>
-                </div>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-primary" />
+                  Mes documents administratifs
+                </CardTitle>
+                <CardDescription>
+                  Téléchargez vos documents pour valider votre profil prestataire
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ProviderDocuments />
               </CardContent>
             </Card>
           </TabsContent>
