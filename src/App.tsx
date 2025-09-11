@@ -8,6 +8,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "./hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import ProviderAuth from "./pages/ProviderAuth";
 import AuthComplete from "./pages/AuthComplete";
 import ResetPassword from "./pages/ResetPassword";
 import UpdatePassword from "./pages/UpdatePassword";
@@ -87,6 +88,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/provider" element={<ProviderAuth />} />
             <Route path="/auth/complete" element={<AuthComplete />} />
             <Route path="/email/verify" element={<AuthComplete />} />
             <Route path="/email/verify/:token" element={<AuthComplete />} />
