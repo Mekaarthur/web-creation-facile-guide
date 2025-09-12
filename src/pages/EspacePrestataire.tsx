@@ -26,8 +26,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import EnhancedProviderDashboard from '@/components/EnhancedProviderDashboard';
-import ProfileUpdateForm from '@/components/ProfileUpdateForm';
-import PasswordChangeForm from '@/components/PasswordChangeForm';
+import ProviderProfileForm from '@/components/ProviderProfileForm';
 
 const EspacePrestataire = () => {
   const { user, loading } = useAuth();

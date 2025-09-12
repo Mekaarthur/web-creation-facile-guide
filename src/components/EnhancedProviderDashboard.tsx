@@ -41,7 +41,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import ProviderCalendar from '@/components/ProviderCalendar';
 import ProviderDocuments from '@/components/ProviderDocuments';
-import ProfileUpdateForm from '@/components/ProfileUpdateForm';
+import ProviderProfileForm from './ProviderProfileForm';
 import { LoadingSkeleton, DashboardLoadingSkeleton } from '@/components/ui/loading-skeleton';
 import ProviderMissionManager from '@/components/ProviderMissionManager';
 
@@ -487,7 +487,7 @@ const EnhancedProviderDashboard = () => {
 
           {/* Profil Tab */}
           <TabsContent value="profil" className="space-y-6 mt-8">
-            <ProfileUpdateForm />
+            <ProviderProfileForm />
             <ProviderDocuments />
           </TabsContent>
 
