@@ -48,9 +48,12 @@ import AdminAlertes from "./pages/admin/Alertes";
 import AdminKanban from "./pages/admin/Kanban";
 import AdminUtilisateurs from "./pages/admin/Utilisateurs";
 import AdminPrestataires from "./pages/admin/Prestataires";
+import AdminAssignment from "./pages/admin/Assignment";
+import AdminFinance from "./pages/admin/Finance";
+import AdminBrand from "./pages/admin/Brand";
+import AdminTools from "./pages/admin/Tools";
 import AdminBinomes from "./pages/admin/Binomes";
 import TestsEmails from "./pages/admin/TestsEmails";
-import AdminModeration from "./pages/admin/Moderation";
 import AdminMessagerie from "./pages/admin/Messagerie";
 import AdminRemunerations from "./pages/admin/Remunerations";
 import AdminPaiements from "./pages/admin/Paiements";
@@ -157,10 +160,9 @@ const App = () => (
               <Route path="prestataires" element={<AdminPrestataires />} />
               <Route path="binomes" element={<AdminBinomes />} />
               <Route path="tests-emails" element={<TestsEmails />} />
-              <Route path="demandes" element={<AdminClientRequests />} />
-              <Route path="candidatures" element={<AdminJobApplications />} />
-              <Route path="moderation" element={<AdminModeration />} />
-              <Route path="messagerie" element={<AdminMessagerie />} />
+               <Route path="demandes" element={<AdminClientRequests />} />
+               <Route path="candidatures" element={<AdminJobApplications />} />
+               <Route path="messagerie" element={<AdminMessagerie />} />
               <Route path="paniers" element={<AdminPaniers />} />
               <Route path="paiements" element={<AdminPaiements />} />
               <Route path="messages" element={<ConfigMessages />} />
@@ -171,7 +173,12 @@ const App = () => (
                <Route path="factures" element={<AdminFactures />} />
                <Route path="remunerations" element={<AdminRemunerations />} />
                <Route path="tests-systems" element={<TestsSystems />} />
-             <Route path="audit" element={<AuditReport />} />
+               <Route path="assignation" element={<AdminAssignment />} />
+               <Route path="finance" element={<AdminFinance />} />
+               <Route path="analytics" element={<AdminAnalytics />} />
+               <Route path="rapports" element={<AdminReports />} />
+               <Route path="outils" element={<AdminTools />} />
+               <Route path="audit" element={<AuditReport />} />
             </Route>
             
             {/* Modern Admin Routes */}
