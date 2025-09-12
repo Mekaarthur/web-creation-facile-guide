@@ -1,40 +1,45 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, Download, Calendar, TrendingUp, Users, Euro, FileText } from "lucide-react";
+import { BarChart3, Download, Calendar, TrendingUp, Users, Euro, FileText, RefreshCw } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const AdminReportsData = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("30d");
+  const [loading, setLoading] = useState(true);
+  const [reportsData, setReportsData] = useState<any>(null);
 
-  // Mock data for charts
-  const revenueData = [
-    { month: "Jan", value: 12500, bookings: 145 },
-    { month: "Fév", value: 15800, bookings: 189 },
-    { month: "Mar", value: 18200, bookings: 234 },
-    { month: "Avr", value: 22100, bookings: 287 },
-    { month: "Mai", value: 19800, bookings: 245 }
-  ];
+  const loadReports = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.functions.invoke('admin-analytics', {
+        body: { 
+          action: 'get_reports',
+          timeRange: selectedPeriod 
+        }
+      });
 
-  const serviceData = [
-    { name: "BikaKids", value: 35, revenue: 45200, color: "#8884d8" },
-    { name: "BikaMaison", value: 28, revenue: 38500, color: "#82ca9d" },
-    { name: "BikaVie", value: 22, revenue: 29800, color: "#ffc658" },
-    { name: "BikaSeniors", value: 15, revenue: 22100, color: "#ff7c7c" }
-  ];
+      if (error) throw error;
+      setReportsData(data);
+    } catch (error: any) {
+      console.error('Erreur lors du chargement des rapports:', error);
+      toast.error('Erreur lors du chargement des rapports');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const providerData = [
-    { category: "Actifs", count: 127, percentage: 68 },
-    { category: "En attente", count: 23, percentage: 12 },
-    { category: "Suspendus", count: 8, percentage: 4 },
-    { category: "Nouveaux", count: 30, percentage: 16 }
-  ];
+  useEffect(() => {
+    loadReports();
+  }, [selectedPeriod]);
 
   const handleExport = (type: string) => {
     console.log(`Exporting ${type} report...`);
-    // Ici on ajouterait la logique d'export
+    toast.success(`Export ${type} en cours...`);
   };
 
   return (
@@ -56,6 +61,10 @@ const AdminReportsData = () => {
               <SelectItem value="1y">12 derniers mois</SelectItem>
             </SelectContent>
           </Select>
+          <Button variant="outline" onClick={loadReports} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Actualiser
+          </Button>
           <Button variant="outline" onClick={() => handleExport('global')}>
             <Download className="h-4 w-4 mr-2" />
             Exporter
@@ -71,7 +80,7 @@ const AdminReportsData = () => {
             <Euro className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">€88,400</div>
+            <div className="text-2xl font-bold">€{reportsData?.kpis?.totalRevenue?.toLocaleString() || '0'}</div>
             <p className="text-xs text-muted-foreground">
               <span className="text-green-600">+12.5%</span> vs période précédente
             </p>
@@ -84,7 +93,7 @@ const AdminReportsData = () => {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,100</div>
+            <div className="text-2xl font-bold">{reportsData?.kpis?.totalBookings?.toLocaleString() || '0'}</div>
             <p className="text-xs text-muted-foreground">
               <span className="text-green-600">+8.2%</span> vs période précédente
             </p>
@@ -97,7 +106,7 @@ const AdminReportsData = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">127</div>
+            <div className="text-2xl font-bold">{reportsData?.kpis?.activeProviders || '0'}</div>
             <p className="text-xs text-muted-foreground">
               <span className="text-green-600">+5.8%</span> vs période précédente
             </p>
@@ -110,7 +119,7 @@ const AdminReportsData = () => {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">€80.36</div>
+            <div className="text-2xl font-bold">€{reportsData?.kpis?.averageBasket?.toFixed(2) || '0'}</div>
             <p className="text-xs text-muted-foreground">
               <span className="text-green-600">+4.1%</span> vs période précédente
             </p>
@@ -135,7 +144,7 @@ const AdminReportsData = () => {
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={revenueData}>
+                  <LineChart data={reportsData?.financial?.monthlyData || []}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis />
@@ -159,7 +168,7 @@ const AdminReportsData = () => {
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={serviceData}>
+                  <BarChart data={reportsData?.financial?.servicesRevenue || []}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
@@ -218,7 +227,7 @@ const AdminReportsData = () => {
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
-                      data={serviceData}
+                      data={reportsData?.services?.distribution || []}
                       cx="50%"
                       cy="50%"
                       outerRadius={80}
@@ -226,7 +235,7 @@ const AdminReportsData = () => {
                       dataKey="value"
                       label={({ name, value }) => `${name}: ${value}%`}
                     >
-                      {serviceData.map((entry, index) => (
+                      {(reportsData?.services?.distribution || []).map((entry: any, index: number) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
@@ -243,18 +252,18 @@ const AdminReportsData = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {serviceData.map((service) => (
+                  {(reportsData?.services?.performance || []).map((service: any) => (
                     <div key={service.name} className="space-y-2">
                       <div className="flex justify-between items-center">
                         <span className="font-medium">{service.name}</span>
-                        <span className="text-sm text-muted-foreground">€{service.revenue.toLocaleString()}</span>
+                        <span className="text-sm text-muted-foreground">€{service.revenue?.toLocaleString() || '0'}</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
                           className="h-2 rounded-full transition-all duration-300" 
                           style={{ 
-                            width: `${service.value}%`,
-                            backgroundColor: service.color
+                            width: `${service.value || 0}%`,
+                            backgroundColor: service.color || '#8884d8'
                           }}
                         ></div>
                       </div>
@@ -275,7 +284,7 @@ const AdminReportsData = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {providerData.map((item) => (
+                  {(reportsData?.providers?.statusDistribution || []).map((item: any) => (
                     <div key={item.category} className="space-y-2">
                       <div className="flex justify-between items-center">
                         <span className="font-medium">{item.category}</span>
@@ -302,19 +311,19 @@ const AdminReportsData = () => {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center p-3 border rounded-lg">
                     <span className="text-sm">Taux d'acceptation moyen</span>
-                    <span className="font-bold text-green-600">87%</span>
+                    <span className="font-bold text-green-600">{reportsData?.providers?.metrics?.acceptanceRate || 0}%</span>
                   </div>
                   <div className="flex justify-between items-center p-3 border rounded-lg">
                     <span className="text-sm">Note moyenne</span>
-                    <span className="font-bold text-yellow-600">4.6/5</span>
+                    <span className="font-bold text-yellow-600">{reportsData?.providers?.metrics?.averageRating || 0}/5</span>
                   </div>
                   <div className="flex justify-between items-center p-3 border rounded-lg">
                     <span className="text-sm">Temps de réponse moyen</span>
-                    <span className="font-bold text-blue-600">2.3h</span>
+                    <span className="font-bold text-blue-600">{reportsData?.providers?.metrics?.averageResponseTime || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between items-center p-3 border rounded-lg">
                     <span className="text-sm">Taux de rétention</span>
-                    <span className="font-bold text-purple-600">92%</span>
+                    <span className="font-bold text-purple-600">{reportsData?.providers?.metrics?.retentionRate || 0}%</span>
                   </div>
                 </div>
               </CardContent>
@@ -331,19 +340,19 @@ const AdminReportsData = () => {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">248</div>
+                  <div className="text-2xl font-bold text-blue-600">{reportsData?.clients?.activeClients || 0}</div>
                   <div className="text-sm text-muted-foreground">Clients actifs</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">68%</div>
+                  <div className="text-2xl font-bold text-green-600">{reportsData?.clients?.retentionRate || 0}%</div>
                   <div className="text-sm text-muted-foreground">Taux de rétention</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-yellow-600">€80</div>
+                  <div className="text-2xl font-bold text-yellow-600">€{reportsData?.clients?.averageBasket?.toFixed(2) || '0'}</div>
                   <div className="text-sm text-muted-foreground">Panier moyen</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-purple-600">3.2</div>
+                  <div className="text-2xl font-bold text-purple-600">{reportsData?.clients?.ordersPerMonth || 0}</div>
                   <div className="text-sm text-muted-foreground">Commandes/mois</div>
                 </div>
               </div>

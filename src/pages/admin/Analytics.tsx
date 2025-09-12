@@ -1,41 +1,90 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Users, Euro, Clock, Calendar, BarChart3 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TrendingUp, Users, Euro, Clock, Calendar, BarChart3, RefreshCw } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
-
-const mockData = {
-  revenue: [
-    { month: "Jan", value: 12500 },
-    { month: "Fév", value: 15800 },
-    { month: "Mar", value: 18200 },
-    { month: "Avr", value: 22100 },
-    { month: "Mai", value: 19800 }
-  ],
-  bookings: [
-    { month: "Jan", value: 245 },
-    { month: "Fév", value: 312 },
-    { month: "Mar", value: 398 },
-    { month: "Avr", value: 465 },
-    { month: "Mai", value: 421 }
-  ],
-  services: [
-    { name: "BikaKids", value: 35, color: "#8884d8" },
-    { name: "BikaMaison", value: 28, color: "#82ca9d" },
-    { name: "BikaVie", value: 22, color: "#ffc658" },
-    { name: "BikaSeniors", value: 15, color: "#ff7c7c" }
-  ]
-};
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const AdminAnalytics = () => {
   const [timeRange, setTimeRange] = useState("30d");
+  const [loading, setLoading] = useState(true);
+  const [analyticsData, setAnalyticsData] = useState<any>(null);
+
+  const loadAnalytics = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.functions.invoke('admin-analytics', {
+        body: { 
+          action: 'get_analytics',
+          timeRange 
+        }
+      });
+
+      if (error) throw error;
+      setAnalyticsData(data);
+    } catch (error: any) {
+      console.error('Erreur lors du chargement des analytics:', error);
+      toast.error('Erreur lors du chargement des analytics');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadAnalytics();
+  }, [timeRange]);
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Analytics</h1>
+          <p className="text-muted-foreground">Chargement des données...</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="animate-pulse space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Analytics</h1>
-        <p className="text-muted-foreground">Analyse détaillée des performances</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Analytics</h1>
+          <p className="text-muted-foreground">Analyse détaillée des performances</p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Select value={timeRange} onValueChange={setTimeRange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Période" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7d">7 derniers jours</SelectItem>
+              <SelectItem value="30d">30 derniers jours</SelectItem>
+              <SelectItem value="90d">3 derniers mois</SelectItem>
+              <SelectItem value="1y">12 derniers mois</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button variant="outline" onClick={loadAnalytics} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Actualiser
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -45,9 +94,9 @@ const AdminAnalytics = () => {
             <Euro className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">€88,400</div>
+            <div className="text-2xl font-bold">€{analyticsData?.kpis?.totalRevenue?.toLocaleString() || '0'}</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+12.5%</span> vs mois dernier
+              <span className="text-green-600">+12.5%</span> vs période précédente
             </p>
           </CardContent>
         </Card>
@@ -58,9 +107,9 @@ const AdminAnalytics = () => {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,841</div>
+            <div className="text-2xl font-bold">{analyticsData?.kpis?.totalBookings?.toLocaleString() || '0'}</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+8.2%</span> vs mois dernier
+              <span className="text-green-600">+8.2%</span> vs période précédente
             </p>
           </CardContent>
         </Card>
@@ -71,9 +120,9 @@ const AdminAnalytics = () => {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">24.8%</div>
+            <div className="text-2xl font-bold">{analyticsData?.kpis?.conversionRate || '0'}%</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+2.1%</span> vs mois dernier
+              <span className="text-green-600">+2.1%</span> vs période précédente
             </p>
           </CardContent>
         </Card>
@@ -84,9 +133,9 @@ const AdminAnalytics = () => {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2.4h</div>
+            <div className="text-2xl font-bold">{analyticsData?.kpis?.averageDuration || '0'}h</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-red-600">-0.3h</span> vs mois dernier
+              <span className="text-red-600">-0.3h</span> vs période précédente
             </p>
           </CardContent>
         </Card>
@@ -107,12 +156,12 @@ const AdminAnalytics = () => {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={mockData.revenue}>
+                <LineChart data={analyticsData?.monthlyRevenue || []}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
                   <YAxis />
                   <Tooltip formatter={(value) => [`€${value}`, "Revenus"]} />
-                  <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth={2} />
+                  <Line type="monotone" dataKey="revenue" stroke="#8884d8" strokeWidth={2} />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
@@ -127,12 +176,12 @@ const AdminAnalytics = () => {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={mockData.bookings}>
+                <BarChart data={analyticsData?.monthlyBookings || []}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="value" fill="#82ca9d" />
+                  <Bar dataKey="bookings" fill="#82ca9d" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -149,7 +198,7 @@ const AdminAnalytics = () => {
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
-                    data={mockData.services}
+                    data={analyticsData?.servicesDistribution || []}
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
@@ -157,7 +206,7 @@ const AdminAnalytics = () => {
                     dataKey="value"
                     label={({ name, value }) => `${name}: ${value}%`}
                   >
-                    {mockData.services.map((entry, index) => (
+                    {(analyticsData?.servicesDistribution || []).map((entry: any, index: number) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>

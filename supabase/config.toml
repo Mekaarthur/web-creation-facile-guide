@@ -109,3 +109,6 @@ verify_jwt = true
 
 [functions.admin-zones]
 verify_jwt = true
+
+[functions.admin-analytics]
+verify_jwt = true
