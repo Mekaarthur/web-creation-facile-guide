@@ -211,7 +211,7 @@ export default function AdminUtilisateurs() {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => setSelectedUser(user)}
+                            onClick={() => handleUserAction(user.id, 'examine')}
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
@@ -241,6 +241,20 @@ export default function AdminUtilisateurs() {
                                     {selectedUser.banned_until ? "Suspendu" : "Actif"}
                                   </Badge>
                                 </div>
+                                {selectedUser.auth_data?.email_confirmed_at && (
+                                  <div>
+                                    <label className="text-sm font-medium text-muted-foreground">Email confirmé</label>
+                                    <p>{format(new Date(selectedUser.auth_data.email_confirmed_at), 'dd/MM/yyyy à HH:mm', { locale: fr })}</p>
+                                  </div>
+                                )}
+                                {selectedUser.banned_until && (
+                                  <div>
+                                    <label className="text-sm font-medium text-muted-foreground">Suspendu jusqu'au</label>
+                                    <p className="text-destructive font-medium">
+                                      {format(new Date(selectedUser.banned_until), 'dd/MM/yyyy à HH:mm', { locale: fr })}
+                                    </p>
+                                  </div>
+                                )}
                               </div>
                               
                               {selectedUser.bookings && selectedUser.bookings.length > 0 && (
@@ -268,20 +282,25 @@ export default function AdminUtilisateurs() {
                               )}
                               
                               <div className="flex gap-2 pt-4">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => handleUserAction(selectedUser.id, 'suspend')}
-                                >
-                                  Suspendre
-                                </Button>
-                                <Button 
-                                  variant="default" 
-                                  size="sm"
-                                  onClick={() => handleUserAction(selectedUser.id, 'activate')}
-                                >
-                                  Réactiver
-                                </Button>
+                                {selectedUser.banned_until ? (
+                                  <Button 
+                                    variant="default" 
+                                    size="sm"
+                                    onClick={() => handleUserAction(selectedUser.id, 'activate')}
+                                  >
+                                    <CheckCircle className="w-4 h-4 mr-2" />
+                                    Réactiver
+                                  </Button>
+                                ) : (
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => handleUserAction(selectedUser.id, 'suspend')}
+                                  >
+                                    <Ban className="w-4 h-4 mr-2" />
+                                    Suspendre
+                                  </Button>
+                                )}
                               </div>
                             </div>
                           )}
@@ -289,19 +308,12 @@ export default function AdminUtilisateurs() {
                       </Dialog>
                       
                       <Button 
-                        variant="outline" 
+                        variant={user.banned_until ? "default" : "outline"}
                         size="sm"
-                        onClick={() => handleUserAction(user.id, 'activate')}
+                        onClick={() => handleUserAction(user.id, user.banned_until ? 'activate' : 'suspend')}
+                        title={user.banned_until ? "Réactiver l'utilisateur" : "Suspendre l'utilisateur"}
                       >
-                        <CheckCircle className="w-4 h-4" />
-                      </Button>
-                      
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleUserAction(user.id, 'suspend')}
-                      >
-                        <Ban className="w-4 h-4" />
+                        {user.banned_until ? <CheckCircle className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
                       </Button>
                     </div>
                   </TableCell>
