@@ -14,6 +14,7 @@ interface User {
   id: string;
   email: string;
   created_at: string;
+  banned_until?: string | null;
   profiles: {
     first_name: string | null;
     last_name: string | null;
@@ -47,33 +48,20 @@ export default function AdminUtilisateurs() {
 
   const loadUsers = async () => {
     try {
-      // Récupérer les profiles avec l'email
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select(`
-          id,
-          created_at,
-          first_name,
-          last_name,
-          user_id,
-          avatar_url,
-          email
-        `)
-        .order('created_at', { ascending: false })
-        .limit(100);
+      // Utiliser l'edge function pour récupérer les utilisateurs
+      const { data, error } = await supabase.functions.invoke('admin-users-management', {
+        body: { action: 'list' }
+      });
 
-      if (profilesError) throw new Error(`[${profilesError.code}] Erreur profiles: ${profilesError.message}`);
+      if (error) throw new Error(`[${error.status || 500}] ${error.message}`);
       
-      const transformedUsers: User[] = profilesData?.map((profile: any) => {
+      const transformedUsers: User[] = data.users?.map((user: any) => {
         return {
-          id: profile.user_id,
-          email: profile.email || 'Email non disponible',
-          created_at: profile.created_at,
-          profiles: {
-            first_name: profile.first_name,
-            last_name: profile.last_name,
-            avatar_url: profile.avatar_url
-          }
+          id: user.id,
+          email: user.email || 'Email non disponible',
+          created_at: user.created_at,
+          banned_until: user.banned_until,
+          profiles: user.profiles
         };
       }) || [];
       
@@ -97,48 +85,40 @@ export default function AdminUtilisateurs() {
   const handleUserAction = async (userId: string, action: 'activate' | 'suspend' | 'examine') => {
     try {
       if (action === 'examine') {
-        // Récupérer les détails complets de l'utilisateur avec ses bookings
-        const { data: userData, error: userError } = await supabase
-          .from('profiles')
-          .select(`
-            *,
-            bookings:bookings!client_id (
-              id, 
-              status, 
-              booking_date, 
-              total_price,
-              services (name)
-            )
-          `)
-          .eq('user_id', userId)
-          .single();
+        // Utiliser l'edge function pour récupérer les détails
+        const { data, error } = await supabase.functions.invoke('admin-users-management', {
+          body: { action: 'examine', userId }
+        });
 
-        if (userError) throw new Error(`[${userError.code}] ${userError.message}`);
+        if (error) throw new Error(`[${error.status || 500}] ${error.message}`);
         
         const fullUser: User = {
-          id: userId,
-          email: userData.email || 'Email non disponible',
-          created_at: userData.created_at,
-          profiles: {
-            first_name: userData.first_name,
-            last_name: userData.last_name,
-            avatar_url: userData.avatar_url
-          },
-          bookings: Array.isArray(userData.bookings) ? userData.bookings : [],
-          auth_data: { banned_until: null } // Données mock pour l'affichage
+          id: data.user.id,
+          email: data.user.email || 'Email non disponible',
+          created_at: data.user.created_at,
+          banned_until: data.user.banned_until,
+          profiles: data.user.profiles,
+          bookings: data.user.bookings || [],
+          auth_data: { 
+            banned_until: data.user.banned_until,
+            email_confirmed_at: data.user.email_confirmed_at
+          }
         };
         
         setSelectedUser(fullUser);
         return;
       }
 
-      // Pour les actions d'activation/suspension, on peut utiliser une table de statuts utilisateur
-      // ou simplement afficher un message pour l'instant
-      const actionText = action === 'activate' ? 'activé' : 'suspendu';
+      // Pour les actions d'activation/suspension
+      const { data, error } = await supabase.functions.invoke('admin-users-management', {
+        body: { action, userId }
+      });
+
+      if (error) throw new Error(`[${error.status || 500}] ${error.message}`);
       
       toast({
-        title: "Action simulée",
-        description: `Utilisateur ${actionText} (fonctionnalité à implémenter côté serveur)`,
+        title: "Action effectuée",
+        description: data.message,
       });
 
       // Recharger la liste
@@ -220,7 +200,9 @@ export default function AdminUtilisateurs() {
                     {format(new Date(user.created_at), 'dd/MM/yyyy', { locale: fr })}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline">Actif</Badge>
+                    <Badge variant={user.banned_until ? "destructive" : "default"}>
+                      {user.banned_until ? "Suspendu" : "Actif"}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
@@ -255,7 +237,9 @@ export default function AdminUtilisateurs() {
                                 </div>
                                 <div>
                                   <label className="text-sm font-medium text-muted-foreground">Statut compte</label>
-                                  <Badge variant="default">Actif</Badge>
+                                  <Badge variant={selectedUser.banned_until ? "destructive" : "default"}>
+                                    {selectedUser.banned_until ? "Suspendu" : "Actif"}
+                                  </Badge>
                                 </div>
                               </div>
                               
