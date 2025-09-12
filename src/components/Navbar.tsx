@@ -240,7 +240,16 @@ const Navbar = () => {
             <NotificationCenter />
             
             {user ? (
-              <UserProfileMenu userType="client" />
+              <div className="flex items-center space-x-3">
+                {isAdmin && (
+                  <Link to="/admin">
+                    <Button size="sm" variant="outline" className="border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground">
+                      Admin
+                    </Button>
+                  </Link>
+                )}
+                <UserProfileMenu userType="client" />
+              </div>
             ) : (
               <div className="flex items-center space-x-2">
                 <Link to="/services">
