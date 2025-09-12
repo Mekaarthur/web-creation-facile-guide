@@ -154,6 +154,7 @@ const App = () => (
              {/* Admin Routes with Layout */}
             <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
               <Route index element={<AdminDashboard />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="alertes" element={<AdminAlertes />} />
               <Route path="kanban" element={<AdminKanban />} />
               <Route path="utilisateurs" element={<AdminUtilisateurs />} />
