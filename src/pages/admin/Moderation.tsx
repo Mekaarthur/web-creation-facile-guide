@@ -1,45 +1,93 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, AlertTriangle, Users, MessageSquare, Flag, Eye, CheckCircle, XCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminModeration = () => {
   const { toast } = useToast();
+  const [reportedContent, setReportedContent] = useState([]);
+  const [pendingReviews, setPendingReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const moderationStats = [
-    { label: "Signalements ouverts", value: 8, icon: Flag, color: "text-red-600" },
-    { label: "Avis en attente", value: 15, icon: MessageSquare, color: "text-orange-600" },
+    { label: "Signalements ouverts", value: reportedContent.length, icon: Flag, color: "text-red-600" },
+    { label: "Avis en attente", value: pendingReviews.length, icon: MessageSquare, color: "text-orange-600" },
     { label: "Utilisateurs suspendus", value: 3, icon: Users, color: "text-gray-600" },
     { label: "Actions cette semaine", value: 42, icon: Shield, color: "text-green-600" }
   ];
 
-  const reportedContent = [
-    { id: 1, type: "Avis", user: "Marie D.", content: "Service décevant, prestataire...", reason: "Langage inapproprié", status: "pending" },
-    { id: 2, type: "Profil", user: "Jean M.", content: "Description du prestataire", reason: "Informations trompeuses", status: "pending" },
-    { id: 3, type: "Message", user: "Sophie L.", content: "Conversation client", reason: "Harcèlement", status: "reviewing" }
-  ];
+  useEffect(() => {
+    fetchModerationData();
+  }, []);
 
-  const pendingReviews = [
-    { id: 1, user: "Client A.", provider: "Marie P.", rating: 2, content: "Le ménage n'était pas fait correctement...", reported: true },
-    { id: 2, user: "Client B.", provider: "Paul D.", rating: 5, content: "Excellent service, très professionnel", reported: false },
-    { id: 3, user: "Client C.", provider: "Anne M.", rating: 1, content: "Prestataire en retard et travail bâclé", reported: true }
-  ];
+  const fetchModerationData = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
 
-  const handleApproveContent = (id: number, type: string) => {
-    toast({
-      title: "Contenu approuvé",
-      description: `${type} #${id} a été approuvé et publié`
-    });
+      // Fetch reports
+      const reportsResponse = await supabase.functions.invoke('admin-moderation', {
+        body: { action: 'list_reports' }
+      });
+
+      // Fetch pending reviews
+      const reviewsResponse = await supabase.functions.invoke('admin-moderation', {
+        body: { action: 'list_reviews' }
+      });
+
+      if (reportsResponse.data?.success) {
+        setReportedContent(reportsResponse.data.data);
+      }
+
+      if (reviewsResponse.data?.success) {
+        setPendingReviews(reviewsResponse.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching moderation data:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les données de modération",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleRejectContent = (id: number, type: string) => {
-    toast({
-      title: "Contenu rejeté",
-      description: `${type} #${id} a été rejeté et supprimé`
-    });
+  const handleModerationAction = async (action: 'approve' | 'reject' | 'examine', type: 'review' | 'report', id: string) => {
+    try {
+      const { data: response } = await supabase.functions.invoke('admin-moderation', {
+        body: { 
+          action, 
+          type, 
+          id,
+          reason: `Action ${action} effectuée par l'administrateur`
+        }
+      });
+
+      if (response?.success) {
+        toast({
+          title: action === 'approve' ? "Contenu approuvé" : action === 'reject' ? "Contenu rejeté" : "Examen effectué",
+          description: response.message || `${type} ${action === 'approve' ? 'approuvé' : action === 'reject' ? 'rejeté' : 'examiné'} avec succès`
+        });
+        
+        // Refresh data
+        fetchModerationData();
+      } else {
+        throw new Error(response?.error || 'Action échouée');
+      }
+    } catch (error) {
+      console.error('Moderation action error:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'effectuer l'action",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -102,15 +150,15 @@ const AdminModeration = () => {
                       </Badge>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline" onClick={() => handleModerationAction('examine', 'report', report.id.toString())}>
                         <Eye className="w-4 h-4 mr-1" />
                         Examiner
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => handleApproveContent(report.id, report.type)}>
+                      <Button size="sm" variant="outline" onClick={() => handleModerationAction('approve', 'report', report.id.toString())}>
                         <CheckCircle className="w-4 h-4 mr-1" />
                         Approuver
                       </Button>
-                      <Button size="sm" variant="destructive" onClick={() => handleRejectContent(report.id, report.type)}>
+                      <Button size="sm" variant="destructive" onClick={() => handleModerationAction('reject', 'report', report.id.toString())}>
                         <XCircle className="w-4 h-4 mr-1" />
                         Supprimer
                       </Button>
@@ -135,40 +183,44 @@ const AdminModeration = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {pendingReviews.map((review) => (
-                  <div key={review.id} className="border rounded-lg p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <div className="flex items-center space-x-2 mb-1">
-                          <span className="font-medium">{review.user}</span>
-                          <span className="text-sm text-muted-foreground">→ {review.provider}</span>
-                          <div className="flex items-center">
-                            {[...Array(5)].map((_, i) => (
-                              <span key={i} className={`text-sm ${i < review.rating ? 'text-yellow-400' : 'text-gray-300'}`}>★</span>
-                            ))}
+                        {pendingReviews.map((review) => (
+                          <div key={review.id} className="border rounded-lg p-4">
+                            <div className="flex items-start justify-between mb-3">
+                              <div>
+                                <div className="flex items-center space-x-2 mb-1">
+                                  <span className="font-medium">
+                                    {review.profiles?.first_name} {review.profiles?.last_name}
+                                  </span>
+                                  <span className="text-sm text-muted-foreground">
+                                    → {review.providers?.business_name}
+                                  </span>
+                                  <div className="flex items-center">
+                                    {[...Array(5)].map((_, i) => (
+                                      <span key={i} className={`text-sm ${i < review.rating ? 'text-yellow-400' : 'text-gray-300'}`}>★</span>
+                                    ))}
+                                  </div>
+                                </div>
+                                <p className="text-sm text-muted-foreground">{review.comment}</p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Créé le {new Date(review.created_at).toLocaleDateString('fr-FR')}
+                                </p>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Badge variant="secondary">En attente</Badge>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Button size="sm" variant="outline" onClick={() => handleModerationAction('approve', 'review', review.id)}>
+                                <CheckCircle className="w-4 h-4 mr-1" />
+                                Publier
+                              </Button>
+                              <Button size="sm" variant="destructive" onClick={() => handleModerationAction('reject', 'review', review.id)}>
+                                <XCircle className="w-4 h-4 mr-1" />
+                                Rejeter
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{review.content}</p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        {review.reported && (
-                          <Badge variant="destructive" className="text-xs">Signalé</Badge>
-                        )}
-                        <Badge variant="secondary">En attente</Badge>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Button size="sm" variant="outline" onClick={() => handleApproveContent(review.id, 'Avis')}>
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        Publier
-                      </Button>
-                      <Button size="sm" variant="destructive" onClick={() => handleRejectContent(review.id, 'Avis')}>
-                        <XCircle className="w-4 h-4 mr-1" />
-                        Rejeter
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                        ))}
               </div>
             </CardContent>
           </Card>
