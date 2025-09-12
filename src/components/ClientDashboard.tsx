@@ -151,17 +151,40 @@ const ClientDashboard = ({ onNavigateToTab }: ClientDashboardProps) => {
           <CardContent className="space-y-3">
             {upcomingBookings.length > 0 ? (
               upcomingBookings.map((booking) => (
-                <div key={booking.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <div className="flex-1">
-                    <p className="font-medium text-sm">{booking.services?.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(booking.booking_date), 'dd MMMM yyyy', { locale: fr })} - {booking.start_time}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{booking.providers?.business_name}</p>
+                <div key={booking.id} className="p-3 bg-muted/50 rounded-lg space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">{booking.services?.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(booking.booking_date), 'dd MMMM yyyy', { locale: fr })} - {booking.start_time}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{booking.providers?.business_name}</p>
+                    </div>
+                    <Badge className={`${getStatusColor(booking.status)} text-white text-xs`}>
+                      {getStatusLabel(booking.status)}
+                    </Badge>
                   </div>
-                  <Badge className={`${getStatusColor(booking.status)} text-white text-xs`}>
-                    {getStatusLabel(booking.status)}
-                  </Badge>
+                  
+                  {booking.provider_id && (
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-6 text-xs"
+                        onClick={() => {/* TODO: Voir prestataire */}}
+                      >
+                        Voir prestataire
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-6 text-xs"
+                        onClick={() => {/* TODO: Suivre mission */}}
+                      >
+                        Suivre mission
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ))
             ) : (

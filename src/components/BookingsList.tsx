@@ -265,9 +265,18 @@ const BookingsList = ({ userType }: BookingsListProps) => {
               </div>
             </div>
 
-            <div className="flex gap-2 pt-4 border-t border-border">
+          <div className="flex gap-2 pt-4 border-t border-border">
               <Button variant="outline" size="sm">
                 Voir détails
+              </Button>
+              
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => {/* TODO: Ouvrir la communication */}}
+              >
+                <MessageCircle className="w-4 h-4 mr-1" />
+                Chat
               </Button>
               
               {userType === 'provider' && booking.status === 'pending' && (
