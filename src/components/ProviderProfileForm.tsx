@@ -614,9 +614,9 @@ const ProviderProfileForm = () => {
                   <Input
                     id="hourly_rate"
                     type="number"
-                    value={profile.hourly_rate || ''}
+                    value={profile.hourly_rate || 18}
                     onChange={(e) => handleInputChange('hourly_rate', parseFloat(e.target.value))}
-                    placeholder="25"
+                    placeholder="18"
                     className="pl-10"
                     min="10"
                     max="100"

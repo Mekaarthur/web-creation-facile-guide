@@ -76,6 +76,13 @@ const ProviderDocuments = () => {
       description: 'Attestation d\'assurance responsabilité civile professionnelle',
       icon: Shield,
       required: false
+    },
+    {
+      type: 'rib_iban',
+      label: 'RIB / IBAN',
+      description: 'Relevé d\'identité bancaire pour recevoir vos paiements',
+      icon: Building,
+      required: true
     }
   ];
 
