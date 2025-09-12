@@ -264,7 +264,7 @@ const Navbar = () => {
                   </Button>
                 </Link>
                 <div className="h-6 w-px bg-border mx-2" />
-                <Link to="/auth">
+                <Link to="/auth?admin=true">
                   <Button variant="ghost" size="sm" className="hover:bg-accent hover:text-accent-foreground">
                     Connexion
                   </Button>

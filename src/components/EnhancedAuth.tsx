@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,9 +42,6 @@ const EnhancedAuth = () => {
   const [loginAttempts, setLoginAttempts] = useState<Record<string, LoginAttempt>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [searchParams] = useSearchParams();
-  
-  const showAdminOption = searchParams.get('admin') === 'true';
 
   const loginForm = useForm<AuthForm>({
     resolver: zodResolver(authSchema),
@@ -395,7 +392,6 @@ const EnhancedAuth = () => {
           <span className="text-lg font-medium">Je suis un Prestataire</span>
         </Button>
         
-        {showAdminOption && (
           <div className="pt-4 border-t">
             <Button
               onClick={() => handleUserTypeSelection('admin')}
@@ -406,7 +402,6 @@ const EnhancedAuth = () => {
               <span>Administration</span>
             </Button>
           </div>
-        )}
       </CardContent>
     </Card>
   );
