@@ -6,6 +6,8 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -31,12 +33,69 @@ import {
   RefreshCw,
   MoreHorizontal,
   Phone,
-  Mail
+  Mail,
+  Loader2
 } from "lucide-react";
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+// Interfaces pour les types de données
+interface DashboardStats {
+  revenue: {
+    value: number;
+    change: string;
+    trend: number[];
+  };
+  users: {
+    value: number;
+    change: string;
+    trend: number[];
+  };
+  missions: {
+    value: number;
+    change: string;
+    trend: number[];
+  };
+  satisfaction: {
+    value: number;
+    change: string;
+    trend: number[];
+  };
+}
+
+interface Provider {
+  id: string;
+  name: string;
+  service: string;
+  missions: number;
+  rating: number;
+  revenue: string;
+  status: string;
+  phone: string;
+  email: string;
+  location: string;
+}
+
+interface Activity {
+  id: string;
+  type: string;
+  message: string;
+  time: string;
+  status: string;
+  amount?: string;
+}
+
+interface ServicePerformance {
+  name: string;
+  missions: number;
+  revenue: number;
+  satisfaction: number;
+  growth: number;
+}
 
 // Mock data étendu
 const revenueData = [
@@ -196,24 +255,204 @@ const MetricCard = ({
 );
 
 export default function EnhancedModernDashboard() {
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<DashboardStats>({
     revenue: { value: 125847, change: '+12%', trend: [98000, 105000, 118000, 125000, 125847] },
     users: { value: 8234, change: '+5%', trend: [7800, 7900, 8000, 8100, 8234] },
     missions: { value: 147, change: '+8%', trend: [120, 125, 135, 140, 147] },
     satisfaction: { value: 4.8, change: '+0.1', trend: [4.6, 4.7, 4.7, 4.8, 4.8] }
   });
 
+  const [providers, setProviders] = useState<Provider[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [servicePerformance, setServicePerformance] = useState<ServicePerformance[]>([]);
   const [loading, setLoading] = useState(false);
   const [timeRange, setTimeRange] = useState('7d');
   const [searchTerm, setSearchTerm] = useState('');
+  const { toast } = useToast();
 
-  const refreshData = () => {
+  const loadDashboardData = async () => {
     setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-dashboard', {
+        body: { action: 'get_stats', timeRange }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        setStats(data.stats);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des stats:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les statistiques",
+        variant: "destructive"
+      });
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
+
+  const loadProviders = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-dashboard', {
+        body: { action: 'get_providers', searchTerm, limit: 10 }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        setProviders(data.providers);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des prestataires:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les prestataires",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const loadActivities = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-dashboard', {
+        body: { action: 'get_activities', limit: 20 }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        setActivities(data.activities);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des activités:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les activités",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const loadServicePerformance = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-dashboard', {
+        body: { action: 'get_service_performance', timeRange }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        setServicePerformance(data.servicePerformance);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement de la performance des services:', error);
+    }
+  };
+
+  const handleValidateProvider = async (providerId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-dashboard', {
+        body: { action: 'validate_provider', providerId }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast({
+          title: "Succès",
+          description: data.message
+        });
+        loadProviders(); // Recharger la liste
+      }
+    } catch (error) {
+      console.error('Erreur lors de la validation:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de valider le prestataire",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleContactProvider = async (providerId: string, message: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-dashboard', {
+        body: { action: 'contact_provider', providerId, message }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast({
+          title: "Succès",
+          description: data.message
+        });
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi du message:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'envoyer le message",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleExportData = async (type: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-dashboard', {
+        body: { action: 'export_data', type, format: 'csv' }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        // Créer et télécharger le fichier
+        const jsonString = JSON.stringify(data.data, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `export_${type}_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        toast({
+          title: "Succès",
+          description: "Export terminé"
+        });
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'export:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'exporter les données",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const refreshData = async () => {
+    await Promise.all([
+      loadDashboardData(),
+      loadProviders(),
+      loadActivities(),
+      loadServicePerformance()
+    ]);
+  };
+
+  useEffect(() => {
+    refreshData();
+  }, [timeRange]);
+
+  useEffect(() => {
+    loadProviders();
+  }, [searchTerm]);
 
   return (
     <div className="space-y-6 p-6">
@@ -244,7 +483,7 @@ export default function EnhancedModernDashboard() {
             Actualiser
           </Button>
           
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => handleExportData('providers')}>
             <Download className="w-4 h-4 mr-2" />
             Export
           </Button>
@@ -359,7 +598,10 @@ export default function EnhancedModernDashboard() {
               <CardContent>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={servicePerformanceData}>
+                    <BarChart data={servicePerformance.length > 0 ? servicePerformance : [
+                      { name: 'Bika Kids', missions: 156, revenue: 45200, satisfaction: 4.8, growth: 15 },
+                      { name: 'Bika Maison', missions: 234, revenue: 67800, satisfaction: 4.6, growth: 8 }
+                    ]}>
                       <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                       <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
                       <YAxis />
@@ -387,25 +629,41 @@ export default function EnhancedModernDashboard() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  className="h-auto p-4 flex flex-col items-center gap-2"
+                  onClick={() => handleValidateProvider('all')}
+                >
                   <CheckCircle className="w-6 h-6 text-green-500" />
                   <span className="text-sm">Valider Prestataires</span>
                   <Badge variant="destructive">12</Badge>
                 </Button>
                 
-                <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  className="h-auto p-4 flex flex-col items-center gap-2"
+                  onClick={() => toast({ title: "Gestion des alertes", description: "Fonctionnalité en cours de développement" })}
+                >
                   <AlertTriangle className="w-6 h-6 text-amber-500" />
                   <span className="text-sm">Gérer Alertes</span>
                   <Badge variant="default">5</Badge>
                 </Button>
                 
-                <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  className="h-auto p-4 flex flex-col items-center gap-2"
+                  onClick={() => window.location.href = '/admin/paiements'}
+                >
                   <Euro className="w-6 h-6 text-blue-500" />
                   <span className="text-sm">Paiements</span>
                   <Badge variant="default">23k€</Badge>
                 </Button>
                 
-                <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  className="h-auto p-4 flex flex-col items-center gap-2"
+                  onClick={() => window.location.href = '/admin/messagerie'}
+                >
                   <MessageSquare className="w-6 h-6 text-purple-500" />
                   <span className="text-sm">Messages</span>
                   <Badge variant="secondary">23</Badge>
@@ -453,7 +711,7 @@ export default function EnhancedModernDashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {topProviders.map((provider) => (
+                  {providers.map((provider) => (
                     <TableRow key={provider.id}>
                       <TableCell>
                         <div>
@@ -483,12 +741,58 @@ export default function EnhancedModernDashboard() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm">
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            <Mail className="w-4 h-4" />
-                          </Button>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Détails du prestataire</DialogTitle>
+                                <DialogDescription>
+                                  Informations détaillées pour {provider.name}
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                  <div><span className="font-medium">Email:</span> {provider.email}</div>
+                                  <div><span className="font-medium">Téléphone:</span> {provider.phone}</div>
+                                  <div><span className="font-medium">Service:</span> {provider.service}</div>
+                                  <div><span className="font-medium">Missions:</span> {provider.missions}</div>
+                                  <div><span className="font-medium">Note:</span> {provider.rating}/5</div>
+                                  <div><span className="font-medium">CA:</span> {provider.revenue}</div>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <Mail className="w-4 h-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Contacter le prestataire</DialogTitle>
+                                <DialogDescription>
+                                  Envoyer un message à {provider.name}
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <Textarea placeholder="Tapez votre message..." id={`message-${provider.id}`} />
+                                <Button onClick={() => {
+                                  const messageEl = document.getElementById(`message-${provider.id}`) as HTMLTextAreaElement;
+                                  if (messageEl?.value) {
+                                    handleContactProvider(provider.id, messageEl.value);
+                                    messageEl.value = '';
+                                  }
+                                }}>
+                                  Envoyer
+                                </Button>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
                           <Button variant="outline" size="sm">
                             <MoreHorizontal className="w-4 h-4" />
                           </Button>
@@ -513,7 +817,7 @@ export default function EnhancedModernDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentActivities.map((activity) => (
+                {activities.length > 0 ? activities.map((activity) => (
                   <div key={activity.id} className="flex items-center gap-4 p-3 rounded-lg border">
                     <div className={`w-2 h-2 rounded-full ${
                       activity.status === 'success' ? 'bg-green-500' :
@@ -530,7 +834,12 @@ export default function EnhancedModernDashboard() {
                       </Badge>
                     )}
                   </div>
-                ))}
+                )) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Activity className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>Aucune activité récente</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

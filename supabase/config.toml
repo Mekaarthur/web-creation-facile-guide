@@ -77,6 +77,9 @@ verify_jwt = false  # Public endpoint if used from unauthenticated pages
 [functions.admin-assignment]
 verify_jwt = true  # Admin function - requires authentication
 
+[functions.admin-dashboard]
+verify_jwt = true  # Admin function - requires authentication
+
 [functions.admin-users-management]
 verify_jwt = true  # Admin function - requires authentication
 

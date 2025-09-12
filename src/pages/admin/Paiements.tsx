@@ -67,20 +67,39 @@ export default function AdminPaiements() {
   const loadPayments = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.functions.invoke('admin-payments', {
-        body: {
-          action: 'list',
-          filters: {
-            status: statusFilter !== 'all' ? statusFilter : undefined,
-            search: searchTerm || undefined
-          }
+      
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
+      
+      let url = `https://cgrosjzmbgxmtvwxictr.supabase.co/functions/v1/admin-payments`;
+      const params = new URLSearchParams();
+      
+      if (statusFilter !== 'all') {
+        params.append('status', statusFilter);
+      }
+      
+      if (searchTerm) {
+        params.append('search', searchTerm);
+      }
+      
+      if (params.toString()) {
+        url += `?${params.toString()}`;
+      }
+
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         }
       });
 
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error('Erreur lors du chargement');
+      }
 
-      setPayments(data.payments);
-      setStatistics(data.statistics);
+      const result = await response.json();
+      
+      setPayments(result.payments || []);
+      setStatistics(result.statistics || null);
     } catch (error) {
       console.error('Erreur:', error);
       toast({
@@ -97,15 +116,27 @@ export default function AdminPaiements() {
     try {
       setActionLoading(paymentId);
       
-      const { data, error } = await supabase.functions.invoke('admin-payments', {
-        body: {
-          action,
-          paymentId,
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
+      
+      let url = `https://cgrosjzmbgxmtvwxictr.supabase.co/functions/v1/admin-payments?action=${action}&paymentId=${paymentId}`;
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           ...extraData
-        }
+        })
       });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erreur lors de l\'action');
+      }
+
+      const result = await response.json();
 
       toast({
         title: "Succès",
@@ -122,7 +153,7 @@ export default function AdminPaiements() {
       console.error('Erreur:', error);
       toast({
         title: "Erreur",
-        description: `Impossible d'effectuer l'action ${action}`,
+        description: error.message || `Impossible d'effectuer l'action ${action}`,
         variant: "destructive"
       });
     } finally {
@@ -280,7 +311,42 @@ export default function AdminPaiements() {
               <RefreshCw className="w-4 h-4 mr-2" />
               Actualiser
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => {
+              // Export functionality
+              const handleExport = async () => {
+                try {
+                  const token = (await supabase.auth.getSession()).data.session?.access_token;
+                  
+                  const url = `https://cgrosjzmbgxmtvwxictr.supabase.co/functions/v1/admin-payments?action=export&format=csv&status=${statusFilter}`;
+                  
+                  const response = await fetch(url, {
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                    }
+                  });
+
+                  if (response.ok) {
+                    const blob = await response.blob();
+                    const downloadUrl = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = downloadUrl;
+                    link.download = `paiements_${new Date().toISOString().split('T')[0]}.csv`;
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                    window.URL.revokeObjectURL(downloadUrl);
+                  }
+                } catch (error) {
+                  console.error('Erreur export:', error);
+                  toast({
+                    title: "Erreur",
+                    description: "Impossible d'exporter les données",
+                    variant: "destructive"
+                  });
+                }
+              };
+              handleExport();
+            }}>
               <Download className="w-4 h-4 mr-2" />
               Exporter
             </Button>
