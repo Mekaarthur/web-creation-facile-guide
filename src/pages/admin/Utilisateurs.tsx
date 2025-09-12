@@ -47,7 +47,7 @@ export default function AdminUtilisateurs() {
 
   const loadUsers = async () => {
     try {
-      // Récupérer les profiles avec les auth users
+      // Récupérer les profiles avec l'email
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select(`
@@ -56,21 +56,18 @@ export default function AdminUtilisateurs() {
           first_name,
           last_name,
           user_id,
-          avatar_url
+          avatar_url,
+          email
         `)
         .order('created_at', { ascending: false })
         .limit(100);
 
       if (profilesError) throw new Error(`[${profilesError.code}] Erreur profiles: ${profilesError.message}`);
       
-      // Récupérer les emails depuis auth.users (si possible via admin API)
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
-      
       const transformedUsers: User[] = profilesData?.map((profile: any) => {
-        const authUser = authUsers.users?.find((u: any) => u.id === profile.user_id);
         return {
           id: profile.user_id,
-          email: authUser?.email || 'Email non disponible',
+          email: profile.email || 'Email non disponible',
           created_at: profile.created_at,
           profiles: {
             first_name: profile.first_name,
@@ -100,7 +97,7 @@ export default function AdminUtilisateurs() {
   const handleUserAction = async (userId: string, action: 'activate' | 'suspend' | 'examine') => {
     try {
       if (action === 'examine') {
-        // Récupérer les détails complets de l'utilisateur avec ses bookings et activité
+        // Récupérer les détails complets de l'utilisateur avec ses bookings
         const { data: userData, error: userError } = await supabase
           .from('profiles')
           .select(`
@@ -118,10 +115,9 @@ export default function AdminUtilisateurs() {
 
         if (userError) throw new Error(`[${userError.code}] ${userError.message}`);
         
-        const authUser = await supabase.auth.admin.getUserById(userId);
         const fullUser: User = {
           id: userId,
-          email: authUser.data.user?.email || 'Email non disponible',
+          email: userData.email || 'Email non disponible',
           created_at: userData.created_at,
           profiles: {
             first_name: userData.first_name,
@@ -129,39 +125,20 @@ export default function AdminUtilisateurs() {
             avatar_url: userData.avatar_url
           },
           bookings: Array.isArray(userData.bookings) ? userData.bookings : [],
-          auth_data: authUser.data.user
+          auth_data: { banned_until: null } // Données mock pour l'affichage
         };
         
         setSelectedUser(fullUser);
         return;
       }
 
-      // Mettre à jour le statut utilisateur dans une table custom (si elle existe)
-      const newStatus = action === 'activate' ? 'active' : 'suspended';
-      
-      // Désactiver l'utilisateur dans auth si suspension
-      if (action === 'suspend') {
-        const { error: authError } = await supabase.auth.admin.updateUserById(userId, {
-          ban_duration: '876000h' // 100 ans = suspension
-        });
-        
-        if (authError && !authError.message.includes('already banned')) {
-          throw new Error(`[${authError.status || 500}] Auth error: ${authError.message}`);
-        }
-      } else {
-        // Réactiver l'utilisateur
-        const { error: authError } = await supabase.auth.admin.updateUserById(userId, {
-          ban_duration: 'none'
-        });
-        
-        if (authError) {
-          throw new Error(`[${authError.status || 500}] Auth error: ${authError.message}`);
-        }
-      }
+      // Pour les actions d'activation/suspension, on peut utiliser une table de statuts utilisateur
+      // ou simplement afficher un message pour l'instant
+      const actionText = action === 'activate' ? 'activé' : 'suspendu';
       
       toast({
-        title: "Action effectuée",
-        description: `Utilisateur ${action === 'activate' ? 'activé' : 'suspendu'} avec succès`,
+        title: "Action simulée",
+        description: `Utilisateur ${actionText} (fonctionnalité à implémenter côté serveur)`,
       });
 
       // Recharger la liste
@@ -252,12 +229,12 @@ export default function AdminUtilisateurs() {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => handleUserAction(user.id, 'examine')}
+                            onClick={() => setSelectedUser(user)}
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="max-w-2xl">
                           <DialogHeader>
                             <DialogTitle>Détails utilisateur</DialogTitle>
                           </DialogHeader>
@@ -278,9 +255,7 @@ export default function AdminUtilisateurs() {
                                 </div>
                                 <div>
                                   <label className="text-sm font-medium text-muted-foreground">Statut compte</label>
-                                  <Badge variant={selectedUser.auth_data?.banned_until ? "destructive" : "default"}>
-                                    {selectedUser.auth_data?.banned_until ? "Suspendu" : "Actif"}
-                                  </Badge>
+                                  <Badge variant="default">Actif</Badge>
                                 </div>
                               </div>
                               
@@ -312,9 +287,16 @@ export default function AdminUtilisateurs() {
                                 <Button 
                                   variant="outline" 
                                   size="sm"
-                                  onClick={() => handleUserAction(selectedUser.id, selectedUser.auth_data?.banned_until ? 'activate' : 'suspend')}
+                                  onClick={() => handleUserAction(selectedUser.id, 'suspend')}
                                 >
-                                  {selectedUser.auth_data?.banned_until ? 'Réactiver' : 'Suspendre'}
+                                  Suspendre
+                                </Button>
+                                <Button 
+                                  variant="default" 
+                                  size="sm"
+                                  onClick={() => handleUserAction(selectedUser.id, 'activate')}
+                                >
+                                  Réactiver
                                 </Button>
                               </div>
                             </div>
