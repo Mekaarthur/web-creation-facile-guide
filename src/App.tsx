@@ -68,6 +68,24 @@ import TestsSystems from "./pages/admin/TestsSystems";
 import ModernAdminLayout from "./components/admin/ModernAdminLayout";
 import ModernAdminDashboard from "./pages/admin/ModernAdminDashboard";
 
+// Modern Admin Pages
+import AdminAnalytics from "./pages/admin/Analytics";
+import AdminRealtime from "./pages/admin/Realtime";
+import AdminClients from "./pages/admin/Clients";
+import AdminProviders from "./pages/admin/Providers";
+import AdminApplications from "./pages/admin/Applications";
+import AdminMissions from "./pages/admin/Missions";
+import AdminReservations from "./pages/admin/Reservations";
+import AdminPayments from "./pages/admin/Payments";
+import AdminInvoices from "./pages/admin/Invoices";
+import AdminMessages from "./pages/admin/Messages";
+import AdminReviews from "./pages/admin/Reviews";
+import AdminAlerts from "./pages/admin/Alerts";
+import AdminReports from "./pages/admin/Reports";
+import AdminQuality from "./pages/admin/Quality";
+import AdminSettings from "./pages/admin/Settings";
+import AdminReportsData from "./pages/admin/ReportsData";
+
 import NotFound from "./pages/NotFound";
 import AuditReport from "./components/AuditReport";
 
@@ -160,10 +178,25 @@ const App = () => (
             <Route path="/modern-admin" element={<AdminRoute><ModernAdminLayout /></AdminRoute>}>
               <Route index element={<ModernAdminDashboard />} />
               <Route path="dashboard" element={<ModernAdminDashboard />} />
-              <Route path="alertes" element={<AdminAlertes />} />
+              <Route path="analytics" element={<AdminAnalytics />} />
+              <Route path="realtime" element={<AdminRealtime />} />
+              <Route path="clients" element={<AdminClients />} />
+              <Route path="providers" element={<AdminProviders />} />
+              <Route path="applications" element={<AdminApplications />} />
+              <Route path="binomes" element={<AdminBinomes />} />
+              <Route path="missions" element={<AdminMissions />} />
+              <Route path="reservations" element={<AdminReservations />} />
+              <Route path="payments" element={<AdminPayments />} />
+              <Route path="invoices" element={<AdminInvoices />} />
+              <Route path="messages" element={<AdminMessages />} />
+              <Route path="notifications" element={<AdminNotifications />} />
+              <Route path="reviews" element={<AdminReviews />} />
+              <Route path="alerts" element={<AdminAlerts />} />
+              <Route path="reports" element={<AdminReports />} />
+              <Route path="quality" element={<AdminQuality />} />
               <Route path="zones" element={<AdminZones />} />
-              <Route path="parametres" element={<AdminParametres />} />
-              <Route path="marque" element={<AdminMarque />} />
+              <Route path="settings" element={<AdminSettings />} />
+              <Route path="reports-data" element={<AdminReportsData />} />
               <Route path="audit" element={<AuditReport />} />
             </Route>
             
