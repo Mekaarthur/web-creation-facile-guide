@@ -51,18 +51,47 @@ const ZoneGeographiqueManager = () => {
 
   const loadZones = async () => {
     try {
-      const { data, error } = await supabase
-        .from('zones_geographiques' as any)
-        .select('*')
-        .order('nom_zone');
+      const { data, error } = await supabase.functions.invoke('admin-zones', {
+        body: { action: 'list' }
+      });
 
       if (error) throw error;
-      setZones((data as unknown as ZoneGeographique[]) || []);
+      if (!data.success) throw new Error(data.error);
+      
+      setZones(data.data || []);
     } catch (error) {
       console.error('Erreur lors du chargement des zones:', error);
       toast({
         title: "Erreur",
         description: "Impossible de charger les zones géographiques",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const initializeDefaultZones = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.functions.invoke('admin-zones', {
+        body: { action: 'initialize_default_zones' }
+      });
+
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error);
+      
+      toast({
+        title: "Zones initialisées",
+        description: data.message
+      });
+      
+      loadZones();
+    } catch (error) {
+      console.error('Erreur lors de l\'initialisation:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'initialiser les zones par défaut",
         variant: "destructive"
       });
     } finally {
@@ -86,28 +115,22 @@ const ZoneGeographiqueManager = () => {
     };
 
     try {
-      if (editingZone) {
-        const { error } = await supabase
-          .from('zones_geographiques' as any)
-          .update(zoneData)
-          .eq('id', editingZone.id);
-        
-        if (error) throw error;
-        toast({
-          title: "Zone modifiée",
-          description: "La zone géographique a été modifiée avec succès"
-        });
-      } else {
-        const { error } = await supabase
-          .from('zones_geographiques' as any)
-          .insert([zoneData]);
-        
-        if (error) throw error;
-        toast({
-          title: "Zone créée",
-          description: "La zone géographique a été créée avec succès"
-        });
-      }
+      const action = editingZone ? 'update' : 'create';
+      const requestBody = editingZone 
+        ? { action, zoneData, zoneId: editingZone.id }
+        : { action, zoneData };
+
+      const { data, error } = await supabase.functions.invoke('admin-zones', {
+        body: requestBody
+      });
+
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error);
+      
+      toast({
+        title: editingZone ? "Zone modifiée" : "Zone créée",
+        description: data.message
+      });
 
       setIsDialogOpen(false);
       setEditingZone(null);
@@ -138,15 +161,16 @@ const ZoneGeographiqueManager = () => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cette zone ?')) return;
 
     try {
-      const { error } = await supabase
-        .from('zones_geographiques' as any)
-        .delete()
-        .eq('id', id);
+      const { data, error } = await supabase.functions.invoke('admin-zones', {
+        body: { action: 'delete', zoneId: id }
+      });
 
       if (error) throw error;
+      if (!data.success) throw new Error(data.error);
+      
       toast({
         title: "Zone supprimée",
-        description: "La zone géographique a été supprimée avec succès"
+        description: data.message
       });
       loadZones();
     } catch (error) {
@@ -165,16 +189,25 @@ const ZoneGeographiqueManager = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Gestion des zones géographiques</h2>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => {
-              setEditingZone(null);
-              setFormData({ nom_zone: '', codes_postaux: '', type_zone: 'departement', rayon_km: '' });
-            }}>
-              <Plus className="w-4 h-4 mr-2" />
-              Ajouter une zone
-            </Button>
-          </DialogTrigger>
+        <div className="flex space-x-2">
+          <Button 
+            onClick={initializeDefaultZones}
+            variant="outline"
+            disabled={loading}
+          >
+            <MapPin className="w-4 h-4 mr-2" />
+            Initialiser zones Île-de-France
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => {
+                setEditingZone(null);
+                setFormData({ nom_zone: '', codes_postaux: '', type_zone: 'departement', rayon_km: '' });
+              }}>
+                <Plus className="w-4 h-4 mr-2" />
+                Ajouter une zone
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
@@ -245,8 +278,9 @@ const ZoneGeographiqueManager = () => {
                 </Button>
               </div>
             </form>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <div className="grid gap-4">
