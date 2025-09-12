@@ -126,6 +126,21 @@ const ProviderDocuments = () => {
     }
   };
 
+  // Récupère le chemin Storage à partir de l'URL publique
+  const getStoragePathFromUrl = (url: string) => {
+    try {
+      const u = new URL(url);
+      const marker = '/storage/v1/object/public/provider-documents/';
+      const idx = u.pathname.indexOf(marker);
+      if (idx !== -1) {
+        return decodeURIComponent(u.pathname.substring(idx + marker.length));
+      }
+      return '';
+    } catch {
+      return '';
+    }
+  };
+
   const handleFileUpload = async (file: File, documentType: string) => {
     if (!provider || !file) return;
 
@@ -143,7 +158,16 @@ const ProviderDocuments = () => {
         throw new Error('Seuls les fichiers PDF, JPEG et PNG sont acceptés');
       }
 
-      // Créer un nom de fichier unique avec l'user_id au lieu du provider_id
+      // Si un document de ce type existe déjà, on le remplace
+      const existingDoc = getDocumentForType(documentType);
+      if (existingDoc) {
+        const oldPath = getStoragePathFromUrl(existingDoc.file_url);
+        if (oldPath) {
+          await supabase.storage.from('provider-documents').remove([oldPath]);
+        }
+      }
+
+      // Créer un nom de fichier unique avec l'user_id
       const fileExt = file.name.split('.').pop();
       const fileName = `${user?.id}/${documentType}_${Date.now()}.${fileExt}`;
 
@@ -159,22 +183,35 @@ const ProviderDocuments = () => {
         .from('provider-documents')
         .getPublicUrl(fileName);
 
-      // Enregistrer en base de données
-      const { error: dbError } = await supabase
-        .from('provider_documents')
-        .insert({
-          provider_id: provider.id,
-          document_type: documentType,
-          file_name: file.name,
-          file_url: urlData.publicUrl,
-          status: 'pending'
-        });
-
-      if (dbError) throw dbError;
+      if (existingDoc) {
+        // Mettre à jour l'entrée existante
+        const { error: updateError } = await supabase
+          .from('provider_documents')
+          .update({
+            file_name: file.name,
+            file_url: urlData.publicUrl,
+            status: 'pending',
+            upload_date: new Date().toISOString(),
+          })
+          .eq('id', existingDoc.id);
+        if (updateError) throw updateError;
+      } else {
+        // Enregistrer en base de données (nouvelle entrée)
+        const { error: dbError } = await supabase
+          .from('provider_documents')
+          .insert({
+            provider_id: provider.id,
+            document_type: documentType,
+            file_name: file.name,
+            file_url: urlData.publicUrl,
+            status: 'pending'
+          });
+        if (dbError) throw dbError;
+      }
 
       toast({
-        title: "Document téléchargé",
-        description: "Votre document a été envoyé et est en cours de vérification",
+        title: 'Document téléchargé',
+        description: 'Votre document a été envoyé et est en cours de vérification',
       });
 
       loadProviderDocuments();
@@ -189,41 +226,41 @@ const ProviderDocuments = () => {
       setUploading(null);
     }
   };
-
-  const deleteDocument = async (documentId: string, fileName: string) => {
+  const deleteDocument = async (doc: Document) => {
     try {
-      // Supprimer le fichier du storage
-      const { error: storageError } = await supabase.storage
-        .from('provider-documents')
-        .remove([fileName]);
-
-      if (storageError) {
-        console.warn('Erreur suppression storage:', storageError);
+      // Supprimer le fichier du storage (si possible)
+      const storagePath = getStoragePathFromUrl(doc.file_url);
+      if (storagePath) {
+        const { error: storageError } = await supabase.storage
+          .from('provider-documents')
+          .remove([storagePath]);
+        if (storageError) {
+          console.warn('Erreur suppression storage:', storageError);
+        }
       }
 
       // Supprimer l'entrée de la base de données
       const { error: dbError } = await supabase
         .from('provider_documents')
         .delete()
-        .eq('id', documentId);
+        .eq('id', doc.id);
 
       if (dbError) throw dbError;
 
       toast({
-        title: "Document supprimé",
-        description: "Le document a été supprimé avec succès",
+        title: 'Document supprimé',
+        description: 'Le document a été supprimé avec succès',
       });
 
       loadProviderDocuments();
     } catch (error: any) {
       toast({
-        title: "Erreur de suppression",
-        description: error.message || "Impossible de supprimer le document",
-        variant: "destructive",
+        title: 'Erreur de suppression',
+        description: error.message || 'Impossible de supprimer le document',
+        variant: 'destructive',
       });
     }
   };
-
   const getDocumentForType = (type: string) => {
     return documents.find(doc => doc.document_type === type);
   };
@@ -346,7 +383,7 @@ const ProviderDocuments = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => deleteDocument(document.id, document.file_url.split('/').pop() || '')}
+                              onClick={() => deleteDocument(document)}
                               title="Supprimer le document"
                               className="text-red-600 hover:text-red-700"
                             >
