@@ -19,7 +19,8 @@ import {
   Shield,
   Building,
   User as UserIcon,
-  Loader2
+  Loader2,
+  Trash2
 } from 'lucide-react';
 
 interface Document {
@@ -142,9 +143,9 @@ const ProviderDocuments = () => {
         throw new Error('Seuls les fichiers PDF, JPEG et PNG sont acceptés');
       }
 
-      // Créer un nom de fichier unique
+      // Créer un nom de fichier unique avec l'user_id au lieu du provider_id
       const fileExt = file.name.split('.').pop();
-      const fileName = `${provider.id}/${documentType}_${Date.now()}.${fileExt}`;
+      const fileName = `${user?.id}/${documentType}_${Date.now()}.${fileExt}`;
 
       // Upload vers Supabase Storage
       const { error: uploadError } = await supabase.storage
@@ -186,6 +187,40 @@ const ProviderDocuments = () => {
       });
     } finally {
       setUploading(null);
+    }
+  };
+
+  const deleteDocument = async (documentId: string, fileName: string) => {
+    try {
+      // Supprimer le fichier du storage
+      const { error: storageError } = await supabase.storage
+        .from('provider-documents')
+        .remove([fileName]);
+
+      if (storageError) {
+        console.warn('Erreur suppression storage:', storageError);
+      }
+
+      // Supprimer l'entrée de la base de données
+      const { error: dbError } = await supabase
+        .from('provider_documents')
+        .delete()
+        .eq('id', documentId);
+
+      if (dbError) throw dbError;
+
+      toast({
+        title: "Document supprimé",
+        description: "Le document a été supprimé avec succès",
+      });
+
+      loadProviderDocuments();
+    } catch (error: any) {
+      toast({
+        title: "Erreur de suppression",
+        description: error.message || "Impossible de supprimer le document",
+        variant: "destructive",
+      });
     }
   };
 
@@ -299,13 +334,25 @@ const ProviderDocuments = () => {
                           <span className="text-xs text-muted-foreground">
                             {document.file_name}
                           </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => viewDocument(document)}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => viewDocument(document)}
+                              title="Voir le document"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteDocument(document.id, document.file_url.split('/').pop() || '')}
+                              title="Supprimer le document"
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                       ) : (
                         <p className="text-sm text-muted-foreground">Aucun document téléchargé</p>
