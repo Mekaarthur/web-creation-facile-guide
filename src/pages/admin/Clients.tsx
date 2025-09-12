@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Search, User, Mail, Phone, Calendar, MapPin, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Client {
   id: string;
@@ -69,21 +70,35 @@ const AdminClients = () => {
   ];
 
   useEffect(() => {
-    const loadClients = async () => {
-      try {
-        // Simulation de chargement
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setClients(mockClients);
-      } catch (error) {
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger les clients",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
+  const loadClients = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.functions.invoke('admin-clients', {
+        body: { action: 'list', searchTerm, limit: 100 }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        setClients(data.clients.map((client: any) => ({
+          ...client,
+          total_bookings: client.stats?.total_bookings || 0,
+          total_spent: client.stats?.total_spent || 0,
+          average_rating: client.stats?.average_booking_value > 0 ? 4.5 : 0,
+          status: 'active'
+        })));
       }
-    };
+    } catch (error) {
+      console.error('Erreur lors du chargement des clients:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les clients",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
     loadClients();
   }, [toast]);

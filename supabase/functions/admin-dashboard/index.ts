@@ -208,15 +208,14 @@ async function getTopProviders(supabase: any, { searchTerm = '', limit = 10 }: a
         rating,
         missions_completed,
         total_earnings,
-        status,
-        profiles!inner(first_name, last_name, phone, email)
+        status
       `)
       .eq('status', 'active')
       .order('total_earnings', { ascending: false })
       .limit(limit);
 
     if (searchTerm) {
-      query = query.or(`business_name.ilike.%${searchTerm}%,profiles.first_name.ilike.%${searchTerm}%,profiles.last_name.ilike.%${searchTerm}%`);
+      query = query.or(`business_name.ilike.%${searchTerm}%`);
     }
 
     const { data: providers, error } = await query;
@@ -226,9 +225,17 @@ async function getTopProviders(supabase: any, { searchTerm = '', limit = 10 }: a
       throw error;
     }
 
-    // Associer les services pour chaque prestataire
+    // Associer les données utilisateurs et services pour chaque prestataire
     const providersWithServices = await Promise.all(
       (providers || []).map(async (provider) => {
+        // Récupérer les données du profil utilisateur
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, phone, email')
+          .eq('user_id', provider.user_id)
+          .single();
+
+        // Récupérer le premier service du prestataire
         const { data: services } = await supabase
           .from('provider_services')
           .select(`
@@ -240,16 +247,16 @@ async function getTopProviders(supabase: any, { searchTerm = '', limit = 10 }: a
 
         return {
           id: provider.id,
-          name: provider.profiles?.first_name && provider.profiles?.last_name 
-            ? `${provider.profiles.first_name} ${provider.profiles.last_name}`
+          name: profile?.first_name && profile?.last_name 
+            ? `${profile.first_name} ${profile.last_name}`
             : provider.business_name || 'Prestataire sans nom',
           service: services?.[0]?.services?.name || 'Service non défini',
           missions: provider.missions_completed || 0,
           rating: provider.rating || 0,
           revenue: provider.total_earnings ? `${Math.round(provider.total_earnings)}€` : '0€',
           status: provider.status,
-          phone: provider.profiles?.phone || 'Non renseigné',
-          email: provider.profiles?.email || 'Non renseigné',
+          phone: profile?.phone || 'Non renseigné',
+          email: profile?.email || 'Non renseigné',
           location: provider.location || 'Non précisée'
         };
       })
@@ -447,17 +454,21 @@ async function contactProvider(supabase: any, { providerId, message }: any) {
     // Récupérer les infos du prestataire
     const { data: provider, error } = await supabase
       .from('providers')
-      .select(`
-        user_id,
-        business_name,
-        profiles!inner(email, first_name, last_name)
-      `)
+      .select('user_id, business_name')
       .eq('id', providerId)
       .single();
-
+      
     if (error || !provider) {
       throw new Error('Prestataire introuvable');
     }
+
+    // Récupérer le profil utilisateur séparément
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('email, first_name, last_name')
+      .eq('user_id', provider.user_id)
+      .single();
+
 
     // Créer une notification
     await supabase
@@ -513,7 +524,7 @@ async function exportDashboardData(supabase: any, { type, format = 'csv' }: any)
             total_earnings,
             status,
             created_at,
-            profiles(first_name, last_name, email, phone)
+            user_id
           `)
           .order('created_at', { ascending: false });
         

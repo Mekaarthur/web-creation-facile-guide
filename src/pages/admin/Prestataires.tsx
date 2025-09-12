@@ -41,25 +41,21 @@ export default function AdminPrestataires() {
 
   const loadProviders = async () => {
     try {
-      const { data, error } = await supabase
-        .from('providers')
-        .select(`
-          *,
-          profiles:profiles!user_id (first_name, last_name, avatar_url)
-        `)
-        .order('created_at', { ascending: false });
+      setLoading(true);
+      const { data, error } = await supabase.functions.invoke('admin-providers', {
+        body: { action: 'list', status: statusFilter, searchTerm, limit: 50 }
+      });
 
-      if (error) throw new Error(`[${error.code}] DB Error: ${error.message}`);
-      setProviders((data as any) || []);
-    } catch (error: any) {
-      console.error('Erreur détaillée:', error);
-      const errorMessage = error.message?.includes('[') 
-        ? error.message 
-        : `[500] Erreur inconnue: ${error.message || 'Impossible de charger les prestataires'}`;
-      
+      if (error) throw error;
+
+      if (data?.success) {
+        setProviders(data.providers);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des prestataires:', error);
       toast({
         title: "Erreur de chargement",
-        description: errorMessage,
+        description: "Impossible de charger les prestataires",
         variant: "destructive"
       });
     } finally {

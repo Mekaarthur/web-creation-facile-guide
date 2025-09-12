@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, Clock, User, Euro, Search, Eye } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Reservation {
   id: string;
@@ -25,6 +27,7 @@ const AdminReservations = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const { toast } = useToast();
 
   // Mock data
   const mockReservations: Reservation[] = [
@@ -71,14 +74,29 @@ const AdminReservations = () => {
   useEffect(() => {
     const loadReservations = async () => {
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setReservations(mockReservations);
+        setLoading(true);
+        const { data, error } = await supabase.functions.invoke('admin-reservations', {
+          body: { action: 'list', status: statusFilter, limit: 100 }
+        });
+
+        if (error) throw error;
+
+        if (data?.success) {
+          setReservations(data.bookings);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des réservations:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les réservations",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
     };
     loadReservations();
-  }, []);
+  }, [statusFilter]);
 
   const filteredReservations = reservations.filter(reservation => {
     const matchesSearch = reservation.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||

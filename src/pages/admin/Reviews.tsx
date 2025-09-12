@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Star, Search, Eye, CheckCircle, XCircle, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Review {
   id: string;
@@ -78,14 +79,29 @@ const AdminReviews = () => {
   useEffect(() => {
     const loadReviews = async () => {
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setReviews(mockReviews);
+        setLoading(true);
+        const { data, error } = await supabase.functions.invoke('admin-reviews', {
+          body: { action: 'list', status: statusFilter, limit: 100 }
+        });
+
+        if (error) throw error;
+
+        if (data?.success) {
+          setReviews(data.reviews);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des avis:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les avis",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
     };
     loadReviews();
-  }, []);
+  }, [statusFilter]);
 
   const filteredReviews = reviews.filter(review => {
     const matchesSearch = review.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -112,25 +128,80 @@ const AdminReviews = () => {
     return reviews.filter(review => review.status === status).length;
   };
 
-  const handleApprove = (reviewId: string) => {
-    setReviews(prev => prev.map(review => 
-      review.id === reviewId ? { ...review, status: 'approved' as const } : review
-    ));
-    toast({
-      title: "Avis approuvé",
-      description: "L'avis a été approuvé et est maintenant visible publiquement.",
-    });
+  const handleApprove = async (reviewId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { data, error } = await supabase.functions.invoke('admin-reviews', {
+        body: { 
+          action: 'approve',
+          reviewId,
+          adminUserId: user?.id
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast({
+          title: "Succès",
+          description: data.message,
+        });
+        // Recharger les avis
+        const { data: reviewsData } = await supabase.functions.invoke('admin-reviews', {
+          body: { action: 'list', status: statusFilter, limit: 100 }
+        });
+        if (reviewsData?.success) {
+          setReviews(reviewsData.reviews);
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'approbation:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'approuver l'avis",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleReject = (reviewId: string) => {
-    setReviews(prev => prev.map(review => 
-      review.id === reviewId ? { ...review, status: 'rejected' as const } : review
-    ));
-    toast({
-      title: "Avis rejeté",
-      description: "L'avis a été rejeté et ne sera pas visible publiquement.",
-      variant: "destructive",
-    });
+  const handleReject = async (reviewId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { data, error } = await supabase.functions.invoke('admin-reviews', {
+        body: { 
+          action: 'reject',
+          reviewId,
+          adminUserId: user?.id,
+          reason: 'Rejeté par l\'administrateur'
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast({
+          title: "Succès",
+          description: data.message,
+          variant: "destructive",
+        });
+        // Recharger les avis
+        const { data: reviewsData } = await supabase.functions.invoke('admin-reviews', {
+          body: { action: 'list', status: statusFilter, limit: 100 }
+        });
+        if (reviewsData?.success) {
+          setReviews(reviewsData.reviews);
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors du rejet:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de rejeter l'avis",
+        variant: "destructive",
+      });
+    }
   };
 
   const renderStars = (rating: number) => {
