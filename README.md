@@ -59,6 +59,25 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+- Capacitor (for mobile apps)
+- Supabase (backend & database)
+
+## 📱 Mobile Application
+
+Bikawo est également disponible en tant qu'application mobile native ! 
+
+### Fonctionnalités mobiles
+- Interface optimisée pour mobile/tablette
+- Navigation tactile intuitive
+- Géolocalisation native
+- Appels téléphoniques intégrés
+- Notifications push
+- Mode hors ligne
+
+### Pour créer l'app mobile
+Consultez notre [Guide Mobile détaillé](./MOBILE_GUIDE.md) pour transformer cette application web en app native iOS/Android avec Capacitor.
+
+Ou testez immédiatement en version web mobile sur votre téléphone !
 
 ## How can I deploy this project?
 
