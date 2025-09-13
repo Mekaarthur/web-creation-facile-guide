@@ -37,9 +37,9 @@ const AdminQuality = () => {
   const [issues] = useState<QualityIssue[]>([
     {
       id: '1',
-      type: 'service',
-      title: 'Retards récurrents service BikaKids',
-      description: 'Plusieurs signalements de retards pour les prestations de garde d\'enfants',
+      type: 'process',
+      title: 'Validation des processus techniques',
+      description: 'Vérification des systèmes de notifications, intégrations de paiement et gestion des fichiers',
       severity: 'high',
       status: 'in_progress',
       created_at: '2024-12-10T10:00:00Z',
