@@ -47,18 +47,48 @@ class NotificationService {
     }
   }
 
-  // Envoyer une notification email
+  // Envoyer une notification email moderne avec tendresse
   async sendEmailNotification(data: EmailNotificationData) {
     try {
-      const { error } = await supabase.functions.invoke('send-notification-email', {
-        body: data
+      // Utiliser la nouvelle fonction moderne avec messages tendres
+      const { error } = await supabase.functions.invoke('send-modern-notification', {
+        body: {
+          type: data.type,
+          recipient: {
+            email: data.to,
+            name: data.data.clientName || data.data.providerName || 'Utilisateur',
+            firstName: (data.data.clientName || data.data.providerName || 'Utilisateur').split(' ')[0]
+          },
+          data: {
+            serviceName: data.data.serviceName,
+            bookingDate: data.data.bookingDate,
+            startTime: data.data.bookingTime,
+            address: data.data.location,
+            price: data.data.price,
+            providerName: data.data.providerName,
+            clientName: data.data.clientName,
+            bookingId: data.data.bookingId,
+            message: data.data.message,
+            rating: data.data.rating
+          }
+        }
       });
 
       if (error) throw error;
+      console.log('💝 Email moderne envoyé avec tendresse');
       return { success: true };
     } catch (error) {
-      console.error('Error sending email notification:', error);
-      return { success: false, error };
+      console.error('Error sending modern email notification:', error);
+      // Fallback vers l'ancienne fonction
+      try {
+        await supabase.functions.invoke('send-notification-email', {
+          body: data
+        });
+        return { success: true };
+      } catch (fallbackError) {
+        console.error('Fallback error:', fallbackError);
+        return { success: false, error };
+      }
     }
   }
 

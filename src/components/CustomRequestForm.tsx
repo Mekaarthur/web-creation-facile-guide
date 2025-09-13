@@ -99,39 +99,55 @@ const CustomRequestForm = () => {
         price: 0
       };
 
-      // Essayer d'envoyer les emails (ne bloque pas la réussite de la demande)
+      // Essayer d'envoyer les emails modernes avec tendresse (ne bloque pas la réussite de la demande)
       try {
-        await supabase.functions.invoke('send-notification', {
+        await supabase.functions.invoke('send-modern-notification', {
           body: {
             type: 'booking_confirmation',
-            recipientEmail: formData.client_email,
-            recipientName: formData.client_name,
-            bookingDetails
+            recipient: {
+              email: formData.client_email,
+              name: formData.client_name,
+              firstName: formData.client_name.split(' ')[0]
+            },
+            data: {
+              serviceName: 'Demande personnalisée',
+              serviceDescription: formData.service_description,
+              bookingDate: preferredDateStr || 'À définir',
+              startTime: selectedTime || 'À définir',
+              address: formData.pickup_address,
+              bookingId: created?.id
+            }
           }
         });
+        console.log('💝 Email client moderne envoyé avec tendresse');
       } catch (e) {
-        console.error('Erreur envoi email client:', e);
+        console.error('Erreur envoi email client moderne:', e);
       }
 
       try {
-        await supabase.functions.invoke('send-notification-email', {
+        await supabase.functions.invoke('send-modern-notification', {
           body: {
-            to: 'admin@bikawo.com',
-            type: 'booking_request',
+            type: 'new_mission_available',
+            recipient: {
+              email: 'admin@bikawo.com',
+              name: 'Admin Bikawo',
+              firstName: 'Admin'
+            },
             data: {
-              clientName: formData.client_name,
               serviceName: 'Demande personnalisée',
-              bookingDate: preferredDateStr || '',
-              bookingTime: selectedTime || '',
-              location: formData.pickup_address,
-              price: 0,
+              serviceDescription: formData.service_description,
+              bookingDate: preferredDateStr || 'À définir',
+              startTime: selectedTime || 'À définir',
+              address: formData.pickup_address,
+              clientName: formData.client_name,
               bookingId: created?.id,
               message: formData.service_description
             }
           }
         });
+        console.log('💝 Email admin moderne envoyé avec tendresse');
       } catch (e) {
-        console.error('Erreur notification admin:', e);
+        console.error('Erreur notification admin moderne:', e);
       }
 
       toast({

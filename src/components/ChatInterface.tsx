@@ -113,17 +113,37 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
       setNewMessage('');
 
-      // Envoyer notification email
-      await supabase.functions.invoke('send-notification-email', {
-        body: {
-          to: otherUserId, // Note: Il faudrait récupérer l'email du destinataire
-          type: 'chat_message',
-          data: {
-            message: newMessage.trim(),
-            bookingId,
-          }
+      // Envoyer notification email moderne avec tendresse
+      try {
+        // Récupérer l'email du destinataire
+        const { data: recipientProfile } = await supabase
+          .from('profiles')
+          .select('email, first_name, last_name')
+          .eq('user_id', otherUserId)
+          .single();
+
+        if (recipientProfile?.email) {
+          await supabase.functions.invoke('send-modern-notification', {
+            body: {
+              type: 'chat_message_client', // ou 'chat_message_provider' selon le contexte
+              recipient: {
+                email: recipientProfile.email,
+                name: `${recipientProfile.first_name} ${recipientProfile.last_name}`,
+                firstName: recipientProfile.first_name
+              },
+              data: {
+                serviceName: 'Conversation',
+                message: newMessage.trim(),
+                clientName: user?.email?.split('@')[0] || 'Utilisateur',
+                bookingId: bookingId
+              }
+            }
+          });
+          console.log('💝 Notification chat moderne envoyée avec tendresse');
         }
-      });
+      } catch (e) {
+        console.error('Erreur notification chat moderne:', e);
+      }
 
     } catch (error) {
       console.error('Error sending message:', error);

@@ -7,15 +7,41 @@ export const useWorkflowEmails = () => {
 
   const sendWorkflowEmail = async (trigger: string, data: any) => {
     try {
-      const { error } = await supabase.functions.invoke('send-workflow-email', {
-        body: { trigger, ...data }
+      // Utiliser la nouvelle fonction moderne avec messages tendres
+      const { error } = await supabase.functions.invoke('send-modern-notification', {
+        body: {
+          type: trigger,
+          recipient: {
+            email: data.client_email,
+            name: data.client_name,
+            firstName: data.client_name?.split(' ')[0] || 'Client'
+          },
+          data: {
+            serviceName: data.booking_details?.service_name,
+            bookingDate: data.booking_details?.booking_date,
+            startTime: data.booking_details?.start_time,
+            address: data.booking_details?.address,
+            price: data.booking_details?.total_price,
+            providerName: data.provider_name,
+            clientName: data.client_name,
+            bookingId: data.booking_id
+          }
+        }
       });
 
       if (error) throw error;
 
-      console.log(`Email ${trigger} envoyé avec succès`);
+      console.log(`💝 Email moderne ${trigger} envoyé avec tendresse`);
     } catch (error) {
-      console.error(`Erreur envoi email ${trigger}:`, error);
+      console.error(`Erreur envoi email moderne ${trigger}:`, error);
+      // Fallback vers l'ancienne fonction en cas d'erreur
+      try {
+        await supabase.functions.invoke('send-workflow-email', {
+          body: { trigger, ...data }
+        });
+      } catch (fallbackError) {
+        console.error('Erreur fallback:', fallbackError);
+      }
     }
   };
 
