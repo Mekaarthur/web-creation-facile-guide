@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Star, TrendingUp, AlertCircle, CheckCircle, Clock, Users } from "lucide-react";
+import SystemHealthCheck from "@/components/admin/SystemHealthCheck";
 
 interface QualityMetric {
   id: string;
@@ -145,6 +146,7 @@ const AdminQuality = () => {
         <TabsList>
           <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
           <TabsTrigger value="issues">Problèmes qualité</TabsTrigger>
+          <TabsTrigger value="tests">Tests Système</TabsTrigger>
           <TabsTrigger value="analytics">Analyses</TabsTrigger>
         </TabsList>
 
@@ -242,6 +244,10 @@ const AdminQuality = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="tests" className="space-y-4">
+          <SystemHealthCheck />
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-4">
