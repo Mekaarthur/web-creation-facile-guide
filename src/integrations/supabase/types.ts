@@ -1160,42 +1160,57 @@ export type Database = {
       }
       notification_logs: {
         Row: {
+          clicked_at: string | null
           content: string
           created_at: string
+          delivered_at: string | null
+          email_id: string | null
           entity_id: string | null
           entity_type: string | null
           error_message: string | null
           id: string
           notification_type: string
+          opened_at: string | null
           sent_at: string | null
           status: string | null
           subject: string | null
+          user_email: string | null
           user_id: string
         }
         Insert: {
+          clicked_at?: string | null
           content: string
           created_at?: string
+          delivered_at?: string | null
+          email_id?: string | null
           entity_id?: string | null
           entity_type?: string | null
           error_message?: string | null
           id?: string
           notification_type: string
+          opened_at?: string | null
           sent_at?: string | null
           status?: string | null
           subject?: string | null
+          user_email?: string | null
           user_id: string
         }
         Update: {
+          clicked_at?: string | null
           content?: string
           created_at?: string
+          delivered_at?: string | null
+          email_id?: string | null
           entity_id?: string | null
           entity_type?: string | null
           error_message?: string | null
           id?: string
           notification_type?: string
+          opened_at?: string | null
           sent_at?: string | null
           status?: string | null
           subject?: string | null
+          user_email?: string | null
           user_id?: string
         }
         Relationships: []
