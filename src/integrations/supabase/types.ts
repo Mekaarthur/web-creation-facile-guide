@@ -721,6 +721,69 @@ export type Database = {
         }
         Relationships: []
       }
+      counter_proposals: {
+        Row: {
+          client_response: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          original_booking_id: string
+          proposed_date: string
+          proposed_price: number | null
+          proposed_time: string
+          provider_id: string
+          reason: string | null
+          responded_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          client_response?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          original_booking_id: string
+          proposed_date: string
+          proposed_price?: number | null
+          proposed_time: string
+          provider_id: string
+          reason?: string | null
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          client_response?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          original_booking_id?: string
+          proposed_date?: string
+          proposed_price?: number | null
+          proposed_time?: string
+          provider_id?: string
+          reason?: string | null
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "counter_proposals_original_booking_id_fkey"
+            columns: ["original_booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "counter_proposals_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       custom_booking_preferences: {
         Row: {
           booking_id: string
@@ -821,6 +884,110 @@ export type Database = {
           urgency_level?: string | null
         }
         Relationships: []
+      }
+      emergency_assignments: {
+        Row: {
+          accepted_at: string | null
+          auto_assigned: boolean | null
+          created_at: string
+          id: string
+          original_booking_id: string
+          reason: string
+          replacement_provider_id: string
+          status: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          auto_assigned?: boolean | null
+          created_at?: string
+          id?: string
+          original_booking_id: string
+          reason: string
+          replacement_provider_id: string
+          status?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          auto_assigned?: boolean | null
+          created_at?: string
+          id?: string
+          original_booking_id?: string
+          reason?: string
+          replacement_provider_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "emergency_assignments_original_booking_id_fkey"
+            columns: ["original_booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "emergency_assignments_replacement_provider_id_fkey"
+            columns: ["replacement_provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incidents: {
+        Row: {
+          booking_id: string | null
+          created_at: string
+          description: string
+          id: string
+          metadata: Json | null
+          reported_by: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          booking_id?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          metadata?: Json | null
+          reported_by?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          booking_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          metadata?: Json | null
+          reported_by?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incidents_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       internal_conversations: {
         Row: {
@@ -1248,6 +1415,50 @@ export type Database = {
         }
         Relationships: []
       }
+      nps_surveys: {
+        Row: {
+          booking_id: string | null
+          category: string
+          client_id: string
+          created_at: string
+          feedback: string | null
+          follow_up_sent: boolean | null
+          id: string
+          score: number
+          survey_date: string
+        }
+        Insert: {
+          booking_id?: string | null
+          category: string
+          client_id: string
+          created_at?: string
+          feedback?: string | null
+          follow_up_sent?: boolean | null
+          id?: string
+          score: number
+          survey_date?: string
+        }
+        Update: {
+          booking_id?: string | null
+          category?: string
+          client_id?: string
+          created_at?: string
+          feedback?: string | null
+          follow_up_sent?: boolean | null
+          id?: string
+          score?: number
+          survey_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nps_surveys_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           admin_notes: string | null
@@ -1508,6 +1719,54 @@ export type Database = {
           },
         ]
       }
+      provider_compensations: {
+        Row: {
+          amount: number
+          booking_id: string | null
+          created_at: string
+          id: string
+          paid_at: string | null
+          provider_id: string
+          reason: string
+          status: string
+        }
+        Insert: {
+          amount?: number
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          provider_id: string
+          reason: string
+          status?: string
+        }
+        Update: {
+          amount?: number
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          provider_id?: string
+          reason?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_compensations_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_compensations_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provider_documents: {
         Row: {
           created_at: string
@@ -1715,6 +1974,57 @@ export type Database = {
           },
           {
             foreignKeyName: "provider_notifications_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_penalties: {
+        Row: {
+          amount: number
+          applied_at: string | null
+          booking_id: string | null
+          created_at: string
+          id: string
+          penalty_type: string
+          provider_id: string
+          reason: string | null
+          status: string
+        }
+        Insert: {
+          amount?: number
+          applied_at?: string | null
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+          penalty_type: string
+          provider_id: string
+          reason?: string | null
+          status?: string
+        }
+        Update: {
+          amount?: number
+          applied_at?: string | null
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+          penalty_type?: string
+          provider_id?: string
+          reason?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_penalties_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_penalties_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
             referencedRelation: "providers"
@@ -2194,6 +2504,48 @@ export type Database = {
           subscription_tier?: string | null
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      system_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          alert_type: string
+          component: string | null
+          created_at: string
+          id: string
+          message: string
+          metadata: Json | null
+          resolved_at: string | null
+          severity: string
+          status: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type: string
+          component?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          metadata?: Json | null
+          resolved_at?: string | null
+          severity: string
+          status?: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type?: string
+          component?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          metadata?: Json | null
+          resolved_at?: string | null
+          severity?: string
+          status?: string
         }
         Relationships: []
       }
