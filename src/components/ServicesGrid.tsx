@@ -39,42 +39,29 @@ const services = Object.values(servicesData).map(service => ({
 
 const ServicesGrid = () => {
   return (
-    <section className="py-16 bg-gradient-to-b from-background to-secondary/10">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-          Nos Services
-        </h2>
-        
-        <p className="text-lg text-center text-muted-foreground mb-12 max-w-4xl mx-auto">
-          Que vous cherchiez de l'accompagnement ou souhaitiez proposer vos services, 
-          découvrez nos 8 univers Bika adaptés à tous vos besoins quotidiens.
-        </p>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {services.map((service) => (
-            <Link key={service.id} to={service.path} className="group">
-              <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
-                <div className="aspect-[4/3] overflow-hidden">
-                  <img 
-                    src={service.image} 
-                    alt={service.title}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                  />
-                </div>
-                <CardContent className="p-4">
-                  <h3 className="font-semibold text-lg mb-1 group-hover:text-primary transition-colors">
-                    {service.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {service.subtitle}
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </section>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {services.map((service) => (
+        <Link key={service.id} to={service.path} className="group">
+          <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+            <div className="aspect-[4/3] overflow-hidden">
+              <img 
+                src={service.image} 
+                alt={service.title}
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+              />
+            </div>
+            <CardContent className="p-4">
+              <h3 className="font-semibold text-lg mb-1 group-hover:text-primary transition-colors">
+                {service.title}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {service.subtitle}
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+      ))}
+    </div>
   );
 };
 
