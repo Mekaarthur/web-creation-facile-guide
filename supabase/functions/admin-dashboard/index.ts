@@ -46,6 +46,18 @@ serve(async (req) => {
       
       case 'get_service_performance':
         return await getServicePerformance(supabase, requestData);
+      
+      case 'validate_all_providers':
+        return await validateAllProviders(supabase, requestData);
+      
+      case 'get_alerts':
+        return await getAlerts(supabase, requestData);
+      
+      case 'get_payments_summary':
+        return await getPaymentsSummary(supabase, requestData);
+      
+      case 'get_messages_summary':
+        return await getMessagesSummary(supabase, requestData);
 
       default:
         throw new Error(`Action non reconnue: ${action}`);
@@ -639,6 +651,237 @@ async function getServicePerformance(supabase: any, { timeRange = '30d' }: any) 
     );
   } catch (error) {
     console.error('Erreur lors de la récupération de la performance des services:', error);
+    throw error;
+  }
+}
+
+async function validateAllProviders(supabase: any, { }: any) {
+  try {
+    // Récupérer tous les prestataires en attente de validation
+    const { data: pendingProviders, error: fetchError } = await supabase
+      .from('providers')
+      .select('id, business_name, user_id')
+      .in('status', ['pending', 'pending_validation'])
+      .eq('is_verified', false);
+
+    if (fetchError) throw fetchError;
+
+    if (!pendingProviders || pendingProviders.length === 0) {
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Aucun prestataire en attente de validation',
+          count: 0 
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Valider tous les prestataires
+    const { error: updateError } = await supabase
+      .from('providers')
+      .update({
+        is_verified: true,
+        status: 'active',
+        updated_at: new Date().toISOString()
+      })
+      .in('id', pendingProviders.map(p => p.id));
+
+    if (updateError) throw updateError;
+
+    // Logger l'action pour chaque prestataire
+    const { data: { user } } = await supabase.auth.getUser();
+    const logEntries = pendingProviders.map(provider => ({
+      admin_user_id: user?.id,
+      entity_type: 'provider',
+      entity_id: provider.id,
+      action_type: 'bulk_validate_providers',
+      new_value: 'validated',
+      description: `Validation en lot - ${provider.business_name}`
+    }));
+
+    await supabase
+      .from('admin_actions_log')
+      .insert(logEntries);
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: `${pendingProviders.length} prestataire(s) validé(s) avec succès`,
+        count: pendingProviders.length
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Erreur lors de la validation en lot des prestataires:', error);
+    throw error;
+  }
+}
+
+async function getAlerts(supabase: any, { }: any) {
+  try {
+    const alerts = [];
+
+    // Prestataires en attente de validation
+    const { data: pendingProviders } = await supabase
+      .from('providers')
+      .select('id, business_name, created_at')
+      .in('status', ['pending', 'pending_validation'])
+      .eq('is_verified', false);
+
+    if (pendingProviders && pendingProviders.length > 0) {
+      alerts.push({
+        id: 'providers-validation',
+        type: 'warning',
+        title: 'Prestataires en attente',
+        message: `${pendingProviders.length} prestataire(s) en attente de validation`,
+        count: pendingProviders.length,
+        priority: 'high'
+      });
+    }
+
+    // Missions en cours depuis plus de 2 jours
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
+    const { data: stalledMissions } = await supabase
+      .from('bookings')
+      .select('id, created_at')
+      .eq('status', 'in_progress')
+      .lt('started_at', twoDaysAgo.toISOString());
+
+    if (stalledMissions && stalledMissions.length > 0) {
+      alerts.push({
+        id: 'stalled-missions',
+        type: 'warning',
+        title: 'Missions en cours',
+        message: `${stalledMissions.length} mission(s) en cours depuis plus de 2 jours`,
+        count: stalledMissions.length,
+        priority: 'medium'
+      });
+    }
+
+    // Avis non modérés
+    const { data: unmoderatedReviews } = await supabase
+      .from('reviews')
+      .select('id')
+      .eq('is_approved', false);
+
+    if (unmoderatedReviews && unmoderatedReviews.length > 0) {
+      alerts.push({
+        id: 'unmoderated-reviews',
+        type: 'info',
+        title: 'Avis à modérer',
+        message: `${unmoderatedReviews.length} avis en attente de modération`,
+        count: unmoderatedReviews.length,
+        priority: 'low'
+      });
+    }
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        alerts,
+        totalCount: alerts.reduce((sum, alert) => sum + alert.count, 0)
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Erreur lors de la récupération des alertes:', error);
+    throw error;
+  }
+}
+
+async function getPaymentsSummary(supabase: any, { }: any) {
+  try {
+    // Paiements en attente
+    const { data: pendingPayments } = await supabase
+      .from('payments')
+      .select('amount')
+      .eq('status', 'en_attente');
+
+    const pendingAmount = pendingPayments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+
+    // Paiements du jour
+    const today = new Date().toISOString().split('T')[0];
+    const { data: todayPayments } = await supabase
+      .from('payments')
+      .select('amount')
+      .eq('status', 'payé')
+      .gte('payment_date', `${today}T00:00:00.000Z`)
+      .lt('payment_date', `${today}T23:59:59.999Z`);
+
+    const todayAmount = todayPayments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+
+    // Paiements échoués
+    const { data: failedPayments } = await supabase
+      .from('payments')
+      .select('id, amount')
+      .eq('status', 'échoué');
+
+    const failedAmount = failedPayments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        summary: {
+          pending: {
+            count: pendingPayments?.length || 0,
+            amount: pendingAmount
+          },
+          today: {
+            count: todayPayments?.length || 0,
+            amount: todayAmount
+          },
+          failed: {
+            count: failedPayments?.length || 0,
+            amount: failedAmount
+          }
+        }
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Erreur lors de la récupération du résumé des paiements:', error);
+    throw error;
+  }
+}
+
+async function getMessagesSummary(supabase: any, { }: any) {
+  try {
+    // Messages non lus
+    const { data: unreadMessages } = await supabase
+      .from('internal_messages')
+      .select('id')
+      .eq('is_read', false);
+
+    // Conversations actives
+    const { data: activeConversations } = await supabase
+      .from('internal_conversations')
+      .select('id')
+      .eq('status', 'active');
+
+    // Messages du jour
+    const today = new Date().toISOString().split('T')[0];
+    const { data: todayMessages } = await supabase
+      .from('internal_messages')
+      .select('id')
+      .gte('created_at', `${today}T00:00:00.000Z`)
+      .lt('created_at', `${today}T23:59:59.999Z`);
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        summary: {
+          unread: unreadMessages?.length || 0,
+          activeConversations: activeConversations?.length || 0,
+          todayMessages: todayMessages?.length || 0
+        }
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Erreur lors de la récupération du résumé des messages:', error);
     throw error;
   }
 }

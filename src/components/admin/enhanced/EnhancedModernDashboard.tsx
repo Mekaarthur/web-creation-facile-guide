@@ -377,6 +377,111 @@ export default function EnhancedModernDashboard() {
     }
   };
 
+  const handleValidateAllProviders = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-dashboard', {
+        body: { action: 'validate_all_providers' }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast({
+          title: "Succès",
+          description: data.message
+        });
+        refreshData(); // Recharger toutes les données
+      }
+    } catch (error) {
+      console.error('Erreur lors de la validation en lot:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de valider les prestataires",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleManageAlerts = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-dashboard', {
+        body: { action: 'get_alerts' }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast({
+          title: "Alertes",
+          description: `${data.totalCount} alerte(s) trouvée(s)`
+        });
+        // Ici vous pourriez ouvrir un modal avec la liste des alertes
+        console.log('Alertes:', data.alerts);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des alertes:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les alertes",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleViewPayments = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-dashboard', {
+        body: { action: 'get_payments_summary' }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        const { summary } = data;
+        toast({
+          title: "Résumé Paiements",
+          description: `En attente: ${summary.pending.amount}€ | Aujourd'hui: ${summary.today.amount}€`
+        });
+        // Redirection vers la page des paiements
+        window.location.href = '/admin/paiements';
+      }
+    } catch (error) {
+      console.error('Erreur lors du résumé des paiements:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger le résumé des paiements",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleViewMessages = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-dashboard', {
+        body: { action: 'get_messages_summary' }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        const { summary } = data;
+        toast({
+          title: "Messages",
+          description: `${summary.unread} non lu(s) | ${summary.activeConversations} conversations actives`
+        });
+        // Redirection vers la page des messages
+        window.location.href = '/admin/messagerie';
+      }
+    } catch (error) {
+      console.error('Erreur lors du résumé des messages:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger le résumé des messages",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleContactProvider = async (providerId: string, message: string) => {
     try {
       const { data, error } = await supabase.functions.invoke('admin-dashboard', {
@@ -632,17 +737,19 @@ export default function EnhancedModernDashboard() {
                 <Button 
                   variant="outline" 
                   className="h-auto p-4 flex flex-col items-center gap-2"
-                  onClick={() => handleValidateProvider('all')}
+                  onClick={handleValidateAllProviders}
+                  disabled={loading}
                 >
-                  <CheckCircle className="w-6 h-6 text-green-500" />
+                  {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <CheckCircle className="w-6 h-6 text-green-500" />}
                   <span className="text-sm">Valider Prestataires</span>
-                  <Badge variant="destructive">12</Badge>
+                  <Badge variant="destructive">3</Badge>
                 </Button>
                 
                 <Button 
                   variant="outline" 
                   className="h-auto p-4 flex flex-col items-center gap-2"
-                  onClick={() => toast({ title: "Gestion des alertes", description: "Fonctionnalité en cours de développement" })}
+                  onClick={handleManageAlerts}
+                  disabled={loading}
                 >
                   <AlertTriangle className="w-6 h-6 text-amber-500" />
                   <span className="text-sm">Gérer Alertes</span>
@@ -652,7 +759,8 @@ export default function EnhancedModernDashboard() {
                 <Button 
                   variant="outline" 
                   className="h-auto p-4 flex flex-col items-center gap-2"
-                  onClick={() => window.location.href = '/admin/paiements'}
+                  onClick={handleViewPayments}
+                  disabled={loading}
                 >
                   <Euro className="w-6 h-6 text-blue-500" />
                   <span className="text-sm">Paiements</span>
@@ -662,7 +770,8 @@ export default function EnhancedModernDashboard() {
                 <Button 
                   variant="outline" 
                   className="h-auto p-4 flex flex-col items-center gap-2"
-                  onClick={() => window.location.href = '/admin/messagerie'}
+                  onClick={handleViewMessages}
+                  disabled={loading}
                 >
                   <MessageSquare className="w-6 h-6 text-purple-500" />
                   <span className="text-sm">Messages</span>
