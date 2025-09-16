@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.3';
 
+// Updated admin dashboard functions - version 1.2
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -48,18 +50,23 @@ serve(async (req) => {
         return await getServicePerformance(supabase, requestData);
       
       case 'validate_all_providers':
+        console.log('Processing validate_all_providers action');
         return await validateAllProviders(supabase, requestData);
       
       case 'get_alerts':
+        console.log('Processing get_alerts action');
         return await getAlerts(supabase, requestData);
       
       case 'get_payments_summary':
+        console.log('Processing get_payments_summary action');
         return await getPaymentsSummary(supabase, requestData);
       
       case 'get_messages_summary':
+        console.log('Processing get_messages_summary action');
         return await getMessagesSummary(supabase, requestData);
 
       default:
+        console.error('Action non reconnue:', action);
         throw new Error(`Action non reconnue: ${action}`);
     }
   } catch (error) {
@@ -432,7 +439,6 @@ async function validateProvider(supabase: any, { providerId }: any) {
 
 async function manageAlert(supabase: any, { alertId, action }: any) {
   try {
-    // Simuler la gestion d'alertes (à adapter selon votre structure)
     console.log(`Gestion alerte ${alertId}: ${action}`);
 
     // Logger l'action
@@ -519,84 +525,35 @@ async function contactProvider(supabase: any, { providerId, message }: any) {
   }
 }
 
-async function exportDashboardData(supabase: any, { type, format = 'csv' }: any) {
+async function exportDashboardData(supabase: any, { format = 'json' }: any) {
   try {
-    let data;
-    let filename;
+    // Récupérer les données principales
+    const { data: stats } = await getDashboardStats(supabase, { timeRange: '30d' });
+    const { data: providers } = await getTopProviders(supabase, { limit: 100 });
+    const { data: activities } = await getRecentActivities(supabase, { limit: 100 });
 
-    switch (type) {
-      case 'providers':
-        const { data: providers } = await supabase
-          .from('providers')
-          .select(`
-            business_name,
-            location,
-            rating,
-            missions_completed,
-            total_earnings,
-            status,
-            created_at,
-            user_id
-          `)
-          .order('created_at', { ascending: false });
-        
-        data = providers;
-        filename = `prestataires_${new Date().toISOString().split('T')[0]}.csv`;
-        break;
-
-      case 'bookings':
-        const { data: bookings } = await supabase
-          .from('bookings')
-          .select(`
-            id,
-            booking_date,
-            start_time,
-            end_time,
-            total_price,
-            status,
-            created_at,
-            services(name),
-            profiles(first_name, last_name, email)
-          `)
-          .order('created_at', { ascending: false })
-          .limit(1000);
-        
-        data = bookings;
-        filename = `reservations_${new Date().toISOString().split('T')[0]}.csv`;
-        break;
-
-      default:
-        throw new Error('Type d\'export non supporté');
-    }
-
-    if (format === 'csv') {
-      // Générer CSV basique (à améliorer selon vos besoins)
-      const csvContent = JSON.stringify(data);
-      
-      return new Response(csvContent, {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'text/csv; charset=utf-8',
-          'Content-Disposition': `attachment; filename="${filename}"`
-        }
-      });
-    }
+    const exportData = {
+      generated_at: new Date().toISOString(),
+      stats,
+      providers,
+      activities
+    };
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        data,
-        count: data?.length || 0
+        data: exportData,
+        downloadUrl: '#' // Ici vous pourriez générer un lien vers un fichier CSV/Excel
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Erreur lors de l\'export:', error);
+    console.error('Erreur lors de l\'export des données:', error);
     throw error;
   }
 }
 
-async function getServicePerformance(supabase: any, { timeRange = '30d' }: any) {
+async function getServicePerformance(supabase: any, { timeRange = '7d' }: any) {
   try {
     const now = new Date();
     let startDate = new Date();
@@ -657,6 +614,8 @@ async function getServicePerformance(supabase: any, { timeRange = '30d' }: any) 
 
 async function validateAllProviders(supabase: any, { }: any) {
   try {
+    console.log('Starting validateAllProviders function');
+    
     // Récupérer tous les prestataires en attente de validation
     const { data: pendingProviders, error: fetchError } = await supabase
       .from('providers')
@@ -664,7 +623,12 @@ async function validateAllProviders(supabase: any, { }: any) {
       .in('status', ['pending', 'pending_validation'])
       .eq('is_verified', false);
 
-    if (fetchError) throw fetchError;
+    console.log('Pending providers found:', pendingProviders?.length || 0);
+
+    if (fetchError) {
+      console.error('Error fetching providers:', fetchError);
+      throw fetchError;
+    }
 
     if (!pendingProviders || pendingProviders.length === 0) {
       return new Response(
@@ -687,7 +651,10 @@ async function validateAllProviders(supabase: any, { }: any) {
       })
       .in('id', pendingProviders.map(p => p.id));
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.error('Error updating providers:', updateError);
+      throw updateError;
+    }
 
     // Logger l'action pour chaque prestataire
     const { data: { user } } = await supabase.auth.getUser();
@@ -703,6 +670,8 @@ async function validateAllProviders(supabase: any, { }: any) {
     await supabase
       .from('admin_actions_log')
       .insert(logEntries);
+
+    console.log(`Successfully validated ${pendingProviders.length} providers`);
 
     return new Response(
       JSON.stringify({ 
@@ -720,6 +689,8 @@ async function validateAllProviders(supabase: any, { }: any) {
 
 async function getAlerts(supabase: any, { }: any) {
   try {
+    console.log('Starting getAlerts function');
+    
     const alerts = [];
 
     // Prestataires en attente de validation
@@ -778,6 +749,8 @@ async function getAlerts(supabase: any, { }: any) {
       });
     }
 
+    console.log('Alerts generated:', alerts.length);
+
     return new Response(
       JSON.stringify({ 
         success: true, 
@@ -794,6 +767,8 @@ async function getAlerts(supabase: any, { }: any) {
 
 async function getPaymentsSummary(supabase: any, { }: any) {
   try {
+    console.log('Starting getPaymentsSummary function');
+    
     // Paiements en attente
     const { data: pendingPayments } = await supabase
       .from('payments')
@@ -820,6 +795,8 @@ async function getPaymentsSummary(supabase: any, { }: any) {
       .eq('status', 'échoué');
 
     const failedAmount = failedPayments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+
+    console.log('Payments summary calculated');
 
     return new Response(
       JSON.stringify({ 
@@ -849,6 +826,8 @@ async function getPaymentsSummary(supabase: any, { }: any) {
 
 async function getMessagesSummary(supabase: any, { }: any) {
   try {
+    console.log('Starting getMessagesSummary function');
+    
     // Messages non lus
     const { data: unreadMessages } = await supabase
       .from('internal_messages')
@@ -868,6 +847,8 @@ async function getMessagesSummary(supabase: any, { }: any) {
       .select('id')
       .gte('created_at', `${today}T00:00:00.000Z`)
       .lt('created_at', `${today}T23:59:59.999Z`);
+
+    console.log('Messages summary calculated');
 
     return new Response(
       JSON.stringify({ 
