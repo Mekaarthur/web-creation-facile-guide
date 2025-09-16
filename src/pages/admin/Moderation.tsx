@@ -29,6 +29,11 @@ const AdminModeration = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
+      // Fetch statistics
+      const statsResponse = await supabase.functions.invoke('admin-moderation', {
+        body: { action: 'get_stats' }
+      });
+
       // Fetch reports
       const reportsResponse = await supabase.functions.invoke('admin-moderation', {
         body: { action: 'list_reports' }
@@ -38,6 +43,15 @@ const AdminModeration = () => {
       const reviewsResponse = await supabase.functions.invoke('admin-moderation', {
         body: { action: 'list_reviews' }
       });
+
+      if (statsResponse.data?.success) {
+        // Update stats with real data
+        const realStats = statsResponse.data.data;
+        moderationStats[0].value = realStats.open_reports;
+        moderationStats[1].value = realStats.pending_reviews;
+        moderationStats[2].value = realStats.suspended_users;
+        moderationStats[3].value = realStats.weekly_actions;
+      }
 
       if (reportsResponse.data?.success) {
         setReportedContent(reportsResponse.data.data);

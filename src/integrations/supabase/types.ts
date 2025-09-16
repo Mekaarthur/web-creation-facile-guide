@@ -721,6 +721,54 @@ export type Database = {
         }
         Relationships: []
       }
+      content_reports: {
+        Row: {
+          additional_details: string | null
+          created_at: string
+          id: string
+          report_category: string
+          report_reason: string
+          reported_by: string
+          reported_content_id: string
+          reported_content_type: string
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          additional_details?: string | null
+          created_at?: string
+          id?: string
+          report_category?: string
+          report_reason: string
+          reported_by: string
+          reported_content_id: string
+          reported_content_type: string
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          additional_details?: string | null
+          created_at?: string
+          id?: string
+          report_category?: string
+          report_reason?: string
+          reported_by?: string
+          reported_content_id?: string
+          reported_content_type?: string
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       counter_proposals: {
         Row: {
           client_response: string | null
@@ -1324,6 +1372,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      moderation_stats: {
+        Row: {
+          created_at: string
+          id: string
+          open_reports: number | null
+          pending_reviews: number | null
+          stat_date: string
+          suspended_users: number | null
+          updated_at: string
+          weekly_actions: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          open_reports?: number | null
+          pending_reviews?: number | null
+          stat_date?: string
+          suspended_users?: number | null
+          updated_at?: string
+          weekly_actions?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          open_reports?: number | null
+          pending_reviews?: number | null
+          stat_date?: string
+          suspended_users?: number | null
+          updated_at?: string
+          weekly_actions?: number | null
+        }
+        Relationships: []
       }
       notification_logs: {
         Row: {
@@ -2661,6 +2742,10 @@ export type Database = {
       calculate_distance: {
         Args: { lat1: number; lat2: number; lon1: number; lon2: number }
         Returns: number
+      }
+      calculate_moderation_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       calculate_provider_performance_score: {
         Args: { p_provider_id: string }

@@ -7,7 +7,7 @@ const corsHeaders = {
 }
 
 interface ModerationAction {
-  action: 'approve' | 'reject' | 'examine' | 'list_reports' | 'list_reviews';
+  action: 'approve' | 'reject' | 'examine' | 'list_reports' | 'list_reviews' | 'get_stats';
   type?: 'review' | 'report';
   id?: string;
   reason?: string;
@@ -63,15 +63,67 @@ serve(async (req) => {
     const { action, type, id, reason }: ModerationAction = await req.json();
 
     switch (action) {
-      case 'list_reports':
-        // Get reported content (simulated for now, you can add a reports table later)
-        const reportedContent = [
-          { id: 1, type: "Avis", user: "Marie D.", content: "Service décevant, prestataire...", reason: "Langage inapproprié", status: "pending" },
-          { id: 2, type: "Profil", user: "Jean M.", content: "Description du prestataire", reason: "Informations trompeuses", status: "pending" },
-          { id: 3, type: "Message", user: "Sophie L.", content: "Conversation client", reason: "Harcèlement", status: "reviewing" }
-        ];
+      case 'get_stats':
+        // Obtenir les statistiques de modération en temps réel
+        const { data: stats } = await supabase.rpc('calculate_moderation_stats');
         
-        return new Response(JSON.stringify({ success: true, data: reportedContent }), {
+        return new Response(JSON.stringify({ 
+          success: true, 
+          data: stats || {
+            open_reports: 0,
+            pending_reviews: 0,
+            suspended_users: 0,
+            weekly_actions: 0
+          }
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+
+      case 'list_reports':
+        // Obtenir les vrais signalements depuis la base de données
+        const { data: reports, error: reportsError } = await supabase
+          .from('content_reports')
+          .select(`
+            id,
+            reported_content_type,
+            reported_content_id,
+            report_reason,
+            report_category,
+            additional_details,
+            status,
+            created_at,
+            reported_by
+          `)
+          .in('status', ['pending', 'reviewing'])
+          .order('created_at', { ascending: false });
+
+        if (reportsError) throw reportsError;
+
+        // Enrichir avec les informations du rapporteur
+        const enrichedReports = await Promise.all(
+          (reports || []).map(async (report: any) => {
+            const { data: reporter } = await supabase
+              .from('profiles')
+              .select('first_name, last_name')
+              .eq('user_id', report.reported_by)
+              .maybeSingle();
+
+            return {
+              id: report.id,
+              type: report.reported_content_type,
+              user: reporter 
+                ? `${reporter.first_name} ${reporter.last_name}`
+                : 'Utilisateur inconnu',
+              content: `Contenu ${report.reported_content_type} signalé`,
+              reason: report.report_reason,
+              status: report.status,
+              details: report.additional_details,
+              created_at: report.created_at
+            };
+          })
+        );
+        
+        return new Response(JSON.stringify({ success: true, data: enrichedReports }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
 
@@ -145,6 +197,35 @@ serve(async (req) => {
           }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           });
+        } else if (type === 'report' && id) {
+          // Approve report - mark as resolved/dismissed
+          const { error: updateError } = await supabase
+            .from('content_reports')
+            .update({ 
+              status: 'resolved',
+              resolved_by: user.id,
+              resolved_at: new Date().toISOString(),
+              resolution_notes: reason || 'Signalement approuvé - pas d\'action nécessaire',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', id);
+
+          if (updateError) throw updateError;
+
+          // Log action
+          await supabase.rpc('log_action', {
+            p_entity_type: 'content_report',
+            p_entity_id: id,
+            p_action_type: 'approved',
+            p_admin_comment: reason || 'Signalement approuvé par modération'
+          });
+
+          return new Response(JSON.stringify({ 
+            success: true, 
+            message: 'Signalement approuvé - aucune action nécessaire' 
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
         }
         break;
 
@@ -169,6 +250,57 @@ serve(async (req) => {
           return new Response(JSON.stringify({ 
             success: true, 
             message: 'Avis rejeté et supprimé' 
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        } else if (type === 'report' && id) {
+          // Reject report - take action on reported content
+          const { data: report } = await supabase
+            .from('content_reports')
+            .select('reported_content_type, reported_content_id')
+            .eq('id', id)
+            .maybeSingle();
+
+          if (report) {
+            // Mark the reported content based on type
+            if (report.reported_content_type === 'review') {
+              await supabase
+                .from('reviews')
+                .update({ is_approved: false })
+                .eq('id', report.reported_content_id);
+            } else if (report.reported_content_type === 'provider') {
+              await supabase
+                .from('providers')
+                .update({ status: 'suspended' })
+                .eq('id', report.reported_content_id);
+            }
+          }
+
+          // Update report status
+          const { error: updateError } = await supabase
+            .from('content_reports')
+            .update({ 
+              status: 'resolved',
+              resolved_by: user.id,
+              resolved_at: new Date().toISOString(),
+              resolution_notes: reason || 'Signalement traité - action prise',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', id);
+
+          if (updateError) throw updateError;
+
+          // Log action
+          await supabase.rpc('log_action', {
+            p_entity_type: 'content_report',
+            p_entity_id: id,
+            p_action_type: 'rejected',
+            p_admin_comment: reason || 'Signalement traité - contenu modéré'
+          });
+
+          return new Response(JSON.stringify({ 
+            success: true, 
+            message: 'Signalement traité - action prise sur le contenu' 
           }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           });
@@ -225,6 +357,59 @@ serve(async (req) => {
             bookings: booking
               ? { booking_date: booking.booking_date, service_id: booking.service_id, address: booking.address }
               : null,
+          };
+
+          return new Response(JSON.stringify({ success: true, data: result }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        } else if (type === 'report' && id) {
+          // Examine report - get detailed report information
+          const { data: baseReport, error: reportError } = await supabase
+            .from('content_reports')
+            .select('*')
+            .eq('id', id)
+            .maybeSingle();
+
+          if (reportError) throw reportError;
+
+          if (!baseReport) {
+            return new Response(JSON.stringify({ success: true, data: null }), {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+          }
+
+          // Get reporter info and reported content details
+          const [
+            { data: reporter },
+            reportedContentData
+          ] = await Promise.all([
+            supabase
+              .from('profiles')
+              .select('first_name, last_name, email, user_id')
+              .eq('user_id', baseReport.reported_by)
+              .maybeSingle(),
+            // Get reported content based on type
+            baseReport.reported_content_type === 'review'
+              ? supabase
+                  .from('reviews')
+                  .select('rating, comment, client_id, provider_id')
+                  .eq('id', baseReport.reported_content_id)
+                  .maybeSingle()
+              : baseReport.reported_content_type === 'provider'
+              ? supabase
+                  .from('providers')
+                  .select('business_name, description, user_id')
+                  .eq('id', baseReport.reported_content_id)
+                  .maybeSingle()
+              : { data: null }
+          ]);
+
+          const result = {
+            ...baseReport,
+            reporter: reporter
+              ? { first_name: reporter.first_name, last_name: reporter.last_name, email: reporter.email }
+              : null,
+            reported_content_details: reportedContentData.data,
           };
 
           return new Response(JSON.stringify({ success: true, data: result }), {
