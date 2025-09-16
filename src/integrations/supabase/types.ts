@@ -2519,6 +2519,39 @@ export type Database = {
           },
         ]
       }
+      security_audit_log: {
+        Row: {
+          action_type: string
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          record_id: string | null
+          table_name: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          record_id?: string | null
+          table_name?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          record_id?: string | null
+          table_name?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       services: {
         Row: {
           category: string
@@ -2852,6 +2885,19 @@ export type Database = {
           id: string
           location: string
           price_range: string
+          rating: number
+        }[]
+      }
+      get_public_provider_info: {
+        Args: { p_provider_id: string }
+        Returns: {
+          business_name: string
+          description: string
+          id: string
+          is_verified: boolean
+          location: string
+          missions_completed: number
+          profile_photo_url: string
           rating: number
         }[]
       }
