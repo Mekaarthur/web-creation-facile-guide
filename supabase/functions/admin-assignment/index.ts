@@ -605,39 +605,89 @@ async function bulkAssignMissions(supabase: any, { missionIds, adminUserId }: an
           continue;
         }
 
-        // Récupérer les prestataires disponibles
-        const providersResponse = await getAvailableProviders(supabase, {
-          serviceType: mission.service_type,
-          location: mission.location
-        });
+        // Récupérer les prestataires disponibles directement
+        const { data: providers, error: providersError } = await supabase
+          .from('providers')
+          .select(`
+            id,
+            business_name,
+            location,
+            rating,
+            hourly_rate,
+            performance_score
+          `)
+          .eq('status', 'active')
+          .eq('is_verified', true)
+          .order('rating', { ascending: false, nullsLast: true })
+          .limit(5);
 
-        const providersJson = await providersResponse.json();
-        if (!providersJson.success || !providersJson.data.length) {
+        if (providersError || !providers || providers.length === 0) {
           results.push({ missionId, success: false, error: 'Aucun prestataire disponible' });
           failedCount++;
           continue;
         }
 
-        // Assigner au meilleur prestataire
-        const bestProvider = providersJson.data[0];
-        const assignResponse = await assignMissionManually(supabase, {
-          missionId,
-          providerId: bestProvider.id,
-          adminUserId
-        });
+        // Assigner au meilleur prestataire directement
+        const bestProvider = providers[0];
+        
+        // Assigner le prestataire à la mission
+        const { error: assignError } = await supabase
+          .from('client_requests')
+          .update({
+            assigned_provider_id: bestProvider.id,
+            status: 'assigned',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', missionId);
 
-        const assignJson = await assignResponse.json();
-        if (assignJson.success) {
-          results.push({ missionId, success: true, providerId: bestProvider.id, providerName: bestProvider.name });
-          assignedCount++;
-        } else {
-          results.push({ missionId, success: false, error: assignJson.error || 'Erreur d\'assignation' });
+        if (assignError) {
+          results.push({ missionId, success: false, error: 'Erreur d\'assignation: ' + assignError.message });
           failedCount++;
+          continue;
         }
+
+        // Créer une notification pour le prestataire (non bloquant)
+        try {
+          await supabase
+            .from('provider_notifications')
+            .insert({
+              provider_id: bestProvider.id,
+              title: 'Mission assignée automatiquement',
+              message: 'Une mission vous a été assignée automatiquement par le système.',
+              type: 'mission_assigned'
+            });
+        } catch (notifError) {
+          console.log('Info: notification ignorée:', notifError);
+        }
+
+        results.push({ 
+          missionId, 
+          success: true, 
+          providerId: bestProvider.id, 
+          providerName: bestProvider.business_name 
+        });
+        assignedCount++;
+
       } catch (error) {
         results.push({ missionId, success: false, error: error.message });
         failedCount++;
       }
+    }
+
+    // Logger l'action globale
+    try {
+      await supabase
+        .from('admin_actions_log')
+        .insert({
+          admin_user_id: adminUserId,
+          entity_type: 'bulk_assignment',
+          entity_id: '00000000-0000-0000-0000-000000000000',
+          action_type: 'bulk_assign_missions',
+          new_value: `${assignedCount}/${missionIds.length}`,
+          description: `Assignation en lot: ${assignedCount} succès, ${failedCount} échecs`
+        });
+    } catch (logError) {
+      console.log('Info: logging ignoré:', logError);
     }
 
     return new Response(
