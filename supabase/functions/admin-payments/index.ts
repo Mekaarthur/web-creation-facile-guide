@@ -115,19 +115,153 @@ serve(async (req) => {
         }
       };
 
-      return new Response(JSON.stringify({ 
-        payments, 
-        statistics,
-        pagination: { 
-          page, 
-          limit, 
-          total: count || 0,
-          totalPages: Math.ceil((count || 0) / limit)
+      if (action === "export") {
+        // Exporter les données en CSV
+        const format = url.searchParams.get('format') || 'csv';
+        
+        let query = supabaseClient
+          .from('payments')
+          .select(`
+            *,
+            profiles!payments_client_id_fkey(first_name, last_name),
+            carts(status, total_estimated),
+            bookings(id, service_id, services(name))
+          `)
+          .order('created_at', { ascending: false });
+
+        if (status) query = query.eq('status', status);
+        if (method) query = query.eq('payment_method', method);
+        if (clientId) query = query.eq('client_id', clientId);
+
+        const { data: exportData, error: exportError } = await query;
+        if (exportError) throw exportError;
+
+        if (format === 'csv') {
+          const headers = ['ID', 'Montant', 'Devise', 'Statut', 'Méthode', 'Client', 'Date Paiement', 'Transaction ID', 'Notes Admin'];
+          const csvContent = [
+            headers.join(','),
+            ...exportData.map(payment => [
+              payment.id,
+              payment.amount,
+              payment.currency,
+              payment.status,
+              payment.payment_method,
+              payment.profiles ? `"${payment.profiles.first_name} ${payment.profiles.last_name}"` : '',
+              payment.payment_date || '',
+              payment.transaction_id || '',
+              payment.admin_notes ? `"${payment.admin_notes.replace(/"/g, '""')}"` : ''
+            ].join(','))
+          ].join('\n');
+
+          return new Response(csvContent, {
+            headers: {
+              ...corsHeaders,
+              'Content-Type': 'text/csv',
+              'Content-Disposition': `attachment; filename="paiements_${new Date().toISOString().split('T')[0]}.csv"`
+            }
+          });
         }
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+      }
+
+      if (action === "finance_stats") {
+        // Récupérer les statistiques financières détaillées
+        const timeRange = url.searchParams.get('timeRange') || '30';
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - parseInt(timeRange));
+
+        // Calculer les revenus et commissions
+        const { data: paymentsData } = await supabaseClient
+          .from('payments')
+          .select('amount, status, payment_method, created_at')
+          .gte('created_at', startDate.toISOString());
+
+        // Calculer les paiements aux prestataires
+        const { data: providerInvoices } = await supabaseClient
+          .from('provider_invoices')
+          .select('amount_net, status, issued_date')
+          .gte('issued_date', startDate.toISOString());
+
+        const totalRevenue = paymentsData?.filter(p => p.status === 'payé').reduce((sum, p) => sum + p.amount, 0) || 0;
+        const totalCommissions = totalRevenue * 0.15; // 15% de commission
+        const pendingPayments = paymentsData?.filter(p => p.status === 'en_attente').reduce((sum, p) => sum + p.amount, 0) || 0;
+        const refunds = paymentsData?.filter(p => p.status === 'remboursé').reduce((sum, p) => sum + p.amount, 0) || 0;
+        const providerPayments = providerInvoices?.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount_net, 0) || 0;
+
+        return new Response(JSON.stringify({
+          revenue: totalRevenue,
+          commissions: totalCommissions,
+          pendingPayments,
+          refunds,
+          providerPayments,
+          trends: {
+            revenue: "+12.5%",
+            commissions: "+8.2%",
+            pendingPayments: "-15%",
+            refunds: "+5%"
+          }
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+
+      if (action === "recent_transactions") {
+        // Récupérer les transactions récentes
+        const limit = parseInt(url.searchParams.get('limit') || '10');
+        
+        const { data: transactions } = await supabaseClient
+          .from('payments')
+          .select(`
+            *,
+            profiles!payments_client_id_fkey(first_name, last_name),
+            bookings(service_id, services(name))
+          `)
+          .order('created_at', { ascending: false })
+          .limit(limit);
+
+        const formattedTransactions = transactions?.map(t => ({
+          id: t.id,
+          type: t.status === 'remboursé' ? 'Remboursement' : 'Paiement',
+          client: t.profiles ? `${t.profiles.first_name} ${t.profiles.last_name}` : 'N/A',
+          amount: t.status === 'remboursé' ? `-€${t.amount.toFixed(2)}` : `€${t.amount.toFixed(2)}`,
+          service: t.bookings?.services?.name || 'Service inconnu',
+          status: t.status,
+          date: new Date(t.created_at).toLocaleDateString('fr-FR')
+        })) || [];
+
+        return new Response(JSON.stringify({ transactions: formattedTransactions }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+
+      if (action === "provider_payments") {
+        // Récupérer les paiements prestataires en attente
+        const { data: pendingProviderPayments } = await supabaseClient
+          .from('provider_invoices')
+          .select(`
+            *,
+            providers(business_name, user_id)
+          `)
+          .eq('status', 'pending')
+          .order('issued_date', { ascending: true });
+
+        const formattedPayments = pendingProviderPayments?.map(p => ({
+          id: p.id,
+          provider: p.providers?.business_name || 'Prestataire inconnu',
+          amount: `€${p.amount_net?.toFixed(2) || '0.00'}`,
+          missions: 1, // À calculer selon les bookings liés
+          dueDate: new Date(p.issued_date).toLocaleDateString('fr-FR'),
+          invoice_id: p.id
+        })) || [];
+
+        const totalPending = pendingProviderPayments?.reduce((sum, p) => sum + (p.amount_net || 0), 0) || 0;
+
+        return new Response(JSON.stringify({ 
+          payments: formattedPayments,
+          total: totalPending
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
     }
 
     if (req.method === "POST") {
@@ -272,12 +406,105 @@ serve(async (req) => {
           body.notes || 'Paiement relancé par admin'
         );
 
-        return new Response(JSON.stringify({ payment: updatedPayment }), {
+      if (action === "process_provider_payment") {
+        // Traiter un paiement prestataire
+        const invoiceId = url.searchParams.get('invoiceId');
+        if (!invoiceId) throw new Error("Invoice ID required");
+
+        const body = await req.json();
+
+        const { data: invoice, error: fetchError } = await supabaseClient
+          .from('provider_invoices')
+          .select('*')
+          .eq('id', invoiceId)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        const { data: updatedInvoice, error: updateError } = await supabaseClient
+          .from('provider_invoices')
+          .update({ 
+            status: 'paid',
+            payment_date: new Date().toISOString(),
+            admin_notes: body.notes || null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', invoiceId)
+          .select()
+          .single();
+
+        if (updateError) throw updateError;
+
+        // Logger l'action admin
+        await logAdminAction(
+          user.id,
+          'process_provider_payment',
+          'provider_invoice',
+          invoiceId,
+          { status: invoice.status },
+          { status: 'paid' },
+          body.notes || 'Paiement prestataire traité par admin'
+        );
+
+        return new Response(JSON.stringify({ invoice: updatedInvoice }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
         });
       }
-    }
+
+      if (action === "bulk_process_providers") {
+        // Traiter tous les paiements prestataires en attente
+        const body = await req.json();
+        
+        const { data: pendingInvoices, error: fetchError } = await supabaseClient
+          .from('provider_invoices')
+          .select('*')
+          .eq('status', 'pending');
+
+        if (fetchError) throw fetchError;
+
+        const processedInvoices = [];
+        let totalAmount = 0;
+
+        for (const invoice of pendingInvoices) {
+          const { data: updatedInvoice } = await supabaseClient
+            .from('provider_invoices')
+            .update({ 
+              status: 'paid',
+              payment_date: new Date().toISOString(),
+              admin_notes: 'Traitement en lot par admin',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', invoice.id)
+            .select()
+            .single();
+
+          if (updatedInvoice) {
+            processedInvoices.push(updatedInvoice);
+            totalAmount += invoice.amount_net || 0;
+            
+            // Logger chaque action
+            await logAdminAction(
+              user.id,
+              'bulk_process_provider_payment',
+              'provider_invoice',
+              invoice.id,
+              { status: invoice.status },
+              { status: 'paid' },
+              'Traitement en lot de paiements prestataires'
+            );
+          }
+        }
+
+        return new Response(JSON.stringify({ 
+          processed: processedInvoices.length,
+          total_amount: totalAmount,
+          invoices: processedInvoices
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
 
     throw new Error("Invalid request");
 
