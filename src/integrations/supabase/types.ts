@@ -2749,7 +2749,15 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      safe_public_stats: {
+        Row: {
+          active_service_categories: number | null
+          monthly_completed_bookings: number | null
+          platform_average_rating: number | null
+          verified_providers: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       assign_mission_manually: {
@@ -2860,11 +2868,13 @@ export type Database = {
             }
           | { p_limit?: number; p_location: string; p_service_type: string }
         Returns: {
+          availability_slots: Json
           business_name: string
           location: string
           match_score: number
           provider_id: string
           rating: number
+          services_offered: Json
         }[]
       }
       get_profile_display_info: {
@@ -2910,6 +2920,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_platform_admin: {
+        Args: Record<PropertyKey, never>
         Returns: boolean
       }
       log_action: {
