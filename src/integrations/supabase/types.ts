@@ -2952,6 +2952,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_platform_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       log_action: {
         Args: {
           p_action_type: string
