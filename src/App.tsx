@@ -211,6 +211,7 @@ const App = () => (
               <Route path="reports" element={<AdminReports />} />
               <Route path="quality" element={<AdminQuality />} />
               <Route path="zones" element={<AdminZones />} />
+              <Route path="marque" element={<AdminMarque />} />
               <Route path="settings" element={<AdminSettings />} />
               <Route path="reports-data" element={<AdminReportsData />} />
               <Route path="audit" element={<AuditReport />} />
