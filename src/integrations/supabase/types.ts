@@ -2945,6 +2945,15 @@ export type Database = {
         Args: { p_tier: string }
         Returns: number
       }
+      get_safe_platform_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          active_service_categories: number
+          monthly_completed_bookings: number
+          platform_average_rating: number
+          verified_providers: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2967,6 +2976,15 @@ export type Database = {
         }
         Returns: string
       }
+      log_sensitive_access: {
+        Args: {
+          action_name: string
+          additional_data?: Json
+          resource_id?: string
+          resource_type: string
+        }
+        Returns: undefined
+      }
       mission_checkin: {
         Args: { booking_id: string; location_info?: string; photos?: string[] }
         Returns: boolean
@@ -2978,6 +2996,10 @@ export type Database = {
           notes?: string
           photos?: string[]
         }
+        Returns: boolean
+      }
+      user_has_permission: {
+        Args: { permission_type: string }
         Returns: boolean
       }
     }
