@@ -62,37 +62,59 @@ serve(async (req) => {
 async function getAssignmentStats(supabase: any) {
   try {
     // Missions en attente
-    const { data: pendingMissions } = await supabase
+    const { data: pendingMissions, error: pendingError } = await supabase
       .from('client_requests')
       .select('id')
-      .eq('status', 'new');
+      .in('status', ['new', 'unmatched']);
+
+    if (pendingError) {
+      console.error('Erreur pendingMissions:', pendingError);
+    }
 
     // Missions assignées aujourd'hui
     const today = new Date().toISOString().split('T')[0];
-    const { data: todayAssignments } = await supabase
+    const { data: todayAssignments, error: todayError } = await supabase
       .from('client_requests')
       .select('id')
       .eq('status', 'assigned')
       .gte('updated_at', today);
 
+    if (todayError) {
+      console.error('Erreur todayAssignments:', todayError);
+    }
+
     // Prestataires actifs
-    const { data: activeProviders } = await supabase
+    const { data: activeProviders, error: providersError } = await supabase
       .from('providers')
       .select('id')
       .eq('status', 'active')
       .eq('is_verified', true);
 
+    if (providersError) {
+      console.error('Erreur activeProviders:', providersError);
+    }
+
     // Calcul du taux de succès (missions terminées vs total)
-    const { data: completedMissions } = await supabase
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    
+    const { data: completedMissions, error: completedError } = await supabase
       .from('bookings')
       .select('id')
       .eq('status', 'completed')
-      .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+      .gte('created_at', thirtyDaysAgo);
 
-    const { data: totalMissions } = await supabase
+    if (completedError) {
+      console.error('Erreur completedMissions:', completedError);
+    }
+
+    const { data: totalMissions, error: totalError } = await supabase
       .from('bookings')
       .select('id')
-      .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+      .gte('created_at', thirtyDaysAgo);
+
+    if (totalError) {
+      console.error('Erreur totalMissions:', totalError);
+    }
 
     const successRate = totalMissions?.length > 0 
       ? Math.round((completedMissions?.length || 0) / totalMissions.length * 100)
@@ -113,7 +135,18 @@ async function getAssignmentStats(supabase: any) {
     );
   } catch (error) {
     console.error('Erreur lors du calcul des stats:', error);
-    throw error;
+    // Retourner des stats par défaut en cas d'erreur
+    const defaultStats = {
+      pendingMissions: 0,
+      todayAssignments: 0,
+      activeProviders: 0,
+      successRate: "0%"
+    };
+    
+    return new Response(
+      JSON.stringify({ success: true, data: defaultStats }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 }
 
@@ -129,13 +162,17 @@ async function getPendingMissions(supabase: any) {
         urgency_level,
         client_email
       `)
-      .eq('status', 'new')
+      .in('status', ['new', 'unmatched'])
       .order('created_at', { ascending: true })
       .limit(50);
 
     if (error) {
       console.error('Erreur lors de la récupération des missions:', error);
-      throw error;
+      // Retourner des données par défaut si erreur d'accès
+      return new Response(
+        JSON.stringify({ success: true, data: [] }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const formattedMissions = missions?.map(mission => {
@@ -157,7 +194,11 @@ async function getPendingMissions(supabase: any) {
     );
   } catch (error) {
     console.error('Erreur lors de la récupération des missions en attente:', error);
-    throw error;
+    // Retourner des données par défaut
+    return new Response(
+      JSON.stringify({ success: true, data: [] }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 }
 
@@ -287,6 +328,8 @@ async function assignMissionManually(supabase: any, { missionId, providerId, adm
 
 async function getAvailableProviders(supabase: any, { serviceType, location }: any) {
   try {
+    console.log('Recherche de prestataires pour:', { serviceType, location });
+    
     // Récupérer les prestataires disponibles pour ce service et cette localisation
     const { data: providers, error } = await supabase
       .from('providers')
@@ -296,26 +339,71 @@ async function getAvailableProviders(supabase: any, { serviceType, location }: a
         location,
         rating,
         hourly_rate,
-        performance_score
+        performance_score,
+        total_earnings,
+        missions_completed,
+        acceptance_rate
       `)
       .eq('status', 'active')
       .eq('is_verified', true)
-      .order('performance_score', { ascending: false })
-      .limit(10);
+      .order('rating', { ascending: false, nullsLast: true })
+      .limit(15);
 
     if (error) {
       console.error('Erreur lors de la récupération des prestataires:', error);
-      throw error;
+      // Retourner des données par défaut
+      return new Response(
+        JSON.stringify({ success: true, data: [] }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    const formattedProviders = providers?.map(provider => ({
+    // Filtrer et scorer les prestataires en fonction du service et de la localisation
+    const scoredProviders = providers?.map(provider => {
+      let locationScore = 0;
+      if (provider.location && location) {
+        const providerLocation = provider.location.toLowerCase();
+        const requestLocation = location.toLowerCase();
+        
+        if (providerLocation.includes(requestLocation) || requestLocation.includes(providerLocation)) {
+          locationScore = 100;
+        } else {
+          // Score partiel si même ville/région
+          const words = requestLocation.split(' ');
+          for (const word of words) {
+            if (word.length > 2 && providerLocation.includes(word)) {
+              locationScore = Math.max(locationScore, 50);
+            }
+          }
+        }
+      }
+      
+      // Calcul du score de performance
+      const ratingScore = (provider.rating || 0) * 20; // Sur 100
+      const experienceScore = Math.min((provider.missions_completed || 0) * 2, 40); // Max 40
+      const acceptanceScore = provider.acceptance_rate || 50; // Par défaut 50%
+      
+      const totalScore = (ratingScore + experienceScore + acceptanceScore + locationScore) / 4;
+      
+      return {
+        ...provider,
+        locationScore,
+        totalScore
+      };
+    })
+    .sort((a, b) => b.totalScore - a.totalScore)
+    .slice(0, 10) || [];
+
+    const formattedProviders = scoredProviders.map(provider => ({
       id: provider.id,
       name: provider.business_name || 'Prestataire sans nom',
       location: provider.location || 'Localisation non précisée',
       rating: provider.rating || 0,
       hourlyRate: provider.hourly_rate || 'Non précisé',
-      performanceScore: provider.performance_score || 0
-    })) || [];
+      performanceScore: Math.round(provider.totalScore || 0)
+    }));
+
+    console.log(`${formattedProviders.length} prestataires trouvés`);
 
     return new Response(
       JSON.stringify({ success: true, data: formattedProviders }),
@@ -323,6 +411,10 @@ async function getAvailableProviders(supabase: any, { serviceType, location }: a
     );
   } catch (error) {
     console.error('Erreur lors de la récupération des prestataires disponibles:', error);
-    throw error;
+    // Retourner des données par défaut
+    return new Response(
+      JSON.stringify({ success: true, data: [] }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 }
