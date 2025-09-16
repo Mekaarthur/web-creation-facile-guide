@@ -49,7 +49,7 @@ interface BrandSettings {
   };
 }
 
-const Marque = () => {
+const AdminMarque = () => {
   const [settings, setSettings] = useState<BrandSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -668,4 +668,4 @@ const Marque = () => {
   );
 };
 
-export default Marque;
+export default AdminMarque;
