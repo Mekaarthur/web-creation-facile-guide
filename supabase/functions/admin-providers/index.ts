@@ -31,6 +31,12 @@ serve(async (req) => {
         return await getProviderStats(supabase, requestData);
       case 'update_details':
         return await updateProviderDetails(supabase, requestData);
+      case 'approve':
+        return await approveProvider(supabase, requestData);
+      case 'reject':
+        return await rejectProvider(supabase, requestData);
+      case 'get_provider_details':
+        return await getProviderDetails(supabase, requestData);
       default:
         throw new Error(`Action non reconnue: ${action}`);
     }
@@ -315,6 +321,138 @@ async function getProviderStats(supabase: any, { timeRange = '30d' }: any) {
     );
   } catch (error) {
     console.error('Erreur lors du calcul des stats prestataires:', error);
+    throw error;
+  }
+}
+
+async function approveProvider(supabase: any, { providerId }: any) {
+  try {
+    const { error } = await supabase
+      .from('providers')
+      .update({ 
+        status: 'active',
+        is_verified: true,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', providerId);
+
+    if (error) throw error;
+
+    // Ajouter à l'historique
+    await supabase
+      .from('provider_status_history')
+      .insert({
+        provider_id: providerId,
+        old_status: 'pending',
+        new_status: 'active',
+        reason: 'Approuvé par admin'
+      });
+
+    return new Response(
+      JSON.stringify({ success: true, message: 'Prestataire approuvé avec succès' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Erreur lors de l\'approbation:', error);
+    throw error;
+  }
+}
+
+async function rejectProvider(supabase: any, { providerId }: any) {
+  try {
+    const { error } = await supabase
+      .from('providers')
+      .update({ 
+        status: 'rejected',
+        is_verified: false,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', providerId);
+
+    if (error) throw error;
+
+    // Ajouter à l'historique
+    await supabase
+      .from('provider_status_history')
+      .insert({
+        provider_id: providerId,
+        old_status: 'pending',
+        new_status: 'rejected',
+        reason: 'Rejeté par admin'
+      });
+
+    return new Response(
+      JSON.stringify({ success: true, message: 'Prestataire rejeté avec succès' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Erreur lors du rejet:', error);
+    throw error;
+  }
+}
+
+async function getProviderDetails(supabase: any, { providerId }: any) {
+  try {
+    // Récupérer les détails du prestataire
+    const { data: provider, error: providerError } = await supabase
+      .from('providers')
+      .select('*')
+      .eq('id', providerId)
+      .single();
+
+    if (providerError) throw providerError;
+
+    // Récupérer le profil utilisateur
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('first_name, last_name, avatar_url, phone, email')
+      .eq('user_id', provider.user_id)
+      .single();
+
+    // Récupérer les réservations
+    const { data: bookings } = await supabase
+      .from('bookings')
+      .select(`
+        id, 
+        status, 
+        booking_date, 
+        total_price,
+        services:service_id (name)
+      `)
+      .eq('provider_id', providerId)
+      .order('booking_date', { ascending: false })
+      .limit(10);
+
+    // Récupérer les avis
+    const { data: reviews } = await supabase
+      .from('reviews')
+      .select('id, rating, comment, created_at, is_approved')
+      .eq('provider_id', providerId)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    // Récupérer les documents
+    const { data: documents } = await supabase
+      .from('provider_documents')
+      .select('id, document_type, file_name, status, created_at')
+      .eq('provider_id', providerId)
+      .order('created_at', { ascending: false });
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        provider: {
+          ...provider,
+          profiles: profile,
+          bookings: bookings || [],
+          reviews: reviews || [],
+          documents: documents || []
+        }
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Erreur lors de la récupération des détails:', error);
     throw error;
   }
 }

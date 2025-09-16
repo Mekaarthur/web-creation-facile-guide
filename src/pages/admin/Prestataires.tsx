@@ -66,88 +66,40 @@ export default function AdminPrestataires() {
   const handleProviderAction = async (providerId: string, action: 'approve' | 'reject' | 'examine') => {
     try {
       if (action === 'examine') {
-        // Récupérer les détails complets du prestataire
-        const { data: providerData, error: providerError } = await supabase
-          .from('providers')
-          .select(`
-            *,
-            profiles:profiles!user_id (first_name, last_name, avatar_url),
-            bookings:bookings!provider_id (
-              id, 
-              status, 
-              booking_date, 
-              total_price,
-              services (name)
-            ),
-            reviews:reviews!provider_id (
-              id, 
-              rating, 
-              comment, 
-              created_at,
-              is_approved
-            ),
-            documents:provider_documents (
-              id,
-              document_type,
-              file_name,
-              status,
-              created_at
-            )
-          `)
-          .eq('id', providerId)
-          .single();
+        // Récupérer les détails via l'edge function
+        const { data, error } = await supabase.functions.invoke('admin-providers', {
+          body: { action: 'get_provider_details', providerId }
+        });
 
-        if (providerError) throw new Error(`[${providerError.code}] ${providerError.message}`);
-        
-        setSelectedProvider({
-          ...providerData,
-          profiles: Array.isArray(providerData.profiles) ? providerData.profiles[0] : null,
-          bookings: Array.isArray(providerData.bookings) ? providerData.bookings : [],
-          reviews: Array.isArray(providerData.reviews) ? providerData.reviews : [],
-          documents: Array.isArray(providerData.documents) ? providerData.documents : []
-        } as Provider);
+        if (error) throw error;
+
+        if (data?.success) {
+          setSelectedProvider(data.provider);
+        }
         return;
       }
 
-      const newStatus = action === 'approve' ? 'active' : 'rejected';
-      
-      const { error } = await supabase
-        .from('providers')
-        .update({ 
-          status: newStatus,
-          is_verified: action === 'approve',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', providerId);
-
-      if (error) throw new Error(`[${error.code}] DB Update Error: ${error.message}`);
-
-      // Enregistrer dans l'historique des actions
-      await supabase
-        .from('provider_status_history')
-        .insert({
-          provider_id: providerId,
-          new_status: newStatus,
-          old_status: providers.find(p => p.id === providerId)?.status || 'unknown',
-          reason: `Action admin: ${action}`
-        });
-
-      toast({
-        title: "Statut mis à jour",
-        description: `Prestataire ${action === 'approve' ? 'approuvé et vérifié' : 'rejeté'} avec succès`,
+      // Utiliser l'edge function pour approuver/rejeter
+      const { data, error } = await supabase.functions.invoke('admin-providers', {
+        body: { action, providerId }
       });
 
-      // Recharger la liste
-      loadProviders();
+      if (error) throw error;
+
+      if (data?.success) {
+        toast({
+          title: "Statut mis à jour",
+          description: data.message,
+        });
+
+        // Recharger la liste
+        loadProviders();
+      }
     } catch (error: any) {
       console.error('Erreur action prestataire:', error);
-      const errorMsg = error.message?.includes('[') 
-        ? error.message 
-        : `[500] Erreur inconnue: ${error.message}`;
-        
       toast({
         title: "Erreur d'action",
-        description: errorMsg,
+        description: error.message || "Une erreur est survenue",
         variant: "destructive",
       });
     }
