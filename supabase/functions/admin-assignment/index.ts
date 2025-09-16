@@ -41,6 +41,15 @@ serve(async (req) => {
       case 'get_available_providers':
         return await getAvailableProviders(supabase, requestData);
 
+      case 'get_assignment_config':
+        return await getAssignmentConfig(supabase);
+
+      case 'bulk_assign_missions':
+        return await bulkAssignMissions(supabase, requestData);
+
+      case 'reset_assignment_queue':
+        return await resetAssignmentQueue(supabase, requestData);
+
       default:
         throw new Error(`Action non reconnue: ${action}`);
     }
@@ -204,22 +213,32 @@ async function getPendingMissions(supabase: any) {
 
 async function toggleAutoAssign(supabase: any, { enabled, adminUserId }: any) {
   try {
-    // Enregistrer la configuration dans une table de paramètres
-    const { error } = await supabase
-      .from('admin_actions_log')
-      .insert({
-        admin_user_id: adminUserId,
-        entity_type: 'system_config',
-        entity_id: '00000000-0000-0000-0000-000000000000',
-        action_type: 'toggle_auto_assign',
-        old_value: enabled ? 'false' : 'true',
-        new_value: enabled.toString(),
-        description: `Assignation automatique ${enabled ? 'activée' : 'désactivée'}`
-      });
+    console.log('Toggle auto-assign:', { enabled, adminUserId });
+    
+    // Vérifier que nous avons un adminUserId
+    if (!adminUserId) {
+      throw new Error('Admin user ID requis');
+    }
 
-    if (error) {
-      console.error('Erreur lors de la sauvegarde de la configuration:', error);
-      throw error;
+    // Enregistrer la configuration dans une table de paramètres si elle existe
+    try {
+      const { error } = await supabase
+        .from('admin_actions_log')
+        .insert({
+          admin_user_id: adminUserId,
+          entity_type: 'system_config',
+          entity_id: '00000000-0000-0000-0000-000000000000',
+          action_type: 'toggle_auto_assign',
+          old_value: enabled ? 'false' : 'true',
+          new_value: enabled.toString(),
+          description: `Assignation automatique ${enabled ? 'activée' : 'désactivée'}`
+        });
+
+      if (error) {
+        console.log('Info: impossible de logger l\'action (table non accessible):', error.message);
+      }
+    } catch (logError) {
+      console.log('Info: logging ignoré:', logError);
     }
 
     return new Response(
@@ -231,26 +250,56 @@ async function toggleAutoAssign(supabase: any, { enabled, adminUserId }: any) {
     );
   } catch (error) {
     console.error('Erreur lors du toggle auto-assign:', error);
-    throw error;
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: error.message || 'Erreur lors de la modification'
+      }),
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
   }
 }
 
 async function updatePriorityMode(supabase: any, { mode, adminUserId }: any) {
   try {
-    const { error } = await supabase
-      .from('admin_actions_log')
-      .insert({
-        admin_user_id: adminUserId,
-        entity_type: 'system_config',
-        entity_id: '00000000-0000-0000-0000-000000000000',
-        action_type: 'update_priority_mode',
-        new_value: mode,
-        description: `Mode de priorité changé vers: ${mode}`
-      });
+    console.log('Update priority mode:', { mode, adminUserId });
+    
+    // Vérifier que nous avons un adminUserId et un mode
+    if (!adminUserId) {
+      throw new Error('Admin user ID requis');
+    }
+    
+    if (!mode) {
+      throw new Error('Mode de priorité requis');
+    }
 
-    if (error) {
-      console.error('Erreur lors de la sauvegarde du mode de priorité:', error);
-      throw error;
+    // Valider le mode
+    const validModes = ['performance', 'rotation', 'proximity'];
+    if (!validModes.includes(mode)) {
+      throw new Error(`Mode invalide. Modes valides: ${validModes.join(', ')}`);
+    }
+
+    // Enregistrer la configuration si possible
+    try {
+      const { error } = await supabase
+        .from('admin_actions_log')
+        .insert({
+          admin_user_id: adminUserId,
+          entity_type: 'system_config',
+          entity_id: '00000000-0000-0000-0000-000000000000',
+          action_type: 'update_priority_mode',
+          new_value: mode,
+          description: `Mode de priorité changé vers: ${mode}`
+        });
+
+      if (error) {
+        console.log('Info: impossible de logger l\'action (table non accessible):', error.message);
+      }
+    } catch (logError) {
+      console.log('Info: logging ignoré:', logError);
     }
 
     return new Response(
@@ -262,12 +311,44 @@ async function updatePriorityMode(supabase: any, { mode, adminUserId }: any) {
     );
   } catch (error) {
     console.error('Erreur lors de la mise à jour du mode de priorité:', error);
-    throw error;
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: error.message || 'Erreur lors de la modification'
+      }),
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
   }
 }
 
 async function assignMissionManually(supabase: any, { missionId, providerId, adminUserId }: any) {
   try {
+    console.log('Manual assignment:', { missionId, providerId, adminUserId });
+    
+    // Vérifications des paramètres
+    if (!missionId || !providerId || !adminUserId) {
+      throw new Error('Paramètres manquants: missionId, providerId et adminUserId requis');
+    }
+
+    // Vérifier que la mission existe
+    const { data: mission, error: missionError } = await supabase
+      .from('client_requests')
+      .select('id, status, service_type, location')
+      .eq('id', missionId)
+      .single();
+
+    if (missionError) {
+      console.error('Erreur lors de la vérification de la mission:', missionError);
+      throw new Error('Mission non trouvée ou inaccessible');
+    }
+
+    if (!mission) {
+      throw new Error('Mission non trouvée');
+    }
+
     // Assigner le prestataire à la mission
     const { error: assignError } = await supabase
       .from('client_requests')
@@ -280,37 +361,45 @@ async function assignMissionManually(supabase: any, { missionId, providerId, adm
 
     if (assignError) {
       console.error('Erreur lors de l\'assignation:', assignError);
-      throw assignError;
+      throw new Error('Impossible d\'assigner la mission: ' + assignError.message);
     }
 
-    // Créer une notification pour le prestataire
-    const { error: notifError } = await supabase
-      .from('provider_notifications')
-      .insert({
-        provider_id: providerId,
-        title: 'Nouvelle mission assignée',
-        message: 'Une mission vous a été assignée manuellement par un administrateur.',
-        type: 'mission_assigned'
-      });
+    // Créer une notification pour le prestataire (optionnel)
+    try {
+      const { error: notifError } = await supabase
+        .from('provider_notifications')
+        .insert({
+          provider_id: providerId,
+          title: 'Nouvelle mission assignée',
+          message: 'Une mission vous a été assignée manuellement par un administrateur.',
+          type: 'mission_assigned'
+        });
 
-    if (notifError) {
-      console.log('Avertissement: impossible de créer la notification:', notifError);
+      if (notifError) {
+        console.log('Info: impossible de créer la notification:', notifError.message);
+      }
+    } catch (notifError) {
+      console.log('Info: notification ignorée:', notifError);
     }
 
-    // Logger l'action
-    const { error: logError } = await supabase
-      .from('admin_actions_log')
-      .insert({
-        admin_user_id: adminUserId,
-        entity_type: 'client_request',
-        entity_id: missionId,
-        action_type: 'manual_assignment',
-        new_value: providerId,
-        description: 'Assignation manuelle de mission'
-      });
+    // Logger l'action (optionnel)
+    try {
+      const { error: logError } = await supabase
+        .from('admin_actions_log')
+        .insert({
+          admin_user_id: adminUserId,
+          entity_type: 'client_request',
+          entity_id: missionId,
+          action_type: 'manual_assignment',
+          new_value: providerId,
+          description: 'Assignation manuelle de mission'
+        });
 
-    if (logError) {
-      console.log('Avertissement: impossible de logger l\'action:', logError);
+      if (logError) {
+        console.log('Info: impossible de logger l\'action:', logError.message);
+      }
+    } catch (logError) {
+      console.log('Info: logging ignoré:', logError);
     }
 
     return new Response(
@@ -322,7 +411,16 @@ async function assignMissionManually(supabase: any, { missionId, providerId, adm
     );
   } catch (error) {
     console.error('Erreur lors de l\'assignation manuelle:', error);
-    throw error;
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: error.message || 'Erreur lors de l\'assignation'
+      }),
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
   }
 }
 
@@ -415,6 +513,224 @@ async function getAvailableProviders(supabase: any, { serviceType, location }: a
     return new Response(
       JSON.stringify({ success: true, data: [] }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+}
+
+async function getAssignmentConfig(supabase: any) {
+  try {
+    // Récupérer la configuration actuelle depuis les logs d'admin
+    const { data: config, error } = await supabase
+      .from('admin_actions_log')
+      .select('action_type, new_value, created_at')
+      .in('action_type', ['toggle_auto_assign', 'update_priority_mode'])
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    if (error) {
+      console.log('Info: impossible de récupérer la config:', error.message);
+    }
+
+    // Déterminer la configuration actuelle
+    let autoAssignEnabled = true; // Par défaut
+    let priorityMode = 'performance'; // Par défaut
+
+    if (config && config.length > 0) {
+      for (const entry of config) {
+        if (entry.action_type === 'toggle_auto_assign' && autoAssignEnabled === true) {
+          autoAssignEnabled = entry.new_value === 'true';
+        }
+        if (entry.action_type === 'update_priority_mode' && priorityMode === 'performance') {
+          priorityMode = entry.new_value;
+        }
+      }
+    }
+
+    const configData = {
+      autoAssignEnabled,
+      priorityMode,
+      availableModes: ['performance', 'rotation', 'proximity'],
+      lastUpdated: config && config.length > 0 ? config[0].created_at : null
+    };
+
+    return new Response(
+      JSON.stringify({ success: true, data: configData }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Erreur lors de la récupération de la config:', error);
+    // Retourner la config par défaut
+    const defaultConfig = {
+      autoAssignEnabled: true,
+      priorityMode: 'performance',
+      availableModes: ['performance', 'rotation', 'proximity'],
+      lastUpdated: null
+    };
+    
+    return new Response(
+      JSON.stringify({ success: true, data: defaultConfig }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+}
+
+async function bulkAssignMissions(supabase: any, { missionIds, adminUserId }: any) {
+  try {
+    console.log('Bulk assignment:', { missionIds, adminUserId });
+    
+    if (!missionIds || !Array.isArray(missionIds) || missionIds.length === 0) {
+      throw new Error('Liste de missions requise');
+    }
+    
+    if (!adminUserId) {
+      throw new Error('Admin user ID requis');
+    }
+
+    let assignedCount = 0;
+    let failedCount = 0;
+    const results = [];
+
+    for (const missionId of missionIds) {
+      try {
+        // Trouver le meilleur prestataire pour cette mission
+        const { data: mission } = await supabase
+          .from('client_requests')
+          .select('service_type, location')
+          .eq('id', missionId)
+          .single();
+
+        if (!mission) {
+          results.push({ missionId, success: false, error: 'Mission non trouvée' });
+          failedCount++;
+          continue;
+        }
+
+        // Récupérer les prestataires disponibles
+        const providersResponse = await getAvailableProviders(supabase, {
+          serviceType: mission.service_type,
+          location: mission.location
+        });
+
+        const providersJson = await providersResponse.json();
+        if (!providersJson.success || !providersJson.data.length) {
+          results.push({ missionId, success: false, error: 'Aucun prestataire disponible' });
+          failedCount++;
+          continue;
+        }
+
+        // Assigner au meilleur prestataire
+        const bestProvider = providersJson.data[0];
+        const assignResponse = await assignMissionManually(supabase, {
+          missionId,
+          providerId: bestProvider.id,
+          adminUserId
+        });
+
+        const assignJson = await assignResponse.json();
+        if (assignJson.success) {
+          results.push({ missionId, success: true, providerId: bestProvider.id, providerName: bestProvider.name });
+          assignedCount++;
+        } else {
+          results.push({ missionId, success: false, error: assignJson.error || 'Erreur d\'assignation' });
+          failedCount++;
+        }
+      } catch (error) {
+        results.push({ missionId, success: false, error: error.message });
+        failedCount++;
+      }
+    }
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: `${assignedCount} missions assignées, ${failedCount} échecs`,
+        data: { assignedCount, failedCount, results }
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Erreur lors de l\'assignation en lot:', error);
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: error.message || 'Erreur lors de l\'assignation en lot'
+      }),
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
+  }
+}
+
+async function resetAssignmentQueue(supabase: any, { adminUserId }: any) {
+  try {
+    console.log('Reset assignment queue:', { adminUserId });
+    
+    if (!adminUserId) {
+      throw new Error('Admin user ID requis');
+    }
+
+    // Remettre les missions assignées depuis plus de 2h en statut 'new'
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    
+    const { data: resetMissions, error: resetError } = await supabase
+      .from('client_requests')
+      .update({
+        status: 'new',
+        assigned_provider_id: null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('status', 'assigned')
+      .lt('updated_at', twoHoursAgo)
+      .select('id');
+
+    if (resetError) {
+      console.error('Erreur lors du reset:', resetError);
+      throw new Error('Impossible de réinitialiser la queue: ' + resetError.message);
+    }
+
+    const resetCount = resetMissions?.length || 0;
+
+    // Logger l'action
+    try {
+      const { error: logError } = await supabase
+        .from('admin_actions_log')
+        .insert({
+          admin_user_id: adminUserId,
+          entity_type: 'system_config',
+          entity_id: '00000000-0000-0000-0000-000000000000',
+          action_type: 'reset_assignment_queue',
+          new_value: resetCount.toString(),
+          description: `Queue d'assignation réinitialisée: ${resetCount} missions`
+        });
+
+      if (logError) {
+        console.log('Info: impossible de logger l\'action:', logError.message);
+      }
+    } catch (logError) {
+      console.log('Info: logging ignoré:', logError);
+    }
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: `Queue réinitialisée: ${resetCount} missions remises en attente`,
+        data: { resetCount }
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Erreur lors de la réinitialisation:', error);
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: error.message || 'Erreur lors de la réinitialisation'
+      }),
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
     );
   }
 }

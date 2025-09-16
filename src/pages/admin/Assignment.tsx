@@ -49,7 +49,9 @@ const AdminAssignment = () => {
     missions: false,
     toggle: false,
     priority: false,
-    providers: false
+    providers: false,
+    bulkAssign: false,
+    resetQueue: false
   });
   const [selectedMission, setSelectedMission] = useState<PendingMission | null>(null);
   const { toast } = useToast();
@@ -229,24 +231,105 @@ const AdminAssignment = () => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erreur Supabase:', error);
+        throw new Error('Erreur de communication avec le serveur');
+      }
 
       if (data?.success) {
         toast({
           title: "Mission assignée",
-          description: data.message
+          description: data.message || "Mission assignée avec succès"
         });
         setSelectedMission(null);
         setAvailableProviders([]);
         loadInitialData(); // Recharger les données
+      } else {
+        throw new Error(data?.error || 'Erreur lors de l\'assignation');
       }
     } catch (error) {
       console.error('Erreur lors de l\'assignation:', error);
       toast({
         title: "Erreur",
-        description: "Impossible d'assigner la mission",
+        description: error instanceof Error ? error.message : "Impossible d'assigner la mission",
         variant: "destructive"
       });
+    }
+  };
+
+  const handleBulkAssign = async () => {
+    if (pendingMissions.length === 0) return;
+    
+    setLoading(prev => ({ ...prev, bulkAssign: true }));
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const missionIds = pendingMissions.slice(0, 5).map(m => m.id); // Max 5 missions
+      
+      const { data, error } = await supabase.functions.invoke('admin-assignment', {
+        body: { 
+          action: 'bulk_assign_missions',
+          missionIds,
+          adminUserId: user?.id
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast({
+          title: "Assignation en lot terminée",
+          description: data.message
+        });
+        loadInitialData(); // Recharger les données
+      } else {
+        throw new Error(data?.error || 'Erreur lors de l\'assignation en lot');
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'assignation en lot:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'effectuer l'assignation en lot",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(prev => ({ ...prev, bulkAssign: false }));
+    }
+  };
+
+  const handleResetQueue = async () => {
+    setLoading(prev => ({ ...prev, resetQueue: true }));
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { data, error } = await supabase.functions.invoke('admin-assignment', {
+        body: { 
+          action: 'reset_assignment_queue',
+          adminUserId: user?.id
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast({
+          title: "Queue réinitialisée",
+          description: data.message
+        });
+        loadInitialData(); // Recharger les données
+      } else {
+        throw new Error(data?.error || 'Erreur lors de la réinitialisation');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la réinitialisation:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de réinitialiser la queue",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(prev => ({ ...prev, resetQueue: false }));
     }
   };
 
@@ -413,6 +496,45 @@ const AdminAssignment = () => {
                   "Actualiser les missions"
                 )}
               </Button>
+              
+              {pendingMissions.length > 0 && (
+                <div className="flex gap-2 mt-2">
+                  <Button 
+                    className="flex-1" 
+                    onClick={handleBulkAssign} 
+                    disabled={loading.bulkAssign}
+                    size="sm"
+                  >
+                    {loading.bulkAssign ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Assignation...
+                      </>
+                    ) : (
+                      <>
+                        <UserCheck className="w-4 h-4 mr-2" />
+                        Assigner 5 missions
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    onClick={handleResetQueue} 
+                    disabled={loading.resetQueue}
+                    size="sm"
+                  >
+                    {loading.resetQueue ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Reset...
+                      </>
+                    ) : (
+                      "Reset Queue"
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
