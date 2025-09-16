@@ -61,6 +61,7 @@ import AdminRemunerations from "./pages/admin/Remunerations";
 import AdminPaiements from "./pages/admin/Paiements";
 import AdminFactures from "./pages/admin/Factures";
 import AdminPaniers from "./pages/admin/Paniers";
+import BikawoCartDemo from "./components/BikawoCartDemo";
 import AdminNotifications from "./pages/admin/Notifications";
 import Payment from "./pages/Payment";
 
@@ -126,6 +127,7 @@ const App = () => (
               <Route path="/services/:category/:slug" element={<SubServicePage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/aide" element={<Aide />} />
+            <Route path="/panier-demo" element={<BikawoCartDemo />} />
             <Route path="/a-propos-de-nous" element={<AProposDeNous />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />

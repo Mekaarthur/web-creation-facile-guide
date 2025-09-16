@@ -17,8 +17,8 @@ import { ChevronDown, Sparkles, ArrowRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { cn } from "@/lib/utils";
-import Cart from "@/components/Cart";
-import CartIndicator from "@/components/CartIndicator";
+import BikawoCart from "@/components/BikawoCart";
+import BikawoCartIndicator from "@/components/BikawoCartIndicator";
 import UserProfileMenu from "@/components/UserProfileMenu";
 import { servicesData } from "@/utils/servicesData";
 // Import service images
@@ -235,7 +235,7 @@ const Navbar = () => {
 
           {/* Actions Desktop */}
           <div className="hidden lg:flex items-center space-x-3">
-            <CartIndicator onOpenCart={() => setIsCartOpen(true)} />
+            <BikawoCartIndicator onOpenCart={() => setIsCartOpen(true)} showTotal />
             <LanguageSwitcher />
             <NotificationCenter />
             
@@ -279,7 +279,7 @@ const Navbar = () => {
       </div>
       
       {/* Panier Modal */}
-      <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      <BikawoCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </nav>
   );
 };

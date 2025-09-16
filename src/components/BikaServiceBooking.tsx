@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { CalendarIcon, Clock, MapPin, Plus, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { useCart } from "@/components/Cart";
+import { useBikawoCart } from "@/hooks/useBikawoCart";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -43,7 +43,7 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
   
-  const { addToCart } = useCart();
+  const { addToCart } = useBikawoCart();
   const { toast } = useToast();
 
   const availableTimeSlots = [
@@ -130,23 +130,20 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
       `${format(slot.date, "dd/MM/yyyy", { locale: fr })} de ${slot.startTime} à ${slot.endTime}`
     ).join(", ");
 
+    // Adapter au format BikawoCartItem
     addToCart({
       serviceName: service.name,
+      serviceCategory: service.category as any, // TODO: mapper correctement les catégories
       packageTitle: packageTitle,
-      price: getTotalPrice(),
-      description: `${slotsDescription} - ${address}`,
-      customBooking: {
+      price: service.price,
+      timeSlot: {
         date: timeSlots[0].date,
-        time: timeSlots[0].startTime,
-        hours: getTotalHours(),
-        address,
-        notes,
-        slots: timeSlots.map(slot => ({
-          date: slot.date,
-          startTime: slot.startTime,
-          endTime: slot.endTime
-        }))
-      }
+        startTime: timeSlots[0].startTime,
+        endTime: timeSlots[0].endTime
+      },
+      address,
+      description: `${slotsDescription}`,
+      notes: notes || undefined
     });
 
     toast({
