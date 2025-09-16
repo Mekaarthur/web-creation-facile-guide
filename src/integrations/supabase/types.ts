@@ -1615,6 +1615,27 @@ export type Database = {
           },
         ]
       }
+      platform_stats_access: {
+        Row: {
+          access_time: string | null
+          access_type: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          access_time?: string | null
+          access_type?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          access_time?: string | null
+          access_type?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       prestations_realisees: {
         Row: {
           booking_id: string | null
@@ -2526,6 +2547,7 @@ export type Database = {
           id: string
           ip_address: unknown | null
           record_id: string | null
+          session_info: Json | null
           table_name: string | null
           user_agent: string | null
           user_id: string | null
@@ -2536,6 +2558,7 @@ export type Database = {
           id?: string
           ip_address?: unknown | null
           record_id?: string | null
+          session_info?: Json | null
           table_name?: string | null
           user_agent?: string | null
           user_id?: string | null
@@ -2546,6 +2569,7 @@ export type Database = {
           id?: string
           ip_address?: unknown | null
           record_id?: string | null
+          session_info?: Json | null
           table_name?: string | null
           user_agent?: string | null
           user_id?: string | null
@@ -2802,9 +2826,17 @@ export type Database = {
         }
         Returns: string
       }
+      check_admin_role: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       check_client_reward_eligibility: {
         Args: { p_client_id: string }
         Returns: boolean
+      }
+      cleanup_old_security_logs: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       confirm_booking: {
         Args: { booking_id: string; provider_confirms: boolean }
@@ -2868,13 +2900,11 @@ export type Database = {
             }
           | { p_limit?: number; p_location: string; p_service_type: string }
         Returns: {
-          availability_slots: Json
           business_name: string
           location: string
           match_score: number
           provider_id: string
           rating: number
-          services_offered: Json
         }[]
       }
       get_profile_display_info: {
@@ -2920,10 +2950,6 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
-        Returns: boolean
-      }
-      is_platform_admin: {
-        Args: Record<PropertyKey, never>
         Returns: boolean
       }
       log_action: {
