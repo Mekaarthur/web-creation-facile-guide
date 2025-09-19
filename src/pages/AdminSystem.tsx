@@ -7,7 +7,7 @@ import PaymentSystem from "@/components/PaymentSystem";
 import NotificationEmails from "@/components/NotificationEmails";
 import ProviderValidation from "@/components/ProviderValidation";
 import LegalDocuments from "@/components/LegalDocuments";
-import { AdminDashboard } from "@/components/AdminDashboard";
+import EnhancedModernDashboard from "@/components/admin/enhanced/EnhancedModernDashboard";
 
 const AdminSystem = () => {
   const [activeFeature, setActiveFeature] = useState<string | null>(null);
@@ -19,7 +19,7 @@ const AdminSystem = () => {
       icon: Settings,
       description: "Vue d'ensemble du système",
       status: "active",
-      component: AdminDashboard
+      component: EnhancedModernDashboard
     },
     {
       id: "payment",
@@ -166,7 +166,7 @@ const AdminSystem = () => {
             </TabsContent>
 
             <TabsContent value="dashboard">
-              <AdminDashboard />
+              <EnhancedModernDashboard />
             </TabsContent>
 
             <TabsContent value="payment">

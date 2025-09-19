@@ -44,7 +44,7 @@ import SubServicePage from "./pages/SubService";
 
 // Admin Layout and Pages
 import { AdminLayout } from "./components/admin/AdminLayout";
-import AdminDashboard from "./pages/admin/Dashboard";
+import ModernAdminDashboard from "./pages/admin/ModernAdminDashboard";
 import AdminAlertes from "./pages/admin/Alertes";
 import AdminKanban from "./pages/admin/Kanban";
 import AdminUtilisateurs from "./pages/admin/Utilisateurs";
@@ -72,7 +72,6 @@ import TestsSystems from "./pages/admin/TestsSystems";
 
 // Modern Admin Components
 import ModernAdminLayout from "./components/admin/ModernAdminLayout";
-import ModernAdminDashboard from "./pages/admin/ModernAdminDashboard";
 
 // Modern Admin Pages
 import AdminAnalytics from "./pages/admin/Analytics";
@@ -157,13 +156,13 @@ const App = () => (
              <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
              <Route path="/audit-qualite" element={<AdminRoute><AuditReport /></AdminRoute>} />
              {/* Admin Routes with Layout */}
-            <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="alertes" element={<AdminAlertes />} />
-              <Route path="kanban" element={<AdminKanban />} />
-              <Route path="utilisateurs" element={<AdminUtilisateurs />} />
-              <Route path="prestataires" element={<AdminPrestataires />} />
+             <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
+               <Route index element={<ModernAdminDashboard />} />
+               <Route path="dashboard" element={<ModernAdminDashboard />} />
+               <Route path="alertes" element={<AdminAlertes />} />
+               <Route path="kanban" element={<AdminKanban />} />
+               <Route path="utilisateurs" element={<AdminUtilisateurs />} />
+               <Route path="prestataires" element={<AdminPrestataires />} />
               <Route path="binomes" element={<AdminBinomes />} />
               <Route path="tests-emails" element={<TestsEmails />} />
                <Route path="demandes" element={<AdminClientRequests />} />
