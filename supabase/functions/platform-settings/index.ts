@@ -96,7 +96,10 @@ async function getSettings(supabase: any) {
       payments: {},
       notifications: {},
       security: {},
-      business: {}
+      business: {},
+      qualification: {},
+      matching: {},
+      validation: {}
     }
 
     settingsData?.forEach((setting: any) => {
@@ -230,6 +233,32 @@ async function resetSettings(supabase: any, category: string, adminUserId: strin
         max_providers_per_request: 5,
         request_timeout_hours: 24,
         rating_required: true
+      },
+      qualification: {
+        legal_status_required: true,
+        identity_verification: true,
+        insurance_required: true,
+        diploma_required_regulated: true,
+        initial_selection_enabled: true,
+        background_check_required: false,
+        minimum_experience_years: 0
+      },
+      matching: {
+        geographic_zone_priority: true,
+        availability_check_enabled: true,
+        service_type_matching: true,
+        provider_choice_enabled: true,
+        max_distance_km: 25,
+        response_timeout_hours: 24,
+        rating_weight: 30,
+        distance_weight: 40,
+        availability_weight: 30
+      },
+      validation: {
+        auto_validation_enabled: false,
+        manual_review_required: true,
+        validation_timeout_days: 5,
+        rejected_reapplication_days: 30
       }
     }
 

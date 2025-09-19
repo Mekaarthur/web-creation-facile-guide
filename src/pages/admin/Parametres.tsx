@@ -20,7 +20,10 @@ import {
   Bell,
   Database,
   Zap,
-  RefreshCw
+  RefreshCw,
+  UserCheck,
+  Target,
+  FileCheck
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -64,6 +67,32 @@ interface PlatformSettings {
     max_providers_per_request: number;
     request_timeout_hours: number;
     rating_required: boolean;
+  };
+  qualification: {
+    legal_status_required: boolean;
+    identity_verification: boolean;
+    insurance_required: boolean;
+    diploma_required_regulated: boolean;
+    initial_selection_enabled: boolean;
+    background_check_required: boolean;
+    minimum_experience_years: number;
+  };
+  matching: {
+    geographic_zone_priority: boolean;
+    availability_check_enabled: boolean;
+    service_type_matching: boolean;
+    provider_choice_enabled: boolean;
+    max_distance_km: number;
+    response_timeout_hours: number;
+    rating_weight: number;
+    distance_weight: number;
+    availability_weight: number;
+  };
+  validation: {
+    auto_validation_enabled: boolean;
+    manual_review_required: boolean;
+    validation_timeout_days: number;
+    rejected_reapplication_days: number;
   };
 }
 
@@ -319,6 +348,18 @@ const Parametres = () => {
           <TabsTrigger value="business">
             <Users className="w-4 h-4 mr-2" />
             Business
+          </TabsTrigger>
+          <TabsTrigger value="qualification">
+            <UserCheck className="w-4 h-4 mr-2" />
+            Qualification
+          </TabsTrigger>
+          <TabsTrigger value="matching">
+            <Target className="w-4 h-4 mr-2" />
+            Appariement
+          </TabsTrigger>
+          <TabsTrigger value="validation">
+            <FileCheck className="w-4 h-4 mr-2" />
+            Validation
           </TabsTrigger>
         </TabsList>
 
@@ -638,6 +679,288 @@ const Parametres = () => {
                     id="rating_required"
                     checked={settings.business.rating_required}
                     onCheckedChange={(checked) => updateSetting('business', 'rating_required', checked)}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="qualification">
+          <Card>
+            <CardHeader>
+              <CardTitle>Règles d'entrée - Qualification des prestataires</CardTitle>
+              <CardDescription>
+                Configuration des critères de qualification pour garantir la qualité et la sécurité
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="legal_status_required">Statut légal obligatoire</Label>
+                    <p className="text-sm text-muted-foreground">Micro-entrepreneur, société... requis</p>
+                  </div>
+                  <Switch
+                    id="legal_status_required"
+                    checked={settings.qualification?.legal_status_required || false}
+                    onCheckedChange={(checked) => updateSetting('qualification', 'legal_status_required', checked)}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="identity_verification">Vérification d'identité obligatoire</Label>
+                    <p className="text-sm text-muted-foreground">Pièce d'identité requise et vérifiée</p>
+                  </div>
+                  <Switch
+                    id="identity_verification"
+                    checked={settings.qualification?.identity_verification || false}
+                    onCheckedChange={(checked) => updateSetting('qualification', 'identity_verification', checked)}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="insurance_required">Assurance obligatoire</Label>
+                    <p className="text-sm text-muted-foreground">Assurance responsabilité civile professionnelle</p>
+                  </div>
+                  <Switch
+                    id="insurance_required"
+                    checked={settings.qualification?.insurance_required || false}
+                    onCheckedChange={(checked) => updateSetting('qualification', 'insurance_required', checked)}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="diploma_required_regulated">Diplômes pour métiers réglementés</Label>
+                    <p className="text-sm text-muted-foreground">Vérification des qualifications professionnelles</p>
+                  </div>
+                  <Switch
+                    id="diploma_required_regulated"
+                    checked={settings.qualification?.diploma_required_regulated || false}
+                    onCheckedChange={(checked) => updateSetting('qualification', 'diploma_required_regulated', checked)}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="initial_selection_enabled">Sélection initiale</Label>
+                    <p className="text-sm text-muted-foreground">Processus de sélection pour garantir la qualité</p>
+                  </div>
+                  <Switch
+                    id="initial_selection_enabled"
+                    checked={settings.qualification?.initial_selection_enabled || false}
+                    onCheckedChange={(checked) => updateSetting('qualification', 'initial_selection_enabled', checked)}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="background_check_required">Vérification des antécédents</Label>
+                    <p className="text-sm text-muted-foreground">Contrôle des antécédents judiciaires</p>
+                  </div>
+                  <Switch
+                    id="background_check_required"
+                    checked={settings.qualification?.background_check_required || false}
+                    onCheckedChange={(checked) => updateSetting('qualification', 'background_check_required', checked)}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="minimum_experience_years">Expérience minimum (années)</Label>
+                <Input
+                  id="minimum_experience_years"
+                  type="number"
+                  min="0"
+                  value={settings.qualification?.minimum_experience_years || 0}
+                  onChange={(e) => updateSetting('qualification', 'minimum_experience_years', Number(e.target.value))}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="matching">
+          <Card>
+            <CardHeader>
+              <CardTitle>Règles d'appariement - Matching Client ↔ Prestataire</CardTitle>
+              <CardDescription>
+                Configuration de l'algorithme de matching et des critères d'attribution
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="geographic_zone_priority">Prioriser la zone géographique</Label>
+                    <p className="text-sm text-muted-foreground">Matching basé sur la proximité géographique</p>
+                  </div>
+                  <Switch
+                    id="geographic_zone_priority"
+                    checked={settings.matching?.geographic_zone_priority || false}
+                    onCheckedChange={(checked) => updateSetting('matching', 'geographic_zone_priority', checked)}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="availability_check_enabled">Vérifier les disponibilités</Label>
+                    <p className="text-sm text-muted-foreground">Contrôler le planning du prestataire</p>
+                  </div>
+                  <Switch
+                    id="availability_check_enabled"
+                    checked={settings.matching?.availability_check_enabled || false}
+                    onCheckedChange={(checked) => updateSetting('matching', 'availability_check_enabled', checked)}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="service_type_matching">Correspondance exacte du type de service</Label>
+                    <p className="text-sm text-muted-foreground">Type de prestation choisie par le client</p>
+                  </div>
+                  <Switch
+                    id="service_type_matching"
+                    checked={settings.matching?.service_type_matching || false}
+                    onCheckedChange={(checked) => updateSetting('matching', 'service_type_matching', checked)}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="provider_choice_enabled">Liberté de choix du prestataire</Label>
+                    <p className="text-sm text-muted-foreground">Le prestataire peut accepter ou refuser</p>
+                  </div>
+                  <Switch
+                    id="provider_choice_enabled"
+                    checked={settings.matching?.provider_choice_enabled || false}
+                    onCheckedChange={(checked) => updateSetting('matching', 'provider_choice_enabled', checked)}
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="max_distance_km">Distance maximum (km)</Label>
+                  <Input
+                    id="max_distance_km"
+                    type="number"
+                    min="1"
+                    value={settings.matching?.max_distance_km || 25}
+                    onChange={(e) => updateSetting('matching', 'max_distance_km', Number(e.target.value))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="response_timeout_hours">Délai de réponse (heures)</Label>
+                  <Input
+                    id="response_timeout_hours"
+                    type="number"
+                    min="1"
+                    value={settings.matching?.response_timeout_hours || 24}
+                    onChange={(e) => updateSetting('matching', 'response_timeout_hours', Number(e.target.value))}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Poids de l'algorithme de matching (%)</Label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="rating_weight">Poids note</Label>
+                    <Input
+                      id="rating_weight"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={settings.matching?.rating_weight || 30}
+                      onChange={(e) => updateSetting('matching', 'rating_weight', Number(e.target.value))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="distance_weight">Poids distance</Label>
+                    <Input
+                      id="distance_weight"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={settings.matching?.distance_weight || 40}
+                      onChange={(e) => updateSetting('matching', 'distance_weight', Number(e.target.value))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="availability_weight">Poids disponibilité</Label>
+                    <Input
+                      id="availability_weight"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={settings.matching?.availability_weight || 30}
+                      onChange={(e) => updateSetting('matching', 'availability_weight', Number(e.target.value))}
+                    />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="validation">
+          <Card>
+            <CardHeader>
+              <CardTitle>Paramètres de validation</CardTitle>
+              <CardDescription>
+                Configuration du processus de validation des candidatures et documents
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="auto_validation_enabled">Validation automatique</Label>
+                    <p className="text-sm text-muted-foreground">Validation automatique des documents simples</p>
+                  </div>
+                  <Switch
+                    id="auto_validation_enabled"
+                    checked={settings.validation?.auto_validation_enabled || false}
+                    onCheckedChange={(checked) => updateSetting('validation', 'auto_validation_enabled', checked)}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="manual_review_required">Révision manuelle obligatoire</Label>
+                    <p className="text-sm text-muted-foreground">Toutes les candidatures nécessitent une révision</p>
+                  </div>
+                  <Switch
+                    id="manual_review_required"
+                    checked={settings.validation?.manual_review_required || false}
+                    onCheckedChange={(checked) => updateSetting('validation', 'manual_review_required', checked)}
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="validation_timeout_days">Délai de validation (jours)</Label>
+                  <Input
+                    id="validation_timeout_days"
+                    type="number"
+                    min="1"
+                    value={settings.validation?.validation_timeout_days || 5}
+                    onChange={(e) => updateSetting('validation', 'validation_timeout_days', Number(e.target.value))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="rejected_reapplication_days">Délai avant nouvelle candidature (jours)</Label>
+                  <Input
+                    id="rejected_reapplication_days"
+                    type="number"
+                    min="1"
+                    value={settings.validation?.rejected_reapplication_days || 30}
+                    onChange={(e) => updateSetting('validation', 'rejected_reapplication_days', Number(e.target.value))}
                   />
                 </div>
               </div>
