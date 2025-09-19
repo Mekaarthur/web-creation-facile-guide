@@ -165,7 +165,7 @@ const Parametres = () => {
       if (data?.success) {
         toast({
           title: "Paramètres sauvegardés",
-          description: `${data.updatedCount} paramètres mis à jour avec succès.`,
+          description: `${data.updated_count || data.updatedCount} paramètres mis à jour avec succès.`,
         });
       } else {
         throw new Error('Failed to save settings');

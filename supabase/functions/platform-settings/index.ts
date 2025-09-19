@@ -54,7 +54,9 @@ serve(async (req) => {
       const { action, settings, category } = await req.json()
       
       switch (action) {
-        case 'save':
+        case 'get':
+          return await getSettings(supabase)
+        case 'update':
           return await saveSettings(supabase, settings, user.id)
         case 'reset':
           return await resetSettings(supabase, category, user.id)
