@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from '@/integrations/supabase/client';
 import { 
   Settings, 
   Save, 
@@ -73,58 +74,100 @@ const Parametres = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Mock data
-    setTimeout(() => {
-      setSettings({
-        general: {
-          site_name: 'Bikawo',
-          site_description: 'Plateforme de services à domicile',
-          contact_email: 'contact@bikawo.com',
-          default_language: 'fr',
-          timezone: 'Europe/Paris',
-          maintenance_mode: false
-        },
-        payments: {
-          stripe_enabled: true,
-          commission_rate: 15,
-          minimum_payout: 50,
-          auto_payout: true,
-          currency: 'EUR'
-        },
-        notifications: {
-          email_notifications: true,
-          sms_notifications: false,
-          push_notifications: true,
-          admin_alerts: true
-        },
-        security: {
-          require_email_verification: true,
-          two_factor_auth: false,
-          session_timeout: 24,
-          password_min_length: 8
-        },
-        business: {
-          auto_assignment: true,
-          max_providers_per_request: 5,
-          request_timeout_hours: 24,
-          rating_required: true
-        }
-      });
-      setLoading(false);
-    }, 1000);
+    loadSettings();
   }, []);
 
-  const handleSave = async () => {
-    setSaving(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      toast({
-        title: "Paramètres sauvegardés",
-        description: "Les modifications ont été appliquées avec succès.",
+  const loadSettings = async () => {
+    try {
+      setLoading(true);
+      
+      const { data, error } = await supabase.functions.invoke('platform-settings', {
+        body: { action: 'get' }
       });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        setSettings(data.settings);
+      } else {
+        throw new Error('Failed to load settings');
+      }
+    } catch (error) {
+      console.error('Error loading settings:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les paramètres",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!settings) return;
+    
+    try {
+      setSaving(true);
+      
+      const { data, error } = await supabase.functions.invoke('platform-settings', {
+        body: { 
+          action: 'update',
+          settings 
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast({
+          title: "Paramètres sauvegardés",
+          description: `${data.updatedCount} paramètres mis à jour avec succès.`,
+        });
+      } else {
+        throw new Error('Failed to save settings');
+      }
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder les paramètres",
+        variant: "destructive",
+      });
+    } finally {
       setSaving(false);
-    }, 1500);
+    }
+  };
+
+  const handleReset = async () => {
+    try {
+      setSaving(true);
+      
+      const { data, error } = await supabase.functions.invoke('platform-settings', {
+        body: { action: 'reset' }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast({
+          title: "Paramètres réinitialisés",
+          description: "Tous les paramètres ont été remis aux valeurs par défaut.",
+        });
+        await loadSettings(); // Reload settings
+      } else {
+        throw new Error('Failed to reset settings');
+      }
+    } catch (error) {
+      console.error('Error resetting settings:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de réinitialiser les paramètres",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const updateSetting = (category: keyof PlatformSettings, key: string, value: any) => {
@@ -177,7 +220,7 @@ const Parametres = () => {
         </div>
         
         <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleReset} disabled={saving}>
             <RefreshCw className="w-4 h-4 mr-2" />
             Réinitialiser
           </Button>
