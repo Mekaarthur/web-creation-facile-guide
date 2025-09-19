@@ -124,20 +124,38 @@ export const AdminKanbanBoard = () => {
     };
   }, []);
 
-  // Function to map service categories to display names
-  const getServiceDisplayName = (serviceType: string): string => {
-    const serviceMapping: Record<string, string> = {
-      'kids': '🧸 BIKA KIDS',
-      'maison': '🏠 BIKA MAISON', 
-      'vie': '📅 BIKA VIE',
-      'travel': '✈️ BIKA TRAVEL',
-      'animals': '🐾 BIKA ANIMALS',
-      'seniors': '👴 BIKA SENIORS',
-      'pro': '💼 BIKA PRO',
-      'plus': '⭐ BIKA PLUS'
-    };
-    
-    return serviceMapping[serviceType] || serviceType;
+  // Mappe le service brut vers nos catégories BIKA visibles
+  const getServiceDisplayName = (serviceTypeRaw: string, descriptionRaw?: string): string => {
+    const normalize = (s: string) => s
+      .toLowerCase()
+      .normalize('NFD').replace(/\p{Diacritic}/gu, '')
+      .replace(/[_-]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const source = normalize(`${serviceTypeRaw || ''} ${descriptionRaw || ''}`);
+    const hasAny = (keywords: string[]) => keywords.some(k => source.includes(k));
+
+    if (hasAny(['kid', 'enfant', 'babysit', 'garde enfant', 'devoir', 'sortie ecole'])) return '🧸 BIKA KIDS';
+    if (hasAny(['maison', 'home', 'menage', 'nettoyage', 'logistique', 'course', 'repassage', 'bricolage', 'reparation'])) return '🏠 BIKA MAISON';
+    if (hasAny(['animal', 'animaux', 'pet', 'chien', 'chat', 'promenade', 'garde animal', 'petsit'])) return '🐾 BIKA ANIMALS';
+    if (hasAny(['senior', 'age', 'personne agee', 'autonomie', 'accompagnement senior'])) return '👴 BIKA SENIORS';
+    if (hasAny(['travel', 'voyage', 'aeroport', 'gare', 'navette', 'transport', 'deplacement'])) return '✈️ BIKA TRAVEL';
+    if (hasAny(['vie', 'agenda', 'calendar', 'organisation', 'evenement', 'events', 'planning'])) return '📅 BIKA VIE';
+    if (hasAny(['pro', 'professionnel', 'business', 'entreprise', 'bureautique', 'admin', 'assistance admin'])) return '💼 BIKA PRO';
+    if (hasAny(['plus', 'premium', 'concierge', 'conciergerie', 'vip'])) return '⭐ BIKA PLUS';
+
+    // variantes deja prefixees
+    if (source.includes('bika kid')) return '🧸 BIKA KIDS';
+    if (source.includes('bika maison') || source.includes('bika home')) return '🏠 BIKA MAISON';
+    if (source.includes('bika animal')) return '🐾 BIKA ANIMALS';
+    if (source.includes('bika senior')) return '👴 BIKA SENIORS';
+    if (source.includes('bika travel') || source.includes('bika voyage')) return '✈️ BIKA TRAVEL';
+    if (source.includes('bika vie') || source.includes('bika life')) return '📅 BIKA VIE';
+    if (source.includes('bika pro') || source.includes('bika business')) return '💼 BIKA PRO';
+    if (source.includes('bika plus') || source.includes('bika premium')) return '⭐ BIKA PLUS';
+
+    return serviceTypeRaw || 'Service non spécifié';
   };
 
   const loadMissions = async () => {
@@ -156,9 +174,9 @@ export const AdminKanbanBoard = () => {
       if (error) throw error;
 
       // Transform the raw data to Mission objects with proper service display names
-      const transformedMissions: Mission[] = missions?.map(mission => ({
+      const transformedMissions: Mission[] = missions?.map((mission: any) => ({
         ...mission,
-        service_display_name: getServiceDisplayName(mission.service_type || '')
+        service_display_name: getServiceDisplayName(mission.service_type || '', mission.service_description || '')
       })) || [];
 
       // Organiser les missions par colonnes
