@@ -4,7 +4,7 @@ import { AdminClientRequestsEnhanced } from './AdminClientRequestsEnhanced';
 import { AdminManualAssignment } from './AdminManualAssignment';
 import { AdminAlertsPanel } from './AdminAlertsPanel';
 import { AdminKanbanBoard } from './AdminKanbanBoard';
-import { InternalMessaging } from './InternalMessaging';
+import ModernMessaging from './admin/ModernMessaging';
 import { MissionAssignmentTrigger } from './MissionAssignmentTrigger';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -936,7 +936,7 @@ export const AdminDashboard = () => {
 
         {/* Messagerie interne */}
         <TabsContent value="messaging" className="space-y-4">
-          <InternalMessaging />
+          <ModernMessaging />
         </TabsContent>
 
         {/* Modération des avis */}
