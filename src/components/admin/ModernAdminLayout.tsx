@@ -129,7 +129,7 @@ const navigationGroups = [
     items: [
       { 
         title: "Paramètres", 
-        href: "/modern-admin/parametres", 
+        href: "/modern-admin/settings", 
         icon: Settings,
         badge: null
       },

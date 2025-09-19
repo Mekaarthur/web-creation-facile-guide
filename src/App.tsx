@@ -213,6 +213,7 @@ const App = () => (
               <Route path="zones" element={<AdminZones />} />
               <Route path="marque" element={<AdminMarque />} />
               <Route path="settings" element={<AdminSettings />} />
+              <Route path="parametres" element={<AdminSettings />} />
               <Route path="reports-data" element={<AdminReportsData />} />
               <Route path="audit" element={<AuditReport />} />
             </Route>
