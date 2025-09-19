@@ -3021,6 +3021,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      current_user_email: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       expire_old_carts: {
         Args: Record<PropertyKey, never>
         Returns: number
