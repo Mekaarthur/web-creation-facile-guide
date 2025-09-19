@@ -6,41 +6,24 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface PlatformSettingsRequest {
-  action: 'get' | 'update' | 'reset';
-  settings?: Record<string, any>;
-}
-
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     // Verify admin authorization
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Authorization header missing' }),
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
-    }
-
+    const authHeader = req.headers.get('Authorization')!
     const token = authHeader.replace('Bearer ', '')
     const { data: { user } } = await supabase.auth.getUser(token)
 
     if (!user) {
       return new Response(
-        JSON.stringify({ error: 'Invalid token' }),
+        JSON.stringify({ error: 'Unauthorized' }),
         { 
           status: 401, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -65,26 +48,25 @@ serve(async (req) => {
       )
     }
 
-    const { action, settings }: PlatformSettingsRequest = await req.json()
-
-    switch (action) {
-      case 'get':
-        return await getSettings(supabase)
+    if (req.method === 'GET') {
+      return await getSettings(supabase)
+    } else if (req.method === 'POST') {
+      const { action, settings, category } = await req.json()
       
-      case 'update':
-        return await updateSettings(supabase, settings!, user.id)
-      
-      case 'reset':
-        return await resetSettings(supabase, user.id)
-      
-      default:
-        return new Response(
-          JSON.stringify({ error: 'Invalid action' }),
-          { 
-            status: 400, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        )
+      switch (action) {
+        case 'save':
+          return await saveSettings(supabase, settings, user.id)
+        case 'reset':
+          return await resetSettings(supabase, category, user.id)
+        default:
+          return new Response(
+            JSON.stringify({ error: 'Invalid action' }),
+            { 
+              status: 400, 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            }
+          )
+      }
     }
 
   } catch (error) {
@@ -103,11 +85,12 @@ async function getSettings(supabase: any) {
   try {
     const { data: settingsData, error } = await supabase
       .from('platform_settings')
-      .select('category, key, value')
+      .select('*')
+      .order('category, key')
 
     if (error) throw error
 
-    // Transform flat settings into nested structure
+    // Convert to structured format
     const settings = {
       general: {},
       payments: {},
@@ -116,9 +99,19 @@ async function getSettings(supabase: any) {
       business: {}
     }
 
-    settingsData.forEach((setting: any) => {
-      if (settings[setting.category as keyof typeof settings]) {
-        (settings[setting.category as keyof typeof settings] as any)[setting.key] = setting.value
+    settingsData?.forEach((setting: any) => {
+      const category = setting.category as keyof typeof settings
+      if (category in settings) {
+        // Parse JSON value
+        let value = setting.value
+        if (typeof value === 'string') {
+          try {
+            value = JSON.parse(value)
+          } catch {
+            // Keep as string if not valid JSON
+          }
+        }
+        (settings[category] as any)[setting.key] = value
       }
     })
 
@@ -128,7 +121,7 @@ async function getSettings(supabase: any) {
     )
 
   } catch (error) {
-    console.error('Error getting settings:', error)
+    console.error('Error fetching settings:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
@@ -139,18 +132,20 @@ async function getSettings(supabase: any) {
   }
 }
 
-async function updateSettings(supabase: any, settings: Record<string, any>, adminUserId: string) {
+async function saveSettings(supabase: any, settings: any, adminUserId: string) {
   try {
-    const updates: Array<{ category: string; key: string; value: any }> = []
+    const updates = []
 
-    // Flatten the nested settings structure
-    Object.entries(settings).forEach(([category, categorySettings]) => {
-      if (typeof categorySettings === 'object' && categorySettings !== null) {
-        Object.entries(categorySettings as Record<string, any>).forEach(([key, value]) => {
-          updates.push({ category, key, value })
+    // Flatten settings object
+    for (const [category, categorySettings] of Object.entries(settings)) {
+      for (const [key, value] of Object.entries(categorySettings as any)) {
+        updates.push({
+          category,
+          key,
+          value: JSON.stringify(value)
         })
       }
-    })
+    }
 
     // Update each setting
     for (const update of updates) {
@@ -167,7 +162,7 @@ async function updateSettings(supabase: any, settings: Record<string, any>, admi
       if (error) throw error
     }
 
-    // Log the admin action
+    // Log the action
     await supabase
       .from('admin_actions_log')
       .insert({
@@ -175,21 +170,20 @@ async function updateSettings(supabase: any, settings: Record<string, any>, admi
         entity_type: 'platform_settings',
         entity_id: null,
         action_type: 'settings_updated',
-        new_data: settings,
-        description: 'Platform settings updated'
+        new_data: { settings_count: updates.length, updated_at: new Date().toISOString() }
       })
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'Settings updated successfully',
-        updatedCount: updates.length 
+        message: 'Paramètres sauvegardés avec succès',
+        updated_count: updates.length
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
   } catch (error) {
-    console.error('Error updating settings:', error)
+    console.error('Error saving settings:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
@@ -200,55 +194,68 @@ async function updateSettings(supabase: any, settings: Record<string, any>, admi
   }
 }
 
-async function resetSettings(supabase: any, adminUserId: string) {
+async function resetSettings(supabase: any, category: string, adminUserId: string) {
   try {
-    // Default settings values
-    const defaultSettings = [
-      { category: 'general', key: 'site_name', value: 'Bikawo' },
-      { category: 'general', key: 'site_description', value: 'Plateforme de services à domicile' },
-      { category: 'general', key: 'contact_email', value: 'contact@bikawo.com' },
-      { category: 'general', key: 'default_language', value: 'fr' },
-      { category: 'general', key: 'timezone', value: 'Europe/Paris' },
-      { category: 'general', key: 'maintenance_mode', value: false },
-      
-      { category: 'payments', key: 'stripe_enabled', value: true },
-      { category: 'payments', key: 'commission_rate', value: 15 },
-      { category: 'payments', key: 'minimum_payout', value: 50 },
-      { category: 'payments', key: 'auto_payout', value: true },
-      { category: 'payments', key: 'currency', value: 'EUR' },
-      
-      { category: 'notifications', key: 'email_notifications', value: true },
-      { category: 'notifications', key: 'sms_notifications', value: false },
-      { category: 'notifications', key: 'push_notifications', value: true },
-      { category: 'notifications', key: 'admin_alerts', value: true },
-      
-      { category: 'security', key: 'require_email_verification', value: true },
-      { category: 'security', key: 'two_factor_auth', value: false },
-      { category: 'security', key: 'session_timeout', value: 24 },
-      { category: 'security', key: 'password_min_length', value: 8 },
-      
-      { category: 'business', key: 'auto_assignment', value: true },
-      { category: 'business', key: 'max_providers_per_request', value: 5 },
-      { category: 'business', key: 'request_timeout_hours', value: 24 },
-      { category: 'business', key: 'rating_required', value: true }
-    ]
-
-    // Reset all settings to defaults
-    for (const setting of defaultSettings) {
-      const { error } = await supabase
-        .from('platform_settings')
-        .upsert({
-          category: setting.category,
-          key: setting.key,
-          value: setting.value
-        }, {
-          onConflict: 'category,key'
-        })
-
-      if (error) throw error
+    // Default values for reset
+    const defaultSettings: Record<string, any> = {
+      general: {
+        site_name: 'Bikawo',
+        site_description: 'Plateforme de services à domicile',
+        contact_email: 'contact@bikawo.com',
+        default_language: 'fr',
+        timezone: 'Europe/Paris',
+        maintenance_mode: false
+      },
+      payments: {
+        stripe_enabled: true,
+        commission_rate: 15,
+        minimum_payout: 50,
+        auto_payout: true,
+        currency: 'EUR'
+      },
+      notifications: {
+        email_notifications: true,
+        sms_notifications: false,
+        push_notifications: true,
+        admin_alerts: true
+      },
+      security: {
+        require_email_verification: true,
+        two_factor_auth: false,
+        session_timeout: 24,
+        password_min_length: 8
+      },
+      business: {
+        auto_assignment: true,
+        max_providers_per_request: 5,
+        request_timeout_hours: 24,
+        rating_required: true
+      }
     }
 
-    // Log the admin action
+    let categoriesToReset = category === 'all' ? Object.keys(defaultSettings) : [category]
+    let resetCount = 0
+
+    for (const cat of categoriesToReset) {
+      if (cat in defaultSettings) {
+        for (const [key, value] of Object.entries(defaultSettings[cat])) {
+          const { error } = await supabase
+            .from('platform_settings')
+            .upsert({
+              category: cat,
+              key,
+              value: JSON.stringify(value)
+            }, {
+              onConflict: 'category,key'
+            })
+
+          if (error) throw error
+          resetCount++
+        }
+      }
+    }
+
+    // Log the action
     await supabase
       .from('admin_actions_log')
       .insert({
@@ -256,14 +263,18 @@ async function resetSettings(supabase: any, adminUserId: string) {
         entity_type: 'platform_settings',
         entity_id: null,
         action_type: 'settings_reset',
-        new_data: { reset_to: 'defaults' },
-        description: 'Platform settings reset to defaults'
+        new_data: { 
+          reset_category: category, 
+          reset_count: resetCount, 
+          reset_at: new Date().toISOString() 
+        }
       })
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'Settings reset to defaults successfully' 
+        message: `Paramètres ${category === 'all' ? 'généraux' : 'de ' + category} réinitialisés`,
+        reset_count: resetCount
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
