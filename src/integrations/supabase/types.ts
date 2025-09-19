@@ -981,6 +981,81 @@ export type Database = {
           },
         ]
       }
+      financial_rules: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          provider_payment: number
+          service_category: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          provider_payment: number
+          service_category: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          provider_payment?: number
+          service_category?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      financial_transactions: {
+        Row: {
+          booking_id: string
+          client_id: string
+          client_paid_at: string | null
+          client_price: number
+          company_commission: number
+          created_at: string
+          id: string
+          payment_status: string
+          provider_id: string
+          provider_paid_at: string | null
+          provider_payment: number
+          service_category: string
+          updated_at: string
+        }
+        Insert: {
+          booking_id: string
+          client_id: string
+          client_paid_at?: string | null
+          client_price: number
+          company_commission: number
+          created_at?: string
+          id?: string
+          payment_status?: string
+          provider_id: string
+          provider_paid_at?: string | null
+          provider_payment: number
+          service_category: string
+          updated_at?: string
+        }
+        Update: {
+          booking_id?: string
+          client_id?: string
+          client_paid_at?: string | null
+          client_price?: number
+          company_commission?: number
+          created_at?: string
+          id?: string
+          payment_status?: string
+          provider_id?: string
+          provider_paid_at?: string | null
+          provider_payment?: number
+          service_category?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       incidents: {
         Row: {
           booking_id: string | null
@@ -2800,6 +2875,13 @@ export type Database = {
         Args: { lat1: number; lat2: number; lon1: number; lon2: number }
         Returns: number
       }
+      calculate_financial_breakdown: {
+        Args: { p_client_price: number; p_service_category: string }
+        Returns: {
+          company_commission: number
+          provider_payment: number
+        }[]
+      }
       calculate_moderation_stats: {
         Args: Record<PropertyKey, never>
         Returns: Json
@@ -2892,13 +2974,11 @@ export type Database = {
             }
           | { p_limit?: number; p_location: string; p_service_type: string }
         Returns: {
-          availability_slots: Json
           business_name: string
           location: string
           match_score: number
           provider_id: string
           rating: number
-          services_offered: Json
         }[]
       }
       get_platform_stats: {
