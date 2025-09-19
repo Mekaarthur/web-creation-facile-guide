@@ -617,7 +617,15 @@ export type Database = {
           updated_at?: string
           urgency_level?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "client_requests_assigned_provider_id_fkey"
+            columns: ["assigned_provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       client_rewards: {
         Row: {

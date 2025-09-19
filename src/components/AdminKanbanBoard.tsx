@@ -130,7 +130,7 @@ export const AdminKanbanBoard = () => {
         .from('client_requests')
         .select(`
           *,
-          providers!assigned_provider_id (
+          provider:providers!assigned_provider_id (
             business_name
           )
         `)
