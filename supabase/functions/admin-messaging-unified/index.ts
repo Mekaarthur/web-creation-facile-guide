@@ -47,7 +47,7 @@ serve(async (req) => {
     );
 
     const { action, ...requestData } = await req.json();
-    console.log(`[Admin Messaging] Action: ${action}`, requestData);
+    console.log(`[Admin Messaging v2] Action: ${action}`, requestData);
 
     let result;
     
@@ -76,7 +76,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('[Admin Messaging] Erreur:', error);
+    console.error('[Admin Messaging v2] Erreur:', error);
     return new Response(JSON.stringify({ 
       success: false, 
       error: error.message 
@@ -87,15 +87,16 @@ serve(async (req) => {
   }
 });
 
+// ============= FONCTIONS =============
+
 async function listConversations(supabase: any, { status, limit = 50, offset = 0 }: any): Promise<{ success: boolean; conversations: ConversationWithDetails[] }> {
   try {
-    // Construire la requête de base
+    console.log('[listConversations] Début récupération');
+    
+    // Requête simple sur internal_conversations
     let conversationsQuery = supabase
       .from('internal_conversations')
-      .select(`
-        *,
-        client_profile:profiles!client_id(first_name, last_name, email)
-      `)
+      .select('*')
       .order('last_message_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -106,23 +107,43 @@ async function listConversations(supabase: any, { status, limit = 50, offset = 0
     const { data: conversations, error: convError } = await conversationsQuery;
     
     if (convError) {
+      console.error('Erreur conversations de base:', convError);
       throw new Error(`Erreur récupération conversations: ${convError.message}`);
     }
+
+    console.log(`[listConversations] ${conversations?.length || 0} conversations trouvées`);
 
     if (!conversations || conversations.length === 0) {
       return { success: true, conversations: [] };
     }
 
-    // Enrichir avec les données additionnelles
-    const enrichedConversations = await Promise.all(
-      conversations.map(async (conv: any): Promise<ConversationWithDetails> => {
-        // Compter les messages non lus pour les admins
+    // Enrichir une par une pour éviter les erreurs de relation
+    const enrichedConversations: ConversationWithDetails[] = [];
+    
+    for (const conv of conversations) {
+      try {
+        // Compter les messages non lus
         const { count: unreadCount } = await supabase
           .from('internal_messages')
           .select('*', { count: 'exact', head: true })
           .eq('conversation_id', conv.id)
           .eq('is_read', false)
-          .neq('sender_id', conv.admin_id);
+          .neq('sender_id', conv.admin_id || 'none');
+
+        // Récupérer le nom du client
+        let clientName = `Client ${conv.client_id.slice(0, 8)}`;
+        let clientEmail = 'email@inconnu.com';
+        
+        const { data: clientProfile } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, email')
+          .eq('user_id', conv.client_id)
+          .single();
+
+        if (clientProfile && clientProfile.first_name && clientProfile.last_name) {
+          clientName = `${clientProfile.first_name} ${clientProfile.last_name}`;
+          clientEmail = clientProfile.email || clientEmail;
+        }
 
         // Récupérer le nom du prestataire si applicable
         let providerName = null;
@@ -136,15 +157,7 @@ async function listConversations(supabase: any, { status, limit = 50, offset = 0
           providerName = provider?.business_name || null;
         }
 
-        // Construire le nom du client
-        const clientProfile = conv.client_profile;
-        const clientName = clientProfile && clientProfile.first_name && clientProfile.last_name
-          ? `${clientProfile.first_name} ${clientProfile.last_name}`
-          : conv.client_id.slice(0, 8);
-
-        const clientEmail = clientProfile?.email || 'email@inconnu.com';
-
-        return {
+        enrichedConversations.push({
           id: conv.id,
           subject: conv.subject || 'Conversation',
           client_id: conv.client_id,
@@ -157,9 +170,29 @@ async function listConversations(supabase: any, { status, limit = 50, offset = 0
           client_name: clientName,
           provider_name: providerName,
           client_email: clientEmail
-        };
-      })
-    );
+        });
+      } catch (enrichError) {
+        console.warn(`Erreur enrichissement conversation ${conv.id}:`, enrichError);
+        
+        // Ajouter version basique en cas d'erreur
+        enrichedConversations.push({
+          id: conv.id,
+          subject: conv.subject || 'Conversation',
+          client_id: conv.client_id,
+          provider_id: conv.provider_id,
+          admin_id: conv.admin_id,
+          status: conv.status || 'active',
+          last_message_at: conv.last_message_at || conv.created_at,
+          created_at: conv.created_at,
+          unread_count: 0,
+          client_name: `Client ${conv.client_id.slice(0, 8)}`,
+          provider_name: null,
+          client_email: 'email@inconnu.com'
+        });
+      }
+    }
+
+    console.log(`[listConversations] ${enrichedConversations.length} conversations enrichies`);
 
     return {
       success: true,
@@ -174,13 +207,12 @@ async function listConversations(supabase: any, { status, limit = 50, offset = 0
 
 async function getConversation(supabase: any, { conversationId }: any): Promise<{ success: boolean; conversation: any; messages: MessageWithDetails[] }> {
   try {
-    // Récupérer la conversation
+    console.log(`[getConversation] Récupération conversation ${conversationId}`);
+    
+    // Récupérer la conversation de base
     const { data: conversation, error: convError } = await supabase
       .from('internal_conversations')
-      .select(`
-        *,
-        client_profile:profiles!client_id(first_name, last_name, email)
-      `)
+      .select('*')
       .eq('id', conversationId)
       .single();
 
@@ -199,9 +231,13 @@ async function getConversation(supabase: any, { conversationId }: any): Promise<
       throw new Error(`Erreur messages: ${messagesError.message}`);
     }
 
+    console.log(`[getConversation] ${messages?.length || 0} messages trouvés`);
+
     // Enrichir les messages avec les noms des expéditeurs
-    const enrichedMessages: MessageWithDetails[] = await Promise.all(
-      (messages || []).map(async (message: any): Promise<MessageWithDetails> => {
+    const enrichedMessages: MessageWithDetails[] = [];
+    
+    for (const message of messages || []) {
+      try {
         let senderName = 'Utilisateur';
         let isAdmin = false;
 
@@ -210,7 +246,7 @@ async function getConversation(supabase: any, { conversationId }: any): Promise<
           senderName = 'Équipe Bikawo';
           isAdmin = true;
         } else {
-          // Essayer de récupérer le nom depuis les profils
+          // Récupérer le nom depuis les profils
           const { data: profile } = await supabase
             .from('profiles')
             .select('first_name, last_name')
@@ -224,7 +260,7 @@ async function getConversation(supabase: any, { conversationId }: any): Promise<
           }
         }
 
-        return {
+        enrichedMessages.push({
           id: message.id,
           conversation_id: message.conversation_id,
           sender_id: message.sender_id,
@@ -236,9 +272,26 @@ async function getConversation(supabase: any, { conversationId }: any): Promise<
           created_at: message.created_at,
           sender_name: senderName,
           is_admin: isAdmin
-        };
-      })
-    );
+        });
+      } catch (enrichError) {
+        console.warn(`Erreur enrichissement message ${message.id}:`, enrichError);
+        
+        // Version basique en cas d'erreur
+        enrichedMessages.push({
+          id: message.id,
+          conversation_id: message.conversation_id,
+          sender_id: message.sender_id,
+          receiver_id: message.receiver_id,
+          message_text: message.message_text,
+          message_type: message.message_type || 'text',
+          file_url: message.file_url,
+          is_read: message.is_read || false,
+          created_at: message.created_at,
+          sender_name: `Utilisateur ${message.sender_id.slice(0, 8)}`,
+          is_admin: false
+        });
+      }
+    }
 
     return {
       success: true,
@@ -254,6 +307,8 @@ async function getConversation(supabase: any, { conversationId }: any): Promise<
 
 async function sendMessage(supabase: any, { conversationId, senderId, receiverId, message, messageType = 'text' }: any): Promise<{ success: boolean; message: any; notification: string }> {
   try {
+    console.log(`[sendMessage] Envoi message dans conversation ${conversationId}`);
+    
     // Créer le message
     const { data: newMessage, error: messageError } = await supabase
       .from('internal_messages')
@@ -277,7 +332,7 @@ async function sendMessage(supabase: any, { conversationId, senderId, receiverId
       .from('internal_conversations')
       .update({ 
         last_message_at: new Date().toISOString(),
-        status: 'active' // Réactiver la conversation si elle était fermée
+        status: 'active'
       })
       .eq('id', conversationId);
 
@@ -304,6 +359,8 @@ async function sendMessage(supabase: any, { conversationId, senderId, receiverId
       console.warn('Erreur création notification:', notificationError);
     }
 
+    console.log(`[sendMessage] Message envoyé avec succès`);
+
     return {
       success: true,
       message: newMessage,
@@ -318,64 +375,74 @@ async function sendMessage(supabase: any, { conversationId, senderId, receiverId
 
 async function createConversation(supabase: any, { clientId, providerId, adminId, subject, initialMessage }: any): Promise<{ success: boolean; conversation: any; message: string }> {
   try {
-    // Créer la conversation
-    const { data: conversation, error: convError } = await supabase
+    console.log(`[createConversation] Création conversation pour client ${clientId}`);
+    
+    // Utiliser la fonction database pour créer la conversation
+    const { data: conversationId, error: createError } = await supabase
+      .rpc('create_internal_conversation', {
+        p_client_id: clientId,
+        p_provider_id: providerId,
+        p_admin_id: adminId,
+        p_subject: subject || 'Nouvelle conversation',
+        p_initial_message: initialMessage
+      });
+
+    if (createError) {
+      console.warn('Erreur fonction DB, fallback manuel:', createError);
+      
+      // Fallback manuel
+      const { data: conversation, error: fallbackError } = await supabase
+        .from('internal_conversations')
+        .insert({
+          client_id: clientId,
+          provider_id: providerId,
+          admin_id: adminId || null,
+          subject: subject || 'Nouvelle conversation',
+          status: 'active',
+          last_message_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (fallbackError) {
+        throw new Error(`Erreur création conversation: ${fallbackError.message}`);
+      }
+
+      // Ajouter le message initial si fourni
+      if (initialMessage && initialMessage.trim()) {
+        await supabase
+          .from('internal_messages')
+          .insert({
+            conversation_id: conversation.id,
+            sender_id: adminId,
+            receiver_id: clientId,
+            message_text: initialMessage,
+            message_type: 'text',
+            is_read: false
+          });
+      }
+
+      console.log(`[createConversation] Conversation ${conversation.id} créée (fallback)`);
+      
+      return {
+        success: true,
+        conversation,
+        message: 'Conversation créée avec succès'
+      };
+    }
+
+    // Récupérer la conversation créée
+    const { data: createdConversation } = await supabase
       .from('internal_conversations')
-      .insert({
-        client_id: clientId,
-        provider_id: providerId,
-        admin_id: adminId,
-        subject: subject || 'Nouvelle conversation',
-        status: 'active',
-        last_message_at: new Date().toISOString()
-      })
-      .select()
+      .select('*')
+      .eq('id', conversationId)
       .single();
 
-    if (convError) {
-      throw new Error(`Erreur création conversation: ${convError.message}`);
-    }
-
-    // Envoyer le message initial si fourni
-    if (initialMessage && initialMessage.trim()) {
-      const { error: messageError } = await supabase
-        .from('internal_messages')
-        .insert({
-          conversation_id: conversation.id,
-          sender_id: adminId,
-          receiver_id: clientId,
-          message_text: initialMessage,
-          message_type: 'text',
-          is_read: false
-        });
-
-      if (messageError) {
-        console.warn('Erreur message initial:', messageError);
-      }
-
-      // Notifier le client
-      const { error: notificationError } = await supabase
-        .from('realtime_notifications')
-        .insert({
-          user_id: clientId,
-          type: 'new_conversation',
-          title: 'Nouvelle conversation',
-          message: `Nouvelle conversation: ${subject}`,
-          data: { 
-            conversation_id: conversation.id,
-            subject: subject
-          },
-          priority: 'high'
-        });
-
-      if (notificationError) {
-        console.warn('Erreur notification:', notificationError);
-      }
-    }
+    console.log(`[createConversation] Conversation ${conversationId} créée`);
 
     return {
       success: true,
-      conversation,
+      conversation: createdConversation,
       message: 'Conversation créée avec succès'
     };
 
@@ -387,6 +454,8 @@ async function createConversation(supabase: any, { clientId, providerId, adminId
 
 async function getMessagingStats(supabase: any, { days = 7 }: any): Promise<{ success: boolean; stats: any }> {
   try {
+    console.log(`[getMessagingStats] Calcul stats sur ${days} jours`);
+    
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
@@ -412,33 +481,33 @@ async function getMessagingStats(supabase: any, { days = 7 }: any): Promise<{ su
     const conversationsCreated = conversations?.length || 0;
     const messagesTotal = messages?.length || 0;
     
-    // Messages envoyés par les admins (approximation)
+    // Messages envoyés par les admins (approximation basée sur admin_id)
     const adminMessages = messages?.filter((m: any) => {
-      // Chercher si le sender_id est un admin dans les conversations
       const conversation = conversations?.find((c: any) => c.id === m.conversation_id);
       return conversation && m.sender_id === conversation.admin_id;
     }).length || 0;
 
     const resolvedCount = resolvedConversations?.length || 0;
-
-    // Calcul approximatif du temps de réponse moyen
-    let averageResponseTime = '2h 15min'; // Mock pour l'instant
     
     // Taux de résolution
     const resolutionRate = conversationsCreated > 0 
       ? Math.round((resolvedCount / conversationsCreated) * 100) 
       : 0;
 
+    const stats = {
+      conversationsCreated,
+      messagesTotal,
+      adminMessages,
+      resolvedConversations: resolvedCount,
+      averageResponseTime: '2h 15min', // Mock pour l'instant
+      resolutionRate
+    };
+
+    console.log(`[getMessagingStats] Stats calculées:`, stats);
+
     return {
       success: true,
-      stats: {
-        conversationsCreated,
-        messagesTotal,
-        adminMessages,
-        resolvedConversations: resolvedCount,
-        averageResponseTime,
-        resolutionRate
-      }
+      stats
     };
 
   } catch (error) {

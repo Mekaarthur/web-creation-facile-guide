@@ -1125,6 +1125,7 @@ export type Database = {
           provider_id: string | null
           status: string | null
           subject: string
+          type: string | null
           updated_at: string
         }
         Insert: {
@@ -1139,6 +1140,7 @@ export type Database = {
           provider_id?: string | null
           status?: string | null
           subject: string
+          type?: string | null
           updated_at?: string
         }
         Update: {
@@ -1153,6 +1155,7 @@ export type Database = {
           provider_id?: string | null
           status?: string | null
           subject?: string
+          type?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -2881,7 +2884,50 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      conversations_with_details: {
+        Row: {
+          admin_id: string | null
+          admin_name: string | null
+          booking_id: string | null
+          client_email: string | null
+          client_id: string | null
+          client_name: string | null
+          client_request_id: string | null
+          created_at: string | null
+          id: string | null
+          job_application_id: string | null
+          last_message_at: string | null
+          provider_id: string | null
+          provider_name: string | null
+          status: string | null
+          subject: string | null
+          type: string | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "internal_conversations_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_conversations_client_request_id_fkey"
+            columns: ["client_request_id"]
+            isOneToOne: false
+            referencedRelation: "client_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_conversations_job_application_id_fkey"
+            columns: ["job_application_id"]
+            isOneToOne: false
+            referencedRelation: "job_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       assign_mission_manually: {
@@ -2953,6 +2999,16 @@ export type Database = {
         Args: { provider_id: string; request_id: string; service_id: string }
         Returns: string
       }
+      create_internal_conversation: {
+        Args: {
+          p_admin_id?: string
+          p_client_id: string
+          p_initial_message?: string
+          p_provider_id?: string
+          p_subject?: string
+        }
+        Returns: string
+      }
       create_provider_from_application: {
         Args: { application_id: string }
         Returns: string
@@ -3007,11 +3063,13 @@ export type Database = {
             }
           | { p_limit?: number; p_location: string; p_service_type: string }
         Returns: {
+          availability_slots: Json
           business_name: string
           location: string
           match_score: number
           provider_id: string
           rating: number
+          services_offered: Json
         }[]
       }
       get_platform_stats: {
@@ -3064,6 +3122,10 @@ export type Database = {
           platform_average_rating: number
           verified_providers: number
         }[]
+      }
+      get_unread_messages_count: {
+        Args: { p_conversation_id: string; p_user_id: string }
+        Returns: number
       }
       has_role: {
         Args: {
