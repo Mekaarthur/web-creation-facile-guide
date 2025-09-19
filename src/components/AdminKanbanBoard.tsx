@@ -26,6 +26,7 @@ interface Mission {
   id: string;
   client_name: string;
   service_type: string;
+  service_display_name: string;
   location: string;
   status: string;
   created_at: string;
@@ -123,6 +124,22 @@ export const AdminKanbanBoard = () => {
     };
   }, []);
 
+  // Function to map service categories to display names
+  const getServiceDisplayName = (serviceType: string): string => {
+    const serviceMapping: Record<string, string> = {
+      'kids': '🧸 BIKA KIDS',
+      'maison': '🏠 BIKA MAISON', 
+      'vie': '📅 BIKA VIE',
+      'travel': '✈️ BIKA TRAVEL',
+      'animals': '🐾 BIKA ANIMALS',
+      'seniors': '👴 BIKA SENIORS',
+      'pro': '💼 BIKA PRO',
+      'plus': '⭐ BIKA PLUS'
+    };
+    
+    return serviceMapping[serviceType] || serviceType;
+  };
+
   const loadMissions = async () => {
     setLoading(true);
     try {
@@ -138,12 +155,18 @@ export const AdminKanbanBoard = () => {
 
       if (error) throw error;
 
+      // Transform the raw data to Mission objects with proper service display names
+      const transformedMissions: Mission[] = missions?.map(mission => ({
+        ...mission,
+        service_display_name: getServiceDisplayName(mission.service_type || '')
+      })) || [];
+
       // Organiser les missions par colonnes
       const updatedColumns = kanbanColumns.map(column => ({
         ...column,
-        missions: missions?.filter(mission => 
+        missions: transformedMissions.filter(mission => 
           column.status.includes(mission.status)
-        ) || []
+        )
       }));
 
       setColumns(updatedColumns);
@@ -257,7 +280,7 @@ export const AdminKanbanBoard = () => {
         >
           <div className="space-y-2">
             <div className="flex items-start justify-between">
-              <h4 className="font-medium text-sm line-clamp-2">{mission.service_type}</h4>
+              <h4 className="font-medium text-sm line-clamp-2">{mission.service_display_name}</h4>
               <Dialog>
                 <DialogTrigger asChild>
                   <Button 
@@ -282,7 +305,7 @@ export const AdminKanbanBoard = () => {
                       </div>
                       <div>
                         <label className="font-medium">Service</label>
-                        <p>{mission.service_type}</p>
+                        <p>{mission.service_display_name}</p>
                       </div>
                       <div>
                         <label className="font-medium">Lieu</label>
