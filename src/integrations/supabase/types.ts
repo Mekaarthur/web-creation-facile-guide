@@ -2848,6 +2848,7 @@ export type Database = {
       }
       zones_geographiques: {
         Row: {
+          active: boolean
           codes_postaux: string[]
           created_at: string
           id: string
@@ -2857,6 +2858,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          active?: boolean
           codes_postaux?: string[]
           created_at?: string
           id?: string
@@ -2866,6 +2868,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          active?: boolean
           codes_postaux?: string[]
           created_at?: string
           id?: string

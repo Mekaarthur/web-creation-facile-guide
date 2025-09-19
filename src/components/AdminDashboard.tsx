@@ -6,7 +6,6 @@ import { AdminAlertsPanel } from './AdminAlertsPanel';
 import { AdminKanbanBoard } from './AdminKanbanBoard';
 import { InternalMessaging } from './InternalMessaging';
 import { MissionAssignmentTrigger } from './MissionAssignmentTrigger';
-import ZoneGeographiqueManager from './ZoneGeographiqueManager';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -925,7 +924,14 @@ export const AdminDashboard = () => {
 
         {/* Gestion des zones géographiques */}
         <TabsContent value="zones" className="space-y-4">
-          <ZoneGeographiqueManager />
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">
+              Gestion des zones géographiques déplacée vers l'interface moderne
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Accédez aux zones via le menu principal : Admin Moderne → Zones
+            </p>
+          </div>
         </TabsContent>
 
         {/* Messagerie interne */}

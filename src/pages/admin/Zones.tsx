@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from '@/integrations/supabase/client';
 import { 
   MapPin, 
   Plus, 
@@ -35,15 +36,15 @@ import {
 
 interface GeographicZone {
   id: string;
-  name: string;
-  type: 'country' | 'region' | 'department' | 'city';
-  code: string;
-  parent_zone?: string;
+  nom_zone: string;
+  type_zone: 'departement' | 'ville' | 'secteur';
+  codes_postaux: string[];
+  rayon_km?: number;
   active: boolean;
-  provider_count: number;
-  request_count: number;
-  description?: string;
+  provider_count?: number;
+  request_count?: number;
   created_at: string;
+  updated_at: string;
 }
 
 const Zones = () => {
@@ -53,131 +54,190 @@ const Zones = () => {
   const [selectedType, setSelectedType] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingZone, setEditingZone] = useState<GeographicZone | null>(null);
+  const [formData, setFormData] = useState({
+    nom_zone: '',
+    codes_postaux: '',
+    type_zone: 'departement',
+    rayon_km: '',
+    active: true
+  });
   const { toast } = useToast();
 
-  // Mock data
   useEffect(() => {
-    setTimeout(() => {
-      setZones([
-        {
-          id: '1',
-          name: 'France',
-          type: 'country',
-          code: 'FR',
-          active: true,
-          provider_count: 2156,
-          request_count: 8420,
-          description: 'Territoire français métropolitain',
-          created_at: '2024-01-01'
-        },
-        {
-          id: '2',
-          name: 'Île-de-France',
-          type: 'region',
-          code: 'IDF',
-          parent_zone: 'France',
-          active: true,
-          provider_count: 845,
-          request_count: 3210,
-          description: 'Région parisienne',
-          created_at: '2024-01-01'
-        },
-        {
-          id: '3',
-          name: 'Paris',
-          type: 'department',
-          code: '75',
-          parent_zone: 'Île-de-France',
-          active: true,
-          provider_count: 423,
-          request_count: 1876,
-          description: 'Département de Paris',
-          created_at: '2024-01-01'
-        },
-        {
-          id: '4',
-          name: 'Lyon',
-          type: 'city',
-          code: '69000',
-          parent_zone: 'Rhône-Alpes',
-          active: true,
-          provider_count: 187,
-          request_count: 654,
-          description: 'Ville de Lyon',
-          created_at: '2024-01-01'
-        },
-        {
-          id: '5',
-          name: 'Marseille',
-          type: 'city',
-          code: '13000',
-          parent_zone: 'PACA',
-          active: false,
-          provider_count: 156,
-          request_count: 432,
-          description: 'Ville de Marseille (temporairement désactivée)',
-          created_at: '2024-01-01'
-        }
-      ]);
-      setLoading(false);
-    }, 1000);
+    loadZones();
   }, []);
 
+  const loadZones = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-zones', {
+        body: { action: 'list' }
+      });
+
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error);
+      
+      // Calculer les statistiques des prestataires par zone (mock pour l'instant)
+      const zonesWithStats = data.data.map((zone: any) => ({
+        ...zone,
+        provider_count: Math.floor(Math.random() * 200) + 50,
+        request_count: Math.floor(Math.random() * 500) + 100
+      }));
+      
+      setZones(zonesWithStats);
+    } catch (error) {
+      console.error('Erreur lors du chargement des zones:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les zones géographiques",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredZones = zones.filter(zone => {
-    const matchesSearch = zone.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         zone.code.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = selectedType === 'all' || zone.type === selectedType;
+    const matchesSearch = zone.nom_zone.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         zone.codes_postaux.some(code => code.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesType = selectedType === 'all' || zone.type_zone === selectedType;
     return matchesSearch && matchesType;
   });
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'country': return <Globe className="w-4 h-4" />;
-      case 'region': return <Map className="w-4 h-4" />;
-      case 'department': return <MapPin className="w-4 h-4" />;
-      case 'city': return <MapPin className="w-4 h-4" />;
+      case 'departement': return <Globe className="w-4 h-4" />;
+      case 'ville': return <MapPin className="w-4 h-4" />;
+      case 'secteur': return <Map className="w-4 h-4" />;
       default: return <MapPin className="w-4 h-4" />;
     }
   };
 
   const getTypeBadge = (type: string) => {
     const variants = {
-      country: 'default',
-      region: 'secondary', 
-      department: 'outline',
-      city: 'destructive'
+      departement: 'default',
+      ville: 'secondary', 
+      secteur: 'outline'
     };
     return <Badge variant={variants[type as keyof typeof variants] as any}>{type}</Badge>;
   };
 
-  const handleSaveZone = () => {
-    toast({
-      title: "Zone sauvegardée",
-      description: `La zone ${editingZone ? 'a été modifiée' : 'a été créée'} avec succès.`,
-    });
-    setIsDialogOpen(false);
-    setEditingZone(null);
+  const handleSaveZone = async () => {
+    const codesPostaux = formData.codes_postaux
+      .split(',')
+      .map(code => code.trim())
+      .filter(code => code.length > 0);
+
+    const zoneData = {
+      nom_zone: formData.nom_zone,
+      codes_postaux: codesPostaux,
+      type_zone: formData.type_zone,
+      rayon_km: formData.rayon_km ? parseInt(formData.rayon_km) : null,
+      active: formData.active
+    };
+
+    try {
+      const action = editingZone ? 'update' : 'create';
+      const requestBody = editingZone 
+        ? { action, zoneData, zoneId: editingZone.id }
+        : { action, zoneData };
+
+      const { data, error } = await supabase.functions.invoke('admin-zones', {
+        body: requestBody
+      });
+
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error);
+      
+      toast({
+        title: editingZone ? "Zone modifiée" : "Zone créée",
+        description: data.message
+      });
+
+      setIsDialogOpen(false);
+      setEditingZone(null);
+      setFormData({ nom_zone: '', codes_postaux: '', type_zone: 'departement', rayon_km: '', active: true });
+      loadZones();
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder la zone géographique",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleDeleteZone = (zoneId: string, zoneName: string) => {
-    setZones(zones.filter(zone => zone.id !== zoneId));
-    toast({
-      title: "Zone supprimée",
-      description: `La zone "${zoneName}" a été supprimée avec succès.`,
+  const handleEdit = (zone: GeographicZone) => {
+    setEditingZone(zone);
+    setFormData({
+      nom_zone: zone.nom_zone,
+      codes_postaux: zone.codes_postaux.join(', '),
+      type_zone: zone.type_zone,
+      rayon_km: zone.rayon_km?.toString() || '',
+      active: zone.active
     });
+    setIsDialogOpen(true);
   };
 
-  const toggleZoneStatus = (zoneId: string) => {
-    setZones(zones.map(zone => 
-      zone.id === zoneId 
-        ? { ...zone, active: !zone.active }
-        : zone
-    ));
+  const handleDeleteZone = async (zoneId: string, zoneName: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette zone ?')) return;
+
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-zones', {
+        body: { action: 'delete', zoneId }
+      });
+
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error);
+      
+      toast({
+        title: "Zone supprimée",
+        description: `La zone "${zoneName}" a été supprimée avec succès.`,
+      });
+      loadZones();
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la zone géographique",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const toggleZoneStatus = async (zoneId: string) => {
     const zone = zones.find(z => z.id === zoneId);
-    toast({
-      title: `Zone ${zone?.active ? 'désactivée' : 'activée'}`,
-      description: `La zone "${zone?.name}" est maintenant ${zone?.active ? 'inactive' : 'active'}.`,
-    });
+    if (!zone) return;
+    
+    const updatedZoneData = {
+      nom_zone: zone.nom_zone,
+      codes_postaux: zone.codes_postaux,
+      type_zone: zone.type_zone,
+      rayon_km: zone.rayon_km,
+      active: !zone.active
+    };
+
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-zones', {
+        body: { action: 'update', zoneData: updatedZoneData, zoneId }
+      });
+
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error);
+      
+      toast({
+        title: `Zone ${zone.active ? 'désactivée' : 'activée'}`,
+        description: `La zone "${zone.nom_zone}" est maintenant ${zone.active ? 'inactive' : 'active'}.`,
+      });
+      loadZones();
+    } catch (error) {
+      console.error('Erreur lors du changement de statut:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de modifier le statut de la zone",
+        variant: "destructive"
+      });
+    }
   };
 
   if (loading) {
@@ -216,7 +276,10 @@ const Zones = () => {
         
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => setEditingZone(null)}>
+            <Button onClick={() => {
+              setEditingZone(null);
+              setFormData({ nom_zone: '', codes_postaux: '', type_zone: 'departement', rayon_km: '', active: true });
+            }}>
               <Plus className="w-4 h-4 mr-2" />
               Nouvelle Zone
             </Button>
@@ -231,46 +294,54 @@ const Zones = () => {
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nom de la zone</Label>
-                  <Input
-                    id="name"
-                    placeholder="Paris"
-                    defaultValue={editingZone?.name}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="code">Code</Label>
-                  <Input
-                    id="code"
-                    placeholder="75000"
-                    defaultValue={editingZone?.code}
-                  />
-                </div>
-              </div>
               <div className="space-y-2">
-                <Label htmlFor="type">Type de zone</Label>
-                <Select defaultValue={editingZone?.type || 'city'}>
+                <Label htmlFor="nom_zone">Nom de la zone</Label>
+                <Input
+                  id="nom_zone"
+                  value={formData.nom_zone}
+                  onChange={(e) => setFormData({ ...formData, nom_zone: e.target.value })}
+                  placeholder="Ex: 75 - Paris"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="type_zone">Type de zone</Label>
+                <Select 
+                  value={formData.type_zone} 
+                  onValueChange={(value) => setFormData({ ...formData, type_zone: value })}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Sélectionner le type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="country">Pays</SelectItem>
-                    <SelectItem value="region">Région</SelectItem>
-                    <SelectItem value="department">Département</SelectItem>
-                    <SelectItem value="city">Ville</SelectItem>
+                    <SelectItem value="departement">Département</SelectItem>
+                    <SelectItem value="ville">Ville</SelectItem>
+                    <SelectItem value="secteur">Secteur personnalisé</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Description de la zone..."
-                  defaultValue={editingZone?.description}
+                <Label htmlFor="codes_postaux">Codes postaux (séparés par des virgules)</Label>
+                <Input
+                  id="codes_postaux"
+                  value={formData.codes_postaux}
+                  onChange={(e) => setFormData({ ...formData, codes_postaux: e.target.value })}
+                  placeholder="75001, 75002, 75003..."
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="rayon_km">Rayon en km (optionnel)</Label>
+                <Input
+                  id="rayon_km"
+                  type="number"
+                  value={formData.rayon_km}
+                  onChange={(e) => setFormData({ ...formData, rayon_km: e.target.value })}
+                  placeholder="20"
+                />
+              </div>
+
               <div className="flex justify-end space-x-2">
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Annuler
@@ -304,7 +375,7 @@ const Zones = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {zones.reduce((sum, zone) => sum + zone.provider_count, 0)}
+              {zones.reduce((sum, zone) => sum + (zone.provider_count || 0), 0)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               Répartis sur toutes les zones
@@ -318,7 +389,7 @@ const Zones = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {zones.reduce((sum, zone) => sum + zone.request_count, 0)}
+              {zones.reduce((sum, zone) => sum + (zone.request_count || 0), 0)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               Sur 30 derniers jours
@@ -358,10 +429,9 @@ const Zones = () => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tous les types</SelectItem>
-            <SelectItem value="country">Pays</SelectItem>
-            <SelectItem value="region">Régions</SelectItem>
-            <SelectItem value="department">Départements</SelectItem>
-            <SelectItem value="city">Villes</SelectItem>
+            <SelectItem value="departement">Départements</SelectItem>
+            <SelectItem value="ville">Villes</SelectItem>
+            <SelectItem value="secteur">Secteurs</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -379,11 +449,11 @@ const Zones = () => {
             {filteredZones.map((zone) => (
               <div key={zone.id} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex items-center space-x-4">
-                  {getTypeIcon(zone.type)}
+                  {getTypeIcon(zone.type_zone)}
                   <div>
                     <div className="flex items-center space-x-2">
-                      <h3 className="font-medium">{zone.name}</h3>
-                      {getTypeBadge(zone.type)}
+                      <h3 className="font-medium">{zone.nom_zone}</h3>
+                      {getTypeBadge(zone.type_zone)}
                       <Badge variant={zone.active ? "default" : "destructive"} className="text-xs">
                         {zone.active ? (
                           <>
@@ -399,10 +469,24 @@ const Zones = () => {
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Code: {zone.code} | {zone.provider_count} prestataires | {zone.request_count} demandes
+                      {zone.codes_postaux.length} codes postaux | {zone.provider_count || 0} prestataires | {zone.request_count || 0} demandes
                     </p>
-                    {zone.description && (
-                      <p className="text-xs text-muted-foreground mt-1">{zone.description}</p>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {zone.codes_postaux.slice(0, 5).map((code) => (
+                        <Badge key={code} variant="outline" className="text-xs">
+                          {code}
+                        </Badge>
+                      ))}
+                      {zone.codes_postaux.length > 5 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{zone.codes_postaux.length - 5} autres...
+                        </Badge>
+                      )}
+                    </div>
+                    {zone.rayon_km && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Rayon: {zone.rayon_km} km
+                      </p>
                     )}
                   </div>
                 </div>
@@ -418,17 +502,14 @@ const Zones = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      setEditingZone(zone);
-                      setIsDialogOpen(true);
-                    }}
+                    onClick={() => handleEdit(zone)}
                   >
                     <Edit2 className="w-4 h-4" />
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleDeleteZone(zone.id, zone.name)}
+                    onClick={() => handleDeleteZone(zone.id, zone.nom_zone)}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
