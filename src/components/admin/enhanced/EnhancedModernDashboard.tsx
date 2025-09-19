@@ -4,6 +4,7 @@ import { AdminClientRequestsEnhanced } from '../../AdminClientRequestsEnhanced';
 import { AdminManualAssignment } from '../../AdminManualAssignment';
 import { AdminAlertsPanel } from '../../AdminAlertsPanel';
 import { AdminKanbanBoard } from '../../AdminKanbanBoard';
+import { AdminMatchingPanel } from '../../AdminMatchingPanel';
 import ModernMessaging from '../ModernMessaging';
 import { MissionAssignmentTrigger } from '../../MissionAssignmentTrigger';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -993,9 +994,10 @@ export default function EnhancedModernDashboard() {
         {/* Panneau d'alertes visible sur tous les onglets */}
         <AdminAlertsPanel onNavigate={() => {}} />
         
-        <TabsList className="grid w-full grid-cols-6 lg:grid-cols-9">
+        <TabsList className="grid w-full grid-cols-6 lg:grid-cols-10">
           <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
           <TabsTrigger value="kanban">Kanban</TabsTrigger>
+          <TabsTrigger value="matching">🤖 Matching IA</TabsTrigger>
           <TabsTrigger value="users">Utilisateurs</TabsTrigger>
           <TabsTrigger value="providers">Prestataires</TabsTrigger>
           <TabsTrigger value="applications">Candidatures</TabsTrigger>
@@ -1354,6 +1356,10 @@ export default function EnhancedModernDashboard() {
         {/* Nouveau contenu migré */}
         <TabsContent value="kanban" className="space-y-4">
           <AdminKanbanBoard />
+        </TabsContent>
+
+        <TabsContent value="matching" className="space-y-4">
+          <AdminMatchingPanel />
         </TabsContent>
 
         <TabsContent value="users" className="space-y-4">
