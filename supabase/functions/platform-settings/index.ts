@@ -99,7 +99,8 @@ async function getSettings(supabase: any) {
       business: {},
       qualification: {},
       matching: {},
-      validation: {}
+      validation: {},
+      client_rules: {}
     }
 
     settingsData?.forEach((setting: any) => {
@@ -259,6 +260,19 @@ async function resetSettings(supabase: any, category: string, adminUserId: strin
         manual_review_required: true,
         validation_timeout_days: 5,
         rejected_reapplication_days: 30
+      },
+      client_rules: {
+        minimum_age: 18,
+        cgu_acceptance_required: true,
+        send_creation_notification: true,
+        minimum_duration_hours: 2,
+        platform_only_booking: true,
+        preauthorization_at_booking: true,
+        charge_after_completion: true,
+        free_cancellation_hours: 24,
+        first_booking_exception: true,
+        modification_deadline_hours: 24,
+        no_show_timeout_minutes: 30
       }
     }
 
