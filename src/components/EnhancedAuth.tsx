@@ -27,19 +27,14 @@ import {
 type UserType = 'client' | 'prestataire' | 'admin' | null;
 type AuthStep = 'userType' | 'login' | 'signup';
 
-interface LoginAttempt {
-  email: string;
-  attempts: number;
-  lastAttempt: number;
-  isBlocked: boolean;
-}
+// Interface supprimée - plus de système de blocage
 
 const EnhancedAuth = () => {
   const [step, setStep] = useState<AuthStep>('userType');
   const [userType, setUserType] = useState<UserType>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [loginAttempts, setLoginAttempts] = useState<Record<string, LoginAttempt>>({});
+  // Système de blocage retiré
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -60,82 +55,12 @@ const EnhancedAuth = () => {
     },
   });
 
-  // Charger les tentatives de connexion depuis localStorage
+  // Nettoyage du localStorage au démarrage
   useEffect(() => {
-    const stored = localStorage.getItem('loginAttempts');
-    if (stored) {
-      const attempts = JSON.parse(stored);
-      // Nettoyer les tentatives expirées (24h)
-      const now = Date.now();
-      const cleaned = Object.fromEntries(
-        Object.entries(attempts).filter(([_, attempt]: [string, any]) => 
-          now - attempt.lastAttempt < 24 * 60 * 60 * 1000
-        )
-      ) as Record<string, LoginAttempt>;
-      setLoginAttempts(cleaned);
-      localStorage.setItem('loginAttempts', JSON.stringify(cleaned));
-    }
+    localStorage.removeItem('loginAttempts');
   }, []);
 
-  const updateLoginAttempts = (email: string, success: boolean) => {
-    const now = Date.now();
-    const current = loginAttempts[email] || { email, attempts: 0, lastAttempt: 0, isBlocked: false };
-
-    if (success) {
-      // Réinitialiser les tentatives en cas de succès
-      const updated = { ...loginAttempts };
-      delete updated[email];
-      setLoginAttempts(updated);
-      localStorage.setItem('loginAttempts', JSON.stringify(updated));
-    } else {
-      // Incrémenter les tentatives
-      const newAttempts = current.attempts + 1;
-      const isBlocked = newAttempts >= 3;
-      
-      const updatedAttempt = {
-        email,
-        attempts: newAttempts,
-        lastAttempt: now,
-        isBlocked
-      };
-
-      const updated = { ...loginAttempts, [email]: updatedAttempt };
-      setLoginAttempts(updated);
-      localStorage.setItem('loginAttempts', JSON.stringify(updated));
-
-      if (newAttempts === 2) {
-        toast({
-          title: "⚠️ Attention",
-          description: "Tentative de connexion incorrecte. Plus qu'une tentative avant blocage du compte.",
-          variant: "destructive",
-          action: (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => navigate('/reset-password')}
-            >
-              Mot de passe oublié ?
-            </Button>
-          ),
-        });
-      } else if (isBlocked) {
-        toast({
-          title: "🔒 Compte temporairement bloqué",
-          description: "Trop de tentatives de connexion. Le compte est bloqué pendant 24h pour votre sécurité.",
-          variant: "destructive",
-          action: (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => navigate('/reset-password')}
-            >
-              Réinitialiser le mot de passe
-            </Button>
-          ),
-        });
-      }
-    }
-  };
+  // Fonction supprimée - plus de système de blocage
 
   const handleUserTypeSelection = (type: UserType) => {
     setUserType(type);
@@ -143,16 +68,6 @@ const EnhancedAuth = () => {
   };
 
   const handleLogin = async (data: AuthForm) => {
-    const attempt = loginAttempts[data.email];
-    if (attempt?.isBlocked) {
-      toast({
-        title: "🔒 Compte bloqué",
-        description: "Ce compte est temporairement bloqué. Réinitialisez votre mot de passe ou réessayez dans 24h.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -162,15 +77,11 @@ const EnhancedAuth = () => {
       });
 
       if (error) {
-        updateLoginAttempts(data.email, false);
-        
         if (error.message.includes('Invalid login credentials')) {
           throw new Error('Email ou mot de passe incorrect');
         }
         throw error;
       }
-
-      updateLoginAttempts(data.email, true);
 
       toast({
         title: "Connexion réussie",
@@ -410,7 +321,6 @@ const EnhancedAuth = () => {
     const currentForm = step === 'login' ? loginForm : signupForm;
     const currentEmail = currentForm.watch('email');
     const currentPassword = currentForm.watch('password');
-    const attempt = loginAttempts[currentEmail];
 
     return (
       <Card className="w-full max-w-md">
@@ -430,21 +340,7 @@ const EnhancedAuth = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Avertissement de blocage */}
-          {attempt?.attempts > 0 && (
-            <Card className="mb-4 bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800">
-              <CardContent className="p-3">
-                <div className="flex items-center gap-2 text-sm">
-                  <AlertTriangle className="h-4 w-4 text-orange-500" />
-                  <span className="text-orange-800 dark:text-orange-200">
-                    {attempt.attempts === 1 && "1ère tentative incorrecte"}
-                    {attempt.attempts === 2 && "⚠️ Dernière tentative avant blocage"}
-                    {attempt.attempts >= 3 && "🔒 Compte bloqué pendant 24h"}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {/* Avertissement de blocage supprimé */}
 
           {step === 'login' ? (
             <Form {...loginForm}>
@@ -463,7 +359,6 @@ const EnhancedAuth = () => {
                           type="email"
                           placeholder="votre@email.com"
                           {...field}
-                          disabled={attempt?.isBlocked}
                         />
                       </FormControl>
                       <FormMessage />
@@ -487,7 +382,6 @@ const EnhancedAuth = () => {
                             placeholder="Votre mot de passe"
                             className="pr-10"
                             {...field}
-                            disabled={attempt?.isBlocked}
                           />
                           <button
                             type="button"
@@ -510,7 +404,7 @@ const EnhancedAuth = () => {
                 <Button 
                   type="submit" 
                   className="w-full" 
-                  disabled={loading || attempt?.isBlocked}
+                  disabled={loading}
                 >
                   {loading ? "Connexion..." : "Se connecter"}
                 </Button>
