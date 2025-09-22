@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Search, Filter, Eye, CheckCircle, XCircle, Clock, Star, MapPin, Phone, Mail } from 'lucide-react';
+import { Search, Filter, Eye, CheckCircle, XCircle, Clock, Star, MapPin, Phone, Mail, Calendar, MessageSquare, Settings, MapIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format } from "date-fns";
@@ -21,14 +21,21 @@ interface Provider {
   rating?: number;
   description?: string;
   location?: string;
+  service_zones?: string[];
+  postal_codes?: string[];
+  availability?: any[];
+  services?: any[];
   profiles?: {
     first_name: string;
     last_name: string;
     avatar_url?: string;
+    email?: string;
+    phone?: string;
   } | null;
   bookings?: any[];
   reviews?: any[];
   documents?: any[];
+  conversations?: any[];
 }
 
 export default function AdminPrestataires() {
@@ -344,8 +351,96 @@ export default function AdminPrestataires() {
                                   </div>
                                 )}
 
+                                {/* Services proposés */}
+                                {selectedProvider.services && selectedProvider.services.length > 0 && (
+                                  <div>
+                                    <label className="text-sm font-medium text-muted-foreground">Services proposés</label>
+                                    <div className="mt-2 flex flex-wrap gap-2">
+                                      {selectedProvider.services.map((service: any) => (
+                                        <Badge key={service.id} variant="outline">
+                                          {service.services?.name} - {service.price_override || service.services?.price_per_hour}€/h
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Zones d'intervention */}
+                                {selectedProvider.service_zones && selectedProvider.service_zones.length > 0 && (
+                                  <div>
+                                    <label className="text-sm font-medium text-muted-foreground">Zones d'intervention</label>
+                                    <div className="mt-2 flex flex-wrap gap-1">
+                                      {selectedProvider.service_zones.map((zone: string) => (
+                                        <Badge key={zone} variant="secondary" className="text-xs">
+                                          {zone}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Disponibilités */}
+                                {selectedProvider.availability && selectedProvider.availability.length > 0 && (
+                                  <div>
+                                    <label className="text-sm font-medium text-muted-foreground">Disponibilités</label>
+                                    <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+                                      {selectedProvider.availability.map((slot: any) => (
+                                        <div key={slot.id} className="flex justify-between p-2 bg-muted rounded">
+                                          <span>
+                                            {['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'][slot.day_of_week]}
+                                          </span>
+                                          <span>
+                                            {slot.start_time} - {slot.end_time}
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Contact */}
+                                {selectedProvider.profiles && (
+                                  <div className="grid grid-cols-2 gap-4">
+                                    {selectedProvider.profiles.email && (
+                                      <div>
+                                        <label className="text-sm font-medium text-muted-foreground">Email</label>
+                                        <p className="flex items-center gap-2">
+                                          <Mail className="w-4 h-4" />
+                                          {selectedProvider.profiles.email}
+                                        </p>
+                                      </div>
+                                    )}
+                                    {selectedProvider.profiles.phone && (
+                                      <div>
+                                        <label className="text-sm font-medium text-muted-foreground">Téléphone</label>
+                                        <p className="flex items-center gap-2">
+                                          <Phone className="w-4 h-4" />
+                                          {selectedProvider.profiles.phone}
+                                        </p>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+
                                 {/* Actions */}
                                 <div className="flex gap-2 pt-4">
+                                  <Button variant="outline" size="sm" onClick={() => window.open(`/admin/prestataires/${selectedProvider.id}/rendez-vous`, '_blank')}>
+                                    <Calendar className="w-4 h-4 mr-2" />
+                                    Rendez-vous
+                                  </Button>
+                                  <Button variant="outline" size="sm" onClick={() => window.open(`/admin/prestataires/${selectedProvider.id}/messagerie`, '_blank')}>
+                                    <MessageSquare className="w-4 h-4 mr-2" />
+                                    Messagerie
+                                  </Button>
+                                  <Button variant="outline" size="sm" onClick={() => window.open(`/admin/prestataires/${selectedProvider.id}/services`, '_blank')}>
+                                    <Settings className="w-4 h-4 mr-2" />
+                                    Services
+                                  </Button>
+                                  <Button variant="outline" size="sm" onClick={() => window.open(`/admin/prestataires/${selectedProvider.id}/zones`, '_blank')}>
+                                    <MapIcon className="w-4 h-4 mr-2" />
+                                    Zones
+                                  </Button>
+                                  
                                   {selectedProvider.status === 'pending' && (
                                     <>
                                       <Button 
