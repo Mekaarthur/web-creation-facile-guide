@@ -35,7 +35,8 @@ import {
   Timer, 
   BarChart3,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  MessageSquare
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -44,6 +45,10 @@ import ProviderDocuments from '@/components/ProviderDocuments';
 import ProviderProfileForm from './ProviderProfileForm';
 import { LoadingSkeleton, DashboardLoadingSkeleton } from '@/components/ui/loading-skeleton';
 import ProviderMissionManager from '@/components/ProviderMissionManager';
+import ProviderAppointments from '@/components/ProviderAppointments';
+import ProviderMessaging from '@/components/ProviderMessaging';
+import ProviderServices from '@/components/ProviderServices';
+import ProviderServiceZones from '@/components/ProviderServiceZones';
 
 const EnhancedProviderDashboard = () => {
   const {
@@ -209,7 +214,7 @@ const EnhancedProviderDashboard = () => {
 
       <div className="max-w-7xl mx-auto p-6 space-y-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 lg:grid-cols-6 bg-white/80 backdrop-blur-sm p-1 h-auto shadow-lg rounded-xl border-0">
+          <TabsList className="grid grid-cols-4 lg:grid-cols-8 bg-white/80 backdrop-blur-sm p-1 h-auto shadow-lg rounded-xl border-0">
             <TabsTrigger 
               value="dashboard" 
               className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
@@ -218,16 +223,44 @@ const EnhancedProviderDashboard = () => {
               <span className="text-xs font-medium">Accueil</span>
             </TabsTrigger>
             <TabsTrigger 
-              value="missions" 
+              value="appointments" 
               className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
             >
-              <Briefcase className="h-5 w-5" />
-              <span className="text-xs font-medium">Missions</span>
+              <Calendar className="h-5 w-5" />
+              <span className="text-xs font-medium">RDV</span>
               {stats.activeMissions > 0 && (
                 <Badge variant="destructive" className="text-xs px-1.5 py-0.5 h-5 min-w-5">
                   {stats.activeMissions}
                 </Badge>
               )}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="planning" 
+              className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+            >
+              <Clock className="h-5 w-5" />
+              <span className="text-xs font-medium">Planning</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="messaging" 
+              className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+            >
+              <MessageSquare className="h-5 w-5" />
+              <span className="text-xs font-medium">Messages</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="services" 
+              className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+            >
+              <Briefcase className="h-5 w-5" />
+              <span className="text-xs font-medium">Services</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="zones" 
+              className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+            >
+              <MapPin className="h-5 w-5" />
+              <span className="text-xs font-medium">Zones</span>
             </TabsTrigger>
             <TabsTrigger 
               value="revenus" 
@@ -237,25 +270,11 @@ const EnhancedProviderDashboard = () => {
               <span className="text-xs font-medium">Revenus</span>
             </TabsTrigger>
             <TabsTrigger 
-              value="planning" 
-              className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
-            >
-              <Calendar className="h-5 w-5" />
-              <span className="text-xs font-medium">Planning</span>
-            </TabsTrigger>
-            <TabsTrigger 
               value="profil" 
               className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
             >
               <User className="h-5 w-5" />
               <span className="text-xs font-medium">Profil</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="evaluations" 
-              className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
-            >
-              <Star className="h-5 w-5" />
-              <span className="text-xs font-medium">Avis</span>
             </TabsTrigger>
           </TabsList>
 
@@ -489,6 +508,26 @@ const EnhancedProviderDashboard = () => {
           <TabsContent value="profil" className="space-y-6 mt-8">
             <ProviderProfileForm />
             <ProviderDocuments />
+          </TabsContent>
+
+          {/* Appointments Tab */}
+          <TabsContent value="appointments" className="mt-8">
+            <ProviderAppointments />
+          </TabsContent>
+
+          {/* Messaging Tab */}
+          <TabsContent value="messaging" className="mt-8">
+            <ProviderMessaging />
+          </TabsContent>
+
+          {/* Services Tab */}
+          <TabsContent value="services" className="mt-8">
+            <ProviderServices />
+          </TabsContent>
+
+          {/* Zones Tab */}
+          <TabsContent value="zones" className="mt-8">
+            <ProviderServiceZones />
           </TabsContent>
 
           {/* Evaluations Tab */}
