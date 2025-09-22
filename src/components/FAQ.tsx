@@ -7,70 +7,171 @@ const FAQ = () => {
 
   const faqs = [
     {
-      category: "Général",
+      category: "💙 À propos de BIKAWO",
       questions: [
         {
-          question: "Comment fonctionne BIKAWO ?",
-          answer: "BIKAWO vous met en relation avec des experts familiaux vérifiés. Vous réservez en ligne selon vos besoins parmi nos 8 services BIKA, et nous nous occupons de tout : matching, planning, suivi qualité."
+          question: "Qu'est-ce que BIKAWO ?",
+          answer: "BIKAWO est une plateforme de services personnalisés pour simplifier votre quotidien avec tendresse et professionnalisme : garde d'enfants, gestion du foyer, conciergerie, assistance voyage, soins aux animaux et accompagnement des seniors."
         },
         {
-          question: "Dans quelles zones géographiques intervenez-vous ?",
-          answer: "Nous couvrons toute la France métropolitaine. Nos services BIKA sont disponibles dans toutes les régions avec des prestataires locaux qualifiés."
+          question: "Où intervenez-vous ?",
+          answer: "Nous intervenons dans toute l'Île-de-France (75, 77, 78, 91, 92, 93, 94, 95). Contactez-nous pour confirmer la disponibilité dans votre secteur."
         },
         {
-          question: "Vos prestataires sont-ils vérifiés ?",
-          answer: "Absolument ! Tous nos prestataires BIKA passent par une vérification complète : casier judiciaire vierge, vérification d'identité, références, entretien personnel et formation BIKAWO."
+          question: "Quels sont vos horaires ?",
+          answer: "Services standards : de 7h à 22h (semaine) et de 8h à 20h (week-end). Services d'urgence et de nuit : 24h/24, 7j/7 pour vous accompagner à tout moment."
         }
       ]
     },
     {
-      category: "Réservation & Tarifs",
+      category: "🔹 Réservation & Paiement",
       questions: [
         {
           question: "Comment réserver un service ?",
-          answer: "Très simple : créez votre compte, choisissez votre service et créneau, validez votre réservation. Vous recevez immédiatement la confirmation avec les détails de votre expert."
+          answer: "Via notre plateforme en ligne : choisissez le service, la date, l'heure et la durée. Une confirmation vous sera envoyée immédiatement pour vous rassurer."
         },
         {
-          question: "Quels sont vos tarifs BIKA ?",
-          answer: "Nos tarifs démarrent à 15€/h pour BIKA Kids et Animals, 20€/h pour BIKA Maison/Vie, 22€/h pour BIKA Seniors, 25€/h pour BIKA Travel. BIKA Plus à partir de 1500€/mois. Formules hebdo et mensuelles disponibles."
+          question: "Combien de temps à l'avance réserver ?",
+          answer: "Services réguliers : 48h minimum pour nous permettre de vous trouver le meilleur intervenant. Services urgents : intervention dans les meilleurs délais."
         },
         {
-          question: "Puis-je annuler ou modifier ma réservation ?",
-          answer: "Oui, jusqu'à 24h avant pour un remboursement complet. Entre 24h et 2h avant : frais de 50%. Moins de 2h : service facturé intégralement."
+          question: "Quels sont vos tarifs ?",
+          answer: "Services standards : 25 €/h • Services urgents, nuit et spécialisés : 30 à 40 €/h • Prestations spécifiques (Bika Pro, Bika Plus, etc.) : sur devis ou forfaits adaptés à vos besoins."
+        },
+        {
+          question: "Quels modes de paiement acceptez-vous ?",
+          answer: "Carte bancaire et CESU (Chèque Emploi Service Universel). Le montant est prélevé après la prestation pour votre tranquillité d'esprit."
+        },
+        {
+          question: "Y a-t-il des frais cachés ?",
+          answer: "Non, jamais ! Nos tarifs sont transparents, sans frais supplémentaires. Nous croyons en la confiance mutuelle."
         }
       ]
     },
     {
-      category: "Services BIKA",
+      category: "👶 BIKA KIDS – Garde d'enfants",
       questions: [
         {
-          question: "Quels sont vos 8 services BIKA ?",
-          answer: "BIKA Kids (garde enfants), BIKA Maison (logistique quotidienne), BIKA Vie (conciergerie), BIKA Travel (voyages), BIKA Plus (premium 7j/7), BIKA Animals (soins animaux), BIKA Personnes Âgées (aide seniors), BIKA Pro (entreprises)."
+          question: "Vos intervenants sont-ils qualifiés ?",
+          answer: "Oui, tous nos intervenants sont diplômés, expérimentés, avec casier judiciaire vierge et formation premiers secours. Votre sérénité est notre priorité."
         },
         {
-          question: "Puis-je avoir toujours le même prestataire BIKA ?",
-          answer: "Nous privilégions la continuité relationnelle. Avec nos formules régulières, vous pouvez demander le même prestataire. Pour BIKA Plus, vous avez un Chef Family Officer dédié."
+          question: "Âge minimum des enfants gardés ?",
+          answer: "Dès 3 mois avec nos intervenants spécialisés dans l'accompagnement des tout-petits."
         },
         {
           question: "Que se passe-t-il en cas d'urgence ?",
-          answer: "Nous avons une ligne d'urgence 7j/7. Pour BIKA Plus, aide prioritaire immédiate. Pour les autres formules, intervention sous 2h selon disponibilité des prestataires."
+          answer: "Nos intervenants vous contactent immédiatement et, si besoin, accompagnent l'enfant chez le médecin ou aux urgences. Aucune décision sans votre accord. Aucun médicament n'est administré sans ordonnance ni sans présence parentale."
+        },
+        {
+          question: "Puis-je demander toujours le même intervenant ?",
+          answer: "Absolument ! Nous favorisons la continuité pour créer un lien de confiance avec votre enfant."
+        },
+        {
+          question: "Quelles activités proposez-vous ?",
+          answer: "Parc, lecture, jeux éducatifs, activités manuelles, aide aux devoirs... Tout pour l'épanouissement de votre enfant."
         }
       ]
     },
     {
-      category: "Paiement & Facturation",
+      category: "🏠 BIKA MAISON – Gestion du foyer",
       questions: [
         {
-          question: "Quels moyens de paiement acceptez-vous ?",
-          answer: "Carte bancaire, prélèvement SEPA, et CESU (Chèque Emploi Service Universel). Paiement sécurisé à la réservation ou en fin de service selon votre préférence."
+          question: "Comment gérez-vous les courses ?",
+          answer: "Courses avec liste fournie par vous. En cas d'indisponibilité d'un produit, nous validons toujours avec vous avant substitution."
         },
         {
-          question: "Puis-je utiliser mes CESU ?",
-          answer: "Oui ! Nous sommes agréés services à la personne. Vous bénéficiez du crédit d'impôt de 50% et pouvez utiliser vos CESU préfinancés."
+          question: "Puis-je recevoir des colis en mon absence ?",
+          answer: "Oui ! Réception de colis et livraisons possible en votre absence pour vous faciliter la vie."
         },
         {
-          question: "Comment fonctionne la facturation ?",
-          answer: "Facturation automatique après chaque service. Récapitulatif mensuel disponible dans votre espace client. Export possible pour vos déclarations."
+          question: "Quels autres services proposez-vous ?",
+          answer: "Aide déménagement, montage de meubles, entretien jardin... Tout pour que votre foyer soit un cocon."
+        }
+      ]
+    },
+    {
+      category: "🔑 BIKA VIE – Conciergerie",
+      questions: [
+        {
+          question: "Quelles démarches administratives prenez-vous en charge ?",
+          answer: "Démarches administratives courantes (hors documents confidentiels comme bancaires/fiscaux). Nous vous simplifions la vie."
+        },
+        {
+          question: "Proposez-vous un accompagnement aux rendez-vous ?",
+          answer: "Oui, accompagnement aux rendez-vous médicaux ou administratifs avec bienveillance et discrétion."
+        },
+        {
+          question: "Comment garantissez-vous la confidentialité ?",
+          answer: "Engagement strict de confidentialité avec accord signé par tous nos intervenants. Votre intimité est sacrée."
+        }
+      ]
+    },
+    {
+      category: "✈️ BIKA TRAVEL – Assistance voyage",
+      questions: [
+        {
+          question: "Que comprend l'organisation de voyage ?",
+          answer: "Organisation complète : transport, hébergement, documents, assurances... Pour que vous ne pensiez qu'au plaisir du voyage."
+        },
+        {
+          question: "Vérifiez-vous nos documents de voyage ?",
+          answer: "Oui, nous vérifions la validité de tous vos documents de voyage pour éviter tout stress."
+        },
+        {
+          question: "Proposez-vous une assistance pendant le voyage ?",
+          answer: "Assistance 24h/24 : modifications de réservations, imprévus, retards... Nous sommes là même à distance."
+        }
+      ]
+    },
+    {
+      category: "🐾 BIKA ANIMAL – Soins aux animaux",
+      questions: [
+        {
+          question: "Quels animaux gardez-vous ?",
+          answer: "Chiens, chats et NAC (Nouveaux Animaux de Compagnie) selon disponibilités. Vos petits compagnons seront choyés."
+        },
+        {
+          question: "Comment se passe la garde à domicile ?",
+          answer: "Garde à domicile avec envoi régulier de nouvelles et photos pour vous rassurer sur le bien-être de votre compagnon."
+        },
+        {
+          question: "Que faites-vous en cas d'urgence vétérinaire ?",
+          answer: "Gestion des urgences vétérinaires selon vos consignes précises, avec contact immédiat pour vous tenir informé."
+        }
+      ]
+    },
+    {
+      category: "👴 BIKA SENIORS – Accompagnement",
+      questions: [
+        {
+          question: "Vos intervenants sont-ils spécialisés ?",
+          answer: "Oui, intervenants spécialisés et expérimentés dans l'accompagnement des seniors avec patience et respect."
+        },
+        {
+          question: "Quels services proposez-vous ?",
+          answer: "Aide quotidienne, accompagnement médical, stimulation sociale... Pour maintenir l'autonomie avec dignité."
+        },
+        {
+          question: "Aidez-vous avec les nouvelles technologies ?",
+          answer: "Oui ! Aide aux nouvelles technologies pour maintenir le lien précieux avec la famille."
+        }
+      ]
+    },
+    {
+      category: "🔒 Sécurité & Qualité",
+      questions: [
+        {
+          question: "Comment sélectionnez-vous vos intervenants ?",
+          answer: "Vérification complète : diplômes, références, casier judiciaire vierge, entretien approfondi, période d'essai supervisée. Votre sécurité n'est pas négociable."
+        },
+        {
+          question: "Êtes-vous assurés ?",
+          answer: "Oui ! Assurance responsabilité civile professionnelle couvrant toutes nos prestations. Nos intervenants bénéficient aussi d'une couverture accident du travail."
+        },
+        {
+          question: "Comment évaluez-vous la qualité ?",
+          answer: "Après chaque prestation, vous pouvez évaluer nos services. Vos retours nous aident à améliorer continuellement la qualité avec amour du détail."
         }
       ]
     }
