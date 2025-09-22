@@ -37,6 +37,12 @@ serve(async (req) => {
         return await rejectProvider(supabase, requestData);
       case 'get_provider_details':
         return await getProviderDetails(supabase, requestData);
+      case 'update_zones':
+        return await updateProviderZones(supabase, requestData);
+      case 'update_services':
+        return await updateProviderServices(supabase, requestData);
+      case 'update_availability':
+        return await updateProviderAvailability(supabase, requestData);
       default:
         throw new Error(`Action non reconnue: ${action}`);
     }
@@ -409,6 +415,22 @@ async function getProviderDetails(supabase: any, { providerId }: any) {
       .eq('user_id', provider.user_id)
       .single();
 
+    // Récupérer les services proposés avec détails
+    const { data: services } = await supabase
+      .from('provider_services')
+      .select(`
+        *,
+        services:service_id(*)
+      `)
+      .eq('provider_id', providerId);
+
+    // Récupérer les disponibilités
+    const { data: availability } = await supabase
+      .from('provider_availability')
+      .select('*')
+      .eq('provider_id', providerId)
+      .order('day_of_week');
+
     // Récupérer les réservations
     const { data: bookings } = await supabase
       .from('bookings')
@@ -416,8 +438,12 @@ async function getProviderDetails(supabase: any, { providerId }: any) {
         id, 
         status, 
         booking_date, 
+        start_time,
+        end_time,
         total_price,
-        services:service_id (name)
+        address,
+        notes,
+        services:service_id (name, category)
       `)
       .eq('provider_id', providerId)
       .order('booking_date', { ascending: false })
@@ -426,7 +452,7 @@ async function getProviderDetails(supabase: any, { providerId }: any) {
     // Récupérer les avis
     const { data: reviews } = await supabase
       .from('reviews')
-      .select('id, rating, comment, created_at, is_approved')
+      .select('id, rating, comment, created_at, is_approved, punctuality_rating, quality_rating')
       .eq('provider_id', providerId)
       .order('created_at', { ascending: false })
       .limit(10);
@@ -434,9 +460,24 @@ async function getProviderDetails(supabase: any, { providerId }: any) {
     // Récupérer les documents
     const { data: documents } = await supabase
       .from('provider_documents')
-      .select('id, document_type, file_name, status, created_at')
+      .select('id, document_type, file_name, status, created_at, notes')
       .eq('provider_id', providerId)
       .order('created_at', { ascending: false });
+
+    // Récupérer les conversations de messagerie
+    const { data: conversations } = await supabase
+      .from('internal_conversations')
+      .select(`
+        id,
+        subject,
+        status,
+        last_message_at,
+        client_id,
+        admin_id
+      `)
+      .eq('provider_id', providerId)
+      .order('last_message_at', { ascending: false })
+      .limit(5);
 
     return new Response(
       JSON.stringify({
@@ -444,15 +485,116 @@ async function getProviderDetails(supabase: any, { providerId }: any) {
         provider: {
           ...provider,
           profiles: profile,
+          services: services || [],
+          availability: availability || [],
           bookings: bookings || [],
           reviews: reviews || [],
-          documents: documents || []
+          documents: documents || [],
+          conversations: conversations || []
         }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     console.error('Erreur lors de la récupération des détails:', error);
+    throw error;
+  }
+}
+
+async function updateProviderZones(supabase: any, { providerId, serviceZones, postalCodes }: any) {
+  try {
+    const { error } = await supabase
+      .from('providers')
+      .update({ 
+        service_zones: serviceZones,
+        postal_codes: postalCodes,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', providerId);
+
+    if (error) throw error;
+
+    console.log('Zones mises à jour pour le prestataire:', providerId);
+    
+    return new Response(
+      JSON.stringify({ success: true, message: 'Zones d\'intervention mises à jour avec succès' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour des zones:', error);
+    throw error;
+  }
+}
+
+async function updateProviderServices(supabase: any, { providerId, services }: any) {
+  try {
+    // Supprimer les anciens services
+    await supabase
+      .from('provider_services')
+      .delete()
+      .eq('provider_id', providerId);
+
+    // Ajouter les nouveaux services
+    if (services && services.length > 0) {
+      const servicesToInsert = services.map((service: any) => ({
+        provider_id: providerId,
+        service_id: service.service_id,
+        price_override: service.price_override,
+        is_active: service.is_active ?? true
+      }));
+
+      const { error } = await supabase
+        .from('provider_services')
+        .insert(servicesToInsert);
+
+      if (error) throw error;
+    }
+
+    console.log('Services mis à jour pour le prestataire:', providerId);
+    
+    return new Response(
+      JSON.stringify({ success: true, message: 'Services mis à jour avec succès' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour des services:', error);
+    throw error;
+  }
+}
+
+async function updateProviderAvailability(supabase: any, { providerId, availability }: any) {
+  try {
+    // Supprimer les anciennes disponibilités
+    await supabase
+      .from('provider_availability')
+      .delete()
+      .eq('provider_id', providerId);
+
+    // Ajouter les nouvelles disponibilités
+    if (availability && availability.length > 0) {
+      const availabilityToInsert = availability.map((slot: any) => ({
+        provider_id: providerId,
+        day_of_week: slot.day_of_week,
+        start_time: slot.start_time,
+        end_time: slot.end_time,
+        is_available: slot.is_available ?? true
+      }));
+
+      const { error } = await supabase
+        .from('provider_availability')
+        .insert(availabilityToInsert);
+
+      if (error) throw error;
+    }
+
+    console.log('Disponibilités mises à jour pour le prestataire:', providerId);
+    
+    return new Response(
+      JSON.stringify({ success: true, message: 'Disponibilités mises à jour avec succès' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour des disponibilités:', error);
     throw error;
   }
 }
