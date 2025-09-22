@@ -636,9 +636,9 @@ const EnhancedAuth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 p-4">
+    <>
       {step === 'userType' ? renderUserTypeSelection() : renderAuthForm()}
-    </div>
+    </>
   );
 };
 
