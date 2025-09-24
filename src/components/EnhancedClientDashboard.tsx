@@ -1,4 +1,19 @@
-import ModernClientDashboard from '@/components/ModernClientDashboard';
+import React, { useState, useMemo } from "react";
+import ModernClientDashboard from "@/components/ModernClientDashboard";
+import { useAuth } from "@/hooks/useAuth";
+import { useClientDashboard } from "@/hooks/useClientDashboard";
+import { useSmartSearch } from "@/hooks/useSmartSearch";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { 
+  User, CheckCircle, Sparkles, Search, Filter, ArrowUp, Star, Plus, TrendingUp, 
+  Bell, Calendar, ChevronDown, Clock, MoreHorizontal, Zap, ArrowRight, Target, 
+  Trophy, Heart, BookOpen, CreditCard, Gift 
+} from "lucide-react";
 
 interface EnhancedClientDashboardProps {
   onNavigateToTab: (tab: string) => void;
