@@ -28,7 +28,7 @@ const ChatBot = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'Bonjour ! Je suis votre assistant intelligent Bikawo. Je peux répondre à vos questions sur nos services, tarifs, réservations et plus encore. Comment puis-je vous aider ?',
+      text: 'Bonjour ! 👋 Je suis l\'assistant virtuel de Bikawo, votre plateforme de services à domicile en Île-de-France.\n\n🏠 Nos services BIKA :\n• KIDS - Garde d\'enfants & soutien scolaire\n• MAISON - Courses, ménage & logistique  \n• VIE - Conciergerie & administratif\n• TRAVEL - Organisation voyages\n• ANIMAL - Garde & soins animaux\n• SENIORS - Assistance personnes âgées\n• PRO - Services aux entreprises\n• PLUS - Services sur mesure premium\n\nComment puis-je vous aider aujourd\'hui ? 😊',
       sender: 'bot',
       timestamp: new Date()
     }
@@ -111,8 +111,8 @@ const ChatBot = () => {
         const escalationMessage: Message = {
           id: (Date.now() + 2).toString(),
           text: response.shouldCollectContact 
-            ? "Pour vous mettre en relation avec un agent, j'aurais besoin de votre email ou numéro de téléphone."
-            : "Un agent va prendre en charge votre demande sous peu.",
+            ? "Pour vous mettre en relation avec un conseiller Bikawo, j'aurais besoin de votre email ou numéro de téléphone. 📞"
+            : "Un conseiller Bikawo va prendre en charge votre demande sous peu. Merci de votre patience ! 🙏",
           sender: 'bot',
           timestamp: new Date()
         };
@@ -131,15 +131,15 @@ const ChatBot = () => {
       
       const errorMessage: Message = {
         id: 'error',
-        text: 'Désolé, je rencontre des difficultés techniques. Veuillez réessayer ou contacter notre service client au 06 09 08 53 90.',
+        text: 'Désolé, je rencontre des difficultés techniques momentanées. 😅\n\nVous pouvez :\n📞 Nous appeler au 06 09 08 53 90\n✉️ Nous écrire à contact@bikawo.fr\n🌐 Aller sur www.bikawo.fr\n\nNous sommes là pour vous aider !',
         sender: 'bot',
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
       
       toast({
-        title: "Erreur",
-        description: "Impossible de traiter votre message. Veuillez réessayer.",
+        title: "Connexion temporaire",
+        description: "Problème technique - Contactez-nous directement au 0609085390",
         variant: "destructive"
       });
     } finally {
@@ -150,8 +150,8 @@ const ChatBot = () => {
   const handleContactSubmit = async () => {
     if (!userEmail && !userPhone) {
       toast({
-        title: "Information requise",
-        description: "Veuillez fournir au moins votre email ou votre numéro de téléphone.",
+        title: "Coordonnées nécessaires",
+        description: "Merci de nous laisser votre email ou téléphone pour être recontacté(e).",
         variant: "destructive"
       });
       return;
@@ -173,7 +173,7 @@ const ChatBot = () => {
 
       const confirmationMessage: Message = {
         id: Date.now().toString(),
-        text: `Parfait ! Nous avons bien noté vos coordonnées${userEmail ? ` (${userEmail})` : ''}${userPhone ? ` (${userPhone})` : ''}. Un agent vous contactera dans les plus brefs délais. Merci de votre patience !`,
+        text: `C'est noté ! ✅ Nous avons bien enregistré vos coordonnées${userEmail ? ` (${userEmail})` : ''}${userPhone ? ` (${userPhone})` : ''}.\n\nUn conseiller Bikawo vous contactera très rapidement. En attendant, n'hésitez pas si vous avez d'autres questions ! 😊`,
         sender: 'bot',
         timestamp: new Date()
       };
@@ -182,15 +182,15 @@ const ChatBot = () => {
       setShowContactForm(false);
       
       toast({
-        title: "Demande enregistrée",
-        description: "Un agent vous contactera bientôt.",
+        title: "Demande enregistrée ✅",
+        description: "Un conseiller vous contactera très rapidement !",
       });
 
     } catch (error) {
       console.error('Error submitting contact:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible d'enregistrer votre demande. Veuillez réessayer.",
+        title: "Problème technique",
+        description: "Impossible d'enregistrer votre demande. Appelez-nous au 0609085390",
         variant: "destructive"
       });
     }
@@ -205,15 +205,25 @@ const ChatBot = () => {
       case 'Voir nos tarifs':
         setInputMessage('Quels sont vos tarifs ?');
         break;
-      case 'Annuler une réservation':
-        setInputMessage('Comment annuler une réservation ?');
+      case 'Modifier une réservation':
+        setInputMessage('Comment modifier ou annuler une réservation ?');
         break;
       case 'Devenir prestataire':
-        setInputMessage('Comment devenir prestataire ?');
+        setInputMessage('Comment devenir prestataire Bikawo ?');
         break;
-      case 'Parler à un agent':
+      case 'Parler à un conseiller':
         setNeedsEscalation(true);
         setShowContactForm(true);
+        break;
+      case 'Nous contacter':
+        setInputMessage('Comment vous contacter ?');
+        break;
+      case 'Zone d\'intervention':
+        setInputMessage('Dans quelles villes intervenez-vous ?');
+        break;
+      case 'Voir nos services':
+        navigate('/services');
+        setIsOpen(false);
         break;
       case 'Centre d\'aide':
         navigate('/aide');
@@ -230,11 +240,12 @@ const ChatBot = () => {
   };
 
   const quickActions = [
+    'Voir nos services',
+    'Voir nos tarifs', 
     'Faire une réservation',
-    'Voir nos tarifs',
-    'Annuler une réservation',
     'Devenir prestataire',
-    'Parler à un agent'
+    'Parler à un conseiller',
+    'Zone d\'intervention'
   ];
 
   return (
@@ -302,7 +313,7 @@ const ChatBot = () => {
                           <div className="w-1 h-1 bg-current rounded-full animate-bounce [animation-delay:-0.15s]"></div>
                           <div className="w-1 h-1 bg-current rounded-full animate-bounce"></div>
                         </div>
-                        <span>{message.text}</span>
+                        <span>Assistant en train de réfléchir...</span>
                       </div>
                     )}
                     {!message.isTyping && message.text}
@@ -315,29 +326,29 @@ const ChatBot = () => {
                 <div className="bg-muted/50 p-3 rounded-lg border border-border">
                   <h4 className="text-sm font-medium mb-2 flex items-center">
                     <User className="w-4 h-4 mr-2" />
-                    Vos coordonnées pour être recontacté
+                    💬 Pour être recontacté(e) rapidement
                   </h4>
                   <div className="space-y-2">
-                    <Input
-                      type="email"
-                      placeholder="Votre email"
-                      value={userEmail}
-                      onChange={(e) => setUserEmail(e.target.value)}
-                      className="h-8 text-sm"
-                    />
-                    <Input
-                      type="tel"
-                      placeholder="Votre téléphone (optionnel)"
-                      value={userPhone}
-                      onChange={(e) => setUserPhone(e.target.value)}
-                      className="h-8 text-sm"
-                    />
-                    <Button 
-                      onClick={handleContactSubmit}
-                      className="w-full h-8 text-sm bg-gradient-primary"
-                    >
-                      Envoyer ma demande
-                    </Button>
+                  <Input
+                    type="email"
+                    placeholder="votre.email@exemple.fr"
+                    value={userEmail}
+                    onChange={(e) => setUserEmail(e.target.value)}
+                    className="h-8 text-sm"
+                  />
+                  <Input
+                    type="tel"
+                    placeholder="06 12 34 56 78 (optionnel)"
+                    value={userPhone}
+                    onChange={(e) => setUserPhone(e.target.value)}
+                    className="h-8 text-sm"
+                  />
+                  <Button 
+                    onClick={handleContactSubmit}
+                    className="w-full h-8 text-sm bg-gradient-primary"
+                  >
+                    📞 Demander un rappel
+                  </Button>
                   </div>
                 </div>
               )}
@@ -370,7 +381,7 @@ const ChatBot = () => {
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Tapez votre message..."
+                  placeholder="Posez-moi votre question..."
                   className="flex-1 h-9 text-sm"
                   disabled={isLoading}
                 />
@@ -390,16 +401,21 @@ const ChatBot = () => {
               <div className="flex justify-between text-xs text-muted-foreground">
                 <div className="flex items-center space-x-1">
                   <Phone className="w-3 h-3" />
-                  <span>06 09 08 53 90</span>
+                  <span>0609085390</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <Clock className="w-3 h-3" />
-                  <span>7j/7 9h-22h</span>
+                  <span>7j/7 8h-20h</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <Mail className="w-3 h-3" />
-                  <span>contact@bikawo.com</span>
+                  <span>contact@bikawo.fr</span>
                 </div>
+              </div>
+              <div className="text-center mt-1">
+                <span className="text-[10px] text-muted-foreground">
+                  🏠 Paris & Île-de-France • Tous services • Devis gratuit
+                </span>
               </div>
             </div>
           </Card>
