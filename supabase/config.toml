@@ -110,5 +110,5 @@ verify_jwt = true
 [functions.admin-zones]
 verify_jwt = true
 
-[functions.admin-analytics]
-verify_jwt = true
+[functions.intelligent-chatbot]
+verify_jwt = false  # Public chatbot accessible to all users
