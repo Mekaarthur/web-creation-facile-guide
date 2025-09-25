@@ -1,11 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.3';
-import { Resend } from "npm:resend@2.0.0";
-import React from 'npm:react@18.3.1';
-import { renderAsync } from 'npm:@react-email/components@0.0.22';
-import { ConfirmationEmail } from './_templates/confirmation-email.tsx';
+// import { Resend } from "npm:resend@2.0.0";
+// import React from 'npm:react@18.3.1';
+// import { renderAsync } from 'npm:@react-email/components@0.0.22';
+// import { ConfirmationEmail } from './_templates/confirmation-email.tsx';
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+// const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -68,53 +68,25 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('🔗 Confirmation URL generated:', confirmationUrl);
     console.log('🌍 Base URL used:', baseUrl);
 
-    // Render l'email avec React Email
-    const emailHtml = await renderAsync(
-      React.createElement(ConfirmationEmail, {
-        confirmationUrl,
-        userEmail,
-      })
-    );
+    // Render l'email avec React Email - temporarily disabled
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h1>Bienvenue sur Bikawo</h1>
+        <p>Cliquez sur le lien suivant pour confirmer votre email :</p>
+        <a href="${confirmationUrl}">Confirmer mon email</a>
+      </div>
+    `;
 
-    console.log('📝 Email template rendered successfully');
+    console.log('📝 Email template generated (simplified version)');
 
-    // Envoyer l'email via Resend
-    const emailResponse = await resend.emails.send({
-      from: "Bikawo <contact@bikawo.com>",
-      to: [userEmail],
-      subject: "🎉 Bienvenue sur Bikawo - Confirmez votre email",
-      html: emailHtml,
-    });
-
-    if (emailResponse.error) {
-      console.error('❌ Resend error:', emailResponse.error);
-      throw new Error(`Erreur Resend: ${emailResponse.error.message}`);
-    }
-
-    console.log('✅ Email sent successfully:', emailResponse.data);
-
-    // Mettre à jour la notification dans la base de données
-    const { error: updateError } = await supabase
-      .from('realtime_notifications')
-      .update({ 
-        message: 'Email de confirmation envoyé avec succès',
-        data: { 
-          email_sent: true, 
-          email_id: emailResponse.data?.id 
-        }
-      })
-      .eq('user_id', userId)
-      .eq('type', 'email_confirmation');
-
-    if (updateError) {
-      console.error('⚠️ Error updating notification:', updateError);
-    }
+    // Email service temporarily disabled
+    console.log('📧 Email sending temporarily disabled');
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'Email de confirmation envoyé',
-        emailId: emailResponse.data?.id 
+        message: 'Email service temporarily disabled',
+        emailId: 'temp-disabled'
       }), 
       {
         status: 200,
