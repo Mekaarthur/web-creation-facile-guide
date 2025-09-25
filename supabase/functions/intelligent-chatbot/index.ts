@@ -41,22 +41,29 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    console.log('💬 Nouvelle question reçue:', message);
+
     // Rechercher dans la FAQ
     const faqResults = await searchFAQ(supabase, message);
     
     let response: string;
     let needsHumanEscalation = false;
     let shouldCollectContact = false;
+    let confidence = 0;
 
     // Si on trouve des résultats pertinents dans la FAQ
     if (faqResults.length > 0) {
+      console.log(`✅ ${faqResults.length} résultat(s) FAQ trouvé(s)`);
       response = await generateResponseWithFAQ(message, faqResults);
+      confidence = Math.max(...faqResults.map(f => f.priority));
     } else {
       // Utiliser OpenAI pour une réponse plus intelligente
+      console.log('🤖 Pas de FAQ correspondante, utilisation d\'OpenAI');
       const aiResponse = await queryOpenAI(message);
       response = aiResponse.response;
       needsHumanEscalation = aiResponse.needsEscalation;
       shouldCollectContact = aiResponse.shouldCollectContact;
+      confidence = needsHumanEscalation ? 30 : 70;
     }
 
     // Gérer ou créer la conversation
@@ -77,8 +84,13 @@ serve(async (req) => {
         .select()
         .single();
 
-      if (convError) throw convError;
+      if (convError) {
+        console.error('❌ Erreur création conversation:', convError);
+        throw convError;
+      }
+      
       currentConversationId = newConversation.id;
+      console.log('✅ Nouvelle conversation créée:', currentConversationId);
     }
 
     // Sauvegarder le message de l'utilisateur
@@ -102,12 +114,15 @@ serve(async (req) => {
         metadata: {
           faq_matches: faqResults.length,
           needs_escalation: needsHumanEscalation,
-          should_collect_contact: shouldCollectContact
+          should_collect_contact: shouldCollectContact,
+          confidence_score: confidence,
+          source: faqResults.length > 0 ? 'faq' : 'openai'
         }
       });
 
     // Créer un ticket de support si escalation nécessaire
     if (needsHumanEscalation && userEmail) {
+      console.log('📧 Création ticket de support pour:', userEmail);
       await supabase
         .from('support_tickets')
         .insert({
@@ -121,12 +136,15 @@ serve(async (req) => {
         });
     }
 
+    console.log('✅ Réponse générée et sauvegardée');
+
     return new Response(
       JSON.stringify({
         response,
         conversationId: currentConversationId,
         needsHumanEscalation,
         shouldCollectContact,
+        confidence,
         suggestedActions: getSuggestedActions(message, needsHumanEscalation)
       }),
       {
@@ -134,10 +152,16 @@ serve(async (req) => {
       }
     );
 
-  } catch (error) {
-    console.error('Error in chatbot function:', error);
+  } catch (error: unknown) {
+    console.error('❌ Erreur dans la fonction chatbot:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: errorMessage,
+        response: "Je rencontre des difficultés techniques. Puis-je vous mettre en relation avec un agent ?",
+        needsHumanEscalation: true,
+        shouldCollectContact: true
+      }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -148,8 +172,16 @@ serve(async (req) => {
 
 async function searchFAQ(supabase: any, query: string): Promise<FAQResult[]> {
   try {
-    const keywords = query.toLowerCase().split(' ').filter(word => word.length > 2);
+    const keywords = query.toLowerCase()
+      .split(' ')
+      .filter(word => word.length > 2)
+      .slice(0, 10); // Limiter le nombre de mots-clés
     
+    if (keywords.length === 0) {
+      return [];
+    }
+
+    // Recherche par mots-clés avec pondération
     const { data, error } = await supabase
       .from('faq_knowledge_base')
       .select('*')
@@ -160,12 +192,17 @@ async function searchFAQ(supabase: any, query: string): Promise<FAQResult[]> {
         ).join(',')
       )
       .order('priority', { ascending: false })
-      .limit(3);
+      .limit(5);
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Erreur recherche FAQ:', error);
+      throw error;
+    }
+    
+    console.log(`🔍 Recherche FAQ pour "${query}" - ${data?.length || 0} résultat(s)`);
     return data || [];
   } catch (error) {
-    console.error('Error searching FAQ:', error);
+    console.error('❌ Erreur dans searchFAQ:', error);
     return [];
   }
 }
@@ -197,17 +234,20 @@ async function generateResponseWithFAQ(query: string, faqResults: FAQResult[]): 
         messages: [
           {
             role: 'system',
-            content: `Tu es l'assistant virtuel de Bikawo, une plateforme de services à domicile. Utilise les informations FAQ suivantes pour répondre à la question de l'utilisateur. Sois concis, amical et professionnel. Si la question concerne plusieurs sujets, fournis une réponse synthétique.
+            content: `Tu es l'assistant virtuel de Bikawo, une plateforme de services à domicile en Île-de-France. Utilise UNIQUEMENT les informations FAQ suivantes pour répondre à la question de l'utilisateur. Sois concis, amical et professionnel. Si la question concerne plusieurs sujets, fournis une réponse synthétique.
 
-FAQ disponibles:
-${faqContext}`
+IMPORTANT : Ne réponds QU'avec les informations contenues dans les FAQ ci-dessous :
+
+${faqContext}
+
+Adapte le ton : chaleureux, professionnel, et conclus toujours par une question pour engager l'utilisateur.`
           },
           {
             role: 'user',
             content: query
           }
         ],
-        max_completion_tokens: 300,
+        max_tokens: 300,
         temperature: 0.3
       }),
     });
@@ -215,13 +255,13 @@ ${faqContext}`
     const data = await response.json();
     
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error('Invalid OpenAI response:', data);
+      console.error('❌ Réponse OpenAI invalide:', data);
       return faqResults[0].answer;
     }
     
     return data.choices[0].message.content;
   } catch (error) {
-    console.error('Error generating FAQ response:', error);
+    console.error('❌ Erreur génération réponse FAQ:', error);
     return faqResults[0].answer;
   }
 }
@@ -230,7 +270,7 @@ async function queryOpenAI(message: string): Promise<{ response: string; needsEs
   const openaiKey = Deno.env.get('OPENAI_API_KEY');
   if (!openaiKey) {
     return {
-      response: "Je suis désolé, je ne peux pas traiter votre demande pour le moment. Veuillez contacter notre service client.",
+      response: "Je suis désolé, je ne peux pas traiter votre demande pour le moment. Puis-je vous mettre en relation avec notre équipe ?",
       needsEscalation: true,
       shouldCollectContact: true
     };
@@ -248,39 +288,41 @@ async function queryOpenAI(message: string): Promise<{ response: string; needsEs
         messages: [
           {
             role: 'system',
-            content: `Tu es l'assistant virtuel de Bikawo, une plateforme française de services à domicile (garde d'enfants, aide ménagère, assistance seniors, etc.).
+            content: `Tu es l'assistant virtuel de Bikawo, une plateforme française de services à domicile en Île-de-France (Paris + départements 77, 78, 91, 92, 93, 94, 95).
 
-Ton rôle:
-- Répondre aux questions fréquentes sur les services Bikawo
-- Aider les clients et prestataires avec leurs questions
-- Identifier quand une escalation vers un humain est nécessaire
+🎯 MISSION : Aider les clients et prestataires avec leurs questions sur nos services.
 
-Instructions:
-1. Sois amical, professionnel et concis
-2. Si tu ne connais pas une information spécifique, dis-le honnêtement
-3. Pour les questions complexes, techniques ou personnelles, recommande de contacter le service client
-4. Termine par [ESCALATION] si la question nécessite un agent humain
-5. Termine par [COLLECT_CONTACT] si l'utilisateur devrait laisser ses coordonnées
+📍 ZONE D'INTERVENTION : Paris et Île-de-France (30km)
+📞 CONTACT : 0609085390 | contact@bikawo.fr | www.bikawo.fr
 
-Services Bikawo:
-- Garde d'enfants et aide aux devoirs
-- Aide ménagère et repassage  
-- Assistance aux seniors
-- Services premium et conciergerie
-- Support administratif et professionnel
+🛍️ NOS SERVICES :
+• BIKA KIDS (25€/h) : Garde d'enfants, baby-sitting, soutien scolaire (30€/h)
+• BIKA MAISON (25€/h) : Courses, ménage, jardinage, déménagement (30€/h urgences)
+• BIKA VIE (25€/h) : Administratif, pressing, planning personnel (30€/h assistance)
+• BIKA TRAVEL (30€/h) : Organisation voyages, formalités
+• BIKA ANIMAL (25€/h soins, 30€/h vétérinaire) : Garde animaux, promenades
+• BIKA SENIORS (30€/h) : Assistance personnes âgées, compagnie
+• BIKA PRO (50€/h+) : Services aux entreprises
+• BIKA PLUS : Services sur mesure premium
 
-Politique générale:
-- Annulation gratuite jusqu'à 2h avant
-- Tarifs variables selon service (22€-35€/h)
-- Prestataires vérifiés et assurés
-- Disponible 7j/7 dans plusieurs villes françaises`
+💳 PAIEMENT : CB et virement (pas de CESU)
+❌ ANNULATION : Gratuite >24h, puis barème dégressif
+✅ GARANTIES : Intervenants vérifiés, assurés, qualifiés
+
+INSTRUCTIONS :
+1. Sois chaleureux, professionnel et concis
+2. Pour tarifs précis → "Contactez-nous pour devis personnalisé"
+3. Pour réservations → "Notre équipe finalise votre réservation"
+4. Pour questions complexes → [ESCALATION]
+5. Pour collecter coordonnées → [COLLECT_CONTACT]
+6. Toujours conclure par une question engageante`
           },
           {
             role: 'user',
             content: message
           }
         ],
-        max_completion_tokens: 400,
+        max_tokens: 400,
         temperature: 0.4
       }),
     });
@@ -288,10 +330,10 @@ Politique générale:
     const data = await response.json();
     
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error('Invalid OpenAI response:', data);
+      console.error('❌ Réponse OpenAI invalide:', data);
       return {
         response: "Je rencontre des difficultés techniques. Puis-je vous mettre en relation avec un agent ?",
-        needsEscalation: true,
+        needsHumanEscalation: true,
         shouldCollectContact: true
       };
     }
@@ -313,7 +355,7 @@ Politique générale:
       shouldCollectContact
     };
   } catch (error) {
-    console.error('Error querying OpenAI:', error);
+    console.error('❌ Erreur requête OpenAI:', error);
     return {
       response: "Je rencontre des difficultés techniques. Puis-je vous mettre en relation avec un agent ?",
       needsEscalation: true,
@@ -333,21 +375,25 @@ function getSuggestedActions(message: string, needsEscalation: boolean): string[
   // Actions basées sur le contenu du message
   const lowerMessage = message.toLowerCase();
   
-  if (lowerMessage.includes('réservation') || lowerMessage.includes('réserver')) {
+  if (lowerMessage.includes('réservation') || lowerMessage.includes('réserver') || lowerMessage.includes('commande')) {
     actions.push("Faire une réservation");
   }
   
-  if (lowerMessage.includes('prestataire') || lowerMessage.includes('devenir')) {
+  if (lowerMessage.includes('prestataire') || lowerMessage.includes('devenir') || lowerMessage.includes('candidature')) {
     actions.push("Devenir prestataire");
   }
   
-  if (lowerMessage.includes('tarif') || lowerMessage.includes('prix')) {
+  if (lowerMessage.includes('tarif') || lowerMessage.includes('prix') || lowerMessage.includes('coût')) {
     actions.push("Voir nos tarifs");
   }
   
-  if (lowerMessage.includes('aide') || lowerMessage.includes('support')) {
+  if (lowerMessage.includes('aide') || lowerMessage.includes('support') || lowerMessage.includes('problème')) {
     actions.push("Centre d'aide");
   }
+
+  if (lowerMessage.includes('annul') || lowerMessage.includes('modif') || lowerMessage.includes('chang')) {
+    actions.push("Modifier une réservation");
+  }
   
-  return actions.slice(0, 3); // Limiter à 3 actions
+  return actions.length > 0 ? actions.slice(0, 3) : ["Faire une réservation", "Voir nos services", "Nous contacter"];
 }
