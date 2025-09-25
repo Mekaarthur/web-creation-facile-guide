@@ -213,6 +213,12 @@ ${faqContext}`
     });
 
     const data = await response.json();
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Invalid OpenAI response:', data);
+      return faqResults[0].answer;
+    }
+    
     return data.choices[0].message.content;
   } catch (error) {
     console.error('Error generating FAQ response:', error);
@@ -280,6 +286,16 @@ Politique générale:
     });
 
     const data = await response.json();
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Invalid OpenAI response:', data);
+      return {
+        response: "Je rencontre des difficultés techniques. Puis-je vous mettre en relation avec un agent ?",
+        needsEscalation: true,
+        shouldCollectContact: true
+      };
+    }
+    
     const aiResponse = data.choices[0].message.content;
 
     const needsEscalation = aiResponse.includes('[ESCALATION]');
