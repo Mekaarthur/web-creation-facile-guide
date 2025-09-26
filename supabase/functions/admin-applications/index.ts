@@ -39,6 +39,8 @@ serve(async (req) => {
         return await getApplicationStats(supabase, requestData);
       case 'bulk_action':
         return await bulkAction(supabase, requestData);
+      case 'convert_to_provider':
+        return await convertToProvider(supabase, requestData);
       case 'export':
         return await exportApplications(supabase, requestData);
       default:
@@ -679,6 +681,95 @@ async function bulkAction(supabase: any, { applicationIds, action, adminUserId, 
     );
   } catch (error) {
     console.error('Erreur lors de l\'action en lot:', error);
+    throw error;
+  }
+}
+
+async function convertToProvider(supabase: any, { applicationId, adminUserId }: any) {
+  try {
+    // Récupérer les détails de la candidature
+    const { data: application } = await supabase
+      .from('job_applications')
+      .select('*')
+      .eq('id', applicationId)
+      .single();
+
+    if (!application) {
+      throw new Error('Candidature introuvable');
+    }
+
+    if (application.status === 'converted') {
+      throw new Error('Cette candidature a déjà été convertie en prestataire');
+    }
+
+    // Créer le prestataire via la fonction RPC
+    const { data: newProviderId, error: providerError } = await supabase.rpc('create_provider_from_application', {
+      application_id: applicationId
+    });
+
+    if (providerError) {
+      console.error('Erreur lors de la création du prestataire:', providerError);
+      throw new Error('Erreur lors de la création du prestataire: ' + providerError.message);
+    }
+
+    // Mettre à jour le statut de la candidature
+    const { error: updateError } = await supabase
+      .from('job_applications')
+      .update({ 
+        status: 'converted',
+        admin_comments: 'Converti en prestataire',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', applicationId);
+
+    if (updateError) throw updateError;
+
+    // Logger l'action
+    await supabase
+      .from('admin_actions_log')
+      .insert({
+        admin_user_id: adminUserId,
+        entity_type: 'job_application',
+        entity_id: applicationId,
+        action_type: 'convert_to_provider',
+        new_data: { provider_id: newProviderId },
+        description: `Candidature convertie en prestataire (ID: ${newProviderId})`
+      });
+
+    // Envoyer email de confirmation
+    await supabase
+      .from('communications')
+      .insert({
+        type: 'email',
+        destinataire_email: application.email,
+        sujet: 'Bienvenue dans l\'équipe Bikawo !',
+        contenu: `Bonjour ${application.first_name},
+
+Excellente nouvelle ! Votre candidature a été approuvée et votre compte prestataire est maintenant actif.
+
+Vous pouvez dès à présent :
+- Accéder à votre espace prestataire
+- Recevoir des missions
+- Gérer votre planning et vos services
+
+Bienvenue dans l'équipe Bikawo !
+
+Cordialement,
+L'équipe Bikawo`,
+        template_name: 'provider_conversion',
+        status: 'en_attente'
+      });
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: 'Candidature convertie en prestataire avec succès',
+        provider_id: newProviderId
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Erreur lors de la conversion:', error);
     throw error;
   }
 }
