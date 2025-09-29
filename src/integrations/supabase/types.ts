@@ -3245,13 +3245,11 @@ export type Database = {
             }
           | { p_limit?: number; p_location: string; p_service_type: string }
         Returns: {
-          availability_slots: Json
           business_name: string
           location: string
           match_score: number
           provider_id: string
           rating: number
-          services_offered: Json
         }[]
       }
       get_platform_stats: {
