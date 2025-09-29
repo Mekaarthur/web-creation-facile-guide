@@ -2808,6 +2808,36 @@ export type Database = {
         }
         Relationships: []
       }
+      security_function_audit: {
+        Row: {
+          called_at: string | null
+          called_by: string | null
+          error_message: string | null
+          function_name: string
+          id: string
+          parameters: Json | null
+          success: boolean | null
+        }
+        Insert: {
+          called_at?: string | null
+          called_by?: string | null
+          error_message?: string | null
+          function_name: string
+          id?: string
+          parameters?: Json | null
+          success?: boolean | null
+        }
+        Update: {
+          called_at?: string | null
+          called_by?: string | null
+          error_message?: string | null
+          function_name?: string
+          id?: string
+          parameters?: Json | null
+          success?: boolean | null
+        }
+        Relationships: []
+      }
       services: {
         Row: {
           category: string
