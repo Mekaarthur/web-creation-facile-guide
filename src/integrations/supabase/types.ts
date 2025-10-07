@@ -3416,11 +3416,13 @@ export type Database = {
             }
           | { p_limit?: number; p_location: string; p_service_type: string }
         Returns: {
+          availability_slots: Json
           business_name: string
           location: string
           match_score: number
           provider_id: string
           rating: number
+          services_offered: Json
         }[]
       }
       get_platform_stats: {
@@ -3499,6 +3501,14 @@ export type Database = {
           p_old_value?: string
         }
         Returns: string
+      }
+      log_provider_view_access: {
+        Args: {
+          p_ip_address?: unknown
+          p_query_type?: string
+          p_user_agent?: string
+        }
+        Returns: undefined
       }
       log_sensitive_access: {
         Args: {
