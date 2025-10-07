@@ -3332,6 +3332,10 @@ export type Database = {
         Args: { p_client_id: string }
         Returns: boolean
       }
+      cleanup_abandoned_conversations: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       cleanup_old_security_logs: {
         Args: Record<PropertyKey, never>
         Returns: number
