@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -7,6 +8,7 @@ import Cart, { useCart } from "@/components/Cart";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, Link } from "react-router-dom";
 import { servicesData } from "@/utils/servicesData";
+import { serviceTranslations } from "@/utils/serviceTranslations";
 
 // Import des images
 import serviceChildcareEducation from "@/assets/service-childcare-education.jpg";
@@ -58,6 +60,7 @@ const ServicesPackages = () => {
   const { addToCart, getCartItemsCount } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { i18n } = useTranslation();
 
   const handleReservation = (pkg: any) => {
     if (!user) {
@@ -103,22 +106,46 @@ const ServicesPackages = () => {
     plus: servicePremiumConcierge
   };
 
-  const packages = Object.values(servicesData).map((serviceCategory) => ({
-    id: serviceCategory.key,
-    icon: iconMapping[serviceCategory.key],
-    title: serviceCategory.packageTitle,
-    subtitle: serviceCategory.title.split(' - ')[1] || serviceCategory.title,
-    description: `${serviceCategory.subservices.length} services disponibles dans cette catégorie`,
-    image: imageMapping[serviceCategory.key],
-    services: serviceCategory.subservices.map(sub => ({
-      name: sub.title,
-      description: sub.description.split('.')[0] + '.',
-      price: sub.price
-    })),
-    color: serviceCategory.key === 'maison' || serviceCategory.key === 'seniors' || serviceCategory.key === 'travel' || serviceCategory.key === 'pro' ? "accent" : "primary",
-    popular: serviceCategory.key === 'maison',
-    price: serviceCategory.subservices[0]?.priceDisplay || `À partir de ${serviceCategory.subservices[0]?.price}€/h`
-  }));
+  const packages = Object.values(servicesData).map((serviceCategory) => {
+    const isEn = i18n.language?.startsWith('en');
+    const localizedCategoryTitle = isEn
+      ? serviceTranslations[serviceCategory.key]?.title ?? serviceCategory.title
+      : serviceCategory.title;
+    const subtitle = localizedCategoryTitle.split(' - ')[1] || localizedCategoryTitle;
+    const description = isEn
+      ? `${serviceCategory.subservices.length} services available in this category`
+      : `${serviceCategory.subservices.length} services disponibles dans cette catégorie`;
+
+    const services = serviceCategory.subservices.map((sub) => {
+      const subTrans = isEn
+        ? serviceTranslations[serviceCategory.key]?.subservices?.[sub.slug]
+        : undefined;
+      const name = subTrans?.title ?? sub.title;
+      const desc = (subTrans?.description ?? sub.description).split('.')[0] + '.';
+      return { name, description: desc, price: sub.price };
+    });
+
+    return {
+      id: serviceCategory.key,
+      icon: iconMapping[serviceCategory.key],
+      title: serviceCategory.packageTitle,
+      subtitle,
+      description,
+      image: imageMapping[serviceCategory.key],
+      services,
+      color:
+        serviceCategory.key === 'maison' ||
+        serviceCategory.key === 'seniors' ||
+        serviceCategory.key === 'travel' ||
+        serviceCategory.key === 'pro'
+          ? 'accent'
+          : 'primary',
+      popular: serviceCategory.key === 'maison',
+      price:
+        serviceCategory.subservices[0]?.priceDisplay ||
+        `À partir de ${serviceCategory.subservices[0]?.price}€/h`,
+    };
+  });
 
   const pricingOptions = [
     {
