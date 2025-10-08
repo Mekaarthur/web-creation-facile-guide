@@ -2,6 +2,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Star } from "lucide-react";
 
 const TestimonialsSection = () => {
+  // Simple i18n for section title
+  const { t } = require('react-i18next');
   const testimonials = [
     {
       type: "client",

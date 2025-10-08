@@ -12,8 +12,10 @@ import TrackingManager from "@/components/TrackingManager";
 import RetargetingPixels from "@/components/RetargetingPixels";
 import GoogleSuggestOptimizer from "@/components/GoogleSuggestOptimizer";
 import { seoStructuredData } from "@/utils/seoData";
+import { useTranslation } from 'react-i18next';
 
 const Index = () => {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-background">
       {/* SEO and Analytics */}
@@ -52,10 +54,10 @@ const Index = () => {
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-                Nos Services
+                {t('services.title')}
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Découvrez notre gamme complète de services pour vous simplifier la vie au quotidien
+                {t('services.subtitle')}
               </p>
             </div>
             <ServicesGrid />

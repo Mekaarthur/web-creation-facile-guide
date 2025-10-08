@@ -2,9 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import heroImage from "@/assets/hero-bikawo-community.jpg";
+import { useTranslation } from 'react-i18next';
 
 const NewHero = () => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 100);
@@ -36,14 +38,14 @@ const NewHero = () => {
       <div className="relative z-10 container mx-auto px-4 text-center text-white">
         <div className={`transition-all duration-1000 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
           <h1 className="text-4xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-white to-gray-200 bg-clip-text text-transparent leading-tight">
-            Bikawo, votre assistant 
-            <span className="block text-primary animate-pulse">personnel au quotidien</span>
+            {t('newHero.title1')}
+            <span className="block text-primary animate-pulse">{t('newHero.title2')}</span>
           </h1>
         </div>
         
         <div className={`transition-all duration-1000 delay-300 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
           <p className="text-xl md:text-2xl mb-8 max-w-4xl mx-auto opacity-95 leading-relaxed">
-            Nous vous libérons de la <span className="text-primary font-semibold">charge mentale</span> pour que vous profitiez de ce qui compte vraiment.
+            {t('newHero.subtitle')}
           </p>
         </div>
 
@@ -55,7 +57,7 @@ const NewHero = () => {
               className="group w-full sm:w-auto px-10 py-5 text-lg font-semibold bg-primary hover:bg-primary/90 transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-primary/50"
             >
               <span className="mr-2 group-hover:animate-bounce">🛒</span>
-              Réserver dès maintenant
+              {t('newHero.ctaReserve')}
               <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-md" />
             </Button>
           </Link>
@@ -67,7 +69,7 @@ const NewHero = () => {
               className="group w-full sm:w-auto px-10 py-5 text-lg font-semibold bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-white/30"
             >
               <span className="mr-2 group-hover:animate-bounce">💼</span>
-              Devenir prestataire
+              {t('newHero.ctaProvider')}
               <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-md" />
             </Button>
           </Link>
@@ -78,15 +80,15 @@ const NewHero = () => {
           <div className="flex flex-wrap justify-center items-center gap-8 text-white/80 text-sm">
             <div className="flex items-center gap-2">
               <span className="text-yellow-400">⭐⭐⭐⭐⭐</span>
-              <span>4,9/5 - 2500+ avis</span>
+              <span>{t('newHero.rating')}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-primary">✓</span>
-              <span>Service 7j/7</span>
+              <span>{t('newHero.service')}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-primary">✓</span>
-              <span>Crédit d'impôt 50%</span>
+              <span>{t('newHero.taxCredit')}</span>
             </div>
           </div>
         </div>

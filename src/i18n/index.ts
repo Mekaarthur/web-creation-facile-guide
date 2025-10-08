@@ -140,6 +140,30 @@ const resources = {
       "why.benefit3": "Pour tous : Épanouissement mutuel",
       "why.benefit3Desc": "Une communauté qui grandit ensemble, clients satisfaits et prestataires valorisés",
       
+      // New Hero
+      "newHero.title1": "Bikawo, votre assistant",
+      "newHero.title2": "personnel au quotidien",
+      "newHero.subtitle": "Nous vous libérons de la charge mentale pour que vous profitiez de ce qui compte vraiment.",
+      "newHero.ctaReserve": "Réserver dès maintenant",
+      "newHero.ctaProvider": "Devenir prestataire",
+      "newHero.rating": "4,9/5 - 2500+ avis",
+      "newHero.service": "Service 7j/7",
+      "newHero.taxCredit": "Crédit d'impôt 50%",
+      
+      // CTAs
+      "cta.book": "Réserver",
+      "cta.becomeProvider": "Devenir pro",
+      
+      // Final CTA
+      "finalCta.title": "Rejoignez la communauté Bikawo dès aujourd'hui !",
+      "finalCta.subtitle": "Que vous ayez besoin d'accompagnement ou souhaitez valoriser vos compétences, Bikawo est fait pour vous !",
+      "finalCta.client": "🛒 Je réserve un service",
+      "finalCta.provider": "💼 Je propose mes services",
+      "finalCta.members": "Déjà plus de 2500 membres actifs dans notre communauté",
+      
+      // Testimonials
+      "testimonials.title": "Témoignages",
+      
       // Job application
       "jobs.title": "Rejoignez Notre Équipe",
       "jobs.subtitle": "Devenez prestataire de services et développez votre activité",
@@ -324,6 +348,30 @@ const resources = {
       "why.benefit2Desc": "Flexible opportunities for students, workers, retirees, parents",
       "why.benefit3": "For everyone: Mutual fulfillment",
       "why.benefit3Desc": "A community that grows together, satisfied clients and valued providers",
+      
+      // New Hero
+      "newHero.title1": "Bikawo, your",
+      "newHero.title2": "personal assistant",
+      "newHero.subtitle": "We free you from mental load so you can focus on what really matters.",
+      "newHero.ctaReserve": "Book now",
+      "newHero.ctaProvider": "Become a provider",
+      "newHero.rating": "4.9/5 - 2500+ reviews",
+      "newHero.service": "Service 24/7",
+      "newHero.taxCredit": "50% tax credit",
+      
+      // CTAs
+      "cta.book": "Book",
+      "cta.becomeProvider": "Become a pro",
+      
+      // Final CTA
+      "finalCta.title": "Join the Bikawo community today!",
+      "finalCta.subtitle": "Whether you need support or want to showcase your skills, Bikawo is for you!",
+      "finalCta.client": "🛒 I book a service",
+      "finalCta.provider": "💼 I offer my services",
+      "finalCta.members": "Already over 2500 active members in our community",
+      
+      // Testimonials
+      "testimonials.title": "Testimonials",
       
       // Job application
       "jobs.title": "Join Our Team",

@@ -2,8 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Users } from "lucide-react";
 import communityBg from "@/assets/community-cta-background.jpg";
+import { useTranslation } from 'react-i18next';
 
 const FinalCTABiface = () => {
+  const { t } = useTranslation();
   return (
     <section className="relative py-20 overflow-hidden">
       {/* Background Image */}
@@ -38,7 +40,7 @@ const FinalCTABiface = () => {
                 size="lg" 
                 className="w-full sm:w-auto px-8 py-4 text-lg font-semibold bg-white text-primary hover:bg-white/90"
               >
-                🛒 Je réserve un service
+                {t('finalCta.client')}
               </Button>
             </Link>
             
@@ -48,14 +50,14 @@ const FinalCTABiface = () => {
                 size="lg" 
                 className="w-full sm:w-auto px-8 py-4 text-lg font-semibold bg-transparent border-white text-white hover:bg-white hover:text-primary"
               >
-                💼 Je propose mes services
+                {t('finalCta.provider')}
               </Button>
             </Link>
           </div>
 
           {/* Credibility Element */}
           <div className="text-lg opacity-80 animate-fade-in">
-            <p>Déjà plus de 2500 membres actifs dans notre communauté</p>
+            <p>{t('finalCta.members')}</p>
           </div>
         </div>
       </div>

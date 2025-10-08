@@ -51,9 +51,9 @@ const Navbar = () => {
   const { isAdmin } = useAdminRole();
 
   const navItems = [
-    { name: "À propos", href: "/a-propos-de-nous" },
-    { name: "Contact", href: "/contact" },
-    { name: "Blog", href: "/blog" },
+    { name: t('nav.about'), href: "/a-propos-de-nous" },
+    { name: t('nav.contact'), href: "/contact" },
+    { name: t('nav.blog'), href: "/blog" },
   ];
 
   // Structure organisée des services avec images
@@ -161,7 +161,7 @@ const Navbar = () => {
                 "text-foreground hover:text-primary hover:bg-muted/50"
               )}
             >
-              Accueil
+              {t('nav.home')}
               <div className="absolute inset-x-1 -bottom-1 h-0.5 bg-gradient-primary rounded-full scale-x-0 transition-transform duration-200 group-hover:scale-x-100" />
             </Link>
 
@@ -169,10 +169,10 @@ const Navbar = () => {
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="bg-transparent hover:bg-muted/50 hover:text-primary data-[state=open]:bg-muted/50 data-[state=open]:text-primary">
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    Services
-                  </NavigationMenuTrigger>
+              <NavigationMenuTrigger className="bg-transparent hover:bg-muted/50 hover:text-primary data-[state=open]:bg-muted/50 data-[state=open]:text-primary">
+                <Sparkles className="mr-2 h-4 w-4" />
+                {t('nav.services')}
+              </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <div className="grid w-[800px] gap-3 p-6 md:grid-cols-2">
                       {servicesCategories.map((category) => (
