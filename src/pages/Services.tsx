@@ -4,8 +4,10 @@ import ServicesPackages from "@/components/ServicesPackages";
 import Footer from "@/components/Footer";
 import ChatBot from "@/components/ChatBot";
 import SEOComponent from "@/components/SEOComponent";
+import { useTranslation } from 'react-i18next';
 
 const ServicesPage = () => {
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen">
@@ -20,13 +22,13 @@ const ServicesPage = () => {
         <div className="text-center space-y-4 py-16 bg-gradient-to-b from-primary/5 to-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
-              Nos Services
+              {t('services.title')}
               <span className="block bg-gradient-hero bg-clip-text text-transparent">
-                BIKAWO
+                {t('services.titleHighlight')}
               </span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Découvrez nos solutions personnalisées pour vous accompagner au quotidien
+              {t('services.subtitle')}
             </p>
           </div>
         </div>

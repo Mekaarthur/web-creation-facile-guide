@@ -14,9 +14,11 @@ import {
   Sparkles,
   Quote
 } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 const About = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 100);
@@ -27,50 +29,50 @@ const About = () => {
     {
       icon: Users,
       number: "5,000+",
-      label: "Familles aidées",
+      label: t('about.statsLabel1'),
       color: "from-emerald-400 to-emerald-600",
-      description: "et toujours plus chaque jour"
+      description: t('about.statsDesc1')
     },
     {
       icon: Clock,
       number: "7j/7",
-      label: "Service disponible",
+      label: t('about.statsLabel2'),
       color: "from-blue-400 to-blue-600",
-      description: "24h/24 pour vous accompagner"
+      description: t('about.statsDesc2')
     },
     {
       icon: Trophy,
       number: "98%",
-      label: "Satisfaction client",
+      label: t('about.statsLabel3'),
       color: "from-amber-400 to-amber-600",
-      description: "Un taux qui nous rend fiers"
+      description: t('about.statsDesc3')
     },
     {
       icon: Globe,
       number: "95%",
-      label: "France couverte",
+      label: t('about.statsLabel4'),
       color: "from-purple-400 to-purple-600",
-      description: "Partout où vous êtes"
+      description: t('about.statsDesc4')
     }
   ];
 
   const values = [
     {
       icon: Heart,
-      title: "Humanité",
-      description: "Nous privilégions l'approche humaine dans chaque interaction, avec empathie et compréhension de vos besoins familiaux.",
+      title: t('about.value1'),
+      description: t('about.value1Desc'),
       gradient: "from-rose-400 to-pink-600"
     },
     {
       icon: Target,
-      title: "Fiabilité",
-      description: "Nos experts Bika sont rigoureusement sélectionnés et formés pour vous offrir un service de qualité constant.",
+      title: t('about.value2'),
+      description: t('about.value2Desc'),
       gradient: "from-indigo-400 to-indigo-600"
     },
     {
       icon: Users,
-      title: "Personnalisation",
-      description: "Chaque famille est unique. Nous adaptons nos services à votre rythme de vie et vos besoins spécifiques.",
+      title: t('about.value3'),
+      description: t('about.value3Desc'),
       gradient: "from-teal-400 to-teal-600"
     }
   ];
@@ -87,22 +89,18 @@ const About = () => {
             
             <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-primary/10 to-secondary/10 backdrop-blur-sm text-primary px-6 py-3 rounded-full text-sm font-medium border border-primary/20 shadow-lg">
               <Sparkles className="w-5 h-5" />
-              <span>À propos de nous</span>
+              <span>{t('about.badge')}</span>
             </div>
             
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mt-6 leading-tight">
-              Votre partenaire familial
+              {t('about.title')}
               <span className="block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent animate-pulse">
-                de confiance
+                {t('about.titleHighlight')}
               </span>
             </h1>
             
             <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto mt-6 leading-relaxed">
-              Bikawo vous accompagne dans votre quotidien avec 
-              <span className="text-primary font-semibold"> douceur</span>, 
-              <span className="text-secondary font-semibold"> fiabilité</span> et 
-              <span className="text-accent font-semibold"> humanité</span>, 
-              pour un foyer plus léger, plus serein et plus harmonieux.
+              {t('about.subtitle')}
             </p>
           </div>
         </div>
@@ -147,7 +145,7 @@ const About = () => {
             <div className="relative">
               <Quote className="absolute -top-4 -left-4 w-12 h-12 text-primary/20" />
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-                Notre histoire
+                {t('about.storyTitle')}
               </h2>
             </div>
             
@@ -233,7 +231,7 @@ const About = () => {
                   size="lg" 
                   className="w-full sm:w-auto px-10 py-4 text-lg bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                 >
-                  Découvrir nos services
+                  {t('about.ctaServices')}
                   <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
@@ -243,7 +241,7 @@ const About = () => {
                   size="lg"
                   className="w-full sm:w-auto px-10 py-4 text-lg border-2 hover:bg-primary/5 transform hover:scale-105 transition-all duration-300"
                 >
-                  Rejoindre l'équipe
+                  {t('about.ctaJoin')}
                   <Heart className="w-5 h-5 ml-2 transition-transform group-hover:scale-110" />
                 </Button>
               </Link>
@@ -254,7 +252,7 @@ const About = () => {
           <div className="space-y-8 lg:sticky lg:top-8">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground flex items-center gap-3">
               <Star className="w-8 h-8 text-primary" />
-              Nos valeurs
+              {t('about.valuesTitle')}
             </h3>
             
             <div className="space-y-6">

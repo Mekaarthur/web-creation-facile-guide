@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from 'react-i18next';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -29,37 +30,38 @@ const Contact = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const contactMethods = [
     {
       icon: Phone,
-      title: "Téléphone",
+      title: t('contact.phone'),
       content: "06 09 08 53 90",
-      description: "Lun-Dim, 24h/24",
+      description: t('contact.phoneTime'),
       color: "from-emerald-400 to-emerald-600",
       bgColor: "from-emerald-50 to-emerald-100"
     },
     {
       icon: Mail,
-      title: "Email",
+      title: t('contact.email'),
       content: "contact@bikawo.com",
-      description: "Réponse sous 1h",
+      description: t('contact.emailTime'),
       color: "from-blue-400 to-blue-600",
       bgColor: "from-blue-50 to-blue-100"
     },
     {
       icon: MessageSquare,
-      title: "Chat en direct",
-      content: "Disponible maintenant",
-      description: "Réponse immédiate",
+      title: t('contact.chat'),
+      content: t('contact.chatStatus'),
+      description: t('contact.chatTime'),
       color: "from-purple-400 to-purple-600",
       bgColor: "from-purple-50 to-purple-100"
     },
     {
       icon: MapPin,
-      title: "Adresse",
-      content: "123 Rue de la Tech, Paris",
-      description: "Rendez-vous sur demande",
+      title: t('contact.address'),
+      content: t('contact.addressDetails'),
+      description: t('contact.addressTime'),
       color: "from-amber-400 to-amber-600",
       bgColor: "from-amber-50 to-amber-100"
     }
@@ -73,8 +75,8 @@ const Contact = () => {
     await new Promise(resolve => setTimeout(resolve, 2000));
     
     toast({
-      title: "✨ Message envoyé avec succès !",
-      description: "Notre équipe vous contactera dans les plus brefs délais.",
+      title: t('contact.success'),
+      description: t('contact.successMessage'),
     });
     
     // Reset form
@@ -106,20 +108,18 @@ const Contact = () => {
             
             <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-primary/10 to-secondary/10 backdrop-blur-sm text-primary px-6 py-3 rounded-full text-sm font-medium border border-primary/20 shadow-lg">
               <Sparkles className="w-5 h-5" />
-              <span>Contact</span>
+              <span>{t('contact.badge')}</span>
             </div>
             
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mt-6 leading-tight">
-              Besoin d'aide ?
+              {t('contact.title')}
               <span className="block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent animate-pulse">
-                Contactez-nous
+                {t('contact.titleHighlight')}
               </span>
             </h1>
             
             <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto mt-6 leading-relaxed">
-              Notre équipe d'experts est disponible 
-              <span className="text-primary font-semibold"> 24h/24</span> pour répondre à toutes vos questions 
-              et vous accompagner dans vos projets.
+              {t('contact.subtitle')}
             </p>
           </div>
         </div>
@@ -129,7 +129,7 @@ const Contact = () => {
           <div className="space-y-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
             <h3 className="text-2xl font-bold text-foreground mb-8 flex items-center gap-3">
               <Zap className="w-7 h-7 text-primary" />
-              Plusieurs façons de nous joindre
+              {t('contact.methodsTitle')}
             </h3>
             
             {contactMethods.map((method, index) => {
@@ -167,24 +167,24 @@ const Contact = () => {
                   <Clock className="w-8 h-8 text-white" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-xl text-foreground">Heures d'ouverture</h4>
-                  <p className="text-muted-foreground">Support disponible</p>
+                  <h4 className="font-bold text-xl text-foreground">{t('contact.hoursTitle')}</h4>
+                  <p className="text-muted-foreground">{t('contact.hoursSubtitle')}</p>
                 </div>
               </div>
               <div className="space-y-3 text-lg">
                 <div className="flex justify-between items-center p-3 bg-white/50 rounded-xl">
-                  <span className="text-muted-foreground">Lundi - Vendredi</span>
+                  <span className="text-muted-foreground">{t('contact.weekdays')}</span>
                   <span className="text-foreground font-bold">24h/24</span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-white/50 rounded-xl">
-                  <span className="text-muted-foreground">Weekend</span>
+                  <span className="text-muted-foreground">{t('contact.weekend')}</span>
                   <span className="text-foreground font-bold">24h/24</span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-gradient-to-r from-accent/20 to-primary/20 rounded-xl border border-accent/30">
-                  <span className="text-muted-foreground">Urgences</span>
+                  <span className="text-muted-foreground">{t('contact.emergency')}</span>
                   <span className="text-accent font-bold flex items-center gap-2">
                     <CheckCircle className="w-5 h-5" />
-                    Toujours disponible
+                    {t('contact.alwaysAvailable')}
                   </span>
                 </div>
               </div>
@@ -198,10 +198,10 @@ const Contact = () => {
                 <div className="text-center">
                   <h3 className="text-3xl font-bold text-foreground mb-4 flex items-center justify-center gap-3">
                     <Send className="w-8 h-8 text-primary" />
-                    Envoyez-nous un message
+                    {t('contact.formTitle')}
                   </h3>
                   <p className="text-lg text-muted-foreground">
-                    Remplissez le formulaire ci-dessous et nous vous répondrons rapidement.
+                    {t('contact.formSubtitle')}
                   </p>
                 </div>
 
@@ -210,15 +210,15 @@ const Contact = () => {
                     <div className="space-y-3">
                       <label htmlFor="civility" className="text-lg font-semibold text-foreground flex items-center gap-2">
                         <Star className="w-5 h-5 text-primary" />
-                        Civilité *
+                        {t('contact.civility')} *
                       </label>
                       <Select required>
                         <SelectTrigger className="h-14 text-lg border-2 hover:border-primary/50 transition-colors duration-300">
-                          <SelectValue placeholder="Sélectionnez votre civilité" />
+                          <SelectValue placeholder={t('contact.selectCivility')} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="mr">Monsieur</SelectItem>
-                          <SelectItem value="mrs">Madame</SelectItem>
+                          <SelectItem value="mr">{t('contact.mr')}</SelectItem>
+                          <SelectItem value="mrs">{t('contact.mrs')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -226,14 +226,14 @@ const Contact = () => {
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-3">
                         <label htmlFor="name" className="text-lg font-semibold text-foreground">
-                          Nom complet *
+                          {t('contact.fullName')} *
                         </label>
                         <Input
                           id="name"
                           name="name"
                           value={formData.name}
                           onChange={handleChange}
-                          placeholder="Votre nom"
+                          placeholder={t('contact.yourName')}
                           required
                           className="h-14 text-lg border-2 hover:border-primary/50 focus:border-primary transition-colors duration-300"
                         />
@@ -241,7 +241,7 @@ const Contact = () => {
                       
                       <div className="space-y-3">
                         <label htmlFor="email" className="text-lg font-semibold text-foreground">
-                          Email *
+                          {t('contact.emailLabel')} *
                         </label>
                         <Input
                           id="email"
@@ -249,7 +249,7 @@ const Contact = () => {
                           type="email"
                           value={formData.email}
                           onChange={handleChange}
-                          placeholder="votre@email.com"
+                          placeholder={t('contact.yourEmail')}
                           required
                           className="h-14 text-lg border-2 hover:border-primary/50 focus:border-primary transition-colors duration-300"
                         />
@@ -259,14 +259,14 @@ const Contact = () => {
 
                   <div className="space-y-3">
                     <label htmlFor="subject" className="text-lg font-semibold text-foreground">
-                      Sujet *
+                      {t('contact.subject')} *
                     </label>
                     <Input
                       id="subject"
                       name="subject"
                       value={formData.subject}
                       onChange={handleChange}
-                      placeholder="De quoi voulez-vous parler ?"
+                      placeholder={t('contact.subjectPlaceholder')}
                       required
                       className="h-14 text-lg border-2 hover:border-primary/50 focus:border-primary transition-colors duration-300"
                     />
@@ -274,14 +274,14 @@ const Contact = () => {
 
                   <div className="space-y-3">
                     <label htmlFor="message" className="text-lg font-semibold text-foreground">
-                      Message *
+                      {t('contact.message')} *
                     </label>
                     <Textarea
                       id="message"
                       name="message"
                       value={formData.message}
                       onChange={handleChange}
-                      placeholder="Décrivez votre demande en détail..."
+                      placeholder={t('contact.messagePlaceholder')}
                       required
                       rows={6}
                       className="resize-none text-lg border-2 hover:border-primary/50 focus:border-primary transition-colors duration-300"
@@ -296,12 +296,12 @@ const Contact = () => {
                     {isSubmitting ? (
                       <>
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3" />
-                        Envoi en cours...
+                        {t('contact.sending')}
                       </>
                     ) : (
                       <>
                         <Send className="w-6 h-6 mr-3" />
-                        Envoyer le message
+                        {t('contact.send')}
                         <ArrowRight className="w-6 h-6 ml-3 transition-transform group-hover:translate-x-1" />
                       </>
                     )}
@@ -310,7 +310,7 @@ const Contact = () => {
 
                 <div className="flex items-center justify-center space-x-3 text-lg text-muted-foreground bg-gradient-to-r from-primary/5 to-secondary/5 p-6 rounded-2xl border border-primary/20">
                   <CheckCircle className="w-6 h-6 text-primary" />
-                  <span>Nous respectons votre vie privée et ne partageons jamais vos données</span>
+                  <span>{t('contact.privacy')}</span>
                 </div>
               </div>
             </Card>
@@ -327,11 +327,10 @@ const Contact = () => {
             <div className="max-w-4xl mx-auto space-y-8 relative">
               <h3 className="text-3xl md:text-4xl font-bold text-foreground flex items-center justify-center gap-3">
                 <MessageSquare className="w-10 h-10 text-primary" />
-                Questions fréquentes
+                {t('contact.faqTitle')}
               </h3>
               <p className="text-xl text-muted-foreground leading-relaxed">
-                Avant de nous contacter, consultez notre FAQ. 
-                Vous y trouverez peut-être déjà la réponse à votre question.
+                {t('contact.faqSubtitle')}
               </p>
               <Link to="/aide" className="group inline-block">
                 <Button 
@@ -339,7 +338,7 @@ const Contact = () => {
                   className="px-10 py-4 text-lg bg-white text-primary hover:bg-primary hover:text-white border-2 border-primary transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
                 >
                   <Star className="w-6 h-6 mr-3" />
-                  Consulter la FAQ
+                  {t('contact.faqButton')}
                   <ArrowRight className="w-6 h-6 ml-3 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>

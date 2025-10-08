@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { ChevronDown, ChevronUp, HelpCircle, Heart } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 const FAQ = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const { t } = useTranslation();
 
   const faqs = [
     {
@@ -190,17 +192,16 @@ const FAQ = () => {
         <div className="text-center space-y-4 mb-16 animate-fade-in-up">
           <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
             <HelpCircle className="w-4 h-4" />
-            <span>Tout savoir sur BIKAWO</span>
+            <span>{t('faq.badge')}</span>
           </div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
-            Questions fréquentes
+            {t('faq.title')}
             <span className="block bg-gradient-hero bg-clip-text text-transparent">
-              sur nos services
+              {t('faq.titleHighlight')}
             </span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Retrouvez toutes les réponses à vos questions sur nos services, 
-            tarifs et fonctionnement.
+            {t('faq.subtitle')}
           </p>
         </div>
 
@@ -254,18 +255,17 @@ const FAQ = () => {
         <div className="text-center mt-16 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
           <Card className="p-8 bg-gradient-cocon border-primary/10">
             <h3 className="text-2xl font-bold text-foreground mb-4">
-              Une question spécifique ?
+              {t('faq.ctaTitle')}
             </h3>
             <p className="text-muted-foreground mb-6">
-              Notre équipe est là pour vous accompagner et répondre à toutes vos questions 
-              avec la douceur et l'attention que mérite votre famille.
+              {t('faq.ctaSubtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button className="px-6 py-3 bg-gradient-primary text-white rounded-lg font-medium hover:shadow-glow transition-all">
-                Nous contacter
+                {t('faq.ctaContact')}
               </button>
               <button className="px-6 py-3 border border-primary text-primary rounded-lg font-medium hover:bg-primary/5 transition-all">
-                Prendre rendez-vous
+                {t('faq.ctaAppointment')}
               </button>
             </div>
           </Card>
