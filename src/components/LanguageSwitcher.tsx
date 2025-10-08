@@ -13,6 +13,12 @@ const LanguageSwitcher = () => {
 
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
+    try {
+      document.documentElement.lang = lng;
+    } catch {}
+    try {
+      localStorage.setItem('i18n_lang', lng);
+    } catch {}
   };
 
   return (

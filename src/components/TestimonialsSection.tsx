@@ -1,9 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Star } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 const TestimonialsSection = () => {
-  // Simple i18n for section title
-  const { t } = require('react-i18next');
+  const { t } = useTranslation();
   const testimonials = [
     {
       type: "client",
@@ -40,7 +40,7 @@ const TestimonialsSection = () => {
     <section className="py-16 bg-gradient-to-b from-secondary/10 to-background">
       <div className="container mx-auto px-4">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-          Témoignages
+          {t('testimonials.title')}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">

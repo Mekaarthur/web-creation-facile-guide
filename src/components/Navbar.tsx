@@ -255,18 +255,18 @@ const Navbar = () => {
                 <Link to="/services">
                   <Button size="sm" className="bg-gradient-primary hover:opacity-90 transition-opacity">
                     <Sparkles className="mr-1 h-3 w-3" />
-                    Réserver
+                    {t('cta.book')}
                   </Button>
                 </Link>
                 <Link to="/nous-recrutons">
                   <Button variant="outline" size="sm" className="hover:bg-accent hover:text-accent-foreground border-primary/20 text-primary hover:border-primary">
-                    Devenir pro
+                    {t('cta.becomeProvider')}
                   </Button>
                 </Link>
                 <div className="h-6 w-px bg-border mx-2" />
                 <Link to="/auth?admin=true">
                   <Button variant="ghost" size="sm" className="hover:bg-accent hover:text-accent-foreground">
-                    Connexion
+                    {t('auth.login')}
                   </Button>
                 </Link>
               </div>
