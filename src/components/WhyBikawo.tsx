@@ -1,24 +1,27 @@
 import { Brain, DollarSign, Heart } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { useTranslation } from 'react-i18next';
 
 const WhyBikawo = () => {
+  const { t } = useTranslation();
+  
   const benefits = [
     {
       icon: Brain,
-      title: "Pour nos clients : Zéro charge mentale",
-      description: "Confiez vos tâches et libérez votre esprit pour l'essentiel",
+      title: t('why.benefit1'),
+      description: t('why.benefit1Desc'),
       color: "text-blue-500"
     },
     {
       icon: DollarSign,
-      title: "Pour nos prestataires : Revenus complémentaires", 
-      description: "Opportunités flexibles pour étudiants, actifs, retraités, parents",
+      title: t('why.benefit2'), 
+      description: t('why.benefit2Desc'),
       color: "text-green-500"
     },
     {
       icon: Heart,
-      title: "Pour tous : Épanouissement mutuel",
-      description: "Une communauté qui grandit ensemble, clients satisfaits et prestataires valorisés",
+      title: t('why.benefit3'),
+      description: t('why.benefit3Desc'),
       color: "text-red-500"
     }
   ];
@@ -27,7 +30,7 @@ const WhyBikawo = () => {
     <section className="py-16 bg-primary/5">
       <div className="container mx-auto px-4">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-          Bikawo, c'est surtout…
+          {t('why.title')}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

@@ -1,10 +1,12 @@
 import { MessageCircle, Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instagram } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 
 const Footer = () => {
+  const { t } = useTranslation();
   const footerSections = [
     {
-      title: "Services",
+      title: t('footer.services'),
       links: [
         { name: "Bika Kids", href: "/services" },
         { name: "Bika Maison", href: "/services" },
@@ -15,21 +17,21 @@ const Footer = () => {
       ]
     },
     {
-      title: "Entreprise", 
+      title: t('footer.company'), 
       links: [
-        { name: "À propos", href: "/a-propos-de-nous" },
-        { name: "Carrières", href: "/nous-recrutons" },
-        { name: "Blog", href: "/blog" },
-        { name: "Partenaires", href: "/contact" }
+        { name: t('footer.about'), href: "/a-propos-de-nous" },
+        { name: t('footer.careers'), href: "/nous-recrutons" },
+        { name: t('nav.blog'), href: "/blog" },
+        { name: t('footer.partners'), href: "/contact" }
       ]
     },
     {
-      title: "Support",
+      title: t('footer.support'),
       links: [
-        { name: "Centre d'aide", href: "/aide" },
-        { name: "Contact", href: "/contact" },
-        { name: "FAQ", href: "/aide" },
-        { name: "Status", href: "/aide" }
+        { name: t('footer.helpCenter'), href: "/aide" },
+        { name: t('nav.contact'), href: "/contact" },
+        { name: t('footer.faq'), href: "/aide" },
+        { name: t('footer.status'), href: "/aide" }
       ]
     }
   ];
@@ -57,12 +59,11 @@ const Footer = () => {
                 <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center shadow-lg">
                   <MessageCircle className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-2xl font-bold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">Bikawô</span>
+                <span className="text-2xl font-bold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">{t('footer.title')}</span>
               </div>
               
               <p className="text-white/70 text-lg leading-relaxed max-w-lg">
-                Votre partenaire familial de confiance dans toute la France. 
-                Nous vous accompagnons avec humanité pour un quotidien plus serein.
+                {t('footer.description')}
               </p>
 
               {/* Contact Cards */}
@@ -73,7 +74,7 @@ const Footer = () => {
                       <Phone className="w-4 h-4 text-primary" />
                     </div>
                     <div>
-                      <p className="text-xs text-white/60">Téléphone</p>
+                      <p className="text-xs text-white/60">{t('footer.phone')}</p>
                       <p className="text-sm font-medium">06 09 08 53 90</p>
                     </div>
                   </div>
@@ -85,7 +86,7 @@ const Footer = () => {
                       <Mail className="w-4 h-4 text-primary" />
                     </div>
                     <div>
-                      <p className="text-xs text-white/60">Email</p>
+                      <p className="text-xs text-white/60">{t('footer.email')}</p>
                       <p className="text-sm font-medium">contact@bikawo.com</p>
                     </div>
                   </div>
@@ -142,16 +143,16 @@ const Footer = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
               <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-8 text-white/50 text-sm">
-                <span>© 2024 Bikawô. Tous droits réservés.</span>
+                <span>{t('footer.copyright')}</span>
                 <div className="flex space-x-6">
-                  <Link to="/aide" className="hover:text-white transition-colors">Confidentialité</Link>
-                  <Link to="/aide" className="hover:text-white transition-colors">CGU</Link>
-                  <Link to="/aide" className="hover:text-white transition-colors">Mentions légales</Link>
+                  <Link to="/aide" className="hover:text-white transition-colors">{t('footer.privacy')}</Link>
+                  <Link to="/aide" className="hover:text-white transition-colors">{t('footer.terms')}</Link>
+                  <Link to="/aide" className="hover:text-white transition-colors">{t('footer.legal')}</Link>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-white/60 text-sm">Support 24h/7j</span>
+                <span className="text-white/60 text-sm">{t('footer.support24')}</span>
               </div>
             </div>
           </div>

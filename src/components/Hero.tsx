@@ -2,9 +2,11 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useScrollAnimation } from "@/hooks/useAnimations";
+import { useTranslation } from 'react-i18next';
 
 const Hero = () => {
   const { setRef, isInView } = useScrollAnimation();
+  const { t } = useTranslation();
 
   return (
     <section 
@@ -25,15 +27,15 @@ const Hero = () => {
             {/* Main Headline - Impactante */}
             <div className="space-y-4 lg:space-y-6">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight">
-                <span className="text-foreground">Débordé(e) par</span>
+                <span className="text-foreground">{t('hero.title')}</span>
                 <br />
                 <span className="bg-gradient-hero bg-clip-text text-transparent">
-                  le quotidien ?
+                  {t('hero.titleHighlight')}
                 </span>
               </h1>
               
               <p className="text-lg sm:text-xl lg:text-2xl text-muted-foreground font-medium leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                Déléguer vos missions quotidiennes n'a jamais été aussi simple
+                {t('hero.subtitle')}
               </p>
             </div>
 
@@ -45,7 +47,7 @@ const Hero = () => {
                   className="group w-full sm:w-auto text-base lg:text-lg px-6 lg:px-8 py-3 lg:py-4 bg-gradient-hero hover:scale-105 transition-all duration-300 shadow-glow min-h-12"
                 >
                   <Zap className="w-5 h-5 lg:w-6 lg:h-6 mr-2 lg:mr-3 flex-shrink-0" />
-                  <span className="truncate">Déléguer mes missions</span>
+                  <span className="truncate">{t('hero.ctaPrimary')}</span>
                   <ArrowRight className="w-5 h-5 lg:w-6 lg:h-6 ml-2 lg:ml-3 transition-transform group-hover:translate-x-1 flex-shrink-0" />
                 </Button>
               </Link>
@@ -55,7 +57,7 @@ const Hero = () => {
                   variant="secondary"
                   className="group w-full sm:w-auto text-base lg:text-lg px-6 lg:px-8 py-3 lg:py-4 hover:scale-105 transition-all duration-300 shadow-elegant min-h-12"
                 >
-                  <span className="truncate">Postuler</span>
+                  <span className="truncate">{t('hero.ctaSecondary')}</span>
                   <ArrowRight className="w-5 h-5 lg:w-6 lg:h-6 ml-2 lg:ml-3 transition-transform group-hover:translate-x-1 flex-shrink-0" />
                 </Button>
               </Link>
@@ -69,8 +71,8 @@ const Hero = () => {
                 ))}
               </div>
               <div className="text-left">
-                <div className="text-xl lg:text-2xl font-bold text-foreground">2,500+</div>
-                <div className="text-xs lg:text-sm text-muted-foreground">familles sereines</div>
+                <div className="text-xl lg:text-2xl font-bold text-foreground">{t('hero.statsNumber')}</div>
+                <div className="text-xs lg:text-sm text-muted-foreground">{t('hero.statsLabel')}</div>
               </div>
             </div>
           </div>
@@ -89,7 +91,7 @@ const Hero = () => {
               <div className="absolute -top-4 -left-4 bg-white p-4 rounded-xl shadow-elegant animate-float">
                 <div className="flex items-center space-x-3">
                   <div className="w-4 h-4 bg-accent rounded-full animate-pulse-soft"></div>
-                  <span className="font-semibold text-foreground">Disponible 24h/7j</span>
+                  <span className="font-semibold text-foreground">{t('hero.badge')}</span>
                 </div>
               </div>
             </div>
