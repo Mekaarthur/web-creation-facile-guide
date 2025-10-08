@@ -528,6 +528,7 @@ export type Database = {
           escalated_at: string | null
           escalated_to_human: boolean | null
           id: string
+          ip_address: unknown | null
           resolved_at: string | null
           status: string
           updated_at: string
@@ -541,6 +542,7 @@ export type Database = {
           escalated_at?: string | null
           escalated_to_human?: boolean | null
           id?: string
+          ip_address?: unknown | null
           resolved_at?: string | null
           status?: string
           updated_at?: string
@@ -554,6 +556,7 @@ export type Database = {
           escalated_at?: string | null
           escalated_to_human?: boolean | null
           id?: string
+          ip_address?: unknown | null
           resolved_at?: string | null
           status?: string
           updated_at?: string
@@ -2734,6 +2737,33 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limit_tracking: {
+        Row: {
+          action_type: string
+          attempt_count: number | null
+          blocked_until: string | null
+          created_at: string | null
+          id: string
+          identifier: string
+        }
+        Insert: {
+          action_type: string
+          attempt_count?: number | null
+          blocked_until?: string | null
+          created_at?: string | null
+          id?: string
+          identifier: string
+        }
+        Update: {
+          action_type?: string
+          attempt_count?: number | null
+          blocked_until?: string | null
+          created_at?: string | null
+          id?: string
+          identifier?: string
+        }
+        Relationships: []
+      }
       realtime_notifications: {
         Row: {
           created_at: string
@@ -2881,6 +2911,7 @@ export type Database = {
         Row: {
           action_type: string
           created_at: string | null
+          event_type: string
           id: string
           ip_address: unknown | null
           record_id: string | null
@@ -2892,6 +2923,7 @@ export type Database = {
         Insert: {
           action_type: string
           created_at?: string | null
+          event_type: string
           id?: string
           ip_address?: unknown | null
           record_id?: string | null
@@ -2903,6 +2935,7 @@ export type Database = {
         Update: {
           action_type?: string
           created_at?: string | null
+          event_type?: string
           id?: string
           ip_address?: unknown | null
           record_id?: string | null
@@ -3246,29 +3279,26 @@ export type Database = {
           location: string | null
           profile_photo_url: string | null
           rating: number | null
-          services_offered: Json | null
           status: string | null
         }
         Insert: {
           business_name?: string | null
-          description?: string | null
+          description?: never
           id?: string | null
           is_verified?: boolean | null
-          location?: string | null
-          profile_photo_url?: string | null
+          location?: never
+          profile_photo_url?: never
           rating?: number | null
-          services_offered?: never
           status?: string | null
         }
         Update: {
           business_name?: string | null
-          description?: string | null
+          description?: never
           id?: string | null
           is_verified?: boolean | null
-          location?: string | null
-          profile_photo_url?: string | null
+          location?: never
+          profile_photo_url?: never
           rating?: number | null
-          services_offered?: never
           status?: string | null
         }
         Relationships: []
