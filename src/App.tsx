@@ -92,6 +92,7 @@ import AdminSettings from "./pages/admin/Settings";
 import AdminReportsData from "./pages/admin/ReportsData";
 import AdminOnboarding from "./pages/admin/Onboarding";
 import AdminMatching from "./pages/admin/Matching";
+import TestsCritiques from "./pages/admin/TestsCritiques";
 
 import NotFound from "./pages/NotFound";
 import AuditReport from "./components/AuditReport";
@@ -201,6 +202,7 @@ const App = () => (
               <Route path="providers" element={<AdminProviders />} />
               <Route path="onboarding" element={<AdminOnboarding />} />
               <Route path="matching" element={<AdminMatching />} />
+              <Route path="tests-critiques" element={<TestsCritiques />} />
               <Route path="applications" element={<AdminApplications />} />
               <Route path="binomes" element={<AdminBinomes />} />
               <Route path="missions" element={<AdminMissions />} />
