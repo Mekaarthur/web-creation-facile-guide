@@ -7,22 +7,23 @@
 
 ## 📅 PLANNING DÉTAILLÉ
 
-### ✅ SEMAINE 1 (Complétée à 80%)
+### ✅ SEMAINE 1 (Complétée à 95%)
 
 #### Jour 1-2: Sécurité ✅
 - [x] Migration sécurité DB
 - [x] Rate limiting backend
 - [x] Validation inputs (schemas Zod)
 - [x] RLS policies renforcées
-- [ ] ⏳ Actions Dashboard Supabase (VOUS)
-- [ ] ⏳ Tests sécurité
+- [ ] ⏳ Actions Dashboard Supabase (VOUS - voir ci-dessous)
+- [x] Tests sécurité
 
-#### Jour 3-5: Workflows Critiques ⏳
-- [ ] Workflow réservation complet bout-en-bout
-- [ ] Gestion annulations + remboursements
-- [ ] Check-in/Check-out missions
-- [ ] Calcul rémunérations automatique
-- [ ] Attribution automatique + manuelle
+#### Jour 3-5: Workflows Critiques ✅
+- [x] Workflow réservation complet bout-en-bout
+- [x] Gestion annulations + remboursements
+- [x] Check-in/Check-out missions
+- [x] Calcul rémunérations automatique
+- [x] Attribution automatique + manuelle
+- [x] Compensation prestataires annulations tardives
 
 #### Jour 6-7: Notifications ⏳
 - [ ] Tous les emails transactionnels

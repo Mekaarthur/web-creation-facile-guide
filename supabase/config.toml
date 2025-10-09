@@ -112,3 +112,12 @@ verify_jwt = true
 
 [functions.intelligent-chatbot]
 verify_jwt = false  # Public chatbot accessible to all users
+
+[functions.handle-cancellation]
+verify_jwt = true  # Requires authentication
+
+[functions.process-refund]
+verify_jwt = true  # Requires authentication - admin or system only
+
+[functions.rate-limit-check]
+verify_jwt = false  # Public endpoint for rate limiting

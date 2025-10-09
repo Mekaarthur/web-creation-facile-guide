@@ -173,6 +173,9 @@ export type Database = {
           assigned_at: string | null
           before_photos: string[] | null
           booking_date: string
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           check_in_location: string | null
           check_out_location: string | null
           client_id: string
@@ -200,6 +203,9 @@ export type Database = {
           assigned_at?: string | null
           before_photos?: string[] | null
           booking_date: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           check_in_location?: string | null
           check_out_location?: string | null
           client_id: string
@@ -227,6 +233,9 @@ export type Database = {
           assigned_at?: string | null
           before_photos?: string[] | null
           booking_date?: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           check_in_location?: string | null
           check_out_location?: string | null
           client_id?: string
