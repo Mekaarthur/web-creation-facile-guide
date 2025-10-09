@@ -56,7 +56,7 @@ export const MissionCompletedEmail = ({
             Votre retour est précieux ! Il aide les autres utilisateurs et permet aux prestataires de s'améliorer.
           </Text>
           <Button
-            href={`https://bikawo.com/client/bookings/${bookingId}/review`}
+            href={`https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/espace-personnel`}
             style={button}
           >
             Laisser un avis

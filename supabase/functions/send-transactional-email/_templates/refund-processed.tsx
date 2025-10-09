@@ -23,10 +23,14 @@ interface RefundProcessedEmailProps {
 export const RefundProcessedEmail = ({
   clientName,
   serviceName,
-  refundAmount,
-  originalAmount,
+  refundAmount = 0,
+  originalAmount = 0,
   refundReason,
-}: RefundProcessedEmailProps) => (
+}: RefundProcessedEmailProps) => {
+  const refundAmountValue = refundAmount || 0;
+  const originalAmountValue = originalAmount || 0;
+  
+  return (
   <Html>
     <Head />
     <Preview>Remboursement effectué</Preview>
@@ -44,7 +48,7 @@ export const RefundProcessedEmail = ({
 
         <Section style={refundBox}>
           <Heading style={refundTitle}>
-            {refundAmount.toFixed(2)}€
+            {refundAmountValue.toFixed(2)}€
           </Heading>
           <Text style={refundSubtext}>
             Montant remboursé
@@ -59,12 +63,12 @@ export const RefundProcessedEmail = ({
           
           <Row style={detailRow}>
             <Column style={detailLabel}>Montant initial :</Column>
-            <Column style={detailValue}>{originalAmount.toFixed(2)}€</Column>
+            <Column style={detailValue}>{originalAmountValue.toFixed(2)}€</Column>
           </Row>
           
           <Row style={detailRow}>
             <Column style={detailLabel}>Montant remboursé :</Column>
-            <Column style={detailValue}><strong>{refundAmount.toFixed(2)}€</strong></Column>
+            <Column style={detailValue}><strong>{refundAmountValue.toFixed(2)}€</strong></Column>
           </Row>
           
           <Row style={detailRow}>
@@ -93,7 +97,8 @@ export const RefundProcessedEmail = ({
       </Container>
     </Body>
   </Html>
-);
+  );
+};
 
 const main = {
   backgroundColor: '#f6f9fc',
