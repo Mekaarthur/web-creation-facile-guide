@@ -77,7 +77,8 @@ export const useProviderOnboarding = () => {
           documentsData?.some(doc => doc.document_type === type)
         );
 
-        // Mettre à jour les étapes
+        // Mettre à jour les étapes (cast temporaire en attendant la regénération des types)
+        const providerAny = providerData as any;
         setSteps(prev => prev.map(step => {
           if (step.id === 'documents') {
             return { ...step, completed: hasAllDocs };
@@ -86,10 +87,10 @@ export const useProviderOnboarding = () => {
             return { ...step, completed: providerData.mandat_facturation_accepte || false };
           }
           if (step.id === 'training') {
-            return { ...step, completed: providerData.formation_completed || false };
+            return { ...step, completed: providerAny.formation_completed || false };
           }
           if (step.id === 'identity') {
-            return { ...step, completed: providerData.identity_verified || false };
+            return { ...step, completed: providerAny.identity_verified || false };
           }
           return step;
         }));

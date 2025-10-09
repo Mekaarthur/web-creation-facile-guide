@@ -2629,10 +2629,15 @@ export type Database = {
           description: string | null
           diploma_document_url: string | null
           forfait_rate: number | null
+          formation_completed: boolean | null
+          formation_completed_at: string | null
           hourly_rate: number | null
           hourly_rate_override: number | null
           id: string
           identity_document_url: string | null
+          identity_verified: boolean | null
+          identity_verified_at: string | null
+          identity_verified_by: string | null
           insurance_document_url: string | null
           is_verified: boolean
           last_activity_at: string | null
@@ -2642,6 +2647,7 @@ export type Database = {
           longitude: number | null
           mandat_facturation_accepte: boolean | null
           mandat_facturation_date: string | null
+          mandat_signature_date: string | null
           missions_accepted: number | null
           missions_completed: number | null
           missions_this_week: number | null
@@ -2672,10 +2678,15 @@ export type Database = {
           description?: string | null
           diploma_document_url?: string | null
           forfait_rate?: number | null
+          formation_completed?: boolean | null
+          formation_completed_at?: string | null
           hourly_rate?: number | null
           hourly_rate_override?: number | null
           id?: string
           identity_document_url?: string | null
+          identity_verified?: boolean | null
+          identity_verified_at?: string | null
+          identity_verified_by?: string | null
           insurance_document_url?: string | null
           is_verified?: boolean
           last_activity_at?: string | null
@@ -2685,6 +2696,7 @@ export type Database = {
           longitude?: number | null
           mandat_facturation_accepte?: boolean | null
           mandat_facturation_date?: string | null
+          mandat_signature_date?: string | null
           missions_accepted?: number | null
           missions_completed?: number | null
           missions_this_week?: number | null
@@ -2715,10 +2727,15 @@ export type Database = {
           description?: string | null
           diploma_document_url?: string | null
           forfait_rate?: number | null
+          formation_completed?: boolean | null
+          formation_completed_at?: string | null
           hourly_rate?: number | null
           hourly_rate_override?: number | null
           id?: string
           identity_document_url?: string | null
+          identity_verified?: boolean | null
+          identity_verified_at?: string | null
+          identity_verified_by?: string | null
           insurance_document_url?: string | null
           is_verified?: boolean
           last_activity_at?: string | null
@@ -2728,6 +2745,7 @@ export type Database = {
           longitude?: number | null
           mandat_facturation_accepte?: boolean | null
           mandat_facturation_date?: string | null
+          mandat_signature_date?: string | null
           missions_accepted?: number | null
           missions_completed?: number | null
           missions_this_week?: number | null
