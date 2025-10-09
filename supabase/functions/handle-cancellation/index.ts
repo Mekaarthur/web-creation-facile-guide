@@ -146,21 +146,54 @@ serve(async (req) => {
 
     await Promise.all(notifications);
 
-    // 5. Envoyer les emails de confirmation
-    await supabase.functions.invoke('send-modern-notification', {
+    // 5. Récupérer les données pour l'email
+    const { data: clientData } = await supabase
+      .from('profiles')
+      .select('first_name, last_name, email')
+      .eq('user_id', booking.client_id)
+      .single();
+
+    const { data: serviceData } = await supabase
+      .from('services')
+      .select('name')
+      .eq('id', booking.service_id)
+      .single();
+
+    // 6. Envoyer l'email d'annulation
+    await supabase.functions.invoke('send-transactional-email', {
       body: {
-        trigger: 'booking_cancelled',
+        type: 'cancellation',
+        recipientEmail: clientData?.email,
+        recipientName: `${clientData?.first_name} ${clientData?.last_name}`,
         data: {
-          bookingId,
+          clientName: clientData?.first_name || 'Client',
+          serviceName: serviceData?.name || 'Service',
+          bookingDate: new Date(booking.booking_date).toLocaleDateString('fr-FR'),
           cancelledBy,
           reason,
-          refundAmount,
-          refundPercentage,
-          clientId: booking.client_id,
-          providerId: booking.provider_id
+          refundAmount: cancelledBy === 'provider' ? booking.total_price : refundAmount,
+          refundPercentage: cancelledBy === 'provider' ? 100 : refundPercentage
         }
       }
     });
+
+    // 7. Si remboursement effectué, envoyer email de confirmation
+    if (refundAmount > 0 && refundResult) {
+      await supabase.functions.invoke('send-transactional-email', {
+        body: {
+          type: 'refund_processed',
+          recipientEmail: clientData?.email,
+          recipientName: `${clientData?.first_name} ${clientData?.last_name}`,
+          data: {
+            clientName: clientData?.first_name || 'Client',
+            serviceName: serviceData?.name || 'Service',
+            refundAmount,
+            originalAmount: booking.total_price,
+            refundReason: reason
+          }
+        }
+      });
+    }
 
     return new Response(
       JSON.stringify({
