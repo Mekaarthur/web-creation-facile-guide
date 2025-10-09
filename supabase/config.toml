@@ -121,3 +121,6 @@ verify_jwt = true  # Requires authentication - admin or system only
 
 [functions.rate-limit-check]
 verify_jwt = false  # Public endpoint for rate limiting
+
+[functions.send-transactional-email]
+verify_jwt = true  # Requires authentication for sending emails
