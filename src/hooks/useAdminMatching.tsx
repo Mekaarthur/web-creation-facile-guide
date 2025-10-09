@@ -77,38 +77,44 @@ export const useAdminMatching = () => {
     }
   };
 
-  // Charger les matchs actifs
+  // Charger les matchs actifs depuis la table missions
   const loadActiveMatches = async () => {
     try {
       const { data, error } = await supabase
-        .from('client_requests')
+        .from('missions')
         .select(`
           id,
-          service_type,
-          location,
-          status,
+          client_request_id,
           assigned_provider_id,
-          created_at,
-          updated_at,
+          status,
+          priority,
+          match_score,
+          assigned_at,
+          expires_at,
           providers (
             business_name
+          ),
+          client_requests (
+            service_type,
+            location
           )
         `)
-        .eq('status', 'new')
-        .order('created_at', { ascending: false })
+        .in('status', ['pending', 'backup'])
+        .order('priority', { ascending: true })
+        .order('assigned_at', { ascending: false })
         .limit(20);
 
       if (error) throw error;
 
       const matches = data?.map(m => ({
         id: m.id,
-        clientRequestId: m.id,
+        clientRequestId: m.client_request_id,
         providerName: m.providers?.business_name || 'En attente',
-        status: 'pending' as any,
-        score: 0,
-        assignedAt: m.created_at || '',
-        expiresAt: new Date(new Date(m.created_at).getTime() + 24 * 60 * 60 * 1000).toISOString(),
-        priority: 1,
+        status: m.status as any,
+        score: m.match_score || 0,
+        assignedAt: m.assigned_at || '',
+        expiresAt: m.expires_at || new Date(new Date(m.assigned_at).getTime() + 30 * 60 * 1000).toISOString(),
+        priority: m.priority,
       })) || [];
 
       setActiveMatches(matches);

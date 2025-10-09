@@ -1576,10 +1576,17 @@ export type Database = {
           client_request_id: string
           created_at: string | null
           eligible_providers: string[]
+          expires_at: string | null
           id: string
+          match_score: number | null
+          priority: number
+          responded_at: string | null
           response_deadline: string | null
+          response_notes: string | null
           responses_received: number | null
           sent_notifications: number | null
+          status: string
+          updated_at: string
         }
         Insert: {
           admin_assignment_time?: string | null
@@ -1591,10 +1598,17 @@ export type Database = {
           client_request_id: string
           created_at?: string | null
           eligible_providers: string[]
+          expires_at?: string | null
           id?: string
+          match_score?: number | null
+          priority?: number
+          responded_at?: string | null
           response_deadline?: string | null
+          response_notes?: string | null
           responses_received?: number | null
           sent_notifications?: number | null
+          status?: string
+          updated_at?: string
         }
         Update: {
           admin_assignment_time?: string | null
@@ -1606,10 +1620,17 @@ export type Database = {
           client_request_id?: string
           created_at?: string | null
           eligible_providers?: string[]
+          expires_at?: string | null
           id?: string
+          match_score?: number | null
+          priority?: number
+          responded_at?: string | null
           response_deadline?: string | null
+          response_notes?: string | null
           responses_received?: number | null
           sent_notifications?: number | null
+          status?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -3451,6 +3472,10 @@ export type Database = {
       check_client_reward_eligibility: {
         Args: { p_client_id: string }
         Returns: boolean
+      }
+      check_mission_timeouts: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       cleanup_abandoned_conversations: {
         Args: Record<PropertyKey, never>
