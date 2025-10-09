@@ -25,7 +25,11 @@ type EmailTemplate =
   | 'provider_mission_confirmed'
   | 'provider_reminder'
   | 'provider_payment'
-  | 'invoice_available';
+  | 'invoice_available'
+  | 'provider_document_validated'
+  | 'provider_document_rejected'
+  | 'provider_training_reminder'
+  | 'provider_account_activated';
 
 interface TestResult {
   id: string;
@@ -53,6 +57,10 @@ const EMAIL_TEMPLATES: { value: EmailTemplate; label: string; description: strin
   { value: 'provider_reminder', label: '⏰ Rappel mission (prestataire)', description: 'Rappel 24h avant pour prestataire' },
   { value: 'provider_payment', label: '💵 Paiement (prestataire)', description: 'Confirmation de paiement prestataire' },
   { value: 'invoice_available', label: '📄 Facture disponible', description: 'Notification de facture disponible' },
+  { value: 'provider_document_validated', label: '✅ Documents validés', description: 'Validation des documents prestataire' },
+  { value: 'provider_document_rejected', label: '⚠️ Documents refusés', description: 'Refus des documents avec raison' },
+  { value: 'provider_training_reminder', label: '📚 Rappel formation', description: 'Rappel pour compléter la formation' },
+  { value: 'provider_account_activated', label: '🎉 Compte activé', description: 'Activation du compte prestataire' },
 ];
 
 const EmailTestingDashboard = () => {
@@ -175,6 +183,28 @@ const EmailTestingDashboard = () => {
           totalAmount: 75.00,
           invoiceDate: new Date().toLocaleDateString('fr-FR'),
           invoiceLink: 'https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/espace-personnel'
+        };
+      case 'provider_document_validated':
+        return {
+          providerName: 'Marie Dupont',
+          documentType: 'Attestation d\'assurance professionnelle',
+          nextStep: 'Formation obligatoire'
+        };
+      case 'provider_document_rejected':
+        return {
+          providerName: 'Marie Dupont',
+          documentType: 'Carte d\'identité',
+          rejectionReason: 'Document illisible - Merci de fournir un scan plus net'
+        };
+      case 'provider_training_reminder':
+        return {
+          providerName: 'Marie Dupont',
+          trainingProgress: 45
+        };
+      case 'provider_account_activated':
+        return {
+          providerName: 'Marie Dupont',
+          businessName: 'Services MD'
         };
       default:
         return baseData;

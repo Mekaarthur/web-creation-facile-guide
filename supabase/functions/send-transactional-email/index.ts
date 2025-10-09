@@ -21,6 +21,10 @@ import { ProviderMissionConfirmedEmail } from './_templates/provider-mission-con
 import { ProviderReminderEmail } from './_templates/provider-reminder.tsx';
 import { ProviderPaymentEmail } from './_templates/provider-payment.tsx';
 import { InvoiceAvailableEmail } from './_templates/invoice-available.tsx';
+import { ProviderDocumentValidatedEmail } from './_templates/provider-document-validated.tsx';
+import { ProviderDocumentRejectedEmail } from './_templates/provider-document-rejected.tsx';
+import { ProviderTrainingReminderEmail } from './_templates/provider-training-reminder.tsx';
+import { ProviderAccountActivatedEmail } from './_templates/provider-account-activated.tsx';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const supabase = createClient(
@@ -48,6 +52,10 @@ interface EmailRequest {
     | 'provider_reminder'
     | 'provider_payment'
     | 'invoice_available'
+    | 'provider_document_validated'
+    | 'provider_document_rejected'
+    | 'provider_training_reminder'
+    | 'provider_account_activated'
     | 'account_created'
     | 'password_setup'
     | 'account_deleted';
@@ -74,6 +82,10 @@ const getEmailTemplate = async (type: string, data: any) => {
     'provider_reminder': ProviderReminderEmail,
     'provider_payment': ProviderPaymentEmail,
     'invoice_available': InvoiceAvailableEmail,
+    'provider_document_validated': ProviderDocumentValidatedEmail,
+    'provider_document_rejected': ProviderDocumentRejectedEmail,
+    'provider_training_reminder': ProviderTrainingReminderEmail,
+    'provider_account_activated': ProviderAccountActivatedEmail,
   };
 
   const TemplateComponent = templates[type];
@@ -99,6 +111,10 @@ const getEmailSubject = (type: string): string => {
     'provider_reminder': '⏰ Rappel : Mission demain',
     'provider_payment': '💵 Paiement effectué',
     'invoice_available': '📄 Facture disponible',
+    'provider_document_validated': '✅ Documents validés',
+    'provider_document_rejected': '⚠️ Action requise : Document à renvoyer',
+    'provider_training_reminder': '📚 Complétez votre formation',
+    'provider_account_activated': '🎉 Votre compte est activé',
     'account_created': '🎉 Bienvenue chez Bikawo',
     'password_setup': '🔐 Créez votre mot de passe',
     'account_deleted': '🗑️ Confirmation de suppression de compte',

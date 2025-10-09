@@ -90,6 +90,7 @@ import AdminReports from "./pages/admin/Reports";
 import AdminQuality from "./pages/admin/Quality";
 import AdminSettings from "./pages/admin/Settings";
 import AdminReportsData from "./pages/admin/ReportsData";
+import AdminOnboarding from "./pages/admin/Onboarding";
 
 import NotFound from "./pages/NotFound";
 import AuditReport from "./components/AuditReport";
@@ -197,6 +198,7 @@ const App = () => (
               <Route path="realtime" element={<AdminRealtime />} />
               <Route path="clients" element={<AdminClients />} />
               <Route path="providers" element={<AdminProviders />} />
+              <Route path="onboarding" element={<AdminOnboarding />} />
               <Route path="applications" element={<AdminApplications />} />
               <Route path="binomes" element={<AdminBinomes />} />
               <Route path="missions" element={<AdminMissions />} />

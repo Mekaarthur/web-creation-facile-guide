@@ -17,7 +17,8 @@ import {
   Clock,
   Activity,
   PieChart,
-  Mail
+  Mail,
+  CheckSquare
 } from "lucide-react"
 
 import {
@@ -48,6 +49,7 @@ const menuItems = [
     items: [
       { title: "Clients", url: "/modern-admin/clients", icon: Users, badge: "248" },
       { title: "Prestataires", url: "/modern-admin/providers", icon: UserCheck, badge: "127" },
+      { title: "Onboarding", url: "/modern-admin/onboarding", icon: CheckSquare, badge: "8" },
       { title: "Candidatures", url: "/modern-admin/applications", icon: FileText, badge: "12" },
       { title: "Binômes", url: "/modern-admin/binomes", icon: Star },
     ]
