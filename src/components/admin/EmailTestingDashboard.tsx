@@ -19,7 +19,13 @@ type EmailTemplate =
   | 'refund_processed'
   | 'account_created'
   | 'password_setup'
-  | 'account_deleted';
+  | 'account_deleted'
+  | 'review_request'
+  | 'provider_new_mission'
+  | 'provider_mission_confirmed'
+  | 'provider_reminder'
+  | 'provider_payment'
+  | 'invoice_available';
 
 interface TestResult {
   id: string;
@@ -41,6 +47,12 @@ const EMAIL_TEMPLATES: { value: EmailTemplate; label: string; description: strin
   { value: 'account_created', label: '🎉 Compte créé', description: 'Bienvenue + lien de connexion' },
   { value: 'password_setup', label: '🔐 Création mot de passe', description: 'Lien pour créer/configurer le mot de passe' },
   { value: 'account_deleted', label: '🗑️ Suppression de compte', description: 'Confirmation de suppression' },
+  { value: 'review_request', label: '⭐ Demande d\'avis', description: 'Email pour inviter le client à laisser un avis' },
+  { value: 'provider_new_mission', label: '🎯 Nouvelle mission (prestataire)', description: 'Notification d\'attribution de mission' },
+  { value: 'provider_mission_confirmed', label: '✅ Mission confirmée (prestataire)', description: 'Confirmation par le client' },
+  { value: 'provider_reminder', label: '⏰ Rappel mission (prestataire)', description: 'Rappel 24h avant pour prestataire' },
+  { value: 'provider_payment', label: '💵 Paiement (prestataire)', description: 'Confirmation de paiement prestataire' },
+  { value: 'invoice_available', label: '📄 Facture disponible', description: 'Notification de facture disponible' },
 ];
 
 const EmailTestingDashboard = () => {
@@ -105,6 +117,64 @@ const EmailTestingDashboard = () => {
         return {
           clientName: 'Test Client',
           deletionDate: new Date().toLocaleDateString('fr-FR')
+        };
+      case 'review_request':
+        return {
+          ...baseData,
+          providerName: 'Marie Dupont',
+          reviewLink: 'https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/espace-personnel'
+        };
+      case 'provider_new_mission':
+        return {
+          providerName: 'Marie Dupont',
+          serviceName: 'Garde d\'enfants',
+          bookingDate: new Date().toLocaleDateString('fr-FR'),
+          startTime: '14:00',
+          endTime: '18:00',
+          address: '123 Rue de Test, 75001 Paris',
+          clientNotes: 'Les enfants aiment les activités créatives',
+          missionLink: 'https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/espace-prestataire'
+        };
+      case 'provider_mission_confirmed':
+        return {
+          providerName: 'Marie Dupont',
+          serviceName: 'Garde d\'enfants',
+          bookingDate: new Date().toLocaleDateString('fr-FR'),
+          startTime: '14:00',
+          clientName: 'Famille Dupont',
+          address: '123 Rue de Test, 75001 Paris',
+          missionLink: 'https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/espace-prestataire'
+        };
+      case 'provider_reminder':
+        return {
+          providerName: 'Marie Dupont',
+          serviceName: 'Garde d\'enfants',
+          bookingDate: new Date().toLocaleDateString('fr-FR'),
+          startTime: '14:00',
+          endTime: '18:00',
+          address: '123 Rue de Test, 75001 Paris',
+          clientPhone: '+33 6 12 34 56 78',
+          missionLink: 'https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/espace-prestataire'
+        };
+      case 'provider_payment':
+        return {
+          providerName: 'Marie Dupont',
+          serviceName: 'Garde d\'enfants',
+          missionDate: new Date().toLocaleDateString('fr-FR'),
+          hoursWorked: 4,
+          grossAmount: 72.00,
+          netAmount: 60.00,
+          paymentDate: new Date().toLocaleDateString('fr-FR'),
+          invoiceLink: 'https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/espace-prestataire'
+        };
+      case 'invoice_available':
+        return {
+          clientName: 'Test Client',
+          invoiceNumber: 'INV-2025-001',
+          serviceName: 'Garde d\'enfants',
+          totalAmount: 75.00,
+          invoiceDate: new Date().toLocaleDateString('fr-FR'),
+          invoiceLink: 'https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/espace-personnel'
         };
       default:
         return baseData;

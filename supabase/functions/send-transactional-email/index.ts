@@ -15,6 +15,12 @@ import { RefundProcessedEmail } from './_templates/refund-processed.tsx';
 import { AccountCreatedEmail } from './_templates/account-created.tsx';
 import { PasswordSetupEmail } from './_templates/password-setup.tsx';
 import { AccountDeletedEmail } from './_templates/account-deleted.tsx';
+import { ReviewRequestEmail } from './_templates/review-request.tsx';
+import { ProviderNewMissionEmail } from './_templates/provider-new-mission.tsx';
+import { ProviderMissionConfirmedEmail } from './_templates/provider-mission-confirmed.tsx';
+import { ProviderReminderEmail } from './_templates/provider-reminder.tsx';
+import { ProviderPaymentEmail } from './_templates/provider-payment.tsx';
+import { InvoiceAvailableEmail } from './_templates/invoice-available.tsx';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const supabase = createClient(
@@ -62,6 +68,12 @@ const getEmailTemplate = async (type: string, data: any) => {
     'account_created': AccountCreatedEmail,
     'password_setup': PasswordSetupEmail,
     'account_deleted': AccountDeletedEmail,
+    'review_request': ReviewRequestEmail,
+    'provider_new_mission': ProviderNewMissionEmail,
+    'provider_mission_confirmed': ProviderMissionConfirmedEmail,
+    'provider_reminder': ProviderReminderEmail,
+    'provider_payment': ProviderPaymentEmail,
+    'invoice_available': InvoiceAvailableEmail,
   };
 
   const TemplateComponent = templates[type];
