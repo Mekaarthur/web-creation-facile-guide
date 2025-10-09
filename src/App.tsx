@@ -93,6 +93,7 @@ import AdminReportsData from "./pages/admin/ReportsData";
 import AdminOnboarding from "./pages/admin/Onboarding";
 import AdminMatching from "./pages/admin/Matching";
 import TestsCritiques from "./pages/admin/TestsCritiques";
+import ProviderOnboarding from "./pages/provider/Onboarding";
 
 import NotFound from "./pages/NotFound";
 import AuditReport from "./components/AuditReport";
@@ -123,6 +124,7 @@ const App = () => (
             <Route path="/update-password" element={<UpdatePassword />} />
             <Route path="/espace-personnel" element={<ProtectedRoute><EspacePersonnel /></ProtectedRoute>} />
             <Route path="/espace-prestataire" element={<ProtectedRoute><EspacePrestataire /></ProtectedRoute>} />
+            <Route path="/provider-onboarding" element={<ProtectedRoute><ProviderOnboarding /></ProtectedRoute>} />
             <Route path="/nous-recrutons" element={<NousRecrutons />} />
             <Route path="/gestion-demandes" element={<GestionDemandes />} />
               <Route path="/services" element={<ServicesPage />} />

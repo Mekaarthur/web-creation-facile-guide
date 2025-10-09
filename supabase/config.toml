@@ -127,3 +127,9 @@ verify_jwt = true  # Requires authentication for sending emails
 
 [functions.send-scheduled-emails]
 verify_jwt = false  # Called by cron job - uses service role key
+
+[functions.generate-mandate-pdf]
+verify_jwt = true  # Requires authentication
+
+[functions.intelligent-matching]
+verify_jwt = true  # Requires authentication

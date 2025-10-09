@@ -15,8 +15,12 @@ import {
   Phone,
   FileCheck,
   GraduationCap,
-  Shield
+  Shield,
+  Eye,
+  UserCheck
 } from 'lucide-react';
+import { IdentityVerificationPanel } from '@/components/admin/IdentityVerificationPanel';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 interface Provider {
   id: string;
@@ -26,6 +30,7 @@ interface Provider {
   mandat_facturation_accepte: boolean;
   created_at: string;
   user_id?: string;
+  is_verified?: boolean;
 }
 
 const ProviderOnboardingManager = () => {
@@ -41,7 +46,7 @@ const ProviderOnboardingManager = () => {
     try {
       const { data, error } = await supabase
         .from('providers')
-        .select('id, business_name, status, formation_completed, mandat_facturation_accepte, created_at, user_id')
+        .select('id, business_name, status, formation_completed, mandat_facturation_accepte, created_at, user_id, is_verified')
         .in('status', ['pending', 'documents_pending', 'training_pending', 'inactive'])
         .order('created_at', { ascending: false });
 
@@ -161,12 +166,14 @@ const ProviderOnboardingManager = () => {
         return providers.filter(p => p.status === 'active' && !p.mandat_facturation_accepte);
       case 'pending_training':
         return providers.filter(p => p.mandat_facturation_accepte && !p.formation_completed);
-      case 'ready_activation':
+      case 'pending_identity':
         return providers.filter(p => 
           p.mandat_facturation_accepte && 
           p.formation_completed && 
           p.status !== 'active'
         );
+      case 'activated':
+        return providers.filter(p => p.status === 'active' && p.is_verified);
       default:
         return providers;
     }
@@ -199,7 +206,7 @@ const ProviderOnboardingManager = () => {
       </Card>
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="pending_documents">
             Documents ({filterProviders('pending_documents').length})
           </TabsTrigger>
@@ -209,12 +216,15 @@ const ProviderOnboardingManager = () => {
           <TabsTrigger value="pending_training">
             Formation ({filterProviders('pending_training').length})
           </TabsTrigger>
+          <TabsTrigger value="pending_identity">
+            Identité ({filterProviders('ready_activation').length})
+          </TabsTrigger>
           <TabsTrigger value="ready_activation">
-            À activer ({filterProviders('ready_activation').length})
+            Activés ({filterProviders('activated').length})
           </TabsTrigger>
         </TabsList>
 
-        {['pending_documents', 'pending_mandate', 'pending_training', 'ready_activation'].map(tab => (
+        {['pending_documents', 'pending_mandate', 'pending_training', 'pending_identity', 'ready_activation'].map(tab => (
           <TabsContent key={tab} value={tab} className="space-y-4">
             {filterProviders(tab).length === 0 ? (
               <Card>
@@ -277,12 +287,27 @@ const ProviderOnboardingManager = () => {
                       <div className="flex gap-2">
                         {tab === 'pending_documents' && (
                           <>
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button size="sm" variant="outline">
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  Voir documents
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-3xl">
+                                <DialogHeader>
+                                  <DialogTitle>Documents de {provider.business_name}</DialogTitle>
+                                </DialogHeader>
+                                {/* Ici on pourrait afficher la liste des documents */}
+                                <p className="text-sm text-muted-foreground">Documents du prestataire</p>
+                              </DialogContent>
+                            </Dialog>
                             <Button
                               size="sm"
                               onClick={() => validateDocuments(provider.id)}
                             >
                               <FileCheck className="h-4 w-4 mr-2" />
-                              Valider documents
+                              Valider
                             </Button>
                             <Button
                               size="sm"
@@ -297,15 +322,32 @@ const ProviderOnboardingManager = () => {
                             </Button>
                           </>
                         )}
+                        {tab === 'pending_identity' && (
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button size="sm">
+                                <UserCheck className="h-4 w-4 mr-2" />
+                                Vérifier identité
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                              <DialogHeader>
+                                <DialogTitle>Vérification d'identité - {provider.business_name}</DialogTitle>
+                              </DialogHeader>
+                              <IdentityVerificationPanel
+                                providerId={provider.id}
+                                providerName={provider.business_name}
+                                providerEmail={provider.user_id}
+                                onVerified={loadProviders}
+                              />
+                            </DialogContent>
+                          </Dialog>
+                        )}
                         {tab === 'ready_activation' && (
-                          <Button
-                            size="sm"
-                            onClick={() => activateProvider(provider.id)}
-                            className="bg-green-600 hover:bg-green-700"
-                          >
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            Activer le prestataire
-                          </Button>
+                          <Badge variant="default" className="gap-1">
+                            <CheckCircle className="h-3 w-3" />
+                            Prestataire actif
+                          </Badge>
                         )}
                       </div>
                     </CardContent>

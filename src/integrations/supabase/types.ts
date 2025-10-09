@@ -2232,6 +2232,54 @@ export type Database = {
           },
         ]
       }
+      provider_identity_verifications: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          provider_id: string
+          verification_date: string
+          verification_method: string
+          verified: boolean
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          provider_id: string
+          verification_date?: string
+          verification_method: string
+          verified?: boolean
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          provider_id?: string
+          verification_date?: string
+          verification_method?: string
+          verified?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_identity_verifications_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_identity_verifications_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provider_invoices: {
         Row: {
           amount_brut: number
@@ -2631,6 +2679,8 @@ export type Database = {
           forfait_rate: number | null
           formation_completed: boolean | null
           formation_completed_at: string | null
+          formation_date: string | null
+          formation_score: number | null
           hourly_rate: number | null
           hourly_rate_override: number | null
           id: string
@@ -2647,6 +2697,7 @@ export type Database = {
           longitude: number | null
           mandat_facturation_accepte: boolean | null
           mandat_facturation_date: string | null
+          mandat_signature_data: string | null
           mandat_signature_date: string | null
           missions_accepted: number | null
           missions_completed: number | null
@@ -2680,6 +2731,8 @@ export type Database = {
           forfait_rate?: number | null
           formation_completed?: boolean | null
           formation_completed_at?: string | null
+          formation_date?: string | null
+          formation_score?: number | null
           hourly_rate?: number | null
           hourly_rate_override?: number | null
           id?: string
@@ -2696,6 +2749,7 @@ export type Database = {
           longitude?: number | null
           mandat_facturation_accepte?: boolean | null
           mandat_facturation_date?: string | null
+          mandat_signature_data?: string | null
           mandat_signature_date?: string | null
           missions_accepted?: number | null
           missions_completed?: number | null
@@ -2729,6 +2783,8 @@ export type Database = {
           forfait_rate?: number | null
           formation_completed?: boolean | null
           formation_completed_at?: string | null
+          formation_date?: string | null
+          formation_score?: number | null
           hourly_rate?: number | null
           hourly_rate_override?: number | null
           id?: string
@@ -2745,6 +2801,7 @@ export type Database = {
           longitude?: number | null
           mandat_facturation_accepte?: boolean | null
           mandat_facturation_date?: string | null
+          mandat_signature_data?: string | null
           mandat_signature_date?: string | null
           missions_accepted?: number | null
           missions_completed?: number | null
