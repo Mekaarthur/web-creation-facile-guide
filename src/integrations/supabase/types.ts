@@ -190,6 +190,8 @@ export type Database = {
           notes: string | null
           provider_id: string
           provider_notes: string | null
+          reminder_sent: string | null
+          review_request_sent: string | null
           service_id: string
           start_time: string
           started_at: string | null
@@ -220,6 +222,8 @@ export type Database = {
           notes?: string | null
           provider_id: string
           provider_notes?: string | null
+          reminder_sent?: string | null
+          review_request_sent?: string | null
           service_id: string
           start_time: string
           started_at?: string | null
@@ -250,6 +254,8 @@ export type Database = {
           notes?: string | null
           provider_id?: string
           provider_notes?: string | null
+          reminder_sent?: string | null
+          review_request_sent?: string | null
           service_id?: string
           start_time?: string
           started_at?: string | null

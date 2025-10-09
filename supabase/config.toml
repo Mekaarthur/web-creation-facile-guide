@@ -124,3 +124,6 @@ verify_jwt = false  # Public endpoint for rate limiting
 
 [functions.send-transactional-email]
 verify_jwt = true  # Requires authentication for sending emails
+
+[functions.send-scheduled-emails]
+verify_jwt = false  # Called by cron job - uses service role key
