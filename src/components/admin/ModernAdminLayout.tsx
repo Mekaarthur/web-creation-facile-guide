@@ -35,6 +35,7 @@ import {
   FileText,
   PieChart
 } from "lucide-react";
+import { Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigationGroups = [
@@ -155,6 +156,17 @@ const navigationGroups = [
         title: "Outils", 
         href: "/admin/outils", 
         icon: Wrench,
+        badge: null
+      }
+    ]
+  },
+  {
+    label: "Tests & Systèmes",
+    items: [
+      { 
+        title: "Tests Emails", 
+        href: "/admin/tests-emails", 
+        icon: Mail,
         badge: null
       }
     ]
