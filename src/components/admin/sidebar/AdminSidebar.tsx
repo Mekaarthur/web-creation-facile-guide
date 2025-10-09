@@ -18,7 +18,8 @@ import {
   Activity,
   PieChart,
   Mail,
-  CheckSquare
+  CheckSquare,
+  Zap
 } from "lucide-react"
 
 import {
@@ -50,6 +51,7 @@ const menuItems = [
       { title: "Clients", url: "/modern-admin/clients", icon: Users, badge: "248" },
       { title: "Prestataires", url: "/modern-admin/providers", icon: UserCheck, badge: "127" },
       { title: "Onboarding", url: "/modern-admin/onboarding", icon: CheckSquare, badge: "8" },
+      { title: "Matching IA", url: "/modern-admin/matching", icon: Zap, badge: "5" },
       { title: "Candidatures", url: "/modern-admin/applications", icon: FileText, badge: "12" },
       { title: "Binômes", url: "/modern-admin/binomes", icon: Star },
     ]
