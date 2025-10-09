@@ -16,7 +16,10 @@ type EmailTemplate =
   | 'mission_started'
   | 'mission_completed'
   | 'cancellation'
-  | 'refund_processed';
+  | 'refund_processed'
+  | 'account_created'
+  | 'password_setup'
+  | 'account_deleted';
 
 interface TestResult {
   id: string;
@@ -34,7 +37,10 @@ const EMAIL_TEMPLATES: { value: EmailTemplate; label: string; description: strin
   { value: 'mission_started', label: '▶️ Mission commencée', description: 'Email envoyé au check-in du prestataire' },
   { value: 'mission_completed', label: '✔️ Mission terminée', description: 'Email envoyé au check-out + demande d\'avis' },
   { value: 'cancellation', label: '❌ Annulation', description: 'Email d\'annulation avec conditions de remboursement' },
-  { value: 'refund_processed', label: '💰 Remboursement', description: 'Confirmation de remboursement' }
+  { value: 'refund_processed', label: '💰 Remboursement', description: 'Confirmation de remboursement' },
+  { value: 'account_created', label: '🎉 Compte créé', description: 'Bienvenue + lien de connexion' },
+  { value: 'password_setup', label: '🔐 Création mot de passe', description: 'Lien pour créer/configurer le mot de passe' },
+  { value: 'account_deleted', label: '🗑️ Suppression de compte', description: 'Confirmation de suppression' },
 ];
 
 const EmailTestingDashboard = () => {
@@ -80,8 +86,25 @@ const EmailTestingDashboard = () => {
         return {
           ...baseData,
           refundAmount: 75.00,
+          originalAmount: 75.00,
+          refundReason: 'Annulation de la prestation',
           refundMethod: 'Carte bancaire',
           refundDate: new Date().toLocaleDateString('fr-FR')
+        };
+      case 'account_created':
+        return {
+          clientName: 'Test Client',
+          appUrl: 'https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com'
+        };
+      case 'password_setup':
+        return {
+          clientName: 'Test Client',
+          setupLink: 'https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/update-password'
+        };
+      case 'account_deleted':
+        return {
+          clientName: 'Test Client',
+          deletionDate: new Date().toLocaleDateString('fr-FR')
         };
       default:
         return baseData;

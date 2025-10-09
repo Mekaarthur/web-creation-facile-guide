@@ -12,6 +12,9 @@ import { MissionStartedEmail } from './_templates/mission-started.tsx';
 import { MissionCompletedEmail } from './_templates/mission-completed.tsx';
 import { CancellationEmail } from './_templates/cancellation.tsx';
 import { RefundProcessedEmail } from './_templates/refund-processed.tsx';
+import { AccountCreatedEmail } from './_templates/account-created.tsx';
+import { PasswordSetupEmail } from './_templates/password-setup.tsx';
+import { AccountDeletedEmail } from './_templates/account-deleted.tsx';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const supabase = createClient(
@@ -38,7 +41,10 @@ interface EmailRequest {
     | 'provider_mission_confirmed'
     | 'provider_reminder'
     | 'provider_payment'
-    | 'invoice_available';
+    | 'invoice_available'
+    | 'account_created'
+    | 'password_setup'
+    | 'account_deleted';
   data: any;
   recipientEmail: string;
   recipientName?: string;
@@ -53,6 +59,9 @@ const getEmailTemplate = async (type: string, data: any) => {
     'mission_completed': MissionCompletedEmail,
     'cancellation': CancellationEmail,
     'refund_processed': RefundProcessedEmail,
+    'account_created': AccountCreatedEmail,
+    'password_setup': PasswordSetupEmail,
+    'account_deleted': AccountDeletedEmail,
   };
 
   const TemplateComponent = templates[type];
@@ -78,6 +87,9 @@ const getEmailSubject = (type: string): string => {
     'provider_reminder': '⏰ Rappel : Mission demain',
     'provider_payment': '💵 Paiement effectué',
     'invoice_available': '📄 Facture disponible',
+    'account_created': '🎉 Bienvenue chez Bikawo',
+    'password_setup': '🔐 Créez votre mot de passe',
+    'account_deleted': '🗑️ Confirmation de suppression de compte',
   };
 
   return subjects[type] || 'Notification Bikawo';
