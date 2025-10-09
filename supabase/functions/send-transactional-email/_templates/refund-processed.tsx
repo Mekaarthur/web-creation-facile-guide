@@ -13,22 +13,23 @@ import {
 import * as React from 'npm:react@18.3.1';
 
 interface RefundProcessedEmailProps {
-  clientName: string;
-  serviceName: string;
-  refundAmount: number;
-  originalAmount: number;
-  refundReason: string;
+  clientName?: string;
+  serviceName?: string;
+  refundAmount?: number;
+  originalAmount?: number;
+  refundReason?: string;
 }
 
 export const RefundProcessedEmail = ({
-  clientName,
-  serviceName,
+  clientName = 'Client',
+  serviceName = 'Service',
   refundAmount = 0,
   originalAmount = 0,
-  refundReason,
+  refundReason = 'Remboursement',
 }: RefundProcessedEmailProps) => {
-  const refundAmountValue = refundAmount || 0;
-  const originalAmountValue = originalAmount || 0;
+  // Conversion robuste en nombre
+  const refundAmountValue = Number(refundAmount) || 0;
+  const originalAmountValue = Number(originalAmount) || 0;
   
   return (
   <Html>
