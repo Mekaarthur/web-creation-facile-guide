@@ -84,6 +84,12 @@ const menuItems = [
       { title: "Paramètres", url: "/modern-admin/settings", icon: Settings },
       { title: "Rapports", url: "/modern-admin/reports-data", icon: PieChart },
     ]
+  },
+  {
+    title: "Tests & Systèmes",
+    items: [
+      { title: "Tests Emails", url: "/admin/tests-emails", icon: Mail },
+    ]
   }
 ]
 
