@@ -35,18 +35,20 @@
 
 ---
 
-### 🔄 SEMAINE 2 (À Commencer)
+### 🔄 SEMAINE 2 (En cours - 40% complété)
 
-#### Jour 8-10: Complétion Features
+#### Jour 8-10: Complétion Features ⏳
+- [x] Système annulations/remboursements
+- [x] Interface admin remboursements
 - [ ] Onboarding prestataire complet
   - Validation documents auto
   - Signature mandat facturation
   - Formation obligatoire
   - Vérification identité
 - [ ] Système réclamations client
-- [ ] Génération PDF factures auto
-- [ ] Attestations crédit impôt/CAF
-- [ ] Interface admin urgences
+- [x] Génération PDF factures (déjà existant)
+- [x] Attestations crédit impôt/CAF (déjà existant)
+- [x] Interface admin urgences (compensation automatique)
 
 #### Jour 11-12: Matching & Attribution  
 - [ ] Tests algorithme matching
@@ -306,33 +308,33 @@
 ## 📧 EMAILS TRANSACTIONNELS REQUIS
 
 ### Client (10 emails)
-1. ✅ Confirmation inscription
-2. ⏳ Confirmation réservation
-3. ⏳ Prestataire assigné
-4. ⏳ Rappel 24h avant
-5. ⏳ Mission démarrée
-6. ⏳ Mission terminée
-7. ⏳ Demande avis
-8. ⏳ Facture disponible
-9. ⏳ Confirmation annulation
-10. ⏳ Remboursement effectué
+1. ✅ Confirmation inscription (existant)
+2. ✅ Confirmation réservation
+3. ✅ Prestataire assigné
+4. ✅ Rappel 24h avant
+5. ✅ Mission démarrée
+6. ✅ Mission terminée
+7. ✅ Demande avis (inclus dans mission terminée)
+8. ✅ Facture disponible (existant)
+9. ✅ Confirmation annulation
+10. ✅ Remboursement effectué
 
 ### Prestataire (8 emails)
-1. ⏳ Candidature reçue
+1. ✅ Candidature reçue (existant)
 2. ⏳ Candidature validée
-3. ⏳ Nouvelle mission disponible
-4. ⏳ Mission confirmée
+3. ✅ Nouvelle mission disponible (existant via notifications)
+4. ✅ Mission confirmée (via triggers existants)
 5. ⏳ Rappel mission demain
-6. ⏳ Fiche rémunération disponible
+6. ✅ Fiche rémunération disponible (existant)
 7. ⏳ Paiement effectué
 8. ⏳ Nouvel avis reçu
 
 ### Admin (5 emails)
-1. ⏳ Nouvelle candidature
-2. ⏳ Alerte urgence
+1. ✅ Nouvelle candidature (existant)
+2. ✅ Alerte urgence (existant via notifications)
 3. ⏳ Réclamation client
 4. ⏳ Rapport journalier
-5. ⏳ Alerte sécurité
+5. ✅ Alerte sécurité (existant via security_audit_log)
 
 ---
 
