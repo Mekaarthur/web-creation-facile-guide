@@ -848,6 +848,85 @@ export type Database = {
         }
         Relationships: []
       }
+      complaints: {
+        Row: {
+          assigned_to: string | null
+          attachments: Json | null
+          booking_id: string | null
+          client_id: string
+          complaint_type: string
+          created_at: string
+          description: string
+          id: string
+          priority: string
+          provider_id: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          response_time_hours: number | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          attachments?: Json | null
+          booking_id?: string | null
+          client_id: string
+          complaint_type: string
+          created_at?: string
+          description: string
+          id?: string
+          priority?: string
+          provider_id?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          response_time_hours?: number | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          attachments?: Json | null
+          booking_id?: string | null
+          client_id?: string
+          complaint_type?: string
+          created_at?: string
+          description?: string
+          id?: string
+          priority?: string
+          provider_id?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          response_time_hours?: number | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaints_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "complaints_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "complaints_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_reports: {
         Row: {
           additional_details: string | null
@@ -3337,6 +3416,20 @@ export type Database = {
       }
     }
     Views: {
+      complaint_statistics: {
+        Row: {
+          avg_response_time_hours: number | null
+          complaints_last_30_days: number | null
+          complaints_last_7_days: number | null
+          in_progress_complaints: number | null
+          new_complaints: number | null
+          rejected_complaints: number | null
+          resolved_complaints: number | null
+          total_complaints: number | null
+          urgent_complaints: number | null
+        }
+        Relationships: []
+      }
       conversations_with_details: {
         Row: {
           admin_id: string | null
