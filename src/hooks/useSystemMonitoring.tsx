@@ -55,22 +55,6 @@ export const useDashboardStats = () => {
   });
 };
 
-export const useMonitoringMetrics = () => {
-  return useQuery({
-    queryKey: ['monitoring-metrics'],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('system-monitoring', {
-        body: { action: 'checkSystemHealth' }
-      });
-      
-      if (error) throw error;
-      return data;
-    },
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    refetchInterval: 5 * 60 * 1000, // Rafraîchir toutes les 5 minutes
-  });
-};
-
 export const useAbandonedCartsDetection = () => {
   return useQuery({
     queryKey: ['abandoned-carts-detection'],

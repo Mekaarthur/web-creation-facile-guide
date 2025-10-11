@@ -3,15 +3,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { AlertTriangle, Mail, ShoppingCart, UserX, Activity, RefreshCw } from "lucide-react";
+import { AlertTriangle, Mail, ShoppingCart, UserX, Activity, RefreshCw, TrendingUp, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DashboardSkeleton } from "@/components/ui/skeleton";
+import { useSystemAlerts, useDashboardStats, resolveAlert } from "@/hooks/useSystemMonitoring";
 
 export const MonitoringDashboard = () => {
   const { toast } = useToast();
 
+  // Utiliser les hooks existants
+  const { data: systemAlerts, isLoading: loadingAlerts, refetch: refetchAlerts } = useSystemAlerts();
+  const { data: dashboardStats, isLoading: loadingStats } = useDashboardStats();
+
   // Emails échoués
-  const { data: failedEmails, isLoading: loadingEmails } = useQuery({
+  const { data: failedEmails, isLoading: loadingEmails, refetch: refetchEmails } = useQuery({
     queryKey: ['failed-emails'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -25,7 +30,7 @@ export const MonitoringDashboard = () => {
       if (error) throw error;
       return data || [];
     },
-    refetchInterval: 60000, // Refresh every minute
+    refetchInterval: 60000,
   });
 
   // Paniers abandonnés
@@ -46,17 +51,6 @@ export const MonitoringDashboard = () => {
     refetchInterval: 60000,
   });
 
-  // Prestataires inactifs - Fonctionnalité désactivée (colonne last_active_at non disponible)
-  const inactiveProviders: any[] = [];
-  const loadingProviders = false;
-
-  // Stats cache
-  const cacheStats = {
-    hitRate: 85,
-    size: 42,
-    maxSize: 50
-  };
-
   const handleRetryEmails = async () => {
     try {
       const { data, error } = await supabase.functions.invoke('retry-failed-emails', {
@@ -69,6 +63,9 @@ export const MonitoringDashboard = () => {
         title: "Retry lancé",
         description: `${data.processed || 0} emails en cours de traitement`,
       });
+      
+      // Rafraîchir les données
+      refetchEmails();
     } catch (error) {
       toast({
         title: "Erreur",
@@ -78,7 +75,24 @@ export const MonitoringDashboard = () => {
     }
   };
 
-  if (loadingEmails || loadingCarts || loadingProviders) {
+  const handleResolveAlert = async (alertId: string) => {
+    try {
+      await resolveAlert(alertId);
+      toast({
+        title: "Alerte résolue",
+        description: "L'alerte a été marquée comme résolue",
+      });
+      refetchAlerts();
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de résoudre l'alerte",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (loadingEmails || loadingCarts || loadingAlerts || loadingStats) {
     return <DashboardSkeleton />;
   }
 
@@ -89,8 +103,34 @@ export const MonitoringDashboard = () => {
         <p className="text-muted-foreground">Vue d'ensemble de la santé de la plateforme</p>
       </div>
 
-      {/* Stats globales */}
+      {/* Stats globales - Vraies données */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Réservations 30j</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{dashboardStats?.bookings_last_30d || 0}</div>
+            <p className="text-xs text-muted-foreground">
+              {dashboardStats?.completed_bookings_30d || 0} complétées
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Revenu 30j</CardTitle>
+            <Activity className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{dashboardStats?.revenue_30d?.toFixed(0) || 0}€</div>
+            <p className="text-xs text-muted-foreground">
+              Note moy. {dashboardStats?.avg_rating_30d?.toFixed(1) || 0}/5
+            </p>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Emails échoués</CardTitle>
@@ -106,43 +146,69 @@ export const MonitoringDashboard = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Paniers abandonnés</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Réclamations</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{abandonedCarts?.length || 0}</div>
+            <div className="text-2xl font-bold">{dashboardStats?.open_complaints || 0}</div>
             <p className="text-xs text-muted-foreground">
-              Dernières 24h
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Prestataires inactifs</CardTitle>
-            <UserX className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">N/A</div>
-            <p className="text-xs text-muted-foreground">
-              Fonctionnalité à venir
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Cache Hit Rate</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{cacheStats.hitRate}%</div>
-            <p className="text-xs text-muted-foreground">
-              {cacheStats.size}/{cacheStats.maxSize} entrées
+              En cours
             </p>
           </CardContent>
         </Card>
       </div>
+
+      {/* Alertes système */}
+      {systemAlerts && systemAlerts.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Alertes système</CardTitle>
+            <CardDescription>
+              Alertes non résolues détectées automatiquement
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {systemAlerts.map((alert) => (
+                <div key={alert.id} className="flex items-center justify-between p-3 border rounded">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">{alert.title}</p>
+                      <Badge 
+                        variant={
+                          alert.severity === 'critical' ? 'destructive' :
+                          alert.severity === 'high' ? 'destructive' :
+                          alert.severity === 'medium' ? 'default' :
+                          'secondary'
+                        }
+                      >
+                        {alert.severity}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{alert.message}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(alert.created_at).toLocaleDateString('fr-FR', { 
+                        day: '2-digit', 
+                        month: '2-digit', 
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleResolveAlert(alert.id)}
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Emails échoués */}
       <Card>
@@ -217,23 +283,48 @@ export const MonitoringDashboard = () => {
         </CardContent>
       </Card>
 
-      {/* Prestataires inactifs */}
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            <AlertTriangle className="h-5 w-5 inline mr-2 text-yellow-500" />
-            Prestataires inactifs
-          </CardTitle>
-          <CardDescription>
-            Fonctionnalité à venir - nécessite ajout de la colonne last_active_at
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-center text-muted-foreground py-8">
-            Cette fonctionnalité sera disponible prochainement
-          </p>
-        </CardContent>
-      </Card>
+      {/* Stats supplémentaires */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Prestataires actifs</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{dashboardStats?.active_providers || 0}</div>
+            <p className="text-xs text-muted-foreground">
+              Vérifiés et disponibles
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Paniers actifs (7j)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{dashboardStats?.active_carts_7d || 0}</div>
+            <p className="text-xs text-muted-foreground">
+              {abandonedCarts?.length || 0} abandonnés
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Taux de conversion</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {dashboardStats?.bookings_last_30d && dashboardStats?.completed_bookings_30d 
+                ? ((dashboardStats.completed_bookings_30d / dashboardStats.bookings_last_30d) * 100).toFixed(1)
+                : 0}%
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Réservations complétées
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
