@@ -3473,43 +3473,43 @@ export type Database = {
       }
       system_alerts: {
         Row: {
-          acknowledged_at: string | null
-          acknowledged_by: string | null
           alert_type: string
-          component: string | null
-          created_at: string
+          created_at: string | null
           id: string
           message: string
           metadata: Json | null
+          resolved: boolean | null
           resolved_at: string | null
+          resolved_by: string | null
           severity: string
-          status: string
+          title: string
+          updated_at: string | null
         }
         Insert: {
-          acknowledged_at?: string | null
-          acknowledged_by?: string | null
           alert_type: string
-          component?: string | null
-          created_at?: string
+          created_at?: string | null
           id?: string
           message: string
           metadata?: Json | null
+          resolved?: boolean | null
           resolved_at?: string | null
+          resolved_by?: string | null
           severity: string
-          status?: string
+          title: string
+          updated_at?: string | null
         }
         Update: {
-          acknowledged_at?: string | null
-          acknowledged_by?: string | null
           alert_type?: string
-          component?: string | null
-          created_at?: string
+          created_at?: string | null
           id?: string
           message?: string
           metadata?: Json | null
+          resolved?: boolean | null
           resolved_at?: string | null
+          resolved_by?: string | null
           severity?: string
-          status?: string
+          title?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -3602,6 +3602,18 @@ export type Database = {
       }
     }
     Views: {
+      admin_dashboard_stats: {
+        Row: {
+          active_carts_7d: number | null
+          active_providers: number | null
+          avg_rating_30d: number | null
+          bookings_last_30d: number | null
+          completed_bookings_30d: number | null
+          open_complaints: number | null
+          revenue_30d: number | null
+        }
+        Relationships: []
+      }
       complaint_statistics: {
         Row: {
           avg_response_time_hours: number | null
@@ -3839,6 +3851,18 @@ export type Database = {
       current_user_email: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      detect_abandoned_carts: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      detect_inactive_providers: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      detect_payment_failures: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       dissolve_binome: {
         Args: { p_binome_id: string; p_reason: string }
