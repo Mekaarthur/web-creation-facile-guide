@@ -100,6 +100,7 @@ import NotFound from "./pages/NotFound";
 import AuditReport from "./components/AuditReport";
 
 import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedProviderRoute from "./components/ProtectedProviderRoute";
 import AdminRoute from "./components/AdminRoute";
 import Communications from "./pages/admin/Communications";
 import Urgences from "./pages/admin/Urgences";
@@ -126,8 +127,8 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/update-password" element={<UpdatePassword />} />
             <Route path="/espace-personnel" element={<ProtectedRoute><EspacePersonnel /></ProtectedRoute>} />
-            <Route path="/espace-prestataire" element={<ProtectedRoute><EspacePrestataire /></ProtectedRoute>} />
-            <Route path="/provider-onboarding" element={<ProtectedRoute><ProviderOnboarding /></ProtectedRoute>} />
+            <Route path="/espace-prestataire" element={<ProtectedProviderRoute><EspacePrestataire /></ProtectedProviderRoute>} />
+            <Route path="/provider-onboarding" element={<ProtectedProviderRoute><ProviderOnboarding /></ProtectedProviderRoute>} />
             <Route path="/nous-recrutons" element={<NousRecrutons />} />
             <Route path="/gestion-demandes" element={<GestionDemandes />} />
               <Route path="/services" element={<ServicesPage />} />

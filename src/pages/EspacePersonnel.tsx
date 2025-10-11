@@ -18,7 +18,8 @@ import {
   Download,
   LayoutDashboard,
   Receipt,
-  UserCheck
+  UserCheck,
+  ShoppingCart
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -31,16 +32,20 @@ import { RewardsSection } from '@/components/RewardsSection';
 import ReferralProgram from '@/components/ReferralProgram';
 import ProfileUpdateForm from '@/components/ProfileUpdateForm';
 import AttestationsManager from '@/components/AttestationsManager';
+import BikawoCart from '@/components/BikawoCart';
+import { useTranslation } from 'react-i18next';
 
 const EspacePersonnel = () => {
   const { user, loading } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [selectedTab, setSelectedTab] = useState(user ? "dashboard" : "connexion");
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
 
   // Rediriger vers connexion si pas authentifié et tentative d'accès à un onglet protégé
   useEffect(() => {
-    const protectedTabs = ["dashboard", "rendez-vous", "factures", "parrainage", "profil", "paiement", "attestations"];
+    const protectedTabs = ["dashboard", "rendez-vous", "factures", "parrainage", "profil", "paiement", "attestations", "panier"];
     const urlParams = new URLSearchParams(window.location.search);
     const tabFromUrl = urlParams.get('tab') || selectedTab;
     
@@ -65,63 +70,6 @@ const EspacePersonnel = () => {
     );
   }
 
-  const reservations = [
-    {
-      id: "RES001",
-      service: "Assist'Kids - Garde ponctuelle",
-      date: "2024-01-15",
-      heure: "14:00 - 18:00",
-      statut: "Confirmé",
-      prestataire: "Marie D.",
-      prix: "120€"
-    },
-    {
-      id: "RES002",
-      service: "Assist'Maison - Courses express",
-      date: "2024-01-18",
-      heure: "16:00 - 17:30",
-      statut: "En cours",
-      prestataire: "Paul M.",
-      prix: "45€"
-    },
-    {
-      id: "RES003",
-      service: "Assist'Travel - Transfert aéroport",
-      date: "2024-01-22",
-      heure: "06:00 - 08:00",
-      statut: "À venir",
-      prestataire: "Lucas R.",
-      prix: "80€"
-    }
-  ];
-
-  const factures = [
-    {
-      id: "FAC001",
-      date: "2024-01-10",
-      montant: "165€",
-      statut: "Payée",
-      services: "Assist'Kids (2 prestations)"
-    },
-    {
-      id: "FAC002",
-      date: "2024-01-05",
-      montant: "280€",
-      statut: "Payée",
-      services: "Assist'Maison + Assist'Vie"
-    }
-  ];
-
-  const getStatusColor = (statut: string) => {
-    switch (statut) {
-      case "Confirmé": return "bg-accent text-accent-foreground";
-      case "En cours": return "bg-gradient-primary text-white";
-      case "À venir": return "bg-secondary text-secondary-foreground";
-      case "Payée": return "bg-accent text-accent-foreground";
-      default: return "bg-muted text-muted-foreground";
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -134,10 +82,10 @@ const EspacePersonnel = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-3xl blur-3xl transform -rotate-1"></div>
               <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border">
                 <h1 className="text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-4">
-                  Mon Espace Client
+                  {t('personalSpace.title')}
                 </h1>
                 <p className="text-muted-foreground text-xl">
-                  {user ? `Bienvenue ${user.email?.split('@')[0]} chez Bikawo` : "Connectez-vous pour accéder à votre espace personnel"}
+                  {user ? t('personalSpace.welcome', { name: user.email?.split('@')[0] }) : t('personalSpace.pleaseLogin')}
                 </p>
               </div>
             </div>
@@ -161,14 +109,14 @@ const EspacePersonnel = () => {
             }
             window.history.replaceState({}, '', newUrl);
           }} className="w-full">
-            <TabsList className={`w-full mb-12 grid gap-2 bg-white/80 backdrop-blur-sm p-2 shadow-lg rounded-xl border-0 ${user ? 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-7' : 'grid-cols-1'}`}>
+            <TabsList className={`w-full mb-12 grid gap-2 bg-white/80 backdrop-blur-sm p-2 shadow-lg rounded-xl border-0 ${user ? 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-8' : 'grid-cols-1'}`}>
               {!user && (
                 <TabsTrigger 
                   value="connexion" 
                   className="flex items-center gap-2 min-h-12 py-3 px-4 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
                 >
                   <Lock className="w-4 h-4" />
-                  Se connecter
+                  {t('personalSpace.login')}
                 </TabsTrigger>
               )}
               {user && (
@@ -178,49 +126,56 @@ const EspacePersonnel = () => {
                     className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm py-3 px-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
                   >
                     <LayoutDashboard className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate font-medium">Accueil</span>
+                    <span className="truncate font-medium">{t('personalSpace.dashboard')}</span>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="rendez-vous" 
                     className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm py-3 px-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
                   >
                     <Calendar className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate font-medium">Rendez-vous</span>
+                    <span className="truncate font-medium">{t('personalSpace.appointments')}</span>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="factures" 
                     className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm py-3 px-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
                   >
                     <FileText className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate font-medium">Factures</span>
+                    <span className="truncate font-medium">{t('personalSpace.invoices')}</span>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="parrainage" 
                     className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm py-3 px-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
                   >
                     <Users className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate font-medium">Parrainage</span>
+                    <span className="truncate font-medium">{t('personalSpace.referral')}</span>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="profil" 
                     className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm py-3 px-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
                   >
                     <User className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate font-medium">Profil</span>
+                    <span className="truncate font-medium">{t('personalSpace.profile')}</span>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="paiement" 
                     className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm py-3 px-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
                   >
                     <CreditCard className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate font-medium">Paiement</span>
+                    <span className="truncate font-medium">{t('personalSpace.payment')}</span>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="attestations" 
                     className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm py-3 px-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
                   >
                     <Receipt className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate font-medium">Attestations</span>
+                    <span className="truncate font-medium">{t('personalSpace.attestations')}</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="panier" 
+                    className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm py-3 px-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+                  >
+                    <ShoppingCart className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate font-medium">{t('personalSpace.cart')}</span>
                   </TabsTrigger>
                 </>
               )}
@@ -236,21 +191,21 @@ const EspacePersonnel = () => {
                     <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
                       <User className="w-8 h-8 text-accent-foreground" />
                     </div>
-                    <CardTitle className="text-2xl">Bienvenue !</CardTitle>
+                    <CardTitle className="text-2xl">{t('personalSpace.welcomeConnected')}</CardTitle>
                     <p className="text-muted-foreground">
-                      Vous êtes connecté à votre espace client
+                      {t('personalSpace.youAreConnected')}
                     </p>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <p className="text-center">
-                      Email : <span className="font-medium">{user.email}</span>
+                      {t('personalSpace.email')} : <span className="font-medium">{user.email}</span>
                     </p>
                     <Button 
                       variant="outline" 
                       className="w-full"
                       onClick={() => setSelectedTab("dashboard")}
                     >
-                      Accéder à mon tableau de bord
+                      {t('personalSpace.accessDashboard')}
                     </Button>
                   </CardContent>
                 </Card>
@@ -268,11 +223,28 @@ const EspacePersonnel = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-primary" />
-                    Mes Rendez-vous à Venir
+                    {t('personalSpace.upcomingAppointments')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <SmartBookingsList userType="client" />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Panier */}
+            <TabsContent value="panier" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <ShoppingCart className="w-5 h-5 text-primary" />
+                    {t('personalSpace.cart')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Button onClick={() => setIsCartOpen(true)} className="w-full">
+                    Ouvrir mon panier
+                  </Button>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -309,6 +281,7 @@ const EspacePersonnel = () => {
       </div>
 
       <Footer />
+      <BikawoCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </div>
   );
 };
