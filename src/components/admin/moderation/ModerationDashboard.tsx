@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { AlertTriangle, CheckCircle, XCircle, Eye, Flag } from "lucide-react";
+import { AlertTriangle, CheckCircle, XCircle, Eye, Flag, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 
 interface ContentReport {
@@ -27,14 +27,35 @@ interface Review {
   created_at: string;
 }
 
+interface Complaint {
+  id: string;
+  client_id: string;
+  provider_id: string | null;
+  booking_id: string | null;
+  complaint_type: string;
+  title: string;
+  description: string;
+  status: string;
+  priority: string;
+  assigned_to: string | null;
+  resolution_notes: string | null;
+  created_at: string;
+  resolved_at: string | null;
+  response_time_hours: number | null;
+  client: { first_name: string; last_name: string };
+  provider: { business_name: string } | null;
+}
+
 export const ModerationDashboard = () => {
   const [reports, setReports] = useState<ContentReport[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [stats, setStats] = useState({
     openReports: 0,
     pendingReviews: 0,
     suspendedUsers: 0,
-    weeklyActions: 0
+    weeklyActions: 0,
+    openComplaints: 0
   });
   const [loading, setLoading] = useState(true);
 
@@ -53,7 +74,8 @@ export const ModerationDashboard = () => {
           openReports: stats.open_reports || 0,
           pendingReviews: stats.pending_reviews || 0,
           suspendedUsers: stats.suspended_users || 0,
-          weeklyActions: stats.weekly_actions || 0
+          weeklyActions: stats.weekly_actions || 0,
+          openComplaints: 0 // Will be updated after loading complaints
         });
       }
 
@@ -96,6 +118,38 @@ export const ModerationDashboard = () => {
       );
 
       setReviews(enrichedReviews);
+
+      // Charger les réclamations
+      const { data: complaintsData } = await supabase
+        .from('complaints')
+        .select('*')
+        .in('status', ['new', 'in_progress'])
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      // Enrichir les réclamations
+      const enrichedComplaints = await Promise.all(
+        (complaintsData || []).map(async (complaint) => {
+          const [clientResult, providerResult] = await Promise.all([
+            supabase.from('profiles').select('first_name, last_name').eq('user_id', complaint.client_id).single(),
+            complaint.provider_id 
+              ? supabase.from('providers').select('business_name').eq('id', complaint.provider_id).single()
+              : Promise.resolve({ data: null })
+          ]);
+          
+          return {
+            ...complaint,
+            client: clientResult.data || { first_name: '', last_name: '' },
+            provider: providerResult.data
+          };
+        })
+      );
+
+      setComplaints(enrichedComplaints);
+
+      // Compter les réclamations ouvertes pour les stats
+      const openComplaintsCount = (complaintsData || []).length;
+      setStats(prev => ({ ...prev, openComplaints: openComplaintsCount }));
     } catch (error: any) {
       console.error('Erreur chargement modération:', error);
       toast.error('Erreur de chargement');
@@ -172,6 +226,48 @@ export const ModerationDashboard = () => {
     }
   };
 
+  const handleResolveComplaint = async (complaintId: string, notes: string) => {
+    try {
+      const { error } = await supabase
+        .from('complaints')
+        .update({ 
+          status: 'resolved',
+          resolution_notes: notes,
+          resolved_at: new Date().toISOString()
+        })
+        .eq('id', complaintId);
+
+      if (error) throw error;
+
+      toast.success('Réclamation résolue');
+      loadModerationData();
+    } catch (error: any) {
+      console.error('Erreur résolution réclamation:', error);
+      toast.error('Erreur de résolution');
+    }
+  };
+
+  const handleRejectComplaint = async (complaintId: string, notes: string) => {
+    try {
+      const { error } = await supabase
+        .from('complaints')
+        .update({ 
+          status: 'rejected',
+          resolution_notes: notes,
+          resolved_at: new Date().toISOString()
+        })
+        .eq('id', complaintId);
+
+      if (error) throw error;
+
+      toast.success('Réclamation rejetée');
+      loadModerationData();
+    } catch (error: any) {
+      console.error('Erreur rejet réclamation:', error);
+      toast.error('Erreur de rejet');
+    }
+  };
+
   if (loading) {
     return <div className="p-8">Chargement...</div>;
   }
@@ -186,7 +282,7 @@ export const ModerationDashboard = () => {
       </div>
 
       {/* Statistiques */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-5">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Signalements Ouverts</CardTitle>
@@ -215,6 +311,19 @@ export const ModerationDashboard = () => {
 
         <Card>
           <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Réclamations Ouvertes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.openComplaints}</div>
+            <Badge variant="destructive" className="mt-2">
+              <MessageSquare className="w-3 h-3 mr-1" />
+              Clients
+            </Badge>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Utilisateurs Suspendus</CardTitle>
           </CardHeader>
           <CardContent>
@@ -237,6 +346,10 @@ export const ModerationDashboard = () => {
           <TabsTrigger value="reviews">
             <Eye className="w-4 h-4 mr-2" />
             Avis à modérer ({reviews.length})
+          </TabsTrigger>
+          <TabsTrigger value="complaints">
+            <MessageSquare className="w-4 h-4 mr-2" />
+            Réclamations ({complaints.length})
           </TabsTrigger>
           <TabsTrigger value="reports">
             <Flag className="w-4 h-4 mr-2" />
@@ -296,6 +409,93 @@ export const ModerationDashboard = () => {
                           size="sm"
                           variant="destructive"
                           onClick={() => handleRejectReview(review.id)}
+                        >
+                          <XCircle className="w-4 h-4 mr-1" />
+                          Rejeter
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </TabsContent>
+
+        <TabsContent value="complaints" className="space-y-4">
+          {complaints.length === 0 ? (
+            <Card>
+              <CardContent className="pt-6 text-center text-muted-foreground">
+                Aucune réclamation active
+              </CardContent>
+            </Card>
+          ) : (
+            complaints.map((complaint) => (
+              <Card key={complaint.id}>
+                <CardContent className="pt-6">
+                  <div className="space-y-4">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-2 flex-1">
+                        <div className="flex items-center gap-2">
+                          <Badge variant={
+                            complaint.priority === 'urgent' ? 'destructive' :
+                            complaint.priority === 'high' ? 'destructive' :
+                            'secondary'
+                          }>
+                            {complaint.priority}
+                          </Badge>
+                          <Badge variant="outline">
+                            {complaint.complaint_type}
+                          </Badge>
+                          <Badge variant={
+                            complaint.status === 'new' ? 'destructive' : 'secondary'
+                          }>
+                            {complaint.status === 'new' ? 'Nouveau' : 'En cours'}
+                          </Badge>
+                        </div>
+                        
+                        <h3 className="font-semibold text-lg">{complaint.title}</h3>
+                        
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="font-medium">
+                            {complaint.client.first_name} {complaint.client.last_name}
+                          </span>
+                          {complaint.provider && (
+                            <>
+                              <span className="text-muted-foreground">→</span>
+                              <span className="text-muted-foreground">
+                                {complaint.provider.business_name}
+                              </span>
+                            </>
+                          )}
+                        </div>
+
+                        <p className="text-sm">{complaint.description}</p>
+                        
+                        <p className="text-xs text-muted-foreground">
+                          Créée le {new Date(complaint.created_at).toLocaleString('fr-FR')}
+                        </p>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => {
+                            const notes = window.prompt('Notes de résolution:');
+                            if (notes) handleResolveComplaint(complaint.id, notes);
+                          }}
+                        >
+                          <CheckCircle className="w-4 h-4 mr-1" />
+                          Résoudre
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => {
+                            const notes = window.prompt('Raison du rejet:');
+                            if (notes) handleRejectComplaint(complaint.id, notes);
+                          }}
                         >
                           <XCircle className="w-4 h-4 mr-1" />
                           Rejeter
