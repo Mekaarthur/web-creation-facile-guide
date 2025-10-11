@@ -4029,6 +4029,20 @@ export type Database = {
           performed_by: string
         }[]
       }
+      get_cron_jobs: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          active: boolean
+          command: string
+          database: string
+          jobid: number
+          jobname: string
+          nodename: string
+          nodeport: number
+          schedule: string
+          username: string
+        }[]
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
