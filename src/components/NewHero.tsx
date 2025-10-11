@@ -35,16 +35,16 @@ const NewHero = () => {
       </div>
 
       {/* Content with Staggered Animations */}
-      <div className="relative z-10 container mx-auto px-4 text-center text-white">
+      <div className="relative z-10 container mx-auto px-4 text-center text-primary-foreground">
         <div className={`transition-all duration-1000 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-          <h1 className="text-4xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-white to-gray-200 bg-clip-text text-transparent leading-tight">
+          <h1 className="text-4xl md:text-7xl font-bold mb-6 bg-gradient-hero bg-clip-text text-transparent leading-tight">
             {t('newHero.title1')}
             <span className="block text-primary animate-pulse">{t('newHero.title2')}</span>
           </h1>
         </div>
         
         <div className={`transition-all duration-1000 delay-300 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-          <p className="text-xl md:text-2xl mb-8 max-w-4xl mx-auto opacity-95 leading-relaxed">
+          <p className="text-xl md:text-2xl mb-8 max-w-4xl mx-auto opacity-95 leading-relaxed text-primary-foreground/90">
             {t('newHero.subtitle')}
           </p>
         </div>
@@ -58,7 +58,7 @@ const NewHero = () => {
             >
               <span className="mr-2 group-hover:animate-bounce">🛒</span>
               {t('newHero.ctaReserve')}
-              <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-md" />
+              <div className="absolute inset-0 bg-primary-foreground/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-md" />
             </Button>
           </Link>
           
@@ -66,7 +66,7 @@ const NewHero = () => {
             <Button 
               variant="outline" 
               size="lg" 
-              className="group w-full sm:w-auto px-10 py-5 text-lg font-semibold bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-white/30"
+              className="group w-full sm:w-auto px-10 py-5 text-lg font-semibold bg-transparent border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-glow"
             >
               <span className="mr-2 group-hover:animate-bounce">💼</span>
               {t('newHero.ctaProvider')}
@@ -77,17 +77,17 @@ const NewHero = () => {
 
         {/* Trust Indicators */}
         <div className={`mt-12 transition-all duration-1000 delay-700 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-          <div className="flex flex-wrap justify-center items-center gap-8 text-white/80 text-sm">
+          <div className="flex flex-wrap justify-center items-center gap-8 text-primary-foreground/80 text-sm">
             <div className="flex items-center gap-2">
-              <span className="text-yellow-400">⭐⭐⭐⭐⭐</span>
+              <span className="text-warning">⭐⭐⭐⭐⭐</span>
               <span>{t('newHero.rating')}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-primary">✓</span>
+              <span className="text-success">✓</span>
               <span>{t('newHero.service')}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-primary">✓</span>
+              <span className="text-success">✓</span>
               <span>{t('newHero.taxCredit')}</span>
             </div>
           </div>
@@ -95,9 +95,9 @@ const NewHero = () => {
       </div>
 
       {/* Subtle Scroll Indicator */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white/60 animate-bounce">
-        <div className="w-6 h-10 border-2 border-white/40 rounded-full">
-          <div className="w-1 h-3 bg-white/60 rounded-full mx-auto mt-2 animate-pulse" />
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-primary-foreground/60 animate-bounce">
+        <div className="w-6 h-10 border-2 border-primary-foreground/40 rounded-full">
+          <div className="w-1 h-3 bg-primary-foreground/60 rounded-full mx-auto mt-2 animate-pulse" />
         </div>
       </div>
     </section>

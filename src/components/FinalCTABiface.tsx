@@ -17,20 +17,19 @@ const FinalCTABiface = () => {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 text-center text-white">
+      <div className="relative z-10 container mx-auto px-4 text-center text-primary-foreground">
         <div className="max-w-4xl mx-auto">
           {/* Community Icon */}
           <div className="mb-6">
-            <Users className="h-16 w-16 mx-auto text-white/90" />
+            <Users className="h-16 w-16 mx-auto text-primary-foreground/90" />
           </div>
 
           <h2 className="text-3xl md:text-5xl font-bold mb-6 animate-fade-in">
-            Rejoignez la communauté Bikawo dès aujourd'hui !
+            {t('finalCta.title')}
           </h2>
           
           <p className="text-xl md:text-2xl mb-8 opacity-90 animate-fade-in">
-            Que vous ayez besoin d'accompagnement ou souhaitez valoriser vos compétences, 
-            Bikawo est fait pour vous !
+            {t('finalCta.subtitle')}
           </p>
 
           {/* Double CTA Buttons */}
@@ -38,7 +37,7 @@ const FinalCTABiface = () => {
             <Link to="/espace-personnel">
               <Button 
                 size="lg" 
-                className="w-full sm:w-auto px-8 py-4 text-lg font-semibold bg-white text-primary hover:bg-white/90"
+                className="w-full sm:w-auto px-8 py-4 text-lg font-semibold bg-primary-foreground text-primary hover:bg-primary-foreground/90"
               >
                 {t('finalCta.client')}
               </Button>
@@ -48,7 +47,7 @@ const FinalCTABiface = () => {
               <Button 
                 variant="outline" 
                 size="lg" 
-                className="w-full sm:w-auto px-8 py-4 text-lg font-semibold bg-transparent border-white text-white hover:bg-white hover:text-primary"
+                className="w-full sm:w-auto px-8 py-4 text-lg font-semibold bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary"
               >
                 {t('finalCta.provider')}
               </Button>

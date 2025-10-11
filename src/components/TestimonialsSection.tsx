@@ -34,7 +34,7 @@ const TestimonialsSection = () => {
   const renderStars = () => (
     <div className="flex justify-center mb-4">
       {[...Array(5)].map((_, i) => (
-        <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+        <Star key={i} className="h-5 w-5 fill-warning text-warning" />
       ))}
     </div>
   );
@@ -48,7 +48,7 @@ const TestimonialsSection = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {testimonials.map((testimonial, index) => (
-            <Card key={index} className="border-0 shadow-lg bg-white hover:shadow-xl transition-all duration-300">
+            <Card key={index} className="border-0 shadow-lg bg-card hover:shadow-xl transition-all duration-300">
               <CardContent className="p-6 text-center">
                 {renderStars()}
                 

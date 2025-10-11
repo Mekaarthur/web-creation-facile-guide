@@ -35,7 +35,7 @@ const WhyBikawo = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {benefits.map((benefit, index) => (
-            <Card key={index} className="border-0 shadow-lg bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+            <Card key={index} className="border-0 shadow-lg bg-card/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
               <CardContent className="p-8 text-center">
                 <div className="mb-6">
                   <benefit.icon className={`h-16 w-16 mx-auto ${benefit.color}`} />
