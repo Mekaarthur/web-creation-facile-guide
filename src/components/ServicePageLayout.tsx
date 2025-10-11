@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, CheckCircle, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 
 interface ServiceBenefit {
   icon: ReactNode;
@@ -47,6 +48,7 @@ const ServicePageLayout = ({
   children
 }: ServicePageProps) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <main className="pt-16">
@@ -95,7 +97,7 @@ const ServicePageLayout = ({
                     {price}
                   </div>
                   <div className="text-lg text-white/80">
-                    soit {discountPrice} avec le crédit d'impôt
+                    {t('servicePage.taxCredit', { discountPrice })}
                   </div>
                 </div>
               </div>
@@ -149,7 +151,7 @@ const ServicePageLayout = ({
               {/* Floating Badge */}
               <div className="absolute -top-4 -right-4 bg-white rounded-full p-4 shadow-xl">
                 <Badge className="bg-primary text-white text-sm font-bold px-3 py-1">
-                  Top Service
+                  {t('servicePage.topService')}
                 </Badge>
               </div>
             </div>
@@ -162,10 +164,10 @@ const ServicePageLayout = ({
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              Vous allez nous aimer
+              {t('servicePage.benefitsTitle')}
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Découvrez les avantages qui font de Bikawo votre partenaire de confiance
+              {t('servicePage.benefitsSubtitle')}
             </p>
           </div>
           

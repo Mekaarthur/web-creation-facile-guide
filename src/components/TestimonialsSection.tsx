@@ -1,30 +1,33 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Star } from "lucide-react";
 import { useTranslation } from 'react-i18next';
+import testimonialMarie from '@/assets/testimonial-marie.jpg';
+import testimonialThomas from '@/assets/testimonial-thomas.jpg';
+import testimonialSophie from '@/assets/testimonial-sophie.jpg';
 
 const TestimonialsSection = () => {
   const { t } = useTranslation();
   const testimonials = [
     {
       type: "client",
-      name: "Marie L.",
-      role: "Cliente Bika Maison",
-      content: "Service exceptionnel, très satisfaite ! Bikawo m'a vraiment simplifié la vie.",
-      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=100&h=100&fit=crop&crop=face"
+      name: t('testimonials.client1.name'),
+      role: t('testimonials.client1.role'),
+      content: t('testimonials.client1.content'),
+      avatar: testimonialMarie
     },
     {
       type: "prestataire", 
-      name: "Thomas R.",
-      role: "Prestataire Bika Kids",
-      content: "Plateforme géniale pour arrondir mes fins de mois, clients respectueux !",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face"
+      name: t('testimonials.provider1.name'),
+      role: t('testimonials.provider1.role'),
+      content: t('testimonials.provider1.content'),
+      avatar: testimonialThomas
     },
     {
       type: "client",
-      name: "Sophie M.", 
-      role: "Cliente Bika Travel",
-      content: "Enfin du temps pour moi ! L'équipe Bika Travel a géré mon voyage parfaitement.",
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face"
+      name: t('testimonials.client2.name'), 
+      role: t('testimonials.client2.role'),
+      content: t('testimonials.client2.content'),
+      avatar: testimonialSophie
     }
   ];
 

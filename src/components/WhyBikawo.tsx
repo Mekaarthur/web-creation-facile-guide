@@ -10,19 +10,19 @@ const WhyBikawo = () => {
       icon: Brain,
       title: t('why.benefit1'),
       description: t('why.benefit1Desc'),
-      color: "text-blue-500"
+      color: "text-primary"
     },
     {
       icon: DollarSign,
       title: t('why.benefit2'), 
       description: t('why.benefit2Desc'),
-      color: "text-green-500"
+      color: "text-accent"
     },
     {
       icon: Heart,
       title: t('why.benefit3'),
       description: t('why.benefit3Desc'),
-      color: "text-red-500"
+      color: "text-secondary"
     }
   ];
 

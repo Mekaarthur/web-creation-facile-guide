@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import BikaServiceBooking from "@/components/BikaServiceBooking";
 import { servicesData, ServiceCategoryKey, SubService } from "@/utils/servicesData";
+import { useTranslation } from "react-i18next";
 
 interface ServiceSubgridProps {
   categoryKey: ServiceCategoryKey;
@@ -13,6 +14,7 @@ interface ServiceSubgridProps {
 const ServiceSubgrid = ({ categoryKey }: ServiceSubgridProps) => {
   const [selected, setSelected] = useState<SubService | null>(null);
   const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
 
   const category = servicesData[categoryKey];
 
@@ -27,7 +29,7 @@ const ServiceSubgrid = ({ categoryKey }: ServiceSubgridProps) => {
     <>
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">{`Nos sous-services ${category.packageTitle}`}</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">{t('serviceSubgrid.title', { packageTitle: category.packageTitle })}</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {cards.map((s) => (
               <Card key={s.slug} className="hover:shadow-lg transition-shadow">
@@ -44,10 +46,10 @@ const ServiceSubgrid = ({ categoryKey }: ServiceSubgridProps) => {
                   <CardDescription className="text-sm mb-4 line-clamp-3">{s.description}</CardDescription>
                   <div className="flex gap-2">
                     <Button asChild variant="outline" size="sm" className="flex-1">
-                      <Link to={`/services/${category.key}/${s.slug}`}>Détails</Link>
+                      <Link to={`/services/${category.key}/${s.slug}`}>{t('serviceSubgrid.details')}</Link>
                     </Button>
                     <Button size="sm" className="flex-1" onClick={() => onReserve(s)}>
-                      Réserver
+                      {t('serviceSubgrid.reserve')}
                     </Button>
                   </div>
                 </CardContent>

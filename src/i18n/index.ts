@@ -163,6 +163,26 @@ const resources = {
       
       // Testimonials
       "testimonials.title": "Témoignages",
+      "testimonials.client1.name": "Marie L.",
+      "testimonials.client1.role": "Cliente Bika Maison",
+      "testimonials.client1.content": "Service exceptionnel, très satisfaite ! Bikawo m'a vraiment simplifié la vie.",
+      "testimonials.provider1.name": "Thomas R.",
+      "testimonials.provider1.role": "Prestataire Bika Kids",
+      "testimonials.provider1.content": "Plateforme géniale pour arrondir mes fins de mois, clients respectueux !",
+      "testimonials.client2.name": "Sophie M.",
+      "testimonials.client2.role": "Cliente Bika Travel",
+      "testimonials.client2.content": "Enfin du temps pour moi ! L'équipe Bika Travel a géré mon voyage parfaitement.",
+      
+      // Service Page Layout
+      "servicePage.topService": "Top Service",
+      "servicePage.benefitsTitle": "Vous allez nous aimer",
+      "servicePage.benefitsSubtitle": "Découvrez les avantages qui font de Bikawo votre partenaire de confiance",
+      "servicePage.taxCredit": "soit {{discountPrice}} avec le crédit d'impôt",
+      
+      // Service Subgrid
+      "serviceSubgrid.title": "Nos sous-services {{packageTitle}}",
+      "serviceSubgrid.details": "Détails",
+      "serviceSubgrid.reserve": "Réserver",
       
       // Job application
       "jobs.title": "Rejoignez Notre Équipe",
@@ -372,6 +392,26 @@ const resources = {
       
       // Testimonials
       "testimonials.title": "Testimonials",
+      "testimonials.client1.name": "Marie L.",
+      "testimonials.client1.role": "Bika Maison Client",
+      "testimonials.client1.content": "Exceptional service, very satisfied! Bikawo really simplified my life.",
+      "testimonials.provider1.name": "Thomas R.",
+      "testimonials.provider1.role": "Bika Kids Provider",
+      "testimonials.provider1.content": "Great platform to supplement my income, respectful clients!",
+      "testimonials.client2.name": "Sophie M.",
+      "testimonials.client2.role": "Bika Travel Client",
+      "testimonials.client2.content": "Finally time for myself! The Bika Travel team managed my trip perfectly.",
+      
+      // Service Page Layout
+      "servicePage.topService": "Top Service",
+      "servicePage.benefitsTitle": "You'll love us",
+      "servicePage.benefitsSubtitle": "Discover the advantages that make Bikawo your trusted partner",
+      "servicePage.taxCredit": "or {{discountPrice}} with tax credit",
+      
+      // Service Subgrid
+      "serviceSubgrid.title": "Our {{packageTitle}} sub-services",
+      "serviceSubgrid.details": "Details",
+      "serviceSubgrid.reserve": "Book",
       
       // Job application
       "jobs.title": "Join Our Team",
