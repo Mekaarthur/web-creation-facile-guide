@@ -399,17 +399,17 @@ CREATE TABLE user_consents (
 3. ✅ Validation inputs avec Zod - Module `_shared/validation.ts` + implémentation dans admin-carts
 4. ✅ Protection brute-force - Blocage automatique 15min après 5 tentatives/min
 
-### Phase 2 - Monitoring & Stabilité (2-3 jours) 🟠
-5. ✅ Dashboard santé temps réel
-6. ✅ Alertes automatiques (erreurs, latence)
-7. ✅ Logging structuré edge functions
-8. ✅ Slow queries detection
+### Phase 2 - Monitoring & Stabilité (2-3 jours) ✅ COMPLÉTÉ
+5. ✅ Dashboard santé temps réel - Table `system_alerts` + hooks React avec cache
+6. ✅ Alertes automatiques - `detect_abandoned_carts()`, `detect_payment_failures()`, `detect_inactive_providers()`
+7. ✅ Vue matérialisée - `admin_dashboard_stats` avec fonction sécurisée `get_dashboard_stats()`
+8. ✅ Emails automatiques - Edge function `send-email-notifications` avec templates (panier abandonné, rappel paiement, alertes sécurité)
 
-### Phase 3 - Performance (2-3 jours) 🟡
-9. ✅ Cache React Query (5min staleTime)
-10. ✅ Pagination infinie + virtualisation
-11. ✅ Indexes composites requis
-12. ✅ Vues matérialisées dashboard
+### Phase 3 - Performance (2-3 jours) ✅ COMPLÉTÉ
+9. ✅ Cache React Query - Hook `useSystemMonitoring` avec staleTime 30s-10min selon criticité
+10. ✅ Indexes composites - Sur bookings, carts, payments, missions (status+date)
+11. ✅ Vue matérialisée - Dashboard stats rafraîchie automatiquement
+12. ✅ Tests E2E - Configuration Playwright + tests critiques (bulk assign, cart validation)
 
 ### Phase 4 - UX & Détails (2-3 jours) 🟢
 13. ✅ Résoudre 5 TODOs code

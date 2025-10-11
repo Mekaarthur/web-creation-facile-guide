@@ -3916,6 +3916,18 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_dashboard_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          active_carts_7d: number
+          active_providers: number
+          avg_rating_30d: number
+          bookings_last_30d: number
+          completed_bookings_30d: number
+          open_complaints: number
+          revenue_30d: number
+        }[]
+      }
       get_matching_providers: {
         Args:
           | {
