@@ -54,40 +54,52 @@ export type Database = {
         Row: {
           action_type: string
           admin_user_id: string
+          affected_records_count: number | null
           created_at: string
+          data_exported: boolean | null
           description: string | null
           entity_id: string
           entity_type: string
           id: string
           ip_address: unknown | null
+          is_gdpr_related: boolean | null
           new_data: Json | null
           old_data: Json | null
+          request_metadata: Json | null
           user_agent: string | null
         }
         Insert: {
           action_type: string
           admin_user_id: string
+          affected_records_count?: number | null
           created_at?: string
+          data_exported?: boolean | null
           description?: string | null
           entity_id: string
           entity_type: string
           id?: string
           ip_address?: unknown | null
+          is_gdpr_related?: boolean | null
           new_data?: Json | null
           old_data?: Json | null
+          request_metadata?: Json | null
           user_agent?: string | null
         }
         Update: {
           action_type?: string
           admin_user_id?: string
+          affected_records_count?: number | null
           created_at?: string
+          data_exported?: boolean | null
           description?: string | null
           entity_id?: string
           entity_type?: string
           id?: string
           ip_address?: unknown | null
+          is_gdpr_related?: boolean | null
           new_data?: Json | null
           old_data?: Json | null
+          request_metadata?: Json | null
           user_agent?: string | null
         }
         Relationships: []
@@ -3106,6 +3118,7 @@ export type Database = {
           created_at: string | null
           id: string
           identifier: string
+          last_attempt_at: string | null
         }
         Insert: {
           action_type: string
@@ -3114,6 +3127,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           identifier: string
+          last_attempt_at?: string | null
         }
         Update: {
           action_type?: string
@@ -3122,6 +3136,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           identifier?: string
+          last_attempt_at?: string | null
         }
         Relationships: []
       }
@@ -3757,6 +3772,15 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      check_rate_limit: {
+        Args: {
+          p_action_type: string
+          p_identifier: string
+          p_max_attempts?: number
+          p_window_minutes?: number
+        }
+        Returns: Json
+      }
       cleanup_abandoned_conversations: {
         Args: Record<PropertyKey, never>
         Returns: number
@@ -3963,6 +3987,24 @@ export type Database = {
           p_entity_type: string
           p_new_value?: string
           p_old_value?: string
+        }
+        Returns: string
+      }
+      log_bulk_deletion: {
+        Args: {
+          p_entity_ids: string[]
+          p_entity_type: string
+          p_is_soft_delete?: boolean
+          p_reason: string
+        }
+        Returns: string
+      }
+      log_gdpr_export: {
+        Args: {
+          p_entity_ids: string[]
+          p_entity_type: string
+          p_export_format?: string
+          p_reason?: string
         }
         Returns: string
       }

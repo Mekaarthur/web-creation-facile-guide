@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { validateRequest, validateCartActionSchema, extractClientIp, createErrorResponse } from "../_shared/validation.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -110,7 +111,32 @@ serve(async (req) => {
     }
 
     if (req.method === "POST") {
-      const body = await req.json();
+      // Rate limiting
+      const clientIp = extractClientIp(req);
+      const { data: rateLimitCheck } = await supabaseClient.rpc('check_rate_limit', {
+        p_identifier: clientIp,
+        p_action_type: 'admin_cart_action',
+        p_max_attempts: 20,
+        p_window_minutes: 1
+      });
+
+      if (rateLimitCheck && !rateLimitCheck.allowed) {
+        return createErrorResponse(
+          'Trop de requêtes. Veuillez réessayer plus tard.',
+          429,
+          { retry_after_seconds: rateLimitCheck.retry_after_seconds }
+        );
+      }
+
+      // Validation avec Zod
+      const validation = await validateRequest(req, validateCartActionSchema);
+      if (!validation.success) {
+        return createErrorResponse(validation.error, 400, validation.details);
+      }
+
+      const body = validation.data;
+      const action = body.action;
+      const cartId = body.cartId;
 
       if (action === "validate") {
         // Valider un panier et créer les réservations
