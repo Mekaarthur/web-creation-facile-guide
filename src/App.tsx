@@ -43,7 +43,7 @@ import ReservationConfirmee from "./pages/ReservationConfirmee";
 import SubServicePage from "./pages/SubService";
 
 // Admin Layout and Pages
-import { AdminLayout } from "./components/admin/AdminLayout";
+import { AdminLayout } from "./components/admin/layout/AdminLayout";
 import ModernAdminDashboard from "./pages/admin/ModernAdminDashboard";
 import AdminAlertes from "./pages/admin/Alertes";
 import AdminKanban from "./pages/admin/Kanban";

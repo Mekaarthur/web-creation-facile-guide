@@ -8,7 +8,7 @@ interface ProtectedRouteProps {
   redirectTo?: string;
 }
 
-const ProtectedRoute = ({ children, redirectTo = '/espace-personnel' }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children, redirectTo = '/auth' }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
 
   if (loading) {

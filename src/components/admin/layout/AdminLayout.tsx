@@ -3,6 +3,7 @@ import { AdminSidebar } from "../sidebar/AdminSidebar";
 import { Button } from "@/components/ui/button";
 import { Bell, Settings, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Outlet } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,11 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-interface AdminLayoutProps {
-  children: React.ReactNode;
-}
-
-export function AdminLayout({ children }: AdminLayoutProps) {
+export function AdminLayout() {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
@@ -83,9 +80,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             </div>
           </header>
           
-          {/* Main Content */}
+          {/* Main Content - Using Outlet for nested routes */}
           <main className="flex-1 overflow-y-auto">
-            {children}
+            <Outlet />
           </main>
         </div>
       </div>

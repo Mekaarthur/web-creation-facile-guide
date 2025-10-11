@@ -83,16 +83,30 @@ const EnhancedAuth = () => {
         throw error;
       }
 
+      // Récupérer le rôle réel de l'utilisateur depuis la base de données
+      const { data: roleData, error: roleError } = await supabase.functions.invoke('get-user-role', {
+        headers: {
+          Authorization: `Bearer ${authData.session?.access_token}`
+        }
+      });
+
+      if (roleError) {
+        console.error('Erreur lors de la récupération du rôle:', roleError);
+      }
+
+      const actualRole = roleData?.role || 'user';
+      const isProvider = roleData?.isProvider || false;
+
       toast({
         title: "Connexion réussie",
         description: "Vous êtes maintenant connecté",
       });
 
-      // Redirection selon le type d'utilisateur sélectionné
-      if (userType === 'prestataire') {
-        navigate('/espace-prestataire');
-      } else if (userType === 'admin') {
+      // Redirection selon le rôle RÉEL en base de données
+      if (actualRole === 'admin') {
         navigate('/modern-admin');
+      } else if (isProvider) {
+        navigate('/espace-prestataire');
       } else {
         navigate('/espace-personnel');
       }
@@ -170,6 +184,28 @@ const EnhancedAuth = () => {
           }
         } catch (emailError) {
           console.error('Erreur lors de l\'envoi de l\'email de confirmation:', emailError);
+        }
+      }
+
+      // Si inscription prestataire, créer automatiquement l'entrée provider
+      if (userType === 'prestataire' && authData.user) {
+        try {
+          const { error: providerError } = await supabase
+            .from('providers')
+            .insert({
+              user_id: authData.user.id,
+              business_name: data.name || 'Non renseigné',
+              status: 'pending',
+              is_verified: false,
+              rating: 5.0,
+              description: 'Nouveau prestataire en attente de validation'
+            });
+
+          if (providerError) {
+            console.error('Erreur création provider:', providerError);
+          }
+        } catch (providerError) {
+          console.error('Erreur lors de la création du provider:', providerError);
         }
       }
 
