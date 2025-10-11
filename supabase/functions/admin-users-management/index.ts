@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,10 +15,21 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
   auth: { persistSession: false }
 });
 
-interface UserAction {
-  action: 'list' | 'examine' | 'activate' | 'suspend';
-  userId?: string;
-}
+// Validation schema
+const userActionSchema = z.object({
+  action: z.enum(['list', 'examine', 'activate', 'suspend'], {
+    errorMap: () => ({ message: "Invalid action" })
+  }),
+  userId: z.string().uuid().optional()
+}).refine(
+  (data) => {
+    if (data.action !== 'list' && !data.userId) {
+      return false;
+    }
+    return true;
+  },
+  { message: "userId required for this action" }
+);
 
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
@@ -26,7 +38,11 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { action, userId }: UserAction = await req.json();
+    const body = await req.json();
+    
+    // Validate input
+    const validated = userActionSchema.parse(body);
+    const { action, userId } = validated;
     
     // Vérifier que l'utilisateur est admin
     const authHeader = req.headers.get('authorization');
@@ -88,6 +104,24 @@ const handler = async (req: Request): Promise<Response> => {
 
   } catch (error: any) {
     console.error('Erreur dans admin-users-management:', error);
+    
+    // Handle validation errors
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({ 
+          error: "Validation error",
+          details: error.errors.map(e => ({
+            field: e.path.join('.'),
+            message: e.message
+          }))
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
+        }
+      );
+    }
+    
     return new Response(
       JSON.stringify({ error: error.message }),
       {
