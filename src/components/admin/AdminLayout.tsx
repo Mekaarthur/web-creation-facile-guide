@@ -28,6 +28,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { useAdminCounts } from "@/hooks/useAdminCounts";
 
 const navigationGroupsStatic = [
   {
@@ -113,76 +114,29 @@ useEffect(() => {
   };
 
 
-  // Compteurs dynamiques pour les badges
-  const [counts, setCounts] = useState({
+  // Compteurs dynamiques via hook
+  const { data: counts = {
     alerts: 0,
     demandes: 0,
     candidatures: 0,
     prestatairesPending: 0,
     moderation: 0,
-    messagesUnread: 0,
-  });
-
-  const fetchCounts = async () => {
-    try {
-      const now = Date.now();
-      const urgentCutoff = new Date(now - 2 * 60 * 60 * 1000).toISOString();
-      const waitingCutoff = new Date(now - 24 * 60 * 60 * 1000).toISOString();
-      const blockedCutoff = new Date(now - 48 * 60 * 60 * 1000).toISOString();
-      const inactiveDate = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
-
-      const [
-        urgentReq,
-        waitingClients,
-        blockedMissions,
-        inactiveProviders,
-        demandesTotal,
-        candidaturesPending,
-        prestatairesPending,
-        moderationPending,
-        messagesUnread
-      ] = await Promise.all([
-        supabase.from('client_requests').select('id', { count: 'exact', head: true }).in('status', ['new', 'unmatched']).lt('created_at', urgentCutoff),
-        supabase.from('client_requests').select('id', { count: 'exact', head: true }).eq('status', 'assigned').lt('updated_at', waitingCutoff),
-        supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('status', 'in_progress').lt('started_at', blockedCutoff),
-        supabase.from('providers').select('id', { count: 'exact', head: true }).eq('status', 'active').or(`last_mission_date.is.null,last_mission_date.lt.${inactiveDate}`),
-        supabase.from('client_requests').select('id', { count: 'exact', head: true }),
-        supabase.from('job_applications').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-        supabase.from('providers').select('id', { count: 'exact', head: true }).in('status', ['pending', 'pending_validation']),
-        supabase.from('reviews').select('id', { count: 'exact', head: true }).eq('is_approved', false),
-        supabase.from('internal_messages').select('id', { count: 'exact', head: true }).eq('is_read', false),
-      ]);
-
-      const alertsTotal = (urgentReq.count || 0) + (waitingClients.count || 0) + (blockedMissions.count || 0) + (inactiveProviders.count || 0);
-
-      setCounts({
-        alerts: alertsTotal,
-        demandes: demandesTotal.count || 0,
-        candidatures: candidaturesPending.count || 0,
-        prestatairesPending: prestatairesPending.count || 0,
-        moderation: moderationPending.count || 0,
-        messagesUnread: messagesUnread.count || 0,
-      });
-    } catch (e) {
-      // En cas d'erreur, on ne bloque pas l'UI
-      console.error('Erreur chargement compteurs admin:', e);
-    }
-  };
+    messages: 0,
+  }, refetch } = useAdminCounts();
 
   useEffect(() => {
-    fetchCounts();
     const channel = supabase
       .channel('admin-badges')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'client_requests' }, fetchCounts)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'job_applications' }, fetchCounts)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'providers' }, fetchCounts)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'internal_messages' }, fetchCounts)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'reviews' }, fetchCounts)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, fetchCounts)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'client_requests' }, () => refetch())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'job_applications' }, () => refetch())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'providers' }, () => refetch())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'internal_messages' }, () => refetch())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reviews' }, () => refetch())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => refetch())
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, []);
+  }, [refetch]);
 
   // Groupes de navigation dynamiques
   const navigationGroups = [
@@ -213,7 +167,7 @@ useEffect(() => {
     {
       title: 'Communication',
       items: [
-        { name: 'Messagerie', href: '/admin/messagerie', icon: MessageSquare, badge: counts.messagesUnread || null },
+        { name: 'Messagerie', href: '/admin/messagerie', icon: MessageSquare, badge: counts.messages || null },
         { name: 'Messages & Emails', href: '/admin/messages', icon: MessageSquare, badge: null },
         { name: 'Tests Emails', href: '/admin/tests-emails', icon: MessageSquare, badge: null },
         { name: 'Notifications', href: '/admin/notifications', icon: Bell, badge: null },

@@ -1,55 +1,20 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { AlertTriangle, Mail, ShoppingCart, UserX, Activity, RefreshCw, TrendingUp, CheckCircle } from "lucide-react";
+import { AlertTriangle, Mail, ShoppingCart, Activity, RefreshCw, TrendingUp, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DashboardSkeleton } from "@/components/ui/skeleton";
-import { useSystemAlerts, useDashboardStats, resolveAlert } from "@/hooks/useSystemMonitoring";
+import { useSystemAlerts, useDashboardStats, resolveAlert, useFailedEmails, useAbandonedCarts } from "@/hooks/useSystemMonitoring";
 
 export const MonitoringDashboard = () => {
   const { toast } = useToast();
 
-  // Utiliser les hooks existants
+  // Hooks de monitoring
   const { data: systemAlerts, isLoading: loadingAlerts, refetch: refetchAlerts } = useSystemAlerts();
   const { data: dashboardStats, isLoading: loadingStats } = useDashboardStats();
-
-  // Emails échoués
-  const { data: failedEmails, isLoading: loadingEmails, refetch: refetchEmails } = useQuery({
-    queryKey: ['failed-emails'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('communications')
-        .select('id, destinataire_email, sujet, retry_count, error_message, created_at')
-        .eq('status', 'erreur')
-        .lt('retry_count', 3)
-        .order('created_at', { ascending: false })
-        .limit(10);
-      
-      if (error) throw error;
-      return data || [];
-    },
-    refetchInterval: 60000,
-  });
-
-  // Paniers abandonnés
-  const { data: abandonedCarts, isLoading: loadingCarts } = useQuery({
-    queryKey: ['abandoned-carts'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('carts')
-        .select('id, client_id, total_estimated, created_at, expires_at')
-        .eq('status', 'active')
-        .lt('expires_at', new Date().toISOString())
-        .order('created_at', { ascending: false })
-        .limit(10);
-      
-      if (error) throw error;
-      return data || [];
-    },
-    refetchInterval: 60000,
-  });
+  const { data: failedEmails, isLoading: loadingEmails, refetch: refetchEmails } = useFailedEmails();
+  const { data: abandonedCarts, isLoading: loadingCarts } = useAbandonedCarts();
 
   const handleRetryEmails = async () => {
     try {

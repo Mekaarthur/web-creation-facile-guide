@@ -100,6 +100,44 @@ export const useInactiveProvidersDetection = () => {
   });
 };
 
+export const useFailedEmails = () => {
+  return useQuery({
+    queryKey: ['failed-emails'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('communications')
+        .select('id, destinataire_email, sujet, retry_count, error_message, created_at')
+        .eq('status', 'erreur')
+        .lt('retry_count', 3)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      
+      if (error) throw error;
+      return data || [];
+    },
+    refetchInterval: 60000,
+  });
+};
+
+export const useAbandonedCarts = () => {
+  return useQuery({
+    queryKey: ['abandoned-carts'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('carts')
+        .select('id, client_id, total_estimated, created_at, expires_at')
+        .eq('status', 'active')
+        .lt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false })
+        .limit(10);
+      
+      if (error) throw error;
+      return data || [];
+    },
+    refetchInterval: 60000,
+  });
+};
+
 export const resolveAlert = async (alertId: string) => {
   const { error } = await supabase
     .from('system_alerts')
