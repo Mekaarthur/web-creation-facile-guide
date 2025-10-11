@@ -113,38 +113,23 @@ serve(async (req) => {
       const body = await req.json();
 
       if (action === "validate") {
-        // Valider un panier
+        // Valider un panier et créer les réservations
         if (!cartId) throw new Error("Cart ID required");
 
-        const { data: cart, error: fetchError } = await supabaseClient
-          .from('carts')
-          .select('*')
-          .eq('id', cartId)
-          .single();
+        // Utiliser la RPC pour validation et création des bookings
+        const { data: result, error: validateError } = await supabaseClient
+          .rpc('validate_cart_manually', {
+            p_cart_id: cartId,
+            p_admin_notes: body.notes || null
+          });
 
-        if (fetchError) throw fetchError;
+        if (validateError) throw validateError;
 
-        const { data: updatedCart, error: updateError } = await supabaseClient
-          .from('carts')
-          .update({ status: 'validé', updated_at: new Date().toISOString() })
-          .eq('id', cartId)
-          .select()
-          .single();
-
-        if (updateError) throw updateError;
-
-        // Logger l'action admin
-        await logAdminAction(
-          user.id,
-          'validate_cart',
-          'cart',
-          cartId,
-          { status: cart.status },
-          { status: 'validé' },
-          'Panier validé par admin'
-        );
-
-        return new Response(JSON.stringify({ cart: updatedCart }), {
+        return new Response(JSON.stringify({ 
+          success: true, 
+          message: `Panier validé - ${result.bookings_created} réservation(s) créée(s)`,
+          data: result
+        }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
         });

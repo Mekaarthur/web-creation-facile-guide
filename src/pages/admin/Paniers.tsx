@@ -82,9 +82,12 @@ export default function AdminPaniers() {
 
       if (error) throw error;
 
+      // Afficher le message personnalisé si disponible
+      const description = data?.message || `Action ${action} effectuée avec succès`;
+
       toast({
         title: "Succès",
-        description: `Action ${action} effectuée avec succès`,
+        description,
       });
 
       loadCarts();

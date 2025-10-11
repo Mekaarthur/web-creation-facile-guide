@@ -4037,6 +4037,10 @@ export type Database = {
         Args: { permission_type: string }
         Returns: boolean
       }
+      validate_cart_manually: {
+        Args: { p_admin_notes?: string; p_cart_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

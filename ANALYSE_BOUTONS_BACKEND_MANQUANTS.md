@@ -17,9 +17,9 @@
 | **Brand Management** | 3 actions | ✅ COMPLÉTÉ | Upload et génération actifs | ✅ FAIT |
 | **Outils Système** | 5 actions | ✅ COMPLÉTÉ | Diagnostics complets | ✅ FAIT |
 | **Paiements** | 2 actions | ✅ COMPLÉTÉ | Retry/confirm actifs | ✅ FAIT |
-| **Paniers** | 2 actions | 🟢 BASSE | Edge cases | ⏳ TODO |
+| **Paniers** | 2 actions | ✅ COMPLÉTÉ | Validation manuelle active | ✅ FAIT |
 
-**Total restant: 2 actions (Priorité Basse)**
+**Total restant: 0 actions - 🎉 TOUT EST COMPLÉTÉ !**
 
 ---
 
@@ -161,21 +161,34 @@ Toutes les 12 actions ont été implémentées avec succès.
 
 ---
 
-## 🟢 PRIORITÉ BASSE - À Implémenter (2 actions)
+## ✅ PRIORITÉ BASSE - COMPLÉTÉ (2 actions)
 
-### 6. **Paniers Abandonnés** (`/admin/Paniers.tsx`)
+### 6. **Paniers Abandonnés** (`/admin/Paniers.tsx`) ✅ COMPLÉTÉ
 
-**Actions sans backend (2):**
+**Actions implémentées (2/2):**
 
-1. **`handleCartAction('validate', cartId)`** - Ligne 388
-   - **Fonctionnalité:** Valider panier manuellement
-   - **Backend manquant:** Logique conversion cart → booking
-   - **Impact:** Récupération paniers abandonnés manuelle
+1. ✅ **`handleCartAction('validate', cartId)`** - Ligne 388
+   - **Fonctionnalité:** Valider panier manuellement et créer réservations
+   - **Backend:** RPC `validate_cart_manually(cart_id, admin_notes)` créée
+   - **Logique:**
+     - Vérifie les permissions admin
+     - Récupère tous les cart_items du panier
+     - Crée un booking pour chaque item (avec dates par défaut si manquantes)
+     - Marque le panier comme 'validé'
+     - Notifie le client
+     - Log l'action admin avec nombre de réservations créées
+   - **Retour:** JSONB avec `bookings_created`, `cart_id`, `total_amount`
+   ```typescript
+   const { data } = await supabase.rpc('validate_cart_manually', {
+     p_cart_id: cartId,
+     p_admin_notes: 'Notes optionnelles'
+   });
+   ```
 
-2. **`handleCartAction('expire', cartId, reason)`** - Ligne 417
+2. ✅ **`handleCartAction('expire', cartId, reason)`** - Ligne 417
    - **Fonctionnalité:** Expirer panier avec raison
-   - **Backend:** ✅ Fonction `expire_old_carts()` existe
-   - **Remarque:** Fonctionnel (expire automatiquement après 24h)
+   - **Backend:** ✅ RPC `expire_old_carts()` améliorée avec logging
+   - **Remarque:** Expire automatiquement les paniers actifs après 24h et log l'action
 
 ---
 
@@ -189,7 +202,7 @@ Toutes les 12 actions ont été implémentées avec succès.
 | **Storage/Upload** | 100% | 0% | ✅ |
 | **Bulk Operations** | 100% | 0% | ✅ |
 
-**Score Global Backend: 94/100** ✅
+**Score Global Backend: 100/100** 🎉 PARFAIT !
 
 ---
 
