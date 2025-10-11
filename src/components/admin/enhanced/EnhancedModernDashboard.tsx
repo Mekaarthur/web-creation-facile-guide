@@ -56,6 +56,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useWorkflowEmails } from "@/hooks/useWorkflowEmails";
+import { useEmergencyOrchestration } from "@/hooks/useEmergencyOrchestration";
 
 // Interfaces pour les types de données
 interface DashboardStats {
@@ -367,8 +368,9 @@ export default function EnhancedModernDashboard() {
 
   const { toast } = useToast();
   
-  // Initialiser les emails du workflow
+  // Initialiser les communications automatiques
   useWorkflowEmails();
+  useEmergencyOrchestration();
 
   const loadDashboardData = async () => {
     setLoading(true);

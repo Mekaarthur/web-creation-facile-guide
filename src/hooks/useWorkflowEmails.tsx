@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { communicationOrchestrator } from '@/services/communicationOrchestrator';
 
 export const useWorkflowEmails = () => {
   const { toast } = useToast();
@@ -56,87 +57,85 @@ export const useWorkflowEmails = () => {
       }, async (payload) => {
         const { new: newBooking, old: oldBooking } = payload;
         
-        // Récupérer les détails de la réservation séparément
+        // Récupérer les données complètes pour les communications
         const [bookingResult, serviceResult, clientResult, providerResult] = await Promise.all([
           supabase.from('bookings').select('*').eq('id', newBooking.id).single(),
           supabase.from('services').select('name').eq('id', newBooking.service_id).single(),
-          supabase.from('profiles').select('first_name, last_name').eq('user_id', newBooking.client_id).single(),
+          supabase.from('profiles').select('first_name, last_name, email, phone').eq('user_id', newBooking.client_id).single(),
           newBooking.provider_id ? supabase.from('providers').select('business_name, user_id').eq('id', newBooking.provider_id).single() : null
         ]);
 
         const booking = bookingResult.data;
-        if (!booking) return;
+        const client = clientResult.data;
+        if (!booking || !client) return;
 
-        const bookingDetails = {
-          service_name: serviceResult.data?.name || 'Service',
-          booking_date: new Date(booking.booking_date).toLocaleDateString('fr-FR'),
-          start_time: booking.start_time,
+        const bookingData = {
+          serviceName: serviceResult.data?.name || 'Service',
+          bookingDate: new Date(booking.booking_date).toLocaleDateString('fr-FR'),
+          startTime: booking.start_time,
           address: booking.address,
-          total_price: booking.total_price
+          totalPrice: booking.total_price
         };
 
-        const clientName = clientResult.data ? 
-          `${clientResult.data.first_name} ${clientResult.data.last_name}` : 'Client';
-
-        // Nouveau booking créé
+        // Nouvelle réservation créée
         if (!oldBooking && newBooking.status === 'pending') {
-          await sendWorkflowEmail('order_received', {
-            booking_id: newBooking.id,
-            client_email: booking.client_id, // En attendant d'avoir l'email réel
-            client_name: clientName,
-            booking_details: bookingDetails
+          await communicationOrchestrator.notifyBookingConfirmation({
+            clientId: booking.client_id,
+            clientEmail: client.email,
+            clientName: client.first_name,
+            bookingData
           });
         }
-
+        
         // Prestataire assigné
         if (oldBooking?.status !== 'assigned' && newBooking.status === 'assigned') {
           await sendWorkflowEmail('provider_assigned', {
             booking_id: newBooking.id,
-            client_email: booking.client_id,
-            client_name: clientName,
+            client_email: client.email,
+            client_name: `${client.first_name} ${client.last_name}`,
             provider_name: providerResult?.data?.business_name || 'Prestataire',
-            booking_details: bookingDetails
+            booking_details: {
+              service_name: serviceResult.data?.name,
+              booking_date: new Date(booking.booking_date).toLocaleDateString('fr-FR'),
+              start_time: booking.start_time,
+              address: booking.address,
+              total_price: booking.total_price
+            }
           });
         }
-
-        // Booking confirmé
+        
+        // Réservation confirmée - Rappel 24h
         if (oldBooking?.status !== 'confirmed' && newBooking.status === 'confirmed') {
-          await sendWorkflowEmail('booking_confirmed', {
-            booking_id: newBooking.id,
-            client_email: booking.client_id,
-            client_name: clientName,
-            provider_name: providerResult?.data?.business_name || 'Prestataire',
-            booking_details: bookingDetails
+          await communicationOrchestrator.notifyBookingReminder({
+            clientId: booking.client_id,
+            clientEmail: client.email,
+            clientName: client.first_name,
+            bookingData: {
+              ...bookingData,
+              providerName: providerResult?.data?.business_name
+            }
           });
-
-          // Programmer un rappel 24h avant (simulé)
-          setTimeout(() => {
-            toast({
-              title: "Rappel programmé",
-              description: "Un rappel sera envoyé 24h avant la prestation",
-            });
-          }, 1000);
         }
-
-        // Mission commencée
+        
+        // Mission démarrée
         if (oldBooking?.status !== 'in_progress' && newBooking.status === 'in_progress') {
-          await sendWorkflowEmail('mission_started', {
-            booking_id: newBooking.id,
-            client_email: booking.client_id,
-            client_name: clientName,
-            provider_name: providerResult?.data?.business_name || 'Prestataire',
-            booking_details: bookingDetails
+          await communicationOrchestrator.notifyMissionStarted({
+            clientId: booking.client_id,
+            clientEmail: client.email,
+            providerName: providerResult?.data?.business_name || 'Votre prestataire'
           });
         }
-
+        
         // Mission terminée
         if (oldBooking?.status !== 'completed' && newBooking.status === 'completed') {
-          await sendWorkflowEmail('mission_completed', {
-            booking_id: newBooking.id,
-            client_email: booking.client_id,
-            client_name: clientName,
-            provider_name: providerResult?.data?.business_name || 'Prestataire',
-            booking_details: bookingDetails
+          await communicationOrchestrator.notifyMissionCompleted({
+            clientId: booking.client_id,
+            clientEmail: client.email,
+            clientName: client.first_name,
+            bookingData: {
+              ...bookingData,
+              providerName: providerResult?.data?.business_name
+            }
           });
         }
       })
