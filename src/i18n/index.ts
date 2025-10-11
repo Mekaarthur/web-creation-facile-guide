@@ -223,6 +223,13 @@ const resources = {
       "bikaKids.benefits.2.title": "On est flexible",
       "bikaKids.benefits.2.description": "Garde ponctuelle, régulière, d'urgence. Nous nous adaptons parfaitement à vos besoins familiaux.",
       
+      // Blog
+      "blog.allCategories": "Tous",
+      "blog.wellness": "Bien-être",
+      "blog.organization": "Organisation",
+      "blog.economy": "Économie",
+      "blog.parenting": "Parentalité",
+      
       // Espace Personnel
       "personalSpace.title": "Mon Espace Client",
       "personalSpace.welcome": "Bienvenue {{name}} chez Bikawo",
@@ -626,6 +633,13 @@ const resources = {
       "bikaKids.benefits.1.description": "Personalized educational approach according to the age and specific needs of your children.",
       "bikaKids.benefits.2.title": "We are flexible",
       "bikaKids.benefits.2.description": "One-time, regular, emergency care. We adapt perfectly to your family needs.",
+      
+      // Blog
+      "blog.allCategories": "All",
+      "blog.wellness": "Well-being",
+      "blog.organization": "Organization",
+      "blog.economy": "Economy",
+      "blog.parenting": "Parenting",
       
       // Personal Space
       "personalSpace.title": "My Client Area",

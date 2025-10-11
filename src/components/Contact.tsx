@@ -38,32 +38,32 @@ const Contact = () => {
       title: t('contact.phone'),
       content: "06 09 08 53 90",
       description: t('contact.phoneTime'),
-      color: "from-emerald-400 to-emerald-600",
-      bgColor: "from-emerald-50 to-emerald-100"
+      color: "from-success/80 to-success",
+      bgColor: "from-success/5 to-success/10"
     },
     {
       icon: Mail,
       title: t('contact.email'),
       content: "contact@bikawo.com",
       description: t('contact.emailTime'),
-      color: "from-blue-400 to-blue-600",
-      bgColor: "from-blue-50 to-blue-100"
+      color: "from-info/80 to-info",
+      bgColor: "from-info/5 to-info/10"
     },
     {
       icon: MessageSquare,
       title: t('contact.chat'),
       content: t('contact.chatStatus'),
       description: t('contact.chatTime'),
-      color: "from-purple-400 to-purple-600",
-      bgColor: "from-purple-50 to-purple-100"
+      color: "from-accent/80 to-accent",
+      bgColor: "from-accent/5 to-accent/10"
     },
     {
       icon: MapPin,
       title: t('contact.address'),
       content: t('contact.addressDetails'),
       description: t('contact.addressTime'),
-      color: "from-amber-400 to-amber-600",
-      bgColor: "from-amber-50 to-amber-100"
+      color: "from-warning/80 to-warning",
+      bgColor: "from-warning/5 to-warning/10"
     }
   ];
 
@@ -137,7 +137,7 @@ const Contact = () => {
               return (
                 <Card 
                   key={method.title}
-                  className="group p-8 hover:shadow-2xl transition-all duration-500 hover:scale-105 border-0 bg-white/80 backdrop-blur-sm cursor-pointer relative overflow-hidden"
+                  className="group p-8 hover:shadow-2xl transition-all duration-500 hover:scale-105 border-0 bg-card/80 backdrop-blur-sm cursor-pointer relative overflow-hidden"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   {/* Background gradient effect */}
@@ -145,7 +145,7 @@ const Contact = () => {
                   
                   <div className="flex items-center space-x-6 relative">
                     <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${method.color} flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 shadow-lg`}>
-                      <IconComponent className="w-8 h-8 text-white" />
+                      <IconComponent className="w-8 h-8 text-primary-foreground" />
                     </div>
                     <div className="flex-1">
                       <h4 className="font-bold text-xl text-foreground mb-1 group-hover:text-primary transition-colors duration-300">
@@ -163,8 +163,8 @@ const Contact = () => {
             {/* Hours */}
             <Card className="p-8 bg-gradient-to-br from-primary/10 to-secondary/10 border border-primary/20 backdrop-blur-sm">
               <div className="flex items-center space-x-6 mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center shadow-lg">
-                  <Clock className="w-8 h-8 text-white" />
+                <div className="w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center shadow-lg">
+                  <Clock className="w-8 h-8 text-primary-foreground" />
                 </div>
                 <div>
                   <h4 className="font-bold text-xl text-foreground">{t('contact.hoursTitle')}</h4>
@@ -172,11 +172,11 @@ const Contact = () => {
                 </div>
               </div>
               <div className="space-y-3 text-lg">
-                <div className="flex justify-between items-center p-3 bg-white/50 rounded-xl">
+                <div className="flex justify-between items-center p-3 bg-card/50 rounded-xl">
                   <span className="text-muted-foreground">{t('contact.weekdays')}</span>
                   <span className="text-foreground font-bold">24h/24</span>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-white/50 rounded-xl">
+                <div className="flex justify-between items-center p-3 bg-card/50 rounded-xl">
                   <span className="text-muted-foreground">{t('contact.weekend')}</span>
                   <span className="text-foreground font-bold">24h/24</span>
                 </div>
@@ -193,7 +193,7 @@ const Contact = () => {
 
           {/* Contact Form */}
           <div className="lg:col-span-2 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-            <Card className="p-10 border-0 bg-white/90 backdrop-blur-sm shadow-2xl">
+            <Card className="p-10 border-0 bg-card/90 backdrop-blur-sm shadow-2xl">
               <div className="space-y-8">
                 <div className="text-center">
                   <h3 className="text-3xl font-bold text-foreground mb-4 flex items-center justify-center gap-3">
@@ -335,7 +335,7 @@ const Contact = () => {
               <Link to="/aide" className="group inline-block">
                 <Button 
                   size="lg"
-                  className="px-10 py-4 text-lg bg-white text-primary hover:bg-primary hover:text-white border-2 border-primary transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                  className="px-10 py-4 text-lg bg-card text-primary hover:bg-primary hover:text-primary-foreground border-2 border-primary transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
                 >
                   <Star className="w-6 h-6 mr-3" />
                   {t('contact.faqButton')}

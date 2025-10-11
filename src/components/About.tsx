@@ -30,28 +30,28 @@ const About = () => {
       icon: Users,
       number: "5,000+",
       label: t('about.statsLabel1'),
-      color: "from-emerald-400 to-emerald-600",
+      color: "from-success/80 to-success",
       description: t('about.statsDesc1')
     },
     {
       icon: Clock,
       number: "7j/7",
       label: t('about.statsLabel2'),
-      color: "from-blue-400 to-blue-600",
+      color: "from-info/80 to-info",
       description: t('about.statsDesc2')
     },
     {
       icon: Trophy,
       number: "98%",
       label: t('about.statsLabel3'),
-      color: "from-amber-400 to-amber-600",
+      color: "from-warning/80 to-warning",
       description: t('about.statsDesc3')
     },
     {
       icon: Globe,
       number: "95%",
       label: t('about.statsLabel4'),
-      color: "from-purple-400 to-purple-600",
+      color: "from-accent/80 to-accent",
       description: t('about.statsDesc4')
     }
   ];
@@ -61,19 +61,19 @@ const About = () => {
       icon: Heart,
       title: t('about.value1'),
       description: t('about.value1Desc'),
-      gradient: "from-rose-400 to-pink-600"
+      gradient: "from-secondary/80 to-secondary"
     },
     {
       icon: Target,
       title: t('about.value2'),
       description: t('about.value2Desc'),
-      gradient: "from-indigo-400 to-indigo-600"
+      gradient: "from-primary/80 to-primary"
     },
     {
       icon: Users,
       title: t('about.value3'),
       description: t('about.value3Desc'),
-      gradient: "from-teal-400 to-teal-600"
+      gradient: "from-accent/80 to-accent"
     }
   ];
 
@@ -112,14 +112,14 @@ const About = () => {
             return (
               <Card 
                 key={stat.label}
-                className="group p-8 text-center hover:shadow-2xl transition-all duration-500 hover:scale-105 border-0 bg-white/80 backdrop-blur-sm hover:bg-white/90 relative overflow-hidden"
+                className="group p-8 text-center hover:shadow-2xl transition-all duration-500 hover:scale-105 border-0 bg-card/80 backdrop-blur-sm hover:bg-card/90 relative overflow-hidden"
                 style={{ animationDelay: `${index * 0.15}s` }}
               >
                 {/* Background gradient effect */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
                 
                 <div className={`w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center transform group-hover:rotate-12 group-hover:scale-110 transition-all duration-500 shadow-lg`}>
-                  <IconComponent className="w-8 h-8 text-white" />
+                  <IconComponent className="w-8 h-8 text-primary-foreground" />
                 </div>
                 
                 <div className="text-3xl md:text-4xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors duration-300">
@@ -164,8 +164,8 @@ const About = () => {
                 Un an plus tard, tout a basculé : je suis tombée en dépression. Une vraie. J'étais seule, sans aide, sans nounou, sans relais. Impossible de trouver une aide familiale en milieu d'année. Mon compagnon, à distance, m'accompagnait comme il pouvait. Mais ce n'était pas suffisant.
               </p>
               
-              <div className="bg-red-50 border-l-4 border-red-400 p-6 rounded-r-2xl">
-                <p className="text-lg font-medium text-red-800">
+              <div className="bg-destructive/10 border-l-4 border-destructive p-6 rounded-r-2xl">
+                <p className="text-lg font-medium text-destructive">
                   Et puis j'ai été licenciée.
                 </p>
               </div>
@@ -174,8 +174,8 @@ const About = () => {
                 Pendant 9 mois, au chômage, j'ai enfin soufflé… Et j'ai repensé à tout ce que j'avais traversé. Mais aussi à tous ceux autour de moi : les étudiants en galère, les jeunes parents à bout, les seniors isolés, les couples débordés, les indépendants noyés sous les tâches.
               </p>
               
-              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-400 p-6 rounded-r-2xl">
-                <p className="text-xl font-bold text-yellow-800">
+              <div className="bg-warning/10 border-l-4 border-warning p-6 rounded-r-2xl">
+                <p className="text-xl font-bold text-warning-foreground">
                   C'est là qu'un déclic est né.
                 </p>
               </div>
@@ -194,15 +194,15 @@ const About = () => {
                   Notre mission :
                 </h4>
                 <div className="space-y-3">
-                  <div className="flex items-center space-x-3 p-3 bg-white/50 rounded-xl">
+                  <div className="flex items-center space-x-3 p-3 bg-card/50 rounded-xl">
                     <span className="text-2xl">🎯</span>
                     <span className="text-lg">Être un soutien réel, là où vous en avez besoin.</span>
                   </div>
-                  <div className="flex items-center space-x-3 p-3 bg-white/50 rounded-xl">
+                  <div className="flex items-center space-x-3 p-3 bg-card/50 rounded-xl">
                     <span className="text-2xl">🎯</span>
                     <span className="text-lg">Simplifier votre quotidien pour vous permettre de souffler.</span>
                   </div>
-                  <div className="flex items-center space-x-3 p-3 bg-white/50 rounded-xl">
+                  <div className="flex items-center space-x-3 p-3 bg-card/50 rounded-xl">
                     <span className="text-2xl">🎯</span>
                     <span className="text-lg">Offrir des services personnalisés pour alléger la logistique, la parentalité, les voyages, la maison ou l'administratif.</span>
                   </div>
@@ -261,7 +261,7 @@ const About = () => {
                 return (
                   <Card 
                     key={value.title} 
-                    className="group p-8 hover:shadow-2xl transition-all duration-500 hover:scale-105 border-0 bg-white/80 backdrop-blur-sm relative overflow-hidden"
+                    className="group p-8 hover:shadow-2xl transition-all duration-500 hover:scale-105 border-0 bg-card/80 backdrop-blur-sm relative overflow-hidden"
                     style={{ animationDelay: `${index * 0.2}s` }}
                   >
                     {/* Background gradient effect */}
@@ -269,7 +269,7 @@ const About = () => {
                     
                     <div className="flex items-start space-x-6 relative">
                       <div className={`w-16 h-16 bg-gradient-to-br ${value.gradient} rounded-2xl flex items-center justify-center flex-shrink-0 transform group-hover:rotate-12 group-hover:scale-110 transition-all duration-500 shadow-lg`}>
-                        <IconComponent className="w-8 h-8 text-white" />
+                        <IconComponent className="w-8 h-8 text-primary-foreground" />
                       </div>
                       <div className="flex-1">
                         <h4 className="font-bold text-xl text-foreground mb-3 group-hover:text-primary transition-colors duration-300">
