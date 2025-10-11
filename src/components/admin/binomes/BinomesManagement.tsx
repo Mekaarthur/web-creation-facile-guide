@@ -11,6 +11,8 @@ import { Plus, Edit, UserX, Users, History, Shield, Search, RotateCcw } from "lu
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import BinomesActions from "./BinomesActions";
+import { useBulkActions } from "@/hooks/useBulkActions";
+import { ExcelExportButton } from "@/components/admin/ExcelExportButton";
 
 const binomesActifs = [
   {
@@ -39,9 +41,38 @@ export const BinomesManagement = () => {
   const [selectedBinome, setSelectedBinome] = useState<any>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const { toast } = useToast();
+  
+  const {
+    selectedIds,
+    toggleSelection,
+    toggleAll,
+    clearSelection,
+    executeBulkAction,
+    isProcessing,
+    ConfirmationDialog,
+  } = useBulkActions();
+
+  const binomeIds = binomesActifs.map(b => b.id.toString());
+
+  const handleBulkDelete = async (ids: string[]) => {
+    // Simulation de suppression
+    toast({
+      title: "Binômes supprimés",
+      description: `${ids.length} binôme(s) ont été supprimés`,
+    });
+  };
+
+  const handleBulkSuspend = async (ids: string[]) => {
+    toast({
+      title: "Binômes suspendus",
+      description: `${ids.length} binôme(s) ont été suspendus`,
+    });
+  };
 
   return (
     <div className="space-y-6">
+      <ConfirmationDialog />
+      
       {/* Actions principales */}
       <div className="flex justify-between items-center">
         <div>
@@ -49,13 +80,62 @@ export const BinomesManagement = () => {
           <p className="text-muted-foreground">Créer, suivre et gérer les binômes</p>
         </div>
         
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Créer un Binôme
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          {selectedIds.length > 0 && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => clearSelection()}
+              >
+                Désélectionner ({selectedIds.length})
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => executeBulkAction({
+                  title: "Suspendre les binômes",
+                  description: `Êtes-vous sûr de vouloir suspendre ${selectedIds.length} binôme(s) ?`,
+                  confirmText: "Suspendre",
+                  variant: "destructive",
+                  onConfirm: handleBulkSuspend
+                })}
+                disabled={isProcessing}
+              >
+                Suspendre sélection
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => executeBulkAction({
+                  title: "Supprimer les binômes",
+                  description: `Êtes-vous sûr de vouloir supprimer ${selectedIds.length} binôme(s) ? Cette action est irréversible.`,
+                  confirmText: "Supprimer",
+                  variant: "destructive",
+                  onConfirm: handleBulkDelete
+                })}
+                disabled={isProcessing}
+              >
+                Supprimer sélection
+              </Button>
+            </>
+          )}
+          
+          <ExcelExportButton
+            data={binomesActifs}
+            filename="binomes-bikawo"
+            sheetName="Binômes"
+            title="Binômes Clients-Prestataires"
+            subtitle={`Généré le ${new Date().toLocaleDateString('fr-FR')}`}
+          />
+          
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Créer un Binôme
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Assistant de Création de Binôme</DialogTitle>
@@ -156,6 +236,7 @@ export const BinomesManagement = () => {
           </DialogContent>
         </Dialog>
       </div>
+    </div>
 
       {/* Liste des binômes avec outils */}
       <Card>

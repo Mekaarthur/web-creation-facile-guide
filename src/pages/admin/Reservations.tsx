@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar, Clock, User, Euro, Search, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ListPageSkeleton } from "@/components/ui/page-skeleton";
+import { ExcelExportButton } from "@/components/admin/ExcelExportButton";
 
 interface Reservation {
   id: string;
@@ -125,14 +127,23 @@ const AdminReservations = () => {
   };
 
   if (loading) {
-    return <div className="p-6">Chargement des réservations...</div>;
+    return <ListPageSkeleton />;
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Réservations</h1>
-        <p className="text-muted-foreground">Gestion des réservations de services</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Réservations</h1>
+          <p className="text-muted-foreground">Gestion des réservations de services</p>
+        </div>
+        <ExcelExportButton
+          data={filteredReservations}
+          filename="reservations-bikawo"
+          sheetName="Réservations"
+          title="Réservations Bikawo"
+          subtitle={`Généré le ${new Date().toLocaleDateString('fr-FR')}`}
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
