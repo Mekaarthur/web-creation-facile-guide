@@ -91,20 +91,15 @@ const AdminTools = () => {
     if (!confirm(`Êtes-vous sûr de vouloir nettoyer : ${cleanupType} ?`)) return;
     
     try {
-      const { data, error } = await supabase.functions.invoke('admin-tools', {
-        body: { 
-          action: 'cleanup_data',
-          type: cleanupType,
-          dryRun: false,
-          adminUserId: (await supabase.auth.getUser()).data.user?.id
-        }
+      const { data, error } = await supabase.rpc('cleanup_data', {
+        cleanup_type: cleanupType
       });
       
       if (error) throw error;
       
       toast({
         title: "Nettoyage terminé",
-        description: data.message,
+        description: `${data} éléments supprimés`,
       });
       
       fetchDatabaseStats(); // Refresh stats
@@ -157,16 +152,14 @@ const AdminTools = () => {
   const runDiagnostics = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('admin-system', {
-        body: { action: 'system_diagnostics' }
-      });
+      const { data, error } = await supabase.rpc('run_system_diagnostics');
       
       if (error) throw error;
       setDiagnosticsResult(data);
       
       toast({
         title: "Diagnostics terminés",
-        description: `Score global : ${data.overall_score?.score}/100`,
+        description: `Taille DB: ${(data as any).database_size}, Statut: ${(data as any).health_status}`,
       });
     } catch (error) {
       console.error('Error running diagnostics:', error);
@@ -389,28 +382,26 @@ const AdminTools = () => {
                 <div className="space-y-4">
                   <div className="p-4 bg-muted rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="font-semibold">Score global :</span>
-                      <Badge variant={diagnosticsResult.overall_score?.score >= 80 ? 'default' : 'destructive'}>
-                        {diagnosticsResult.overall_score?.score}/100 ({diagnosticsResult.overall_score?.grade})
+                      <span className="font-semibold">Statut de santé :</span>
+                      <Badge variant={diagnosticsResult.health_status === 'excellent' ? 'default' : 'destructive'}>
+                        {diagnosticsResult.health_status}
                       </Badge>
                     </div>
+                    <p className="text-sm text-muted-foreground">
+                      Taille DB: {diagnosticsResult.database_size}
+                    </p>
                   </div>
 
-                  <div className="grid gap-3">
-                    {diagnosticsResult.diagnostics?.map((diagnostic: any, index: number) => (
-                      <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center gap-3">
-                          {getStatusIcon(diagnostic.status)}
-                          <div>
-                            <h4 className="font-medium">{diagnostic.test}</h4>
-                            <p className="text-sm text-muted-foreground">{diagnostic.value}</p>
-                          </div>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold">Métriques de performance</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      {diagnosticsResult.performance_metrics && Object.entries(diagnosticsResult.performance_metrics).map(([key, value]: [string, any]) => (
+                        <div key={key} className="p-3 border rounded-lg">
+                          <p className="text-sm text-muted-foreground capitalize">{key.replace(/_/g, ' ')}</p>
+                          <p className="text-xl font-bold">{value}</p>
                         </div>
-                        <Badge variant={diagnostic.status === 'good' ? 'default' : 'destructive'}>
-                          {diagnostic.status}
-                        </Badge>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}

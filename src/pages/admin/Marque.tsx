@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   Palette, 
   Save, 
@@ -114,19 +115,69 @@ const AdminMarque = () => {
     });
   };
 
-  const handleFileUpload = (type: 'logo' | 'favicon') => {
-    // Simulate file upload
-    toast({
-      title: `${type === 'logo' ? 'Logo' : 'Favicon'} téléchargé`,
-      description: "Le fichier a été téléchargé avec succès.",
-    });
+  const handleFileUpload = async (type: 'logo' | 'favicon', event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${type}-${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('brand-assets')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('brand-assets')
+        .getPublicUrl(filePath);
+
+      updateSetting('identity', type === 'logo' ? 'logo_url' : 'favicon_url', data.publicUrl);
+
+      toast({
+        title: `${type === 'logo' ? 'Logo' : 'Favicon'} téléchargé`,
+        description: "Le fichier a été téléchargé avec succès.",
+      });
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast({
+        title: "Erreur d'upload",
+        description: "Impossible de télécharger le fichier.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const generateBrandKit = () => {
-    toast({
-      title: "Kit de marque généré",
-      description: "Votre kit de marque est prêt à télécharger.",
-    });
+  const generateBrandKit = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-brand-kit', {
+        body: { settings }
+      });
+
+      if (error) throw error;
+
+      // Download the generated file
+      const link = document.createElement('a');
+      link.href = data.download_url;
+      link.download = 'bikawo-brand-kit.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "Kit de marque généré",
+        description: "Votre kit de marque est prêt à télécharger.",
+      });
+    } catch (error) {
+      console.error('Error generating brand kit:', error);
+      toast({
+        title: "Erreur de génération",
+        description: "Impossible de générer le kit de marque.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (loading || !settings) {
@@ -339,10 +390,21 @@ const AdminMarque = () => {
                         ) : (
                           <ImageIcon className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
                         )}
-                        <Button variant="outline" size="sm" onClick={() => handleFileUpload('logo')}>
-                          <Upload className="w-4 h-4 mr-2" />
-                          Télécharger
-                        </Button>
+                        <label htmlFor="logo-upload">
+                          <Button variant="outline" size="sm" asChild>
+                            <span>
+                              <Upload className="w-4 h-4 mr-2" />
+                              Télécharger
+                            </span>
+                          </Button>
+                        </label>
+                        <input
+                          id="logo-upload"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileUpload('logo', e)}
+                          className="hidden"
+                        />
                       </div>
                     </div>
                     
@@ -358,10 +420,21 @@ const AdminMarque = () => {
                         ) : (
                           <div className="w-8 h-8 mx-auto mb-2 bg-muted rounded" />
                         )}
-                        <Button variant="outline" size="sm" onClick={() => handleFileUpload('favicon')}>
-                          <Upload className="w-4 h-4 mr-2" />
-                          Télécharger
-                        </Button>
+                        <label htmlFor="favicon-upload">
+                          <Button variant="outline" size="sm" asChild>
+                            <span>
+                              <Upload className="w-4 h-4 mr-2" />
+                              Télécharger
+                            </span>
+                          </Button>
+                        </label>
+                        <input
+                          id="favicon-upload"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileUpload('favicon', e)}
+                          className="hidden"
+                        />
                       </div>
                     </div>
                   </div>

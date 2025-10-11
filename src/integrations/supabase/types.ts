@@ -3761,6 +3761,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      cleanup_data: {
+        Args: { cleanup_type: string }
+        Returns: number
+      }
       cleanup_old_security_logs: {
         Args: Record<PropertyKey, never>
         Returns: number
@@ -3768,6 +3772,10 @@ export type Database = {
       confirm_booking: {
         Args: { booking_id: string; provider_confirms: boolean }
         Returns: boolean
+      }
+      confirm_payment_manually: {
+        Args: { p_notes?: string; p_payment_id: string }
+        Returns: Json
       }
       create_binome: {
         Args: {
@@ -4016,6 +4024,14 @@ export type Database = {
       reset_mission_queue: {
         Args: Record<PropertyKey, never>
         Returns: number
+      }
+      retry_failed_payment: {
+        Args: { p_payment_id: string }
+        Returns: Json
+      }
+      run_system_diagnostics: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       user_has_permission: {
         Args: { permission_type: string }

@@ -116,31 +116,38 @@ export default function AdminPaiements() {
     try {
       setActionLoading(paymentId);
       
-      const token = (await supabase.auth.getSession()).data.session?.access_token;
+      let result;
       
-      let url = `https://cgrosjzmbgxmtvwxictr.supabase.co/functions/v1/admin-payments?action=${action}&paymentId=${paymentId}`;
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...extraData
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de l\'action');
+      if (action === 'retry') {
+        const { data, error } = await supabase.rpc('retry_failed_payment', {
+          p_payment_id: paymentId
+        });
+        if (error) throw error;
+        result = data;
+      } else if (action === 'confirm') {
+        const { data, error } = await supabase.rpc('confirm_payment_manually', {
+          p_payment_id: paymentId,
+          p_notes: extraData?.notes || null
+        });
+        if (error) throw error;
+        result = data;
+      } else if (action === 'refund') {
+        const { error } = await supabase
+          .from('payments')
+          .update({ 
+            status: 'rembourse',
+            refund_date: new Date().toISOString(),
+            refund_amount: extraData?.amount,
+            admin_notes: extraData?.reason 
+          })
+          .eq('id', paymentId);
+        if (error) throw error;
+        result = { success: true };
       }
-
-      const result = await response.json();
 
       toast({
         title: "Succès",
-        description: `Action ${action} effectuée avec succès`,
+        description: result?.message || `Action ${action} effectuée avec succès`,
       });
 
       // Recharger les données
@@ -149,7 +156,7 @@ export default function AdminPaiements() {
       setRefundAmount('');
       setRefundReason('');
       setConfirmNotes('');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur:', error);
       toast({
         title: "Erreur",
