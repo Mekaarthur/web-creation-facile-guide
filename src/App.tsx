@@ -56,6 +56,7 @@ import AdminTools from "./pages/admin/Tools";
 import AdminModeration from "./pages/admin/Moderation";
 import AdminBinomes from "./pages/admin/Binomes";
 import TestsEmails from "./pages/admin/TestsEmails";
+import Monitoring from "./pages/admin/Monitoring";
 import AdminMessagerie from "./pages/admin/Messagerie";
 import AdminRemunerations from "./pages/admin/Remunerations";
 import AdminPaiements from "./pages/admin/Paiements";
@@ -171,6 +172,7 @@ const App = () => (
                <Route path="utilisateurs" element={<AdminUtilisateurs />} />
                <Route path="prestataires" element={<AdminPrestataires />} />
               <Route path="binomes" element={<AdminBinomes />} />
+              <Route path="monitoring" element={<Monitoring />} />
               <Route path="tests-emails" element={<TestsEmails />} />
                <Route path="demandes" element={<AdminClientRequests />} />
                <Route path="candidatures" element={<AdminJobApplications />} />

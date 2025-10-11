@@ -164,6 +164,12 @@ const navigationGroups = [
     label: "Tests & Systèmes",
     items: [
       { 
+        title: "Monitoring", 
+        href: "/admin/monitoring", 
+        icon: TrendingUp,
+        badge: null
+      },
+      { 
         title: "Tests Emails", 
         href: "/admin/tests-emails", 
         icon: Mail,

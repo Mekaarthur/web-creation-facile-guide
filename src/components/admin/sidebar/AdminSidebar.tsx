@@ -92,6 +92,7 @@ const menuItems = [
   {
     title: "Tests & Systèmes",
     items: [
+      { title: "Monitoring", url: "/admin/monitoring", icon: Activity },
       { title: "Tests Critiques", url: "/modern-admin/tests-critiques", icon: Shield },
       { title: "Tests Emails", url: "/admin/tests-emails", icon: Mail },
     ]
