@@ -184,6 +184,45 @@ const resources = {
       "serviceSubgrid.details": "Détails",
       "serviceSubgrid.reserve": "Réserver",
       
+      // Services Packages
+      "servicesPackages.mostPopular": "Le plus populaire",
+      "servicesPackages.moreServices": "autres services",
+      "servicesPackages.pricingOptions.carte.title": "À la carte",
+      "servicesPackages.pricingOptions.carte.description": "Choisir n'importe quel service Bika selon vos besoins ponctuels",
+      "servicesPackages.pricingOptions.carte.features": ["Facturation à l'heure", "Tous services Bika", "Réservation simple"],
+      "servicesPackages.pricingOptions.hebdo.title": "Formule Hebdo avec engagement",
+      "servicesPackages.pricingOptions.hebdo.description": "Panier libre d'heures combinant Kids + Maison + Travel selon vos besoins - À interrompre à n'importe quel moment",
+      "servicesPackages.pricingOptions.hebdo.features": ["Formule 10h/semaine", "Combinaisons illimitées", "Suivi personnalisé", "Résiliable à tout moment"],
+      "servicesPackages.pricingOptions.mensuel.title": "Formule Mensuel avec engagement",
+      "servicesPackages.pricingOptions.mensuel.description": "Combinaisons illimitées avec suivi mensuel personnalisé - À interrompre à n'importe quel moment",
+      "servicesPackages.pricingOptions.mensuel.features": ["40h/mois", "Accès à tous les services", "Suivi mensuel dédié", "Résiliable à tout moment"],
+      "servicesPackages.pricingOptions.premium.title": "Premium",
+      "servicesPackages.pricingOptions.premium.description": "Accès libre Bikawo Plus & Bika Travel prioritaire",
+      "servicesPackages.pricingOptions.premium.features": ["Accès libre Bikawo Plus", "Travel prioritaire", "Concierge 24h/7j"],
+      
+      // Sub Service
+      "subService.notFound": "Sous-service introuvable",
+      "subService.notFoundDesc": "Le contenu demandé n'existe pas ou a été déplacé.",
+      "subService.backToServices": "Retour aux services",
+      "subService.bookNow": "Réserver maintenant",
+      
+      // Bika Kids
+      "bikaKids.title": "Garde d'enfants à domicile",
+      "bikaKids.subtitle": "Des nounous expertes pour vos enfants",
+      "bikaKids.keyPoints": [
+        "Garde d'enfants experts et sélectionnés",
+        "Sécurisé, bienveillant, éducatif",
+        "Paris & Île-de-France (91, 92, 93, 94, 95, 78)"
+      ],
+      "bikaKids.primaryCTA": "Réserver ma garde",
+      "bikaKids.secondaryCTA": "Devenir garde d'enfants",
+      "bikaKids.benefits.0.title": "On est sécurisé",
+      "bikaKids.benefits.0.description": "Gardes d'enfants vérifiés, expérimentés et bienveillants. Sécurité et bien-être garantis pour vos petits.",
+      "bikaKids.benefits.1.title": "On est bienveillant",
+      "bikaKids.benefits.1.description": "Approche éducative personnalisée selon l'âge et les besoins spécifiques de vos enfants.",
+      "bikaKids.benefits.2.title": "On est flexible",
+      "bikaKids.benefits.2.description": "Garde ponctuelle, régulière, d'urgence. Nous nous adaptons parfaitement à vos besoins familiaux.",
+      
       // Espace Personnel
       "personalSpace.title": "Mon Espace Client",
       "personalSpace.welcome": "Bienvenue {{name}} chez Bikawo",
@@ -548,6 +587,45 @@ const resources = {
       "serviceSubgrid.title": "Our {{packageTitle}} sub-services",
       "serviceSubgrid.details": "Details",
       "serviceSubgrid.reserve": "Book",
+      
+      // Services Packages
+      "servicesPackages.mostPopular": "Most Popular",
+      "servicesPackages.moreServices": "more services",
+      "servicesPackages.pricingOptions.carte.title": "À la carte",
+      "servicesPackages.pricingOptions.carte.description": "Choose any Bika service according to your one-time needs",
+      "servicesPackages.pricingOptions.carte.features": ["Hourly billing", "All Bika services", "Simple booking"],
+      "servicesPackages.pricingOptions.hebdo.title": "Weekly Plan with commitment",
+      "servicesPackages.pricingOptions.hebdo.description": "Free basket of hours combining Kids + Home + Travel according to your needs - Cancel anytime",
+      "servicesPackages.pricingOptions.hebdo.features": ["10h/week plan", "Unlimited combinations", "Personalized follow-up", "Cancel anytime"],
+      "servicesPackages.pricingOptions.mensuel.title": "Monthly Plan with commitment",
+      "servicesPackages.pricingOptions.mensuel.description": "Unlimited combinations with personalized monthly follow-up - Cancel anytime",
+      "servicesPackages.pricingOptions.mensuel.features": ["40h/month", "Access to all services", "Dedicated monthly follow-up", "Cancel anytime"],
+      "servicesPackages.pricingOptions.premium.title": "Premium",
+      "servicesPackages.pricingOptions.premium.description": "Unlimited access to Bikawo Plus & priority Bika Travel",
+      "servicesPackages.pricingOptions.premium.features": ["Unlimited Bikawo Plus access", "Priority Travel", "24/7 Concierge"],
+      
+      // Sub Service
+      "subService.notFound": "Service not found",
+      "subService.notFoundDesc": "The requested content does not exist or has been moved.",
+      "subService.backToServices": "Back to services",
+      "subService.bookNow": "Book now",
+      
+      // Bika Kids
+      "bikaKids.title": "Childcare at home",
+      "bikaKids.subtitle": "Expert nannies for your children",
+      "bikaKids.keyPoints": [
+        "Expert and selected childcare providers",
+        "Safe, caring, educational",
+        "Paris & Île-de-France (91, 92, 93, 94, 95, 78)"
+      ],
+      "bikaKids.primaryCTA": "Book my childcare",
+      "bikaKids.secondaryCTA": "Become a nanny",
+      "bikaKids.benefits.0.title": "We are secure",
+      "bikaKids.benefits.0.description": "Verified, experienced and caring childcare providers. Safety and well-being guaranteed for your little ones.",
+      "bikaKids.benefits.1.title": "We are caring",
+      "bikaKids.benefits.1.description": "Personalized educational approach according to the age and specific needs of your children.",
+      "bikaKids.benefits.2.title": "We are flexible",
+      "bikaKids.benefits.2.description": "One-time, regular, emergency care. We adapt perfectly to your family needs.",
       
       // Personal Space
       "personalSpace.title": "My Client Area",

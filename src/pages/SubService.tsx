@@ -23,23 +23,23 @@ const SubServicePage = () => {
     return { currentCategory, sub };
   }, [category, slug]);
 
+  const { i18n, t } = useTranslation();
+
   if (!currentCategory || !sub) {
     return (
       <div className="min-h-screen">
         <Navbar />
         <div className="pt-24 max-w-3xl mx-auto px-4 text-center">
-          <h1 className="text-2xl font-bold mb-2">Sous-service introuvable</h1>
-          <p className="text-muted-foreground mb-6">Le contenu demandé n'existe pas ou a été déplacé.</p>
+          <h1 className="text-2xl font-bold mb-2">{t('subService.notFound')}</h1>
+          <p className="text-muted-foreground mb-6">{t('subService.notFoundDesc')}</p>
           <Button asChild>
-            <Link to="/services">Retour aux services</Link>
+            <Link to="/services">{t('subService.backToServices')}</Link>
           </Button>
         </div>
         <Footer />
       </div>
     );
   }
-
-  const { i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en');
   const subTrans = isEn && currentCategory && sub
     ? serviceTranslations[currentCategory.key]?.subservices?.[sub.slug]
@@ -95,9 +95,9 @@ const SubServicePage = () => {
                 </Card>
               )}
               <div className="flex gap-3 pt-2">
-                <Button onClick={() => setOpen(true)} className="flex-1">Réserver maintenant</Button>
+                <Button onClick={() => setOpen(true)} className="flex-1">{t('subService.bookNow')}</Button>
                 <Button variant="outline" asChild>
-                  <Link to={`/services`}>Retour aux services</Link>
+                  <Link to={`/services`}>{t('subService.backToServices')}</Link>
                 </Button>
               </div>
             </div>
@@ -108,7 +108,7 @@ const SubServicePage = () => {
       {/* Sticky CTA on mobile */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75 p-3">
         <div className="max-w-5xl mx-auto">
-          <Button className="w-full" onClick={() => setOpen(true)}>Réserver maintenant</Button>
+          <Button className="w-full" onClick={() => setOpen(true)}>{t('subService.bookNow')}</Button>
         </div>
       </div>
 

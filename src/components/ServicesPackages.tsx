@@ -60,7 +60,7 @@ const ServicesPackages = () => {
   const { addToCart, getCartItemsCount } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   const handleReservation = (pkg: any) => {
     if (!user) {
@@ -149,32 +149,32 @@ const ServicesPackages = () => {
 
   const pricingOptions = [
     {
-      title: "À la carte",
+      title: t('servicesPackages.pricingOptions.carte.title'),
       price: "22-25€",
-      description: "Choisir n'importe quel service Bika selon vos besoins ponctuels",
-      features: ["Facturation à l'heure", "Tous services Bika", "Réservation simple"],
+      description: t('servicesPackages.pricingOptions.carte.description'),
+      features: t('servicesPackages.pricingOptions.carte.features', { returnObjects: true }) as string[],
       color: "outline"
     },
     {
-      title: "Formule Hebdo avec engagement",
+      title: t('servicesPackages.pricingOptions.hebdo.title'),
       price: "10h - 200€",
-      description: "Panier libre d'heures combinant Kids + Maison + Travel selon vos besoins - À interrompre à n'importe quel moment",
-      features: ["Formule 10h/semaine", "Combinaisons illimitées", "Suivi personnalisé", "Résiliable à tout moment"],
+      description: t('servicesPackages.pricingOptions.hebdo.description'),
+      features: t('servicesPackages.pricingOptions.hebdo.features', { returnObjects: true }) as string[],
       color: "primary",
       popular: true
     },
     {
-      title: "Formule Mensuel avec engagement", 
+      title: t('servicesPackages.pricingOptions.mensuel.title'), 
       price: "40h - 800€",
-      description: "Combinaisons illimitées avec suivi mensuel personnalisé - À interrompre à n'importe quel moment",
-      features: ["40h/mois", "Accès à tous les services", "Suivi mensuel dédié", "Résiliable à tout moment"],
+      description: t('servicesPackages.pricingOptions.mensuel.description'),
+      features: t('servicesPackages.pricingOptions.mensuel.features', { returnObjects: true }) as string[],
       color: "accent"
     },
     {
-      title: "Premium",
+      title: t('servicesPackages.pricingOptions.premium.title'),
       price: "≥ 1400€",
-      description: "Accès libre Bikawo Plus & Bika Travel prioritaire",
-      features: ["Accès libre Bikawo Plus", "Travel prioritaire", "Concierge 24h/7j"],
+      description: t('servicesPackages.pricingOptions.premium.description'),
+      features: t('servicesPackages.pricingOptions.premium.features', { returnObjects: true }) as string[],
       color: "hero"
     }
   ];
@@ -197,7 +197,7 @@ const ServicesPackages = () => {
               >
                 {pkg.popular && (
                   <div className="absolute -top-3 left-6 bg-accent text-accent-foreground px-3 py-1 rounded-full text-xs font-medium">
-                    Le plus populaire
+                    {t('servicesPackages.mostPopular')}
                   </div>
                 )}
                 
@@ -244,11 +244,11 @@ const ServicesPackages = () => {
                          <span className="text-muted-foreground">{typeof service === 'string' ? service : service.name}</span>
                        </li>
                      ))}
-                     {pkg.services.length > 3 && (
-                       <li className="text-xs text-accent font-medium">
-                         +{pkg.services.length - 3} autres services
-                       </li>
-                     )}
+                      {pkg.services.length > 3 && (
+                        <li className="text-xs text-accent font-medium">
+                          +{pkg.services.length - 3} {t('servicesPackages.moreServices')}
+                        </li>
+                      )}
                    </ul>
 
                   {/* Price */}
