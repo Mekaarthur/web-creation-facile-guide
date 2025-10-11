@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -51,6 +52,7 @@ import ProviderServices from '@/components/ProviderServices';
 import ProviderServiceZones from '@/components/ProviderServiceZones';
 
 const EnhancedProviderDashboard = () => {
+  const { t } = useTranslation();
   const {
     provider,
     missions,
@@ -98,22 +100,22 @@ const EnhancedProviderDashboard = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'confirmed': return 'bg-green-100 text-green-800 border-green-200';
-      case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'in_progress': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'completed': return 'bg-gray-100 text-gray-800 border-gray-200';
-      case 'cancelled': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'confirmed': return 'bg-success/10 text-success border-success/20';
+      case 'pending': return 'bg-warning/10 text-warning border-warning/20';
+      case 'in_progress': return 'bg-info/10 text-info border-info/20';
+      case 'completed': return 'bg-muted text-muted-foreground border-border';
+      case 'cancelled': return 'bg-destructive/10 text-destructive border-destructive/20';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'confirmed': return 'Confirmé';
-      case 'pending': return 'En attente';
-      case 'in_progress': return 'En cours';
-      case 'completed': return 'Terminé';
-      case 'cancelled': return 'Annulé';
+      case 'confirmed': return t('providerDashboard.status.confirmed');
+      case 'pending': return t('providerDashboard.status.pending');
+      case 'in_progress': return t('providerDashboard.status.inProgress');
+      case 'completed': return t('providerDashboard.status.completed');
+      case 'cancelled': return t('providerDashboard.status.cancelled');
       default: return status;
     }
   };
@@ -133,13 +135,13 @@ const EnhancedProviderDashboard = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-center text-destructive">Erreur de chargement</CardTitle>
+            <CardTitle className="text-center text-destructive">{t('providerDashboard.loadingError')}</CardTitle>
           </CardHeader>
           <CardContent className="text-center">
             <p className="text-muted-foreground mb-4">{error}</p>
             <Button onClick={() => refresh()} variant="outline">
               <RefreshCw className="w-4 h-4 mr-2" />
-              Réessayer
+              {t('providerDashboard.retry')}
             </Button>
           </CardContent>
         </Card>
@@ -159,7 +161,7 @@ const EnhancedProviderDashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
       {/* Modern Header */}
-      <div className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
+      <div className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -169,29 +171,29 @@ const EnhancedProviderDashboard = () => {
               <div>
                 <div className="flex items-center gap-3">
                   <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                    Bonjour {provider?.profiles?.first_name || 'Prestataire'} ! 👋
+                    {t('providerDashboard.greeting')} {provider?.profiles?.first_name || 'Prestataire'} ! 👋
                   </h1>
                   {refreshing && (
                     <RefreshCw className="w-4 h-4 animate-spin text-primary" />
                   )}
                 </div>
-                <p className="text-muted-foreground">Votre espace professionnel Bikawo</p>
+                <p className="text-muted-foreground">{t('providerDashboard.welcome')}</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
               <Badge 
                 variant={provider?.is_verified ? "default" : "secondary"}
                 className={`text-sm ${provider?.is_verified 
-                  ? 'bg-green-100 text-green-800 border-green-200' 
-                  : 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                  ? 'bg-success/10 text-success border-success/20' 
+                  : 'bg-warning/10 text-warning border-warning/20'
                 }`}
               >
                 <CheckCircle className="h-3 w-3 mr-1" />
-                {provider?.is_verified ? 'Vérifié' : 'En cours de vérification'}
+                {provider?.is_verified ? t('providerDashboard.verified') : t('providerDashboard.inVerification')}
               </Badge>
               <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-3 py-2 rounded-lg">
                 <Phone className="h-4 w-4" />
-                <span>Support: 06 09 08 53 90</span>
+                <span>{t('providerDashboard.support')}: 06 09 08 53 90</span>
               </div>
               <Button 
                 variant="outline" 
@@ -201,11 +203,11 @@ const EnhancedProviderDashboard = () => {
                 className="hover:bg-primary/10"
               >
                 <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-                Actualiser
+                {t('providerDashboard.refresh')}
               </Button>
               <Button variant="outline" size="sm" className="hover:bg-primary/10">
                 <Settings className="h-4 w-4 mr-2" />
-                Paramètres
+                {t('providerDashboard.profile')}
               </Button>
             </div>
           </div>
@@ -214,20 +216,20 @@ const EnhancedProviderDashboard = () => {
 
       <div className="max-w-7xl mx-auto p-6 space-y-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-4 lg:grid-cols-8 bg-white/80 backdrop-blur-sm p-1 h-auto shadow-lg rounded-xl border-0">
+          <TabsList className="grid grid-cols-4 lg:grid-cols-8 bg-card/80 backdrop-blur-sm p-1 h-auto shadow-lg rounded-xl border-0">
             <TabsTrigger 
               value="dashboard" 
               className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
             >
               <LayoutDashboard className="h-5 w-5" />
-              <span className="text-xs font-medium">Accueil</span>
+              <span className="text-xs font-medium">{t('personalSpace.dashboard')}</span>
             </TabsTrigger>
             <TabsTrigger 
               value="appointments" 
               className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
             >
               <Calendar className="h-5 w-5" />
-              <span className="text-xs font-medium">RDV</span>
+              <span className="text-xs font-medium">{t('personalSpace.appointments')}</span>
               {stats.activeMissions > 0 && (
                 <Badge variant="destructive" className="text-xs px-1.5 py-0.5 h-5 min-w-5">
                   {stats.activeMissions}
