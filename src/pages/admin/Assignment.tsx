@@ -263,33 +263,32 @@ const AdminAssignment = () => {
     setLoading(prev => ({ ...prev, bulkAssign: true }));
     
     try {
-      const { data: { user } } = await supabase.auth.getUser();
       const missionIds = pendingMissions.slice(0, 5).map(m => m.id); // Max 5 missions
       
-      const { data, error } = await supabase.functions.invoke('admin-assignment', {
-        body: { 
-          action: 'bulk_assign_missions',
-          missionIds,
-          adminUserId: user?.id
-        }
+      const { data, error } = await supabase.rpc('bulk_assign_missions', {
+        p_mission_ids: missionIds
       });
 
       if (error) throw error;
 
-      if (data?.success) {
+      const successCount = data?.filter((r: any) => r.success).length || 0;
+      const failCount = data?.filter((r: any) => !r.success).length || 0;
+
+      if (successCount > 0) {
         toast({
-          title: "Assignation en lot terminée",
-          description: data.message
+          title: "Assignation en lot réussie",
+          description: `${successCount} missions assignées avec succès${failCount > 0 ? `, ${failCount} échecs` : ''}`
         });
-        loadInitialData(); // Recharger les données
       } else {
-        throw new Error(data?.error || 'Erreur lors de l\'assignation en lot');
+        throw new Error('Aucune mission n\'a pu être assignée');
       }
+
+      loadInitialData(); // Recharger les données
     } catch (error) {
       console.error('Erreur lors de l\'assignation en lot:', error);
       toast({
         title: "Erreur",
-        description: "Impossible d'effectuer l'assignation en lot",
+        description: error instanceof Error ? error.message : "Impossible d'effectuer l'assignation en lot",
         variant: "destructive"
       });
     } finally {
@@ -301,26 +300,15 @@ const AdminAssignment = () => {
     setLoading(prev => ({ ...prev, resetQueue: true }));
     
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      const { data, error } = await supabase.functions.invoke('admin-assignment', {
-        body: { 
-          action: 'reset_assignment_queue',
-          adminUserId: user?.id
-        }
-      });
+      const { data, error } = await supabase.rpc('reset_mission_queue');
 
       if (error) throw error;
 
-      if (data?.success) {
-        toast({
-          title: "Queue réinitialisée",
-          description: data.message
-        });
-        loadInitialData(); // Recharger les données
-      } else {
-        throw new Error(data?.error || 'Erreur lors de la réinitialisation');
-      }
+      toast({
+        title: "Queue réinitialisée",
+        description: `${data || 0} missions réinitialisées avec succès`
+      });
+      loadInitialData(); // Recharger les données
     } catch (error) {
       console.error('Erreur lors de la réinitialisation:', error);
       toast({

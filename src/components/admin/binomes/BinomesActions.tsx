@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Users,
   UserX,
@@ -70,66 +71,181 @@ export const BinomesActions: React.FC<BinomesActionsProps> = ({ binome, onUpdate
       description: "Analyse des performances du binôme...",
     });
 
-    setTimeout(() => {
+    try {
+      const { data, error } = await supabase.rpc('analyze_binome_performance', {
+        p_binome_id: binome.id.toString()
+      });
+
+      if (error) throw error;
+
+      const result = data as any;
+
       setIsAnalyzing(false);
       toast({
         title: "Analyse terminée",
-        description: "Rapport d'analyse généré avec succès",
+        description: `Score: ${result.compatibility_score}% | Succès: ${result.success_rate}% | Note: ${result.average_rating}/5`,
       });
-    }, 2000);
+    } catch (error: any) {
+      setIsAnalyzing(false);
+      console.error('Erreur analyse binôme:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Erreur lors de l'analyse",
+        variant: "destructive"
+      });
+    }
   };
 
   const creerBinome = () => {
     toast({
-      title: "Nouveau binôme",
-      description: "Interface de création de binôme ouverte",
+      title: "Création de binôme",
+      description: "Fonctionnalité disponible depuis l'onglet principal Binômes",
     });
+    // Utiliser la fonction RPC create_binome() avec les IDs appropriés
   };
 
-  const changerBackup = (nouveauBackup: string) => {
-    onUpdate(binome.id, { backup: nouveauBackup });
-    toast({
-      title: "Backup modifié",
-      description: `Nouveau prestataire de backup: ${nouveauBackup}`,
-    });
+  const changerBackup = async (nouveauBackup: string) => {
+    try {
+      const { error } = await supabase.rpc('change_backup_provider', {
+        p_binome_id: binome.id.toString(),
+        p_new_backup_provider_id: nouveauBackup
+      });
+
+      if (error) throw error;
+
+      onUpdate(binome.id, { backup: nouveauBackup });
+      toast({
+        title: "Backup modifié",
+        description: `Nouveau prestataire de backup assigné avec succès`,
+      });
+    } catch (error: any) {
+      console.error('Erreur changement backup:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Erreur lors du changement",
+        variant: "destructive"
+      });
+    }
   };
 
-  const voirHistorique = () => {
-    toast({
-      title: "Historique",
-      description: `Affichage de l'historique complet du binôme ${binome.client} - ${binome.prestataire}`,
-    });
+  const voirHistorique = async () => {
+    try {
+      const { data, error } = await supabase.rpc('get_binome_history', {
+        p_binome_id: binome.id.toString()
+      });
+
+      if (error) throw error;
+
+      console.log('Historique du binôme:', data);
+      toast({
+        title: "Historique",
+        description: `${(data as any)?.length || 0} actions enregistrées pour ce binôme`,
+      });
+      // TODO: Afficher dans un dialog ou une modale
+    } catch (error: any) {
+      console.error('Erreur historique:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Erreur lors de la récupération",
+        variant: "destructive"
+      });
+    }
   };
 
-  const dissoudreBinome = () => {
-    toast({
-      title: "Dissolution confirmée",
-      description: `Le binôme ${binome.client} - ${binome.prestataire} a été dissous`,
-      variant: "destructive",
-    });
-    onUpdate(binome.id, { status: 'dissous' });
+  const dissoudreBinome = async () => {
+    const reason = window.prompt("Raison de la dissolution du binôme:");
+    if (!reason) return;
+
+    try {
+      const { error } = await supabase.rpc('dissolve_binome', {
+        p_binome_id: binome.id.toString(),
+        p_reason: reason
+      });
+
+      if (error) throw error;
+
+      onUpdate(binome.id, { status: 'dissous' });
+      toast({
+        title: "Dissolution confirmée",
+        description: `Le binôme ${binome.client} - ${binome.prestataire} a été dissous`,
+        variant: "destructive",
+      });
+    } catch (error: any) {
+      console.error('Erreur dissolution:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Erreur lors de la dissolution",
+        variant: "destructive"
+      });
+    }
   };
 
-  const recruterBackup = () => {
-    toast({
-      title: "Recrutement backup",
-      description: "Recherche d'un nouveau prestataire de backup en cours...",
-    });
+  const recruterBackup = async () => {
+    try {
+      const { error } = await supabase.rpc('recruit_backup_provider', {
+        p_binome_id: binome.id.toString()
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Recrutement backup",
+        description: "Processus lancé - Admins notifiés",
+      });
+    } catch (error: any) {
+      console.error('Erreur recrutement:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Erreur lors du recrutement",
+        variant: "destructive"
+      });
+    }
   };
 
-  const marquerTraite = () => {
-    onUpdate(binome.id, { status: 'traite' });
-    toast({
-      title: "Binôme traité",
-      description: "Le binôme a été marqué comme traité",
-    });
+  const marquerTraite = async () => {
+    try {
+      const { error } = await supabase.rpc('mark_binome_resolved', {
+        p_binome_id: binome.id.toString(),
+        p_resolution_notes: "Marqué comme résolu par admin"
+      });
+
+      if (error) throw error;
+
+      onUpdate(binome.id, { status: 'traite' });
+      toast({
+        title: "Binôme traité",
+        description: "Le binôme a été marqué comme traité",
+      });
+    } catch (error: any) {
+      console.error('Erreur marquage:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Erreur lors du marquage",
+        variant: "destructive"
+      });
+    }
   };
 
-  const redistribuer = () => {
-    toast({
-      title: "Redistribution",
-      description: "Recherche d'un nouveau prestataire principal en cours...",
-    });
+  const redistribuer = async () => {
+    try {
+      const { data, error } = await supabase.rpc('redistribute_binome_missions', {
+        p_binome_id: binome.id.toString()
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Redistribution réussie",
+        description: `${data || 0} missions redistribuées au prestataire backup`,
+      });
+    } catch (error: any) {
+      console.error('Erreur redistribution:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Erreur lors de la redistribution",
+        variant: "destructive"
+      });
+    }
   };
 
   const contactCommercial = () => {
@@ -146,11 +262,31 @@ export const BinomesActions: React.FC<BinomesActionsProps> = ({ binome, onUpdate
     });
   };
 
-  const lancerMediation = () => {
-    toast({
-      title: "Médiation initiée",
-      description: "Processus de médiation démarré entre les parties",
-    });
+  const lancerMediation = async () => {
+    const reason = window.prompt("Raison de la médiation:");
+    if (!reason) return;
+
+    try {
+      const { data, error } = await supabase.rpc('initiate_mediation', {
+        p_binome_id: binome.id.toString(),
+        p_reason: reason,
+        p_priority: 'medium'
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Médiation initiée",
+        description: `Processus de médiation lancé (ID: ${data})`,
+      });
+    } catch (error: any) {
+      console.error('Erreur médiation:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Erreur lors de la médiation",
+        variant: "destructive"
+      });
+    }
   };
 
   return (

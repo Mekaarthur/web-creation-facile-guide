@@ -131,6 +131,130 @@ export type Database = {
         }
         Relationships: []
       }
+      binomes: {
+        Row: {
+          backup_provider_id: string
+          client_id: string
+          compatibility_score: number | null
+          created_at: string
+          dissolution_reason: string | null
+          dissolved_at: string | null
+          failed_missions: number | null
+          id: string
+          last_mission_date: string | null
+          missions_count: number | null
+          notes: string | null
+          primary_provider_id: string
+          status: string
+          successful_missions: number | null
+          updated_at: string
+        }
+        Insert: {
+          backup_provider_id: string
+          client_id: string
+          compatibility_score?: number | null
+          created_at?: string
+          dissolution_reason?: string | null
+          dissolved_at?: string | null
+          failed_missions?: number | null
+          id?: string
+          last_mission_date?: string | null
+          missions_count?: number | null
+          notes?: string | null
+          primary_provider_id: string
+          status?: string
+          successful_missions?: number | null
+          updated_at?: string
+        }
+        Update: {
+          backup_provider_id?: string
+          client_id?: string
+          compatibility_score?: number | null
+          created_at?: string
+          dissolution_reason?: string | null
+          dissolved_at?: string | null
+          failed_missions?: number | null
+          id?: string
+          last_mission_date?: string | null
+          missions_count?: number | null
+          notes?: string | null
+          primary_provider_id?: string
+          status?: string
+          successful_missions?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "binomes_backup_provider_id_fkey"
+            columns: ["backup_provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "binomes_backup_provider_id_fkey"
+            columns: ["backup_provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "binomes_primary_provider_id_fkey"
+            columns: ["primary_provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "binomes_primary_provider_id_fkey"
+            columns: ["primary_provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      binomes_history: {
+        Row: {
+          action_type: string
+          binome_id: string
+          created_at: string
+          id: string
+          new_data: Json | null
+          notes: string | null
+          old_data: Json | null
+          performed_by: string
+        }
+        Insert: {
+          action_type: string
+          binome_id: string
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          notes?: string | null
+          old_data?: Json | null
+          performed_by: string
+        }
+        Update: {
+          action_type?: string
+          binome_id?: string
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          notes?: string | null
+          old_data?: Json | null
+          performed_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "binomes_history_binome_id_fkey"
+            columns: ["binome_id"]
+            isOneToOne: false
+            referencedRelation: "binomes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_slots: {
         Row: {
           booking_date: string
@@ -1643,6 +1767,53 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      mediations: {
+        Row: {
+          assigned_to: string | null
+          binome_id: string
+          created_at: string
+          id: string
+          priority: string
+          reason: string
+          resolution_notes: string | null
+          resolved_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          binome_id: string
+          created_at?: string
+          id?: string
+          priority?: string
+          reason: string
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          binome_id?: string
+          created_at?: string
+          id?: string
+          priority?: string
+          reason?: string
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mediations_binome_id_fkey"
+            columns: ["binome_id"]
+            isOneToOne: false
+            referencedRelation: "binomes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       missions: {
         Row: {
@@ -3509,6 +3680,10 @@ export type Database = {
       }
     }
     Functions: {
+      analyze_binome_performance: {
+        Args: { p_binome_id: string }
+        Returns: Json
+      }
       assign_mission_manually: {
         Args: {
           p_admin_user_id?: string
@@ -3516,6 +3691,14 @@ export type Database = {
           p_provider_id: string
         }
         Returns: boolean
+      }
+      bulk_assign_missions: {
+        Args: { p_mission_ids: string[] }
+        Returns: {
+          error_message: string
+          mission_id: string
+          success: boolean
+        }[]
       }
       calculate_cart_total: {
         Args: { cart_id_param: string }
@@ -3558,6 +3741,10 @@ export type Database = {
         }
         Returns: string
       }
+      change_backup_provider: {
+        Args: { p_binome_id: string; p_new_backup_provider_id: string }
+        Returns: boolean
+      }
       check_admin_role: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -3581,6 +3768,15 @@ export type Database = {
       confirm_booking: {
         Args: { booking_id: string; provider_confirms: boolean }
         Returns: boolean
+      }
+      create_binome: {
+        Args: {
+          p_backup_provider_id: string
+          p_client_id: string
+          p_notes?: string
+          p_primary_provider_id: string
+        }
+        Returns: string
       }
       create_booking_from_request: {
         Args: { provider_id: string; request_id: string; service_id: string }
@@ -3611,6 +3807,10 @@ export type Database = {
       current_user_email: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      dissolve_binome: {
+        Args: { p_binome_id: string; p_reason: string }
+        Returns: boolean
       }
       expire_old_carts: {
         Args: Record<PropertyKey, never>
@@ -3643,6 +3843,18 @@ export type Database = {
       generate_referral_code: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_binome_history: {
+        Args: { p_binome_id: string }
+        Returns: {
+          action_type: string
+          created_at: string
+          id: string
+          new_data: Json
+          notes: string
+          old_data: Json
+          performed_by: string
+        }[]
       }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
@@ -3727,6 +3939,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      initiate_mediation: {
+        Args: { p_binome_id: string; p_priority?: string; p_reason: string }
+        Returns: string
+      }
       is_platform_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -3759,6 +3975,23 @@ export type Database = {
         }
         Returns: undefined
       }
+      mark_binome_resolved: {
+        Args: { p_binome_id: string; p_resolution_notes?: string }
+        Returns: boolean
+      }
+      match_providers_for_client: {
+        Args: {
+          p_client_id: string
+          p_location?: string
+          p_service_type?: string
+        }
+        Returns: {
+          backup_provider_id: string
+          compatibility_score: number
+          primary_provider_id: string
+          reasoning: string
+        }[]
+      }
       mission_checkin: {
         Args: { booking_id: string; location_info?: string; photos?: string[] }
         Returns: boolean
@@ -3771,6 +4004,18 @@ export type Database = {
           photos?: string[]
         }
         Returns: boolean
+      }
+      recruit_backup_provider: {
+        Args: { p_binome_id: string }
+        Returns: boolean
+      }
+      redistribute_binome_missions: {
+        Args: { p_binome_id: string }
+        Returns: number
+      }
+      reset_mission_queue: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       user_has_permission: {
         Args: { permission_type: string }

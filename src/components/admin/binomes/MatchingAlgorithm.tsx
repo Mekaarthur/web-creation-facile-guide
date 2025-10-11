@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { MapPin, Star, Clock, Heart, Zap, Target } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const matchingSuggestions = [
   {
@@ -64,12 +66,57 @@ const getCritereBadge = (score: number) => {
 };
 
 export const MatchingAlgorithm = () => {
+  const { toast } = useToast();
   const [selectedClient, setSelectedClient] = useState("");
   const [searchResults, setSearchResults] = useState(matchingSuggestions);
 
-  const handleRunMatching = () => {
-    // Simulation de l'algorithme de matching
-    console.log("Exécution de l'algorithme de matching pour:", selectedClient);
+  const handleRunMatching = async () => {
+    if (!selectedClient) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez sélectionner un client",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Récupérer l'UUID du client sélectionné (simulé pour l'instant)
+      const { data: clientProfile, error: clientError } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .ilike('first_name', `%${selectedClient}%`)
+        .single();
+
+      if (clientError) throw clientError;
+
+      const { data, error } = await supabase.rpc('match_providers_for_client', {
+        p_client_id: clientProfile.user_id,
+        p_service_type: null,
+        p_location: null
+      });
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        toast({
+          title: "Matching réussi",
+          description: `Score: ${data[0].compatibility_score} | ${data[0].reasoning}`,
+        });
+      } else {
+        toast({
+          title: "Aucun match trouvé",
+          description: "Aucun prestataire compatible pour ce client",
+        });
+      }
+    } catch (error: any) {
+      console.error('Erreur matching:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Erreur lors du matching",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
