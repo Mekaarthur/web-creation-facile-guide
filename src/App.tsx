@@ -100,6 +100,8 @@ import AuditReport from "./components/AuditReport";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
+import Communications from "./pages/admin/Communications";
+import Urgences from "./pages/admin/Urgences";
 
 const queryClient = new QueryClient();
 
@@ -189,6 +191,9 @@ const App = () => (
                 <Route path="finance" element={<AdminFinance />} />
                 <Route path="finances" element={<AdminFinance />} />
                <Route path="analytics" element={<AdminAnalytics />} />
+               <Route path="statistiques" element={<AdminAnalytics />} />
+               <Route path="communications" element={<AdminRoute><Communications /></AdminRoute>} />
+               <Route path="urgences" element={<AdminRoute><Urgences /></AdminRoute>} />
                <Route path="rapports" element={<AdminReports />} />
                <Route path="outils" element={<AdminTools />} />
                <Route path="audit" element={<AuditReport />} />

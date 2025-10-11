@@ -18,7 +18,8 @@ import {
   Bell,
   FileText,
   Building2,
-  Heart
+  Heart,
+  Send
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -53,8 +54,6 @@ const navigationGroupsStatic = [
       // Badge remplacé dynamiquement
       { name: 'Prestataires', href: '/admin/prestataires', icon: Building2, badge: null },
       { name: 'Binômes', href: '/admin/binomes', icon: Heart, badge: null },
-      // Badge remplacé dynamiquement
-      { name: 'Modération', href: '/admin/moderation', icon: Shield, badge: null },
     ]
   },
   {
@@ -64,7 +63,15 @@ const navigationGroupsStatic = [
       { name: 'Messagerie', href: '/admin/messagerie', icon: MessageSquare, badge: null },
       { name: 'Messages & Emails', href: '/admin/messages', icon: MessageSquare, badge: null },
       { name: 'Tests Emails', href: '/admin/tests-emails', icon: MessageSquare, badge: null },
+      { name: 'Communications', href: '/admin/communications', icon: Send, badge: null },
       { name: 'Notifications', href: '/admin/notifications', icon: Bell, badge: null },
+    ]
+  },
+  {
+    title: 'Urgences & Modération',
+    items: [
+      { name: 'Urgences', href: '/admin/urgences', icon: AlertTriangle, badge: null },
+      { name: 'Modération', href: '/admin/moderation', icon: Shield, badge: null },
     ]
   },
   {
