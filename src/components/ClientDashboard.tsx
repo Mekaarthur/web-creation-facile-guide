@@ -171,7 +171,9 @@ const ClientDashboard = ({ onNavigateToTab }: ClientDashboardProps) => {
                         variant="ghost" 
                         size="sm" 
                         className="h-6 text-xs"
-                        onClick={() => {/* TODO: Voir prestataire */}}
+                        onClick={() => {
+                          window.location.href = `/provider/${booking.provider_id}`;
+                        }}
                       >
                         Voir prestataire
                       </Button>
@@ -179,7 +181,9 @@ const ClientDashboard = ({ onNavigateToTab }: ClientDashboardProps) => {
                         variant="ghost" 
                         size="sm" 
                         className="h-6 text-xs"
-                        onClick={() => {/* TODO: Suivre mission */}}
+                        onClick={() => {
+                          window.location.href = `/booking/${booking.id}/track`;
+                        }}
                       >
                         Suivre mission
                       </Button>

@@ -130,10 +130,25 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
       `${format(slot.date, "dd/MM/yyyy", { locale: fr })} de ${slot.startTime} à ${slot.endTime}`
     ).join(", ");
 
+    // Mapper les catégories de services
+    const mapServiceCategory = (category: string) => {
+      const categoryMap: Record<string, string> = {
+        'Ménage': 'bika_maison',
+        'Jardinage': 'entretien_espaces_verts',
+        'Garde d\'enfants': 'bika_kids',
+        'Aide aux seniors': 'bika_seniors',
+        'Animaux': 'bika_animals',
+        'Transport': 'bika_travel',
+        'Administratif': 'bika_vie',
+        'Professionnel': 'bika_pro',
+      };
+      return categoryMap[category] || 'bika_maison';
+    };
+
     // Adapter au format BikawoCartItem
     addToCart({
       serviceName: service.name,
-      serviceCategory: service.category as any, // TODO: mapper correctement les catégories
+      serviceCategory: mapServiceCategory(service.category) as any,
       packageTitle: packageTitle,
       price: service.price,
       timeSlot: {

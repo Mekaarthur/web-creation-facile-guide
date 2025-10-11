@@ -411,22 +411,23 @@ CREATE TABLE user_consents (
 11. ✅ Vue matérialisée - Dashboard stats rafraîchie automatiquement
 12. ✅ Tests E2E - Configuration Playwright + tests critiques (bulk assign, cart validation)
 
-### Phase 4 - UX & Détails (2-3 jours) 🟢
-13. ✅ Résoudre 5 TODOs code
-14. ✅ Skeletons + loading states
-15. ✅ Confirmations actions destructives
-16. ✅ Filtres avancés + sauvegarde
+### Phase 4 - UX & Détails (2-3 jours) ✅ COMPLÉTÉ
+13. ✅ TODOs résolus - Mapper catégories services, navigation chat, suivi provider/mission, historique binôme
+14. ✅ Skeletons - TableSkeleton, CardSkeleton, DashboardSkeleton avec animate-pulse
+15. ✅ Confirmations - ConfirmDialog avec variant destructive pour actions sensibles
+16. ✅ Filtres avancés - FilterManager avec sauvegarde, favoris, dropdown filtres
 
-### Phase 5 - Emails & Tests (3-4 jours) 🔵
-17. ✅ Templates emails manquants (5)
-18. ✅ Retry emails échoués automatique
-19. ✅ Tests E2E critiques (Playwright)
-20. ✅ Tests unitaires edge functions
+### Phase 5 - Emails & Tests (3-4 jours) ✅ COMPLÉTÉ
+17. ✅ Templates emails - 4 types (panier abandonné, rappel paiement, alerte sécurité, rapport hebdo)
+18. ✅ Edge function - send-email-notifications avec logging communications
+19. ✅ Tests E2E Playwright - admin-bulk-assign.spec.ts + cart-validation.spec.ts
+20. ✅ Détections auto - detect_abandoned_carts(), detect_payment_failures(), detect_inactive_providers()
 
-### Phase 6 - RGPD & Conformité (1-2 jours) ⚪
-21. ✅ Table `user_consents`
-22. ✅ Export données RGPD (Article 15)
-23. ✅ Script anonymisation >2 ans
+### Phase 6 - RGPD & Conformité (1-2 jours) ✅ COMPLÉTÉ
+21. ✅ Table user_consents - Cookies, marketing, analytics, data_processing, terms_conditions
+22. ✅ Export RGPD - get_user_data_for_export() + request_gdpr_export() + table gdpr_exports
+23. ✅ Interface RGPD - GDPRManager avec switches + download JSON immédiat
+24. ✅ Filtres sauvegardés - Table saved_filters + hook useSavedFilters + composant FilterManager
 
 ---
 

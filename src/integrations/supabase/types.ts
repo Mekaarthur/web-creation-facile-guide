@@ -1448,6 +1448,48 @@ export type Database = {
         }
         Relationships: []
       }
+      gdpr_exports: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          expires_at: string
+          export_type: string
+          file_size: number | null
+          file_url: string | null
+          id: string
+          requested_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          expires_at?: string
+          export_type?: string
+          file_size?: number | null
+          file_url?: string | null
+          id?: string
+          requested_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          expires_at?: string
+          export_type?: string
+          file_size?: number | null
+          file_url?: string | null
+          id?: string
+          requested_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       incidents: {
         Row: {
           booking_id: string | null
@@ -3283,6 +3325,39 @@ export type Database = {
           },
         ]
       }
+      saved_filters: {
+        Row: {
+          created_at: string | null
+          filter_config: Json
+          filter_name: string
+          filter_type: string
+          id: string
+          is_favorite: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          filter_config: Json
+          filter_name: string
+          filter_type: string
+          id?: string
+          is_favorite?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          filter_config?: Json
+          filter_name?: string
+          filter_type?: string
+          id?: string
+          is_favorite?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       security_audit_log: {
         Row: {
           action_type: string
@@ -3510,6 +3585,48 @@ export type Database = {
           severity?: string
           title?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_consents: {
+        Row: {
+          consent_type: string
+          created_at: string | null
+          granted: boolean
+          granted_at: string | null
+          id: string
+          ip_address: unknown | null
+          updated_at: string | null
+          user_agent: string | null
+          user_id: string
+          version: string
+          withdrawn_at: string | null
+        }
+        Insert: {
+          consent_type: string
+          created_at?: string | null
+          granted: boolean
+          granted_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          updated_at?: string | null
+          user_agent?: string | null
+          user_id: string
+          version: string
+          withdrawn_at?: string | null
+        }
+        Update: {
+          consent_type?: string
+          created_at?: string | null
+          granted?: boolean
+          granted_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          updated_at?: string | null
+          user_agent?: string | null
+          user_id?: string
+          version?: string
+          withdrawn_at?: string | null
         }
         Relationships: []
       }
@@ -4000,6 +4117,10 @@ export type Database = {
         Args: { p_conversation_id: string; p_user_id: string }
         Returns: number
       }
+      get_user_data_for_export: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -4091,6 +4212,17 @@ export type Database = {
         }
         Returns: boolean
       }
+      record_consent: {
+        Args: {
+          p_consent_type: string
+          p_granted: boolean
+          p_ip_address?: unknown
+          p_user_agent?: string
+          p_user_id: string
+          p_version: string
+        }
+        Returns: string
+      }
       recruit_backup_provider: {
         Args: { p_binome_id: string }
         Returns: boolean
@@ -4098,6 +4230,10 @@ export type Database = {
       redistribute_binome_missions: {
         Args: { p_binome_id: string }
         Returns: number
+      }
+      request_gdpr_export: {
+        Args: { p_user_id: string }
+        Returns: string
       }
       reset_mission_queue: {
         Args: Record<PropertyKey, never>

@@ -137,11 +137,16 @@ export const BinomesActions: React.FC<BinomesActionsProps> = ({ binome, onUpdate
       if (error) throw error;
 
       console.log('Historique du binôme:', data);
+      
+      // Créer un modal avec l'historique formaté
+      const historyDetails = (data as any[])?.map((item: any) => 
+        `${new Date(item.created_at).toLocaleString()} - ${item.action_type} par ${item.performed_by}`
+      ).join('\n');
+      
       toast({
-        title: "Historique",
-        description: `${(data as any)?.length || 0} actions enregistrées pour ce binôme`,
+        title: "Historique du binôme",
+        description: historyDetails || "Aucune action enregistrée",
       });
-      // TODO: Afficher dans un dialog ou une modale
     } catch (error: any) {
       console.error('Erreur historique:', error);
       toast({

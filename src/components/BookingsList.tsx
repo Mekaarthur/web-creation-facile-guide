@@ -273,7 +273,10 @@ const BookingsList = ({ userType }: BookingsListProps) => {
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => {/* TODO: Ouvrir la communication */}}
+                onClick={() => {
+                  // Navigation vers la page de messages
+                  window.location.href = `/messages?booking=${booking.id}`;
+                }}
               >
                 <MessageCircle className="w-4 h-4 mr-1" />
                 Chat
