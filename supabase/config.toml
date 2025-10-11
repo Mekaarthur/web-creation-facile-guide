@@ -136,3 +136,6 @@ verify_jwt = true  # Requires authentication
 
 [functions.check-timeouts]
 verify_jwt = false  # Called by cron job - uses service role key
+
+[functions.retry-failed-emails]
+verify_jwt = true  # Requires admin authentication
