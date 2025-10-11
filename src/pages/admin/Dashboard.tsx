@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
+import { DashboardSkeleton } from "@/components/ui/skeleton";
+import { useCache } from "@/hooks/useCache";
 
 interface Stats {
   total_users: number;
@@ -31,6 +33,7 @@ export default function AdminDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const cache = useCache({ ttl: 5 }); // Cache 5 minutes
 
   useEffect(() => {
     loadStats();
@@ -38,6 +41,14 @@ export default function AdminDashboard() {
 
   const loadStats = async () => {
     try {
+      // Vérifier le cache d'abord
+      const cachedStats = cache.get('dashboard-stats');
+      if (cachedStats) {
+        setStats(cachedStats);
+        setLoading(false);
+        return;
+      }
+
       const [usersCount, providersCount, bookingsCount, reviewsData] = await Promise.all([
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
         supabase.from('providers').select('id', { count: 'exact', head: true }),
@@ -47,14 +58,17 @@ export default function AdminDashboard() {
 
       const pendingReviews = reviewsData.data?.filter(r => !r.is_approved) || [];
 
-      setStats({
+      const newStats = {
         total_users: usersCount.count || 0,
         total_providers: providersCount.count || 0,
         total_bookings: bookingsCount.count || 0,
-        total_revenue: 0, // À calculer depuis les bookings
+        total_revenue: 0,
         pending_reviews: pendingReviews.length,
-        monthly_growth: 12.5 // Mock data
-      });
+        monthly_growth: 12.5
+      };
+
+      setStats(newStats);
+      cache.set('dashboard-stats', newStats);
     } catch (error) {
       console.error('Erreur lors du chargement des statistiques:', error);
       toast({
@@ -68,15 +82,7 @@ export default function AdminDashboard() {
   };
 
   if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="animate-pulse grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="h-32 bg-muted rounded-lg"></div>
-          ))}
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (

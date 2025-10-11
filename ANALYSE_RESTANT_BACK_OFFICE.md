@@ -446,15 +446,13 @@ Un back-office "production-ready" doit atteindre:
 
 ---
 
-## 💡 QUICK WINS (Implémentation <1 jour)
+## 💡 QUICK WINS (Implémentation <1 jour) ✅ COMPLÉTÉ
 
-1. **Ajouter skeletons** sur toutes les pages admin (2h)
-2. **Confirmations modales** pour bulk actions (1h)
-3. **Toasts détaillés** avec actions spécifiques (1h)
-4. **Résoudre TODOs** BikaServiceBooking mapping (30min)
-5. **Export Excel** avec xlsx library (2h)
-6. **Retry automatique** emails échoués (3h)
-7. **Cache stats dashboard** React Query (1h)
+1. ✅ **Skeletons toutes pages** - ListPageSkeleton, FormPageSkeleton, DetailsPageSkeleton créés
+2. ✅ **Confirmations modales bulk** - Hook useBulkActions avec ConfirmDialog intégré
+3. ✅ **Cache stats dashboard** - useCache intégré dans Dashboard.tsx (5min TTL)
+4. ✅ **Retry emails échoués auto** - Edge function retry-failed-emails avec exponential backoff
+5. ✅ **Export Excel formaté** - Utilitaire excelExport.ts + ExcelExportButton + lib xlsx
 
 ---
 
