@@ -12,22 +12,22 @@ const BikaMaison = () => {
       icon: <Sparkles className="w-10 h-10 text-white" />,
       title: "On est méticuleux",
       description: "Ménage et entretien irréprochables avec attention aux détails. Votre maison comme neuve.",
-      bgGradient: "bg-gradient-to-br from-cyan-50 to-blue-100",
-      iconGradient: "bg-gradient-to-r from-cyan-500 to-blue-600"
+      bgGradient: "bg-gradient-subtle",
+      iconGradient: "bg-gradient-primary"
     },
     {
       icon: <Home className="w-10 h-10 text-white" />,
       title: "On est pratique",
       description: "Services complets : ménage, repassage, petites réparations. Tout pour votre confort.",
-      bgGradient: "bg-gradient-to-br from-green-50 to-emerald-100",
-      iconGradient: "bg-gradient-to-r from-green-500 to-emerald-600"
+      bgGradient: "bg-gradient-subtle",
+      iconGradient: "bg-gradient-accent"
     },
     {
       icon: <CheckCircle className="w-10 h-10 text-white" />,
       title: "On est fiable",
       description: "Intervenants sélectionnés, ponctualité garantie. Une maison parfaitement entretenue.",
-      bgGradient: "bg-gradient-to-br from-indigo-50 to-purple-100",
-      iconGradient: "bg-gradient-to-r from-indigo-500 to-purple-600"
+      bgGradient: "bg-gradient-subtle",
+      iconGradient: "bg-gradient-hero"
     }
   ];
 
@@ -52,7 +52,7 @@ const BikaMaison = () => {
         primaryCTA="Réserver un service"
         secondaryCTA="Devenir intervenant"
         benefits={benefits}
-        heroGradient="bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700"
+        heroGradient="bg-gradient-hero"
       >
         <ServiceSubgrid categoryKey="maison" />
       </ServicePageLayout>

@@ -12,22 +12,22 @@ const BikaSeniors = () => {
       icon: <Heart className="w-10 h-10 text-white" />,
       title: "On est attentionné",
       description: "Accompagnement personnalisé avec bienveillance et respect de la dignité de nos aînés.",
-      bgGradient: "bg-gradient-to-br from-amber-50 to-orange-100",
-      iconGradient: "bg-gradient-to-r from-amber-500 to-orange-600"
+      bgGradient: "bg-gradient-subtle",
+      iconGradient: "bg-gradient-accent"
     },
     {
       icon: <Shield className="w-10 h-10 text-white" />,
       title: "On est professionnel",
       description: "Intervenants qualifiés, expérimentés et formés aux besoins spécifiques des seniors.",
-      bgGradient: "bg-gradient-to-br from-emerald-50 to-teal-100",
-      iconGradient: "bg-gradient-to-r from-emerald-500 to-teal-600"
+      bgGradient: "bg-gradient-subtle",
+      iconGradient: "bg-gradient-primary"
     },
     {
       icon: <Clock className="w-10 h-10 text-white" />,
       title: "On est disponible",
       description: "Services d'aide à domicile adaptés à tous les rythmes de vie et besoins quotidiens.",
-      bgGradient: "bg-gradient-to-br from-violet-50 to-purple-100",
-      iconGradient: "bg-gradient-to-r from-violet-500 to-purple-600"
+      bgGradient: "bg-gradient-subtle",
+      iconGradient: "bg-gradient-hero"
     }
   ];
 
@@ -52,7 +52,7 @@ const BikaSeniors = () => {
         primaryCTA="Réserver une aide"
         secondaryCTA="Devenir accompagnant"
         benefits={benefits}
-        heroGradient="bg-gradient-to-br from-amber-500 via-orange-600 to-red-700"
+        heroGradient="bg-gradient-hero"
       >
         <ServiceSubgrid categoryKey="seniors" />
       </ServicePageLayout>

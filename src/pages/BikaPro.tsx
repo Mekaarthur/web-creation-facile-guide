@@ -12,22 +12,22 @@ const BikaPro = () => {
       icon: <Briefcase className="w-10 h-10 text-white" />,
       title: "On est professionnel",
       description: "Assistants expérimentés dans l'administration et la gestion d'entreprise.",
-      bgGradient: "bg-gradient-to-br from-slate-50 to-gray-100",
-      iconGradient: "bg-gradient-to-r from-slate-500 to-gray-600"
+      bgGradient: "bg-gradient-subtle",
+      iconGradient: "bg-gradient-primary"
     },
     {
       icon: <TrendingUp className="w-10 h-10 text-white" />,
       title: "On est efficace",
       description: "Optimisation de vos processus administratifs pour gagner en productivité.",
-      bgGradient: "bg-gradient-to-br from-blue-50 to-indigo-100",
-      iconGradient: "bg-gradient-to-r from-blue-500 to-indigo-600"
+      bgGradient: "bg-gradient-subtle",
+      iconGradient: "bg-gradient-accent"
     },
     {
       icon: <Users className="w-10 h-10 text-white" />,
       title: "On est adaptable",
       description: "Solutions sur-mesure pour répondre aux besoins spécifiques de votre entreprise.",
-      bgGradient: "bg-gradient-to-br from-purple-50 to-violet-100",
-      iconGradient: "bg-gradient-to-r from-purple-500 to-violet-600"
+      bgGradient: "bg-gradient-subtle",
+      iconGradient: "bg-gradient-hero"
     }
   ];
 
@@ -52,7 +52,7 @@ const BikaPro = () => {
         primaryCTA="Demander un devis"
         secondaryCTA="Devenir assistant"
         benefits={benefits}
-        heroGradient="bg-gradient-to-br from-slate-500 via-gray-600 to-zinc-700"
+        heroGradient="bg-gradient-hero"
       >
         <ServiceSubgrid categoryKey="pro" />
       </ServicePageLayout>

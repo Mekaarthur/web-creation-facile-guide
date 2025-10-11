@@ -56,21 +56,21 @@ const ServicePageLayout = ({
       <section className={`relative ${heroGradient} py-16 lg:py-24 overflow-hidden`}>
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-72 h-72 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full translate-x-1/2 translate-y-1/2"></div>
+          <div className="absolute top-0 left-0 w-72 h-72 bg-primary-foreground rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary-foreground rounded-full translate-x-1/2 translate-y-1/2"></div>
         </div>
         
         <div className="container mx-auto px-4 relative">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left: Content */}
-            <div className="text-white space-y-8 order-2 lg:order-1">
+            <div className="text-primary-foreground space-y-8 order-2 lg:order-1">
               <div className="space-y-6">
                 <div>
                   <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight mb-4">
                     {title}
                   </h1>
                   {subtitle && (
-                    <p className="text-xl lg:text-2xl text-white/90 font-medium">
+                    <p className="text-xl lg:text-2xl text-primary-foreground/90 font-medium">
                       {subtitle}
                     </p>
                   )}
@@ -82,21 +82,21 @@ const ServicePageLayout = ({
                     {[...Array(5)].map((_, i) => (
                       <Star 
                         key={i} 
-                        className={`w-5 h-5 ${i < rating ? 'fill-white text-white' : 'text-white/40'}`} 
+                        className={`w-5 h-5 ${i < rating ? 'fill-primary-foreground text-primary-foreground' : 'text-primary-foreground/40'}`} 
                       />
                     ))}
                   </div>
-                  <span className="text-white/90 font-semibold text-lg">
+                  <span className="text-primary-foreground/90 font-semibold text-lg">
                     {rating}/5 - {reviewCount}
                   </span>
                 </div>
 
                 {/* Price */}
-                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
+                <div className="bg-primary-foreground/10 backdrop-blur-sm rounded-2xl p-4 border border-primary-foreground/20">
                   <div className="text-2xl lg:text-3xl font-bold mb-1">
                     {price}
                   </div>
-                  <div className="text-lg text-white/80">
+                  <div className="text-lg text-primary-foreground/80">
                     {t('servicePage.taxCredit', { discountPrice })}
                   </div>
                 </div>
@@ -106,8 +106,8 @@ const ServicePageLayout = ({
               <div className="space-y-4">
                 {keyPoints.map((point, index) => (
                   <div key={index} className="flex items-center space-x-3">
-                    <div className="flex-shrink-0 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-                      <CheckCircle className="w-4 h-4 text-white" />
+                    <div className="flex-shrink-0 w-6 h-6 bg-primary-foreground/20 rounded-full flex items-center justify-center">
+                      <CheckCircle className="w-4 h-4 text-primary-foreground" />
                     </div>
                     <span className="text-lg lg:text-xl font-medium">{point}</span>
                   </div>
@@ -119,7 +119,7 @@ const ServicePageLayout = ({
                 <Button 
                   size="lg" 
                   onClick={() => navigate('/custom-request')}
-                  className="bg-white text-gray-900 hover:bg-gray-100 px-8 py-4 shadow-xl text-lg font-bold rounded-xl h-auto transition-all duration-300 hover:scale-105"
+                  className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 px-8 py-4 shadow-xl text-lg font-bold rounded-xl h-auto transition-all duration-300 hover:scale-105"
                 >
                   {primaryCTA}
                   <ArrowRight className="ml-2 w-5 h-5" />
@@ -129,7 +129,7 @@ const ServicePageLayout = ({
                     size="lg" 
                     variant="outline"
                     onClick={() => navigate('/nous-recrutons')}
-                    className="border-2 border-white text-white hover:bg-white/10 px-8 py-4 text-lg font-bold rounded-xl h-auto backdrop-blur-sm"
+                    className="border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10 px-8 py-4 text-lg font-bold rounded-xl h-auto backdrop-blur-sm"
                   >
                     {secondaryCTA}
                   </Button>
@@ -145,12 +145,12 @@ const ServicePageLayout = ({
                   alt={heroImageAlt} 
                   className="w-full h-auto object-cover"
                 />
-                <div className="absolute inset-0 ring-1 ring-white/20 rounded-3xl"></div>
+                <div className="absolute inset-0 ring-1 ring-primary-foreground/20 rounded-3xl"></div>
               </div>
               
               {/* Floating Badge */}
-              <div className="absolute -top-4 -right-4 bg-white rounded-full p-4 shadow-xl">
-                <Badge className="bg-primary text-white text-sm font-bold px-3 py-1">
+              <div className="absolute -top-4 -right-4 bg-card rounded-full p-4 shadow-xl">
+                <Badge className="bg-primary text-primary-foreground text-sm font-bold px-3 py-1">
                   {t('servicePage.topService')}
                 </Badge>
               </div>

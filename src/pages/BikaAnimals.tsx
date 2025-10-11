@@ -12,22 +12,22 @@ const BikaAnimals = () => {
       icon: <Heart className="w-10 h-10 text-white" />,
       title: "On est passionné",
       description: "Amoureux des animaux, nous prenons soin de vos compagnons comme s'ils étaient les nôtres.",
-      bgGradient: "bg-gradient-to-br from-pink-50 to-rose-100",
-      iconGradient: "bg-gradient-to-r from-pink-500 to-rose-600"
+      bgGradient: "bg-gradient-subtle",
+      iconGradient: "bg-gradient-accent"
     },
     {
       icon: <Shield className="w-10 h-10 text-white" />,
       title: "On est responsable",
       description: "Pet-sitters expérimentés et de confiance. Sécurité et bien-être de vos animaux garantis.",
-      bgGradient: "bg-gradient-to-br from-emerald-50 to-green-100",
-      iconGradient: "bg-gradient-to-r from-emerald-500 to-green-600"
+      bgGradient: "bg-gradient-subtle",
+      iconGradient: "bg-gradient-primary"
     },
     {
       icon: <Stethoscope className="w-10 h-10 text-white" />,
       title: "On est vigilant",
       description: "Suivi personnalisé, soins adaptés et attention particulière aux besoins de chaque animal.",
-      bgGradient: "bg-gradient-to-br from-blue-50 to-cyan-100",
-      iconGradient: "bg-gradient-to-r from-blue-500 to-cyan-600"
+      bgGradient: "bg-gradient-subtle",
+      iconGradient: "bg-gradient-hero"
     }
   ];
 
@@ -52,7 +52,7 @@ const BikaAnimals = () => {
         primaryCTA="Réserver une garde"
         secondaryCTA="Devenir pet-sitter"
         benefits={benefits}
-        heroGradient="bg-gradient-to-br from-pink-500 via-rose-600 to-orange-700"
+        heroGradient="bg-gradient-hero"
       >
         <ServiceSubgrid categoryKey="animals" />
       </ServicePageLayout>

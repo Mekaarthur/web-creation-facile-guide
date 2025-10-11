@@ -12,22 +12,22 @@ const BikaVie = () => {
       icon: <Calendar className="w-10 h-10 text-white" />,
       title: "On est organisé",
       description: "Gestion complète de votre agenda et planification de vos événements personnels.",
-      bgGradient: "bg-gradient-to-br from-violet-50 to-purple-100",
-      iconGradient: "bg-gradient-to-r from-violet-500 to-purple-600"
+      bgGradient: "bg-gradient-subtle",
+      iconGradient: "bg-gradient-accent"
     },
     {
       icon: <FileText className="w-10 h-10 text-white" />,
       title: "On est minutieux",
       description: "Démarches administratives effectuées avec précision et dans les délais.",
-      bgGradient: "bg-gradient-to-br from-blue-50 to-indigo-100",
-      iconGradient: "bg-gradient-to-r from-blue-500 to-indigo-600"
+      bgGradient: "bg-gradient-subtle",
+      iconGradient: "bg-gradient-primary"
     },
     {
       icon: <Users className="w-10 h-10 text-white" />,
       title: "On est personnel",
       description: "Service sur-mesure adapté à votre style de vie et vos priorités personnelles.",
-      bgGradient: "bg-gradient-to-br from-rose-50 to-pink-100",
-      iconGradient: "bg-gradient-to-r from-rose-500 to-pink-600"
+      bgGradient: "bg-gradient-subtle",
+      iconGradient: "bg-gradient-hero"
     }
   ];
 
@@ -52,7 +52,7 @@ const BikaVie = () => {
         primaryCTA="Réserver un assistant"
         secondaryCTA="Devenir assistant personnel"
         benefits={benefits}
-        heroGradient="bg-gradient-to-br from-violet-500 via-purple-600 to-pink-700"
+        heroGradient="bg-gradient-hero"
       >
         <ServiceSubgrid categoryKey="vie" />
       </ServicePageLayout>

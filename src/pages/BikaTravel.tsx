@@ -12,22 +12,22 @@ const BikaTravel = () => {
       icon: <Plane className="w-10 h-10 text-white" />,
       title: "On est expert",
       description: "Spécialistes du voyage avec connaissance approfondie des destinations et procédures.",
-      bgGradient: "bg-gradient-to-br from-sky-50 to-blue-100",
-      iconGradient: "bg-gradient-to-r from-sky-500 to-blue-600"
+      bgGradient: "bg-gradient-subtle",
+      iconGradient: "bg-gradient-primary"
     },
     {
       icon: <MapPin className="w-10 h-10 text-white" />,
       title: "On est organisé",
       description: "Planification méticuleuse de vos voyages, rien n'est laissé au hasard.",
-      bgGradient: "bg-gradient-to-br from-emerald-50 to-green-100",
-      iconGradient: "bg-gradient-to-r from-emerald-500 to-green-600"
+      bgGradient: "bg-gradient-subtle",
+      iconGradient: "bg-gradient-accent"
     },
     {
       icon: <Luggage className="w-10 h-10 text-white" />,
       title: "On est pratique",
       description: "Accompagnement personnalisé : réservations, formalités, conseils voyage.",
-      bgGradient: "bg-gradient-to-br from-orange-50 to-amber-100",
-      iconGradient: "bg-gradient-to-r from-orange-500 to-amber-600"
+      bgGradient: "bg-gradient-subtle",
+      iconGradient: "bg-gradient-hero"
     }
   ];
 
@@ -52,7 +52,7 @@ const BikaTravel = () => {
         primaryCTA="Planifier mon voyage"
         secondaryCTA="Devenir assistant voyage"
         benefits={benefits}
-        heroGradient="bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-700"
+        heroGradient="bg-gradient-hero"
       >
         <ServiceSubgrid categoryKey="travel" />
       </ServicePageLayout>
