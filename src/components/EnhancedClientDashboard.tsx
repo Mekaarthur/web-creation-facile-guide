@@ -3,6 +3,7 @@ import ModernClientDashboard from "@/components/ModernClientDashboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useClientDashboard } from "@/hooks/useClientDashboard";
 import { useSmartSearch } from "@/hooks/useSmartSearch";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,7 @@ interface EnhancedClientDashboardProps {
 
 const EnhancedClientDashboard = ({ onNavigateToTab }: EnhancedClientDashboardProps) => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [showAllBookings, setShowAllBookings] = useState(false);
   
@@ -51,12 +53,12 @@ const EnhancedClientDashboard = ({ onNavigateToTab }: EnhancedClientDashboardPro
   }, [stats]);
 
   const satisfactionLevel = useMemo(() => {
-    if (!stats?.averageRating) return 'Nouveau';
-    if (stats.averageRating >= 4.8) return 'Excellence';
-    if (stats.averageRating >= 4.5) return 'Très satisfait';
-    if (stats.averageRating >= 4.0) return 'Satisfait';
-    return 'À améliorer';
-  }, [stats]);
+    if (!stats?.averageRating) return t('clientDashboard.satisfactionLevels.new');
+    if (stats.averageRating >= 4.8) return t('clientDashboard.satisfactionLevels.excellent');
+    if (stats.averageRating >= 4.5) return t('clientDashboard.satisfactionLevels.verySatisfied');
+    if (stats.averageRating >= 4.0) return t('clientDashboard.satisfactionLevels.satisfied');
+    return t('clientDashboard.satisfactionLevels.toImprove');
+  }, [stats, t]);
 
   const firstName = user?.email?.split('@')[0] || 'Client';
 
@@ -101,11 +103,11 @@ const EnhancedClientDashboard = ({ onNavigateToTab }: EnhancedClientDashboardPro
                 </div>
                 <div>
                   <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent flex items-center gap-2">
-                    Bonjour {firstName} ! 
-                    <Sparkles className="w-6 h-6 text-yellow-500" />
+                    {t('clientDashboard.greeting')} {firstName} ! 
+                    <Sparkles className="w-6 h-6 text-warning" />
                   </h1>
                   <p className="text-muted-foreground text-lg">
-                    Votre tableau de bord intelligent • {satisfactionLevel}
+                    {t('clientDashboard.intelligentDashboard')} • {satisfactionLevel}
                   </p>
                 </div>
               </div>
@@ -113,8 +115,8 @@ const EnhancedClientDashboard = ({ onNavigateToTab }: EnhancedClientDashboardPro
               {/* Barre de recherche intelligente */}
               <div className="relative mb-6">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
-                <Input
-                  placeholder="Rechercher vos services, réservations, factures..."
+              <Input
+                  placeholder={t('clientDashboard.searchPlaceholder')}
                   className="pl-12 pr-12 h-12 text-base bg-background/80 backdrop-blur-sm border-2 border-transparent focus:border-primary/50 focus:bg-background transition-all"
                   value={searchTerm}
                   onChange={(e) => {
@@ -131,9 +133,9 @@ const EnhancedClientDashboard = ({ onNavigateToTab }: EnhancedClientDashboardPro
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>Services</DropdownMenuItem>
-                      <DropdownMenuItem>Réservations</DropdownMenuItem>
-                      <DropdownMenuItem>Factures</DropdownMenuItem>
+                      <DropdownMenuItem>{t('services.title')}</DropdownMenuItem>
+                      <DropdownMenuItem>{t('clientDashboard.bookingsCount')}</DropdownMenuItem>
+                      <DropdownMenuItem>{t('clientDashboard.invoicesCount')}</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -141,32 +143,32 @@ const EnhancedClientDashboard = ({ onNavigateToTab }: EnhancedClientDashboardPro
 
               {/* Métriques avancées */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-3 bg-white/80 rounded-xl border hover:shadow-md transition-all">
+                <div className="text-center p-3 bg-card/80 rounded-xl border hover:shadow-md transition-all">
                   <div className="text-2xl font-bold text-primary flex items-center justify-center gap-1">
                     {stats?.upcomingBookings || 0}
                     {monthlyGrowth > 0 && <ArrowUp className="w-4 h-4 text-success" />}
                   </div>
-                  <div className="text-xs text-muted-foreground">Réservations</div>
+                  <div className="text-xs text-muted-foreground">{t('clientDashboard.bookingsCount')}</div>
                   {monthlyGrowth > 0 && (
-                    <div className="text-xs text-success font-medium">+{monthlyGrowth}% ce mois</div>
+                    <div className="text-xs text-success font-medium">+{monthlyGrowth}% {t('clientDashboard.monthlyGrowth')}</div>
                   )}
                 </div>
-                <div className="text-center p-3 bg-white/80 rounded-xl border hover:shadow-md transition-all">
+                <div className="text-center p-3 bg-card/80 rounded-xl border hover:shadow-md transition-all">
                   <div className="flex items-center justify-center gap-1">
                     <div className="text-2xl font-bold text-primary">{stats?.averageRating?.toFixed(1) || '0.0'}</div>
-                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    <Star className="w-4 h-4 fill-warning text-warning" />
                   </div>
-                  <div className="text-xs text-muted-foreground">Satisfaction</div>
-                  <div className="text-xs text-yellow-600 font-medium">{satisfactionLevel}</div>
+                  <div className="text-xs text-muted-foreground">{t('clientDashboard.satisfaction')}</div>
+                  <div className="text-xs text-warning font-medium">{satisfactionLevel}</div>
                 </div>
-                <div className="text-center p-3 bg-white/80 rounded-xl border hover:shadow-md transition-all">
+                <div className="text-center p-3 bg-card/80 rounded-xl border hover:shadow-md transition-all">
                   <div className="text-2xl font-bold text-success">{Math.round(stats?.savedAmount || 0)}€</div>
-                  <div className="text-xs text-muted-foreground">Crédit d'impôt</div>
+                  <div className="text-xs text-muted-foreground">{t('clientDashboard.taxCredit')}</div>
                   <Progress value={creditImpotProgress} className="h-1 mt-1" />
                 </div>
-                <div className="text-center p-3 bg-white/80 rounded-xl border hover:shadow-md transition-all">
+                <div className="text-center p-3 bg-card/80 rounded-xl border hover:shadow-md transition-all">
                   <div className="text-2xl font-bold text-primary">{stats?.totalServices || 0}</div>
-                  <div className="text-xs text-muted-foreground">Services utilisés</div>
+                  <div className="text-xs text-muted-foreground">{t('clientDashboard.servicesUsed')}</div>
                   <div className="text-xs text-primary font-medium">+{Math.round((stats?.totalServices || 0) / 2)} récents</div>
                 </div>
               </div>
@@ -180,7 +182,7 @@ const EnhancedClientDashboard = ({ onNavigateToTab }: EnhancedClientDashboardPro
                 onClick={() => window.location.href = '/services'}
               >
                 <Plus className="w-5 h-5 mr-2" />
-                Nouvelle réservation
+                {t('clientDashboard.newBooking')}
               </Button>
               <Button 
                 variant="outline" 
@@ -189,7 +191,7 @@ const EnhancedClientDashboard = ({ onNavigateToTab }: EnhancedClientDashboardPro
                 className="hover:bg-primary/5"
               >
                 <TrendingUp className="w-4 h-4 mr-2" />
-                Actualiser
+                {t('clientDashboard.refresh')}
               </Button>
             </div>
           </div>
@@ -202,15 +204,15 @@ const EnhancedClientDashboard = ({ onNavigateToTab }: EnhancedClientDashboardPro
           {notifications.map((notification, index) => (
             <div 
               key={notification.id} 
-              className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl animate-slide-in-right"
+              className="flex items-center gap-3 p-4 bg-gradient-to-r from-info/10 to-info-foreground/10 border border-info/20 rounded-xl animate-slide-in-right"
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              <Bell className="w-5 h-5 text-blue-500" />
+              <Bell className="w-5 h-5 text-info" />
               <div className="flex-1">
-                <p className="font-medium text-blue-900">{notification.title}</p>
-                <p className="text-sm text-blue-700">{notification.message}</p>
+                <p className="font-medium text-info-foreground">{notification.title}</p>
+                <p className="text-sm text-info-foreground/80">{notification.message}</p>
               </div>
-              <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
+              <Button variant="ghost" size="sm" className="text-info hover:text-info-foreground">
                 {notification.action}
               </Button>
             </div>
@@ -231,9 +233,9 @@ const EnhancedClientDashboard = ({ onNavigateToTab }: EnhancedClientDashboardPro
                     <Calendar className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <span className="text-xl">Vos Prochaines Sessions</span>
+                    <span className="text-xl">{t('clientDashboard.nextSessions')}</span>
                     <p className="text-sm text-muted-foreground font-normal">
-                      {upcomingBookings?.length || 0} réservation(s) confirmée(s)
+                      {upcomingBookings?.length || 0} {t('clientDashboard.confirmedBookings')}
                     </p>
                   </div>
                 </CardTitle>
@@ -244,7 +246,7 @@ const EnhancedClientDashboard = ({ onNavigateToTab }: EnhancedClientDashboardPro
                     onClick={() => setShowAllBookings(!showAllBookings)}
                     className="hover:bg-primary/10 hover:text-primary"
                   >
-                    {showAllBookings ? 'Moins' : 'Tout voir'}
+                    {showAllBookings ? 'Moins' : t('clientDashboard.viewAll')}
                     <ChevronDown className={`w-4 h-4 ml-1 transition-transform ${showAllBookings ? 'rotate-180' : ''}`} />
                   </Button>
                 </div>
@@ -288,11 +290,11 @@ const EnhancedClientDashboard = ({ onNavigateToTab }: EnhancedClientDashboardPro
                           </div>
                         </div>
                         <div className="text-right space-y-2">
-                          <Badge 
+                        <Badge 
                             variant="outline" 
                             className="bg-success/10 text-success border-success/20 hover:bg-success/20 transition-colors"
                           >
-                            Confirmé
+                            {t('clientDashboard.status.confirmed')}
                           </Badge>
                           <div className="text-lg font-semibold text-primary">
                             {booking.total_price}€
@@ -310,9 +312,9 @@ const EnhancedClientDashboard = ({ onNavigateToTab }: EnhancedClientDashboardPro
                   <div className="w-24 h-24 bg-gradient-to-br from-muted/50 to-muted/80 rounded-full flex items-center justify-center mx-auto mb-6">
                     <Calendar className="w-10 h-10 text-muted-foreground" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-3">Aucune réservation à venir</h3>
+                  <h3 className="text-xl font-semibold mb-3">{t('clientDashboard.noUpcomingBooking')}</h3>
                   <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                    Découvrez nos services et réservez votre première prestation pour profiter de l'aide à domicile
+                    {t('clientDashboard.firstBooking')}
                   </p>
                   <Button 
                     size="lg"
@@ -320,7 +322,7 @@ const EnhancedClientDashboard = ({ onNavigateToTab }: EnhancedClientDashboardPro
                     className="bg-gradient-to-r from-primary to-secondary hover:shadow-lg"
                   >
                     <Sparkles className="w-5 h-5 mr-2" />
-                    Découvrir nos services
+                    {t('clientDashboard.discoverServices')}
                   </Button>
                 </div>
               )}
@@ -337,7 +339,7 @@ const EnhancedClientDashboard = ({ onNavigateToTab }: EnhancedClientDashboardPro
                 <div className="w-8 h-8 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg flex items-center justify-center">
                   <Zap className="w-5 h-5 text-primary" />
                 </div>
-                Actions rapides
+                {t('clientDashboard.quickActions')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
