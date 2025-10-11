@@ -1,4 +1,3 @@
-import { useState } from "react"
 import { NavLink, useLocation } from "react-router-dom"
 import {
   BarChart3,
@@ -31,79 +30,82 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar"
 import { Badge } from "@/components/ui/badge"
-
-const menuItems = [
-  {
-    title: "Vue d'ensemble",
-    items: [
-      { title: "Dashboard", url: "/modern-admin", icon: BarChart3 },
-      { title: "Analytics", url: "/modern-admin/analytics", icon: TrendingUp },
-      { title: "Temps Réel", url: "/modern-admin/realtime", icon: Activity },
-    ]
-  },
-  {
-    title: "Gestion Utilisateurs",
-    items: [
-      { title: "Clients", url: "/modern-admin/clients", icon: Users, badge: "248" },
-      { title: "Prestataires", url: "/modern-admin/providers", icon: UserCheck, badge: "127" },
-      { title: "Onboarding", url: "/modern-admin/onboarding", icon: CheckSquare, badge: "8" },
-      { title: "Matching IA", url: "/modern-admin/matching", icon: Zap, badge: "5" },
-      { title: "Candidatures", url: "/modern-admin/applications", icon: FileText, badge: "12" },
-      { title: "Binômes", url: "/modern-admin/binomes", icon: Star },
-    ]
-  },
-  {
-    title: "Operations",
-    items: [
-      { title: "Missions", url: "/modern-admin/missions", icon: Calendar, badge: "34" },
-      { title: "Réservations", url: "/modern-admin/reservations", icon: Clock },
-      { title: "Paiements", url: "/modern-admin/payments", icon: Euro },
-      { title: "Factures", url: "/modern-admin/invoices", icon: FileText },
-    ]
-  },
-  {
-    title: "Communication",
-    items: [
-      { title: "Messages", url: "/modern-admin/messages", icon: MessageSquare, badge: "23" },
-      { title: "Notifications", url: "/modern-admin/notifications", icon: Mail },
-      { title: "Avis & Notes", url: "/modern-admin/reviews", icon: Star },
-    ]
-  },
-  {
-    title: "Modération",
-    items: [
-      { title: "Alertes", url: "/modern-admin/alerts", icon: AlertTriangle, badge: "5" },
-      { title: "Signalements", url: "/modern-admin/reports", icon: Shield, badge: "2" },
-      { title: "Qualité", url: "/modern-admin/quality", icon: Star },
-    ]
-  },
-  {
-    title: "Configuration",
-    items: [
-      { title: "Zones", url: "/modern-admin/zones", icon: MapPin },
-      { title: "Paramètres", url: "/modern-admin/settings", icon: Settings },
-      { title: "Rapports", url: "/modern-admin/reports-data", icon: PieChart },
-    ]
-  },
-  {
-    title: "Tests & Systèmes",
-    items: [
-      { title: "Monitoring", url: "/admin/monitoring", icon: Activity },
-      { title: "Tests Critiques", url: "/modern-admin/tests-critiques", icon: Shield },
-      { title: "Tests Emails", url: "/admin/tests-emails", icon: Mail },
-    ]
-  }
-]
+import { useAdminCounts } from "@/hooks/useAdminCounts"
 
 export function AdminSidebar() {
   const { state } = useSidebar()
   const location = useLocation()
   const currentPath = location.pathname
   const collapsed = state === "collapsed"
+  
+  // Récupérer les counts dynamiques
+  const { data: counts } = useAdminCounts()
+
+  const menuItems = [
+    {
+      title: "Vue d'ensemble",
+      items: [
+        { title: "Dashboard", url: "/modern-admin", icon: BarChart3 },
+        { title: "Analytics", url: "/modern-admin/analytics", icon: TrendingUp },
+        { title: "Temps Réel", url: "/modern-admin/realtime", icon: Activity },
+      ]
+    },
+    {
+      title: "Gestion Utilisateurs",
+      items: [
+        { title: "Clients", url: "/modern-admin/clients", icon: Users },
+        { title: "Prestataires", url: "/modern-admin/providers", icon: UserCheck, badge: counts?.prestatairesPending },
+        { title: "Onboarding", url: "/modern-admin/onboarding", icon: CheckSquare },
+        { title: "Matching IA", url: "/modern-admin/matching", icon: Zap },
+        { title: "Candidatures", url: "/modern-admin/applications", icon: FileText, badge: counts?.candidatures },
+        { title: "Binômes", url: "/modern-admin/binomes", icon: Star },
+      ]
+    },
+    {
+      title: "Operations",
+      items: [
+        { title: "Missions", url: "/modern-admin/missions", icon: Calendar },
+        { title: "Réservations", url: "/modern-admin/reservations", icon: Clock },
+        { title: "Paiements", url: "/modern-admin/payments", icon: Euro },
+        { title: "Factures", url: "/modern-admin/invoices", icon: FileText },
+      ]
+    },
+    {
+      title: "Communication",
+      items: [
+        { title: "Messages", url: "/modern-admin/messages", icon: MessageSquare, badge: counts?.messages },
+        { title: "Notifications", url: "/modern-admin/notifications", icon: Mail },
+        { title: "Avis & Notes", url: "/modern-admin/reviews", icon: Star, badge: counts?.moderation },
+      ]
+    },
+    {
+      title: "Modération",
+      items: [
+        { title: "Alertes", url: "/modern-admin/alerts", icon: AlertTriangle, badge: counts?.alerts },
+        { title: "Signalements", url: "/modern-admin/reports", icon: Shield },
+        { title: "Qualité", url: "/modern-admin/quality", icon: Star },
+      ]
+    },
+    {
+      title: "Configuration",
+      items: [
+        { title: "Zones", url: "/modern-admin/zones", icon: MapPin },
+        { title: "Paramètres", url: "/modern-admin/settings", icon: Settings },
+        { title: "Rapports", url: "/modern-admin/reports-data", icon: PieChart },
+      ]
+    },
+    {
+      title: "Tests & Systèmes",
+      items: [
+        { title: "Monitoring", url: "/admin/monitoring", icon: Activity },
+        { title: "Tests Critiques", url: "/modern-admin/tests-critiques", icon: Shield },
+        { title: "Tests Emails", url: "/admin/tests-emails", icon: Mail },
+      ]
+    }
+  ]
 
   const isActive = (path: string) => currentPath === path
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
@@ -149,10 +151,10 @@ export function AdminSidebar() {
                       >
                         <item.icon className="h-4 w-4 flex-shrink-0" />
                         {!collapsed && (
-                          <>
+                           <>
                             <span className="flex-1">{item.title}</span>
-                            {item.badge && (
-                              <Badge variant="secondary" className="ml-auto text-xs">
+                            {item.badge !== undefined && item.badge > 0 && (
+                              <Badge variant="secondary" className="ml-auto text-xs bg-primary/10 text-primary border-primary/20">
                                 {item.badge}
                               </Badge>
                             )}

@@ -1,20 +1,34 @@
+import { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { AlertTriangle, Mail, ShoppingCart, Activity, RefreshCw, TrendingUp, CheckCircle } from "lucide-react";
+import { AlertTriangle, Mail, ShoppingCart, Activity, RefreshCw, TrendingUp, CheckCircle, Inbox } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DashboardSkeleton } from "@/components/ui/skeleton";
 import { useSystemAlerts, useDashboardStats, resolveAlert, useFailedEmails, useAbandonedCarts } from "@/hooks/useSystemMonitoring";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export const MonitoringDashboard = () => {
   const { toast } = useToast();
 
-  // Hooks de monitoring
+  // Hooks de monitoring avec refresh automatique
   const { data: systemAlerts, isLoading: loadingAlerts, refetch: refetchAlerts } = useSystemAlerts();
-  const { data: dashboardStats, isLoading: loadingStats } = useDashboardStats();
+  const { data: dashboardStats, isLoading: loadingStats, refetch: refetchStats } = useDashboardStats();
   const { data: failedEmails, isLoading: loadingEmails, refetch: refetchEmails } = useFailedEmails();
-  const { data: abandonedCarts, isLoading: loadingCarts } = useAbandonedCarts();
+  const { data: abandonedCarts, isLoading: loadingCarts, refetch: refetchCarts } = useAbandonedCarts();
+
+  // Auto-refresh toutes les 30 secondes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetchAlerts();
+      refetchStats();
+      refetchEmails();
+      refetchCarts();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [refetchAlerts, refetchStats, refetchEmails, refetchCarts]);
 
   const handleRetryEmails = async () => {
     try {
@@ -63,9 +77,25 @@ export const MonitoringDashboard = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Monitoring Système</h1>
-        <p className="text-muted-foreground">Vue d'ensemble de la santé de la plateforme</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Monitoring Système</h1>
+          <p className="text-muted-foreground">Vue d'ensemble de la santé de la plateforme</p>
+        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => {
+            refetchAlerts();
+            refetchStats();
+            refetchEmails();
+            refetchCarts();
+            toast({ title: "Données actualisées" });
+          }}
+        >
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Actualiser
+        </Button>
       </div>
 
       {/* Stats globales - Vraies données */}
@@ -76,7 +106,7 @@ export const MonitoringDashboard = () => {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardStats?.bookings_last_30d || 0}</div>
+            <div className="text-2xl font-bold text-foreground">{dashboardStats?.bookings_last_30d || 0}</div>
             <p className="text-xs text-muted-foreground">
               {dashboardStats?.completed_bookings_30d || 0} complétées
             </p>
@@ -89,7 +119,7 @@ export const MonitoringDashboard = () => {
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardStats?.revenue_30d?.toFixed(0) || 0}€</div>
+            <div className="text-2xl font-bold text-foreground">{dashboardStats?.revenue_30d?.toFixed(0) || 0}€</div>
             <p className="text-xs text-muted-foreground">
               Note moy. {dashboardStats?.avg_rating_30d?.toFixed(1) || 0}/5
             </p>
@@ -102,7 +132,7 @@ export const MonitoringDashboard = () => {
             <Mail className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{failedEmails?.length || 0}</div>
+            <div className="text-2xl font-bold text-foreground">{failedEmails?.length || 0}</div>
             <p className="text-xs text-muted-foreground">
               En attente de retry
             </p>
@@ -115,7 +145,7 @@ export const MonitoringDashboard = () => {
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardStats?.open_complaints || 0}</div>
+            <div className="text-2xl font-bold text-foreground">{dashboardStats?.open_complaints || 0}</div>
             <p className="text-xs text-muted-foreground">
               En cours
             </p>
@@ -135,10 +165,10 @@ export const MonitoringDashboard = () => {
           <CardContent>
             <div className="space-y-2">
               {systemAlerts.map((alert) => (
-                <div key={alert.id} className="flex items-center justify-between p-3 border rounded">
+                <div key={alert.id} className="flex items-center justify-between p-3 border border-border rounded-lg bg-card hover:bg-accent/5 transition-colors">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <p className="font-medium">{alert.title}</p>
+                      <p className="font-medium text-foreground">{alert.title}</p>
                       <Badge 
                         variant={
                           alert.severity === 'critical' ? 'destructive' :
@@ -150,8 +180,8 @@ export const MonitoringDashboard = () => {
                         {alert.severity}
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground">{alert.message}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-sm text-muted-foreground mt-1">{alert.message}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
                       {new Date(alert.created_at).toLocaleDateString('fr-FR', { 
                         day: '2-digit', 
                         month: '2-digit', 
@@ -165,8 +195,9 @@ export const MonitoringDashboard = () => {
                     size="sm"
                     variant="ghost"
                     onClick={() => handleResolveAlert(alert.id)}
+                    className="ml-2"
                   >
-                    <CheckCircle className="h-4 w-4" />
+                    <CheckCircle className="h-4 w-4 text-muted-foreground hover:text-primary" />
                   </Button>
                 </div>
               ))}
@@ -195,22 +226,24 @@ export const MonitoringDashboard = () => {
           {failedEmails && failedEmails.length > 0 ? (
             <div className="space-y-2">
               {failedEmails.map((email) => (
-                <div key={email.id} className="flex items-center justify-between p-3 border rounded">
+                <div key={email.id} className="flex items-center justify-between p-3 border border-border rounded-lg bg-card hover:bg-accent/5 transition-colors">
                   <div className="flex-1">
-                    <p className="font-medium">{email.sujet}</p>
+                    <p className="font-medium text-foreground">{email.sujet}</p>
                     <p className="text-sm text-muted-foreground">{email.destinataire_email}</p>
-                    <p className="text-xs text-muted-foreground">{email.error_message}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{email.error_message}</p>
                   </div>
-                  <Badge variant="destructive">
-                    {email.retry_count}/3 tentatives
+                  <Badge variant="destructive" className="ml-2">
+                    {email.retry_count}/3
                   </Badge>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-center text-muted-foreground py-8">
-              Aucun email en échec
-            </p>
+            <EmptyState 
+              icon={Inbox}
+              title="Aucun email en échec"
+              description="Tous les emails ont été envoyés avec succès"
+            />
           )}
         </CardContent>
       </Card>
@@ -227,23 +260,25 @@ export const MonitoringDashboard = () => {
           {abandonedCarts && abandonedCarts.length > 0 ? (
             <div className="space-y-2">
               {abandonedCarts.map((cart) => (
-                <div key={cart.id} className="flex items-center justify-between p-3 border rounded">
+                <div key={cart.id} className="flex items-center justify-between p-3 border border-border rounded-lg bg-card hover:bg-accent/5 transition-colors">
                   <div>
-                    <p className="font-medium">Panier #{cart.id.slice(0, 8)}</p>
+                    <p className="font-medium text-foreground">Panier #{cart.id.slice(0, 8)}</p>
                     <p className="text-sm text-muted-foreground">
                       Créé le {new Date(cart.created_at).toLocaleDateString('fr-FR')}
                     </p>
                   </div>
-                  <Badge variant="secondary">
+                  <Badge variant="secondary" className="bg-accent/20 text-accent-foreground ml-2">
                     {cart.total_estimated}€
                   </Badge>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-center text-muted-foreground py-8">
-              Aucun panier abandonné
-            </p>
+            <EmptyState 
+              icon={ShoppingCart}
+              title="Aucun panier abandonné"
+              description="Tous les clients ont finalisé leurs achats"
+            />
           )}
         </CardContent>
       </Card>
@@ -255,7 +290,7 @@ export const MonitoringDashboard = () => {
             <CardTitle className="text-sm">Prestataires actifs</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardStats?.active_providers || 0}</div>
+            <div className="text-2xl font-bold text-foreground">{dashboardStats?.active_providers || 0}</div>
             <p className="text-xs text-muted-foreground">
               Vérifiés et disponibles
             </p>
@@ -267,7 +302,7 @@ export const MonitoringDashboard = () => {
             <CardTitle className="text-sm">Paniers actifs (7j)</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardStats?.active_carts_7d || 0}</div>
+            <div className="text-2xl font-bold text-foreground">{dashboardStats?.active_carts_7d || 0}</div>
             <p className="text-xs text-muted-foreground">
               {abandonedCarts?.length || 0} abandonnés
             </p>
@@ -279,7 +314,7 @@ export const MonitoringDashboard = () => {
             <CardTitle className="text-sm">Taux de conversion</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold text-foreground">
               {dashboardStats?.bookings_last_30d && dashboardStats?.completed_bookings_30d 
                 ? ((dashboardStats.completed_bookings_30d / dashboardStats.bookings_last_30d) * 100).toFixed(1)
                 : 0}%
