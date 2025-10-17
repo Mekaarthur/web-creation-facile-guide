@@ -59,12 +59,12 @@ const TrackingManager = () => {
       // Chargement du script GA4
       const script = document.createElement('script');
       script.async = true;
-      script.src = 'https://www.googletagmanager.com/gtag/js?id=GA_TRACKING_ID';
+      script.src = 'https://www.googletagmanager.com/gtag/js?id=G-WZEP8ZZ70V';
       document.head.appendChild(script);
 
       script.onload = () => {
         window.gtag('js', new Date());
-        window.gtag('config', 'GA_TRACKING_ID', {
+        window.gtag('config', 'G-WZEP8ZZ70V', {
           page_title: document.title,
           page_location: window.location.href,
           anonymize_ip: true,
@@ -173,7 +173,7 @@ const TrackingManager = () => {
   // Track page views
   useEffect(() => {
     if (window.gtag) {
-      window.gtag('config', 'GA_TRACKING_ID', {
+      window.gtag('config', 'G-WZEP8ZZ70V', {
         page_path: location.pathname + location.search,
         page_title: document.title
       });
