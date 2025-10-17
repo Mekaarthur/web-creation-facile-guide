@@ -8,6 +8,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useConsents } from "@/hooks/useGDPR";
+import { useAuth } from "@/hooks/useAuth";
 
 interface CookiePreferences {
   necessary: boolean;
@@ -18,6 +20,8 @@ interface CookiePreferences {
 const CookieConsentBanner = () => {
   const [showBanner, setShowBanner] = useState(false);
   const [showCustomize, setShowCustomize] = useState(false);
+  const { user } = useAuth();
+  const { recordConsent } = useConsents();
   
   const [preferences, setPreferences] = useState<CookiePreferences>({
     necessary: true, // Always true
@@ -71,9 +75,19 @@ const CookieConsentBanner = () => {
         }
       }
     }
+
+    // Écouter l'événement pour ouvrir les paramètres de cookies
+    const handleOpenSettings = () => {
+      setShowCustomize(true);
+    };
+    window.addEventListener('openCookieSettings', handleOpenSettings);
+    
+    return () => {
+      window.removeEventListener('openCookieSettings', handleOpenSettings);
+    };
   }, []);
 
-  const saveConsent = (prefs: CookiePreferences) => {
+  const saveConsent = async (prefs: CookiePreferences) => {
     localStorage.setItem("cookie_consent", JSON.stringify(prefs));
     localStorage.setItem("cookie_consent_date", new Date().toISOString());
     
@@ -85,6 +99,35 @@ const CookieConsentBanner = () => {
         'ad_user_data': prefs.marketing ? 'granted' : 'denied',
         'ad_personalization': prefs.marketing ? 'granted' : 'denied'
       });
+    }
+
+    // Enregistrer les consentements en base de données si l'utilisateur est connecté
+    if (user) {
+      try {
+        await recordConsent.mutateAsync({
+          consentType: 'cookies',
+          granted: prefs.necessary,
+          version: '1.0',
+        });
+        
+        if (prefs.analytics) {
+          await recordConsent.mutateAsync({
+            consentType: 'analytics',
+            granted: true,
+            version: '1.0',
+          });
+        }
+        
+        if (prefs.marketing) {
+          await recordConsent.mutateAsync({
+            consentType: 'marketing',
+            granted: true,
+            version: '1.0',
+          });
+        }
+      } catch (error) {
+        console.error('Erreur lors de l\'enregistrement du consentement:', error);
+      }
     }
     
     // Notifier les autres composants du changement de consentement

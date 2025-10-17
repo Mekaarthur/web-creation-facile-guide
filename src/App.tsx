@@ -105,6 +105,7 @@ import ProtectedProviderRoute from "./components/ProtectedProviderRoute";
 import AdminRoute from "./components/AdminRoute";
 import Communications from "./pages/admin/Communications";
 import Urgences from "./pages/admin/Urgences";
+import CookiePolicy from "./pages/CookiePolicy";
 
 const queryClient = new QueryClient();
 
@@ -164,6 +165,7 @@ const App = () => (
             <Route path="/bika-pro-ile-de-france" element={<BikaPro />} />
              <Route path="/reservation" element={<Reservation />} />
              <Route path="/reservation-confirmee" element={<ReservationConfirmee />} />
+             <Route path="/politique-cookies" element={<CookiePolicy />} />
              <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
              <Route path="/audit-qualite" element={<AdminRoute><AuditReport /></AdminRoute>} />
              {/* Admin Routes with Layout */}
