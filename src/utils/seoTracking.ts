@@ -1,5 +1,21 @@
-// Google Analytics et outils SEO
+// Google Analytics et outils SEO avec Consent Mode
 export const installGoogleAnalytics = (measurementId: string) => {
+  // Initialiser dataLayer et gtag avant de charger le script
+  window.dataLayer = window.dataLayer || [];
+  function gtag(...args: any[]) {
+    window.dataLayer.push(args);
+  }
+  (window as any).gtag = gtag;
+  
+  // Définir le consent mode par défaut (denied)
+  gtag('consent', 'default', {
+    'analytics_storage': 'denied',
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'wait_for_update': 500
+  });
+  
   // Google Analytics 4
   const script1 = document.createElement('script');
   script1.async = true;
@@ -8,12 +24,11 @@ export const installGoogleAnalytics = (measurementId: string) => {
 
   const script2 = document.createElement('script');
   script2.innerHTML = `
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', '${measurementId}', {
       page_title: document.title,
-      page_location: window.location.href
+      page_location: window.location.href,
+      anonymize_ip: true
     });
   `;
   document.head.appendChild(script2);

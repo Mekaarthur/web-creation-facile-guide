@@ -26,9 +26,50 @@ const CookieConsentBanner = () => {
   });
 
   useEffect(() => {
+    // Initialiser Google Consent Mode en mode "denied" par défaut
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('consent', 'default', {
+        'analytics_storage': 'denied',
+        'ad_storage': 'denied',
+        'ad_user_data': 'denied',
+        'ad_personalization': 'denied'
+      });
+    }
+
     const consent = localStorage.getItem("cookie_consent");
+    const consentDate = localStorage.getItem("cookie_consent_date");
+    
     if (!consent) {
       setShowBanner(true);
+    } else {
+      // Vérifier si le consentement a expiré (6 mois)
+      if (consentDate) {
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        const storedDate = new Date(consentDate);
+        
+        if (storedDate < sixMonthsAgo) {
+          // Le consentement a expiré, redemander
+          localStorage.removeItem("cookie_consent");
+          localStorage.removeItem("cookie_consent_date");
+          setShowBanner(true);
+        } else {
+          // Appliquer le consentement existant
+          const storedPrefs = JSON.parse(consent);
+          if (storedPrefs.analytics) {
+            (window as any).gtag?.('consent', 'update', {
+              'analytics_storage': 'granted'
+            });
+          }
+          if (storedPrefs.marketing) {
+            (window as any).gtag?.('consent', 'update', {
+              'ad_storage': 'granted',
+              'ad_user_data': 'granted',
+              'ad_personalization': 'granted'
+            });
+          }
+        }
+      }
     }
   }, []);
 
@@ -36,24 +77,20 @@ const CookieConsentBanner = () => {
     localStorage.setItem("cookie_consent", JSON.stringify(prefs));
     localStorage.setItem("cookie_consent_date", new Date().toISOString());
     
-    // Activer/désactiver les cookies selon les préférences
-    if (prefs.analytics) {
-      // Activer Google Analytics si configuré
-      if (typeof window !== 'undefined' && (window as any).gtag) {
-        (window as any).gtag('consent', 'update', {
-          'analytics_storage': 'granted'
-        });
-      }
+    // Mettre à jour Google Consent Mode
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('consent', 'update', {
+        'analytics_storage': prefs.analytics ? 'granted' : 'denied',
+        'ad_storage': prefs.marketing ? 'granted' : 'denied',
+        'ad_user_data': prefs.marketing ? 'granted' : 'denied',
+        'ad_personalization': prefs.marketing ? 'granted' : 'denied'
+      });
     }
     
-    if (prefs.marketing) {
-      // Activer les cookies marketing
-      if (typeof window !== 'undefined' && (window as any).gtag) {
-        (window as any).gtag('consent', 'update', {
-          'ad_storage': 'granted'
-        });
-      }
-    }
+    // Notifier les autres composants du changement de consentement
+    window.dispatchEvent(new CustomEvent('cookieConsentUpdated', { 
+      detail: prefs 
+    }));
     
     setShowBanner(false);
     setShowCustomize(false);

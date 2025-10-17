@@ -13,29 +13,67 @@ const TrackingManager = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Google Analytics 4
+    // Vérifier le consentement avant d'initialiser les trackers
+    const checkConsentAndInit = () => {
+      const consent = localStorage.getItem("cookie_consent");
+      let hasAnalyticsConsent = false;
+      let hasMarketingConsent = false;
+
+      if (consent) {
+        const prefs = JSON.parse(consent);
+        hasAnalyticsConsent = prefs.analytics;
+        hasMarketingConsent = prefs.marketing;
+      }
+
+      // Initialiser Google Analytics avec Consent Mode (se charge toujours mais respecte le consent)
+      initGoogleAnalytics();
+
+      // N'initialiser les autres trackers que si consentement donné
+      if (hasAnalyticsConsent) {
+        initClarity();
+        initHotjar();
+      }
+
+      if (hasMarketingConsent) {
+        initFacebookPixel();
+        initGoogleAds();
+      }
+    };
+
+    // Google Analytics 4 avec Consent Mode
     const initGoogleAnalytics = () => {
+      // Initialiser dataLayer et gtag
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function gtag() {
+        window.dataLayer.push(arguments);
+      };
+      
+      // Définir le consent mode par défaut
+      window.gtag('consent', 'default', {
+        'analytics_storage': 'denied',
+        'ad_storage': 'denied',
+        'ad_user_data': 'denied',
+        'ad_personalization': 'denied'
+      });
+
       // Chargement du script GA4
       const script = document.createElement('script');
       script.async = true;
       script.src = 'https://www.googletagmanager.com/gtag/js?id=GA_TRACKING_ID';
       document.head.appendChild(script);
 
-      // Configuration GA4
-      window.dataLayer = window.dataLayer || [];
-      window.gtag = function gtag() {
-        window.dataLayer.push(arguments);
+      script.onload = () => {
+        window.gtag('js', new Date());
+        window.gtag('config', 'GA_TRACKING_ID', {
+          page_title: document.title,
+          page_location: window.location.href,
+          anonymize_ip: true,
+          custom_map: {
+            custom_parameter_1: 'service_type',
+            custom_parameter_2: 'user_type'
+          }
+        });
       };
-      
-      window.gtag('js', new Date());
-      window.gtag('config', 'GA_TRACKING_ID', {
-        page_title: document.title,
-        page_location: window.location.href,
-        custom_map: {
-          custom_parameter_1: 'service_type',
-          custom_parameter_2: 'user_type'
-        }
-      });
     };
 
     // Facebook Pixel
@@ -109,13 +147,27 @@ const TrackingManager = () => {
       document.head.appendChild(hotjarScript);
     };
 
-    // Initialiser tous les trackers
-    initGoogleAnalytics();
-    initFacebookPixel();
-    initGoogleAds();
-    initClarity();
-    initHotjar();
+    // Initialiser avec vérification du consentement
+    checkConsentAndInit();
 
+    // Écouter les mises à jour du consentement
+    const handleConsentUpdate = ((event: CustomEvent) => {
+      const prefs = event.detail;
+      if (prefs.analytics) {
+        initClarity();
+        initHotjar();
+      }
+      if (prefs.marketing) {
+        initFacebookPixel();
+        initGoogleAds();
+      }
+    }) as EventListener;
+
+    window.addEventListener('cookieConsentUpdated', handleConsentUpdate);
+
+    return () => {
+      window.removeEventListener('cookieConsentUpdated', handleConsentUpdate);
+    };
   }, []);
 
   // Track page views
