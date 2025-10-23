@@ -112,6 +112,12 @@ const navigationGroups = [
         badge: { text: "23k€", variant: "default" }
       },
       { 
+        title: "Cooptation", 
+        href: "/admin/cooptation", 
+        icon: Users,
+        badge: null
+      },
+      { 
         title: "Analytics", 
         href: "/admin/analytics", 
         icon: PieChart,

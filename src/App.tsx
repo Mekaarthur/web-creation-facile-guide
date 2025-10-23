@@ -96,6 +96,7 @@ import AdminOnboarding from "./pages/admin/Onboarding";
 import AdminMatching from "./pages/admin/Matching";
 import TestsCritiques from "./pages/admin/TestsCritiques";
 import ProviderOnboarding from "./pages/provider/Onboarding";
+import AdminCooptation from "./pages/admin/Cooptation";
 
 import NotFound from "./pages/NotFound";
 import AuditReport from "./components/AuditReport";
@@ -197,6 +198,7 @@ const App = () => (
                 <Route path="moderation" element={<AdminModeration />} />
                 <Route path="finance" element={<AdminFinance />} />
                 <Route path="finances" element={<AdminFinance />} />
+                <Route path="cooptation" element={<AdminCooptation />} />
                <Route path="analytics" element={<AdminAnalytics />} />
                <Route path="statistiques" element={<AdminAnalytics />} />
                <Route path="communications" element={<AdminRoute><Communications /></AdminRoute>} />
@@ -222,6 +224,7 @@ const App = () => (
               <Route path="missions" element={<AdminMissions />} />
               <Route path="reservations" element={<AdminReservations />} />
               <Route path="payments" element={<AdminPayments />} />
+              <Route path="cooptation" element={<AdminCooptation />} />
               <Route path="invoices" element={<AdminInvoices />} />
               <Route path="messages" element={<AdminMessages />} />
               <Route path="notifications" element={<AdminNotifications />} />
