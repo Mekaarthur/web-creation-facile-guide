@@ -61,7 +61,7 @@ export type Database = {
           entity_id: string
           entity_type: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           is_gdpr_related: boolean | null
           new_data: Json | null
           old_data: Json | null
@@ -78,7 +78,7 @@ export type Database = {
           entity_id: string
           entity_type: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_gdpr_related?: boolean | null
           new_data?: Json | null
           old_data?: Json | null
@@ -95,7 +95,7 @@ export type Database = {
           entity_id?: string
           entity_type?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_gdpr_related?: boolean | null
           new_data?: Json | null
           old_data?: Json | null
@@ -429,7 +429,7 @@ export type Database = {
           id: string
           mission_assignment_id: string
           provider_id: string
-          response_time: unknown | null
+          response_time: unknown
           response_type: string
         }
         Insert: {
@@ -437,7 +437,7 @@ export type Database = {
           id?: string
           mission_assignment_id: string
           provider_id: string
-          response_time?: unknown | null
+          response_time?: unknown
           response_type: string
         }
         Update: {
@@ -445,7 +445,7 @@ export type Database = {
           id?: string
           mission_assignment_id?: string
           provider_id?: string
-          response_time?: unknown | null
+          response_time?: unknown
           response_type?: string
         }
         Relationships: [
@@ -679,7 +679,7 @@ export type Database = {
           escalated_at: string | null
           escalated_to_human: boolean | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           resolved_at: string | null
           status: string
           updated_at: string
@@ -693,7 +693,7 @@ export type Database = {
           escalated_at?: string | null
           escalated_to_human?: boolean | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           resolved_at?: string | null
           status?: string
           updated_at?: string
@@ -707,7 +707,7 @@ export type Database = {
           escalated_at?: string | null
           escalated_to_human?: boolean | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           resolved_at?: string | null
           status?: string
           updated_at?: string
@@ -2373,7 +2373,7 @@ export type Database = {
           accessed_at: string
           accessed_request_id: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           provider_id: string
           user_agent: string | null
         }
@@ -2382,7 +2382,7 @@ export type Database = {
           accessed_at?: string
           accessed_request_id: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           provider_id: string
           user_agent?: string | null
         }
@@ -2391,7 +2391,7 @@ export type Database = {
           accessed_at?: string
           accessed_request_id?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           provider_id?: string
           user_agent?: string | null
         }
@@ -2848,6 +2848,87 @@ export type Database = {
           },
         ]
       }
+      provider_referral_rewards: {
+        Row: {
+          amount: number
+          created_at: string
+          earned_at: string
+          id: string
+          paid_at: string | null
+          referral_id: string
+          referred_provider_id: string
+          referrer_provider_id: string
+          reward_type: string
+          status: string
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          earned_at?: string
+          id?: string
+          paid_at?: string | null
+          referral_id: string
+          referred_provider_id: string
+          referrer_provider_id: string
+          reward_type: string
+          status?: string
+          updated_at?: string
+          year?: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          earned_at?: string
+          id?: string
+          paid_at?: string | null
+          referral_id?: string
+          referred_provider_id?: string
+          referrer_provider_id?: string
+          reward_type?: string
+          status?: string
+          updated_at?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_referral_rewards_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "referrals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_referral_rewards_referred_provider_id_fkey"
+            columns: ["referred_provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_referral_rewards_referred_provider_id_fkey"
+            columns: ["referred_provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_referral_rewards_referrer_provider_id_fkey"
+            columns: ["referrer_provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_referral_rewards_referrer_provider_id_fkey"
+            columns: ["referrer_provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provider_rewards: {
         Row: {
           amount: number
@@ -2997,6 +3078,7 @@ export type Database = {
         Row: {
           acceptance_rate: number | null
           adresse_complete: string | null
+          ambassador_badge_earned_at: string | null
           business_name: string | null
           created_at: string
           description: string | null
@@ -3014,6 +3096,7 @@ export type Database = {
           identity_verified_at: string | null
           identity_verified_by: string | null
           insurance_document_url: string | null
+          is_super_ambassador: boolean | null
           is_verified: boolean
           last_activity_at: string | null
           last_mission_date: string | null
@@ -3044,11 +3127,13 @@ export type Database = {
           updated_at: string
           user_id: string
           work_radius: number | null
+          yearly_referrals_count: number | null
           zones_couvertes: string[] | null
         }
         Insert: {
           acceptance_rate?: number | null
           adresse_complete?: string | null
+          ambassador_badge_earned_at?: string | null
           business_name?: string | null
           created_at?: string
           description?: string | null
@@ -3066,6 +3151,7 @@ export type Database = {
           identity_verified_at?: string | null
           identity_verified_by?: string | null
           insurance_document_url?: string | null
+          is_super_ambassador?: boolean | null
           is_verified?: boolean
           last_activity_at?: string | null
           last_mission_date?: string | null
@@ -3096,11 +3182,13 @@ export type Database = {
           updated_at?: string
           user_id: string
           work_radius?: number | null
+          yearly_referrals_count?: number | null
           zones_couvertes?: string[] | null
         }
         Update: {
           acceptance_rate?: number | null
           adresse_complete?: string | null
+          ambassador_badge_earned_at?: string | null
           business_name?: string | null
           created_at?: string
           description?: string | null
@@ -3118,6 +3206,7 @@ export type Database = {
           identity_verified_at?: string | null
           identity_verified_by?: string | null
           insurance_document_url?: string | null
+          is_super_ambassador?: boolean | null
           is_verified?: boolean
           last_activity_at?: string | null
           last_mission_date?: string | null
@@ -3148,6 +3237,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           work_radius?: number | null
+          yearly_referrals_count?: number | null
           zones_couvertes?: string[] | null
         }
         Relationships: []
@@ -3227,11 +3317,18 @@ export type Database = {
           created_at: string
           expires_at: string
           first_mission_duration: number | null
+          first_reward_paid: boolean | null
+          first_reward_paid_at: string | null
+          hours_completed: number | null
           id: string
+          loyalty_bonus_paid: boolean | null
+          loyalty_bonus_paid_at: string | null
           missions_completed: number | null
+          months_active: number | null
           provider_rating: number | null
           referral_code: string
           referred_id: string | null
+          referred_started_at: string | null
           referred_type: string | null
           referred_user_email: string | null
           referrer_id: string
@@ -3244,11 +3341,18 @@ export type Database = {
           created_at?: string
           expires_at?: string
           first_mission_duration?: number | null
+          first_reward_paid?: boolean | null
+          first_reward_paid_at?: string | null
+          hours_completed?: number | null
           id?: string
+          loyalty_bonus_paid?: boolean | null
+          loyalty_bonus_paid_at?: string | null
           missions_completed?: number | null
+          months_active?: number | null
           provider_rating?: number | null
           referral_code: string
           referred_id?: string | null
+          referred_started_at?: string | null
           referred_type?: string | null
           referred_user_email?: string | null
           referrer_id: string
@@ -3261,11 +3365,18 @@ export type Database = {
           created_at?: string
           expires_at?: string
           first_mission_duration?: number | null
+          first_reward_paid?: boolean | null
+          first_reward_paid_at?: string | null
+          hours_completed?: number | null
           id?: string
+          loyalty_bonus_paid?: boolean | null
+          loyalty_bonus_paid_at?: string | null
           missions_completed?: number | null
+          months_active?: number | null
           provider_rating?: number | null
           referral_code?: string
           referred_id?: string | null
+          referred_started_at?: string | null
           referred_type?: string | null
           referred_user_email?: string | null
           referrer_id?: string
@@ -3364,7 +3475,7 @@ export type Database = {
           created_at: string | null
           event_type: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           record_id: string | null
           session_info: Json | null
           table_name: string | null
@@ -3376,7 +3487,7 @@ export type Database = {
           created_at?: string | null
           event_type: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           record_id?: string | null
           session_info?: Json | null
           table_name?: string | null
@@ -3388,7 +3499,7 @@ export type Database = {
           created_at?: string | null
           event_type?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           record_id?: string | null
           session_info?: Json | null
           table_name?: string | null
@@ -3595,7 +3706,7 @@ export type Database = {
           granted: boolean
           granted_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           updated_at: string | null
           user_agent: string | null
           user_id: string
@@ -3608,7 +3719,7 @@ export type Database = {
           granted: boolean
           granted_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           updated_at?: string | null
           user_agent?: string | null
           user_id: string
@@ -3621,7 +3732,7 @@ export type Database = {
           granted?: boolean
           granted_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           updated_at?: string | null
           user_agent?: string | null
           user_id?: string
@@ -3844,10 +3955,7 @@ export type Database = {
           success: boolean
         }[]
       }
-      calculate_cart_total: {
-        Args: { cart_id_param: string }
-        Returns: number
-      }
+      calculate_cart_total: { Args: { cart_id_param: string }; Returns: number }
       calculate_detailed_rating: {
         Args: {
           general_rating: number
@@ -3867,10 +3975,7 @@ export type Database = {
           provider_payment: number
         }[]
       }
-      calculate_moderation_stats: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      calculate_moderation_stats: { Args: never; Returns: Json }
       calculate_provider_performance_score: {
         Args: { p_provider_id: string }
         Returns: number
@@ -3889,18 +3994,12 @@ export type Database = {
         Args: { p_binome_id: string; p_new_backup_provider_id: string }
         Returns: boolean
       }
-      check_admin_role: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      check_admin_role: { Args: never; Returns: boolean }
       check_client_reward_eligibility: {
         Args: { p_client_id: string }
         Returns: boolean
       }
-      check_mission_timeouts: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      check_mission_timeouts: { Args: never; Returns: number }
       check_rate_limit: {
         Args: {
           p_action_type: string
@@ -3910,18 +4009,9 @@ export type Database = {
         }
         Returns: Json
       }
-      cleanup_abandoned_conversations: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      cleanup_data: {
-        Args: { cleanup_type: string }
-        Returns: number
-      }
-      cleanup_old_security_logs: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      cleanup_abandoned_conversations: { Args: never; Returns: number }
+      cleanup_data: { Args: { cleanup_type: string }; Returns: number }
+      cleanup_old_security_logs: { Args: never; Returns: number }
       confirm_booking: {
         Args: { booking_id: string; provider_confirms: boolean }
         Returns: boolean
@@ -3965,30 +4055,15 @@ export type Database = {
         }
         Returns: boolean
       }
-      current_user_email: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      detect_abandoned_carts: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      detect_inactive_providers: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      detect_payment_failures: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      current_user_email: { Args: never; Returns: string }
+      detect_abandoned_carts: { Args: never; Returns: number }
+      detect_inactive_providers: { Args: never; Returns: number }
+      detect_payment_failures: { Args: never; Returns: number }
       dissolve_binome: {
         Args: { p_binome_id: string; p_reason: string }
         Returns: boolean
       }
-      expire_old_carts: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      expire_old_carts: { Args: never; Returns: number }
       find_eligible_providers: {
         Args: {
           p_location: string
@@ -4005,18 +4080,9 @@ export type Database = {
           rotation_priority: number
         }[]
       }
-      generate_invoice_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_provider_invoice_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_referral_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_invoice_number: { Args: never; Returns: string }
+      generate_provider_invoice_number: { Args: never; Returns: string }
+      generate_referral_code: { Args: never; Returns: string }
       get_binome_history: {
         Args: { p_binome_id: string }
         Returns: {
@@ -4030,7 +4096,7 @@ export type Database = {
         }[]
       }
       get_cron_jobs: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           active: boolean
           command: string
@@ -4043,12 +4109,9 @@ export type Database = {
           username: string
         }[]
       }
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_current_user_role: { Args: never; Returns: string }
       get_dashboard_stats: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           active_carts_7d: number
           active_providers: number
@@ -4059,27 +4122,39 @@ export type Database = {
           revenue_30d: number
         }[]
       }
-      get_matching_providers: {
-        Args:
-          | {
+      get_matching_providers:
+        | {
+            Args: {
+              p_limit?: number
+              p_location: string
+              p_service_type: string
+            }
+            Returns: {
+              business_name: string
+              location: string
+              match_score: number
+              provider_id: string
+              rating: number
+            }[]
+          }
+        | {
+            Args: {
               p_date_time?: string
               p_limit?: number
               p_location: string
               p_service_type: string
             }
-          | { p_limit?: number; p_location: string; p_service_type: string }
-        Returns: {
-          business_name: string
-          location: string
-          match_score: number
-          provider_id: string
-          rating: number
-        }[]
-      }
-      get_platform_stats: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+            Returns: {
+              availability_slots: Json
+              business_name: string
+              location: string
+              match_score: number
+              provider_id: string
+              rating: number
+              services_offered: Json
+            }[]
+          }
+      get_platform_stats: { Args: never; Returns: Json }
       get_profile_display_info: {
         Args: { p_user_id: string }
         Returns: {
@@ -4114,12 +4189,9 @@ export type Database = {
           rating: number
         }[]
       }
-      get_reward_amount: {
-        Args: { p_tier: string }
-        Returns: number
-      }
+      get_reward_amount: { Args: { p_tier: string }; Returns: number }
       get_safe_platform_stats: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           active_service_categories: number
           monthly_completed_bookings: number
@@ -4131,10 +4203,7 @@ export type Database = {
         Args: { p_conversation_id: string; p_user_id: string }
         Returns: number
       }
-      get_user_data_for_export: {
-        Args: { p_user_id: string }
-        Returns: Json
-      }
+      get_user_data_for_export: { Args: { p_user_id: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -4146,10 +4215,7 @@ export type Database = {
         Args: { p_binome_id: string; p_priority?: string; p_reason: string }
         Returns: string
       }
-      is_platform_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_platform_admin: { Args: never; Returns: boolean }
       log_action: {
         Args: {
           p_action_type: string
@@ -4245,22 +4311,11 @@ export type Database = {
         Args: { p_binome_id: string }
         Returns: number
       }
-      request_gdpr_export: {
-        Args: { p_user_id: string }
-        Returns: string
-      }
-      reset_mission_queue: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      retry_failed_payment: {
-        Args: { p_payment_id: string }
-        Returns: Json
-      }
-      run_system_diagnostics: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      request_gdpr_export: { Args: { p_user_id: string }; Returns: string }
+      reset_mission_queue: { Args: never; Returns: number }
+      reset_yearly_referral_counters: { Args: never; Returns: undefined }
+      retry_failed_payment: { Args: { p_payment_id: string }; Returns: Json }
+      run_system_diagnostics: { Args: never; Returns: Json }
       user_has_permission: {
         Args: { permission_type: string }
         Returns: boolean
