@@ -50,6 +50,7 @@ import ProviderAppointments from '@/components/ProviderAppointments';
 import ProviderMessaging from '@/components/ProviderMessaging';
 import ProviderServices from '@/components/ProviderServices';
 import ProviderServiceZones from '@/components/ProviderServiceZones';
+import ProviderReferralProgram from '@/components/ProviderReferralProgram';
 
 const EnhancedProviderDashboard = () => {
   const { t } = useTranslation();
@@ -270,6 +271,13 @@ const EnhancedProviderDashboard = () => {
             >
               <TrendingUp className="h-5 w-5" />
               <span className="text-xs font-medium">Revenus</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="cooptation" 
+              className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+            >
+              <Users className="h-5 w-5" />
+              <span className="text-xs font-medium">Cooptation</span>
             </TabsTrigger>
             <TabsTrigger 
               value="profil" 
@@ -530,6 +538,11 @@ const EnhancedProviderDashboard = () => {
           {/* Zones Tab */}
           <TabsContent value="zones" className="mt-8">
             <ProviderServiceZones />
+          </TabsContent>
+
+          {/* Cooptation Tab */}
+          <TabsContent value="cooptation" className="mt-8">
+            <ProviderReferralProgram />
           </TabsContent>
 
           {/* Evaluations Tab */}
