@@ -433,10 +433,9 @@ const ProviderAuth = () => {
                           maxLength={50}
                           value={field.value ?? ''}
                           onChange={(e) => {
-                            if (import.meta.env.DEV) {
-                              console.debug('signup.name change', e.target.value);
-                            }
-                            field.onChange(e.target.value);
+                            const val = e.target.value;
+                            signupForm.setValue('name', val, { shouldDirty: true, shouldTouch: true });
+                            field.onChange(val);
                           }}
                           onInput={(e) => field.onChange((e.target as HTMLInputElement).value)}
                           onBlur={field.onBlur}
