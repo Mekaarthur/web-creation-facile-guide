@@ -438,6 +438,26 @@ const AdminReferralManagement = () => {
         </Button>
       </div>
 
+      {/* System Status Alert */}
+      {stats.totalReferrals > 0 && rewards.length === 0 && (
+        <Card className="border-info/20 bg-info/5">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-info" />
+              <div>
+                <p className="font-medium text-info">
+                  Système de récompenses en attente
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {stats.totalReferrals} parrainages détectés mais aucune récompense générée. 
+                  Les récompenses sont créées automatiquement lorsque les filleuls atteignent 50h ou 120h de missions.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-5 w-full">
           <TabsTrigger value="dashboard" className="gap-2">
