@@ -481,20 +481,13 @@ const AdminReferralManagement = () => {
 
   const calculatePerformanceRewards = async () => {
     try {
+      setCalculating(true);
       const { data, error } = await supabase.rpc('calculate_all_provider_rewards');
 
       if (error) throw error;
 
       setEligibleProviders(data || []);
-
-      const totalCreated = data?.filter((r: any) => r.reward_created).length || 0;
-
-      toast({
-        title: 'Calcul terminé',
-        description: `${totalCreated} nouvelles récompenses performance générées`,
-      });
-
-      loadData();
+      setShowCalculateConfirm(true);
     } catch (error) {
       console.error('Error calculating performance rewards:', error);
       toast({
@@ -502,6 +495,33 @@ const AdminReferralManagement = () => {
         description: 'Impossible de calculer les récompenses performance',
         variant: 'destructive',
       });
+    } finally {
+      setCalculating(false);
+    }
+  };
+  
+  const confirmCalculateRewards = async () => {
+    try {
+      setCalculating(true);
+      const newRewards = eligibleProviders.filter(p => p.reward_created);
+      
+      toast({
+        title: 'Récompenses créées',
+        description: `${newRewards.length} nouvelle${newRewards.length > 1 ? 's' : ''} récompense${newRewards.length > 1 ? 's' : ''} créée${newRewards.length > 1 ? 's' : ''}`,
+      });
+      
+      await loadData();
+      setShowCalculateConfirm(false);
+      setEligibleProviders([]);
+    } catch (error) {
+      console.error('Error confirming rewards:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de confirmer les récompenses',
+        variant: 'destructive',
+      });
+    } finally {
+      setCalculating(false);
     }
   };
 
@@ -532,6 +552,57 @@ const AdminReferralManagement = () => {
       });
     }
   };
+  
+  const savePerformanceRewardNotes = async (rewardId: string, notes: string) => {
+    try {
+      const { error } = await supabase
+        .from('provider_rewards')
+        .update({ notes })
+        .eq('id', rewardId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Succès',
+        description: 'Note enregistrée',
+      });
+
+      await loadData();
+    } catch (error) {
+      console.error('Error saving notes:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible d\'enregistrer la note',
+        variant: 'destructive',
+      });
+    }
+  };
+  
+  const getFilteredPerformanceRewards = () => {
+    return performanceRewards.filter(reward => {
+      const matchesSearch = !perfSearchTerm || 
+        reward.provider?.business_name?.toLowerCase().includes(perfSearchTerm.toLowerCase()) ||
+        reward.provider?.profiles?.first_name?.toLowerCase().includes(perfSearchTerm.toLowerCase()) ||
+        reward.provider?.profiles?.last_name?.toLowerCase().includes(perfSearchTerm.toLowerCase());
+      
+      const matchesStatus = perfStatusFilter === 'all' || reward.status === perfStatusFilter;
+      const matchesTier = perfTierFilter === 'all' || reward.reward_tier === perfTierFilter;
+      const matchesYear = perfYearFilter === 'all' || reward.year.toString() === perfYearFilter;
+      
+      return matchesSearch && matchesStatus && matchesTier && matchesYear;
+    });
+  };
+  
+  const exportPerformanceRewards = () => {
+    const filtered = getFilteredPerformanceRewards();
+    exportPerformanceRewardsToExcel(filtered);
+    toast({
+      title: 'Export réussi',
+      description: `${filtered.length} récompense${filtered.length > 1 ? 's' : ''} exportée${filtered.length > 1 ? 's' : ''}`,
+    });
+  };
+  
+  const availableYears = Array.from(new Set(performanceRewards.map(r => r.year))).sort((a, b) => b - a);
 
   const getTierColor = (tier: string) => {
     switch (tier) {
