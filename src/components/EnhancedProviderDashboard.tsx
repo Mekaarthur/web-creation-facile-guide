@@ -51,6 +51,7 @@ import ProviderMessaging from '@/components/ProviderMessaging';
 import ProviderServices from '@/components/ProviderServices';
 import ProviderServiceZones from '@/components/ProviderServiceZones';
 import ProviderReferralProgram from '@/components/ProviderReferralProgram';
+import ProviderPerformanceRewards from '@/components/provider/ProviderPerformanceRewards';
 
 const EnhancedProviderDashboard = () => {
   const { t } = useTranslation();
@@ -217,7 +218,7 @@ const EnhancedProviderDashboard = () => {
 
       <div className="max-w-7xl mx-auto p-6 space-y-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-4 lg:grid-cols-8 bg-card/80 backdrop-blur-sm p-1 h-auto shadow-lg rounded-xl border-0">
+          <TabsList className="grid grid-cols-4 lg:grid-cols-9 bg-card/80 backdrop-blur-sm p-1 h-auto shadow-lg rounded-xl border-0">
             <TabsTrigger 
               value="dashboard" 
               className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
@@ -278,6 +279,13 @@ const EnhancedProviderDashboard = () => {
             >
               <Users className="h-5 w-5" />
               <span className="text-xs font-medium">Cooptation</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="recompenses" 
+              className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+            >
+              <Award className="h-5 w-5" />
+              <span className="text-xs font-medium">Récompenses</span>
             </TabsTrigger>
             <TabsTrigger 
               value="profil" 
@@ -543,6 +551,11 @@ const EnhancedProviderDashboard = () => {
           {/* Cooptation Tab */}
           <TabsContent value="cooptation" className="mt-8">
             <ProviderReferralProgram />
+          </TabsContent>
+
+          {/* Récompenses de Performance Tab */}
+          <TabsContent value="recompenses" className="mt-8">
+            <ProviderPerformanceRewards />
           </TabsContent>
 
           {/* Evaluations Tab */}
