@@ -4292,6 +4292,16 @@ export type Database = {
         }
         Returns: boolean
       }
+      recalculate_referral_rewards: {
+        Args: never
+        Returns: {
+          referral_code: string
+          referred_id: string
+          referrer_id: string
+          rewards_created: number
+          total_hours: number
+        }[]
+      }
       record_consent: {
         Args: {
           p_consent_type: string

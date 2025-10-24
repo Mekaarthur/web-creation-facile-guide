@@ -373,6 +373,30 @@ const AdminReferralManagement = () => {
     });
   };
 
+  const recalculateRewards = async () => {
+    try {
+      const { data, error } = await supabase.rpc('recalculate_referral_rewards');
+
+      if (error) throw error;
+
+      const totalRewardsCreated = data?.reduce((sum: number, row: any) => sum + (row.rewards_created || 0), 0) || 0;
+
+      toast({
+        title: 'Recalcul terminé',
+        description: `${totalRewardsCreated} nouvelles récompenses générées`,
+      });
+
+      loadData();
+    } catch (error) {
+      console.error('Error recalculating rewards:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de recalculer les récompenses',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const getRewardTypeLabel = (type: string) => {
     switch (type) {
       case 'validation': return 'Validation (50h)';
@@ -957,8 +981,17 @@ const AdminReferralManagement = () => {
                   <FileSpreadsheet className="h-4 w-4" />
                   Exporter en CSV
                 </Button>
+                <Button 
+                  onClick={recalculateRewards} 
+                  className="w-full gap-2"
+                  variant="outline"
+                >
+                  <TrendingUp className="h-4 w-4" />
+                  Recalculer les récompenses
+                </Button>
                 <p className="text-sm text-muted-foreground">
-                  Export complet de toutes les récompenses avec dates, montants et statuts
+                  Export complet de toutes les récompenses avec dates, montants et statuts.
+                  Le recalcul génère les récompenses manquantes en analysant l'historique.
                 </p>
               </CardContent>
             </Card>
