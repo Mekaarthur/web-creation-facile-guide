@@ -884,8 +884,8 @@ const AdminReferralManagement = () => {
                     <div key={ambassador.id} className="border rounded-lg p-4 bg-gradient-to-r from-warning/5 to-transparent">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center">
-                            <Star className="h-6 w-6 text-white fill-white" />
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-warning to-warning/80 flex items-center justify-center">
+                            <Star className="h-6 w-6 text-warning-foreground fill-warning-foreground" />
                           </div>
                           <div>
                             <p className="font-bold text-lg">
@@ -900,7 +900,7 @@ const AdminReferralManagement = () => {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-2xl font-bold text-yellow-600">
+                          <p className="text-2xl font-bold text-warning">
                             {ambassador.yearly_referrals_count}
                           </p>
                           <p className="text-sm text-muted-foreground">Filleuls validés</p>
