@@ -173,6 +173,21 @@ serve(async (req) => {
         .eq('user_id', targetUser)
         .single();
 
+      // Log the action in admin_actions_log
+      await supabase
+        .from('admin_actions_log')
+        .insert({
+          admin_user_id: user.id,
+          entity_type: 'user_roles',
+          entity_id: targetUser,
+          action_type: 'promote_admin',
+          old_data: { role: 'user' },
+          new_data: { role: 'admin', email: targetProfile?.email },
+          description: `Promoted ${targetProfile?.email} to admin role`,
+          ip_address: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip'),
+          user_agent: req.headers.get('user-agent')
+        });
+
       console.log(`[admin-manage-roles] 🎖️ PROMOTED - ${targetProfile?.email} to ADMIN by ${user.email}`);
 
       return new Response(
@@ -222,6 +237,21 @@ serve(async (req) => {
         .select('email, first_name, last_name')
         .eq('user_id', targetUser)
         .single();
+
+      // Log the action in admin_actions_log
+      await supabase
+        .from('admin_actions_log')
+        .insert({
+          admin_user_id: user.id,
+          entity_type: 'user_roles',
+          entity_id: targetUser,
+          action_type: 'revoke_admin',
+          old_data: { role: 'admin', email: targetProfile?.email },
+          new_data: { role: 'user' },
+          description: `Revoked admin role from ${targetProfile?.email}`,
+          ip_address: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip'),
+          user_agent: req.headers.get('user-agent')
+        });
 
       console.log(`[admin-manage-roles] ⬇️ REVOKED - ${targetProfile?.email} admin rights by ${user.email}`);
 

@@ -34,6 +34,20 @@ interface UserProfile {
   role?: string;
 }
 
+interface AdminActionLog {
+  id: string;
+  admin_user_id: string;
+  entity_id: string;
+  action_type: string;
+  description: string;
+  created_at: string;
+  old_data: any;
+  new_data: any;
+  ip_address: string | null;
+  admin_email?: string;
+  target_email?: string;
+}
+
 const AdminRoles = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [admins, setAdmins] = useState<UserProfile[]>([]);
@@ -41,6 +55,8 @@ const AdminRoles = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [actionType, setActionType] = useState<'promote' | 'revoke' | null>(null);
+  const [actionLogs, setActionLogs] = useState<AdminActionLog[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -75,6 +91,40 @@ const AdminRoles = () => {
 
       setUsers(usersWithRoles);
       setAdmins(usersWithRoles.filter(u => u.role === 'admin'));
+
+      // Load admin action logs
+      const { data: logsData, error: logsError } = await supabase
+        .from('admin_actions_log')
+        .select('*')
+        .in('action_type', ['promote_admin', 'revoke_admin'])
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (logsError) {
+        console.error('Error loading logs:', logsError);
+      } else {
+        // Enrich logs with email information
+        const enrichedLogs = (logsData || []).map(log => {
+          const adminUser = usersWithRoles.find(u => u.user_id === log.admin_user_id);
+          const targetUser = usersWithRoles.find(u => u.user_id === log.entity_id);
+          const newDataEmail = typeof log.new_data === 'object' && log.new_data !== null ? (log.new_data as any).email : null;
+          const oldDataEmail = typeof log.old_data === 'object' && log.old_data !== null ? (log.old_data as any).email : null;
+          return {
+            id: log.id,
+            admin_user_id: log.admin_user_id,
+            entity_id: log.entity_id,
+            action_type: log.action_type,
+            description: log.description || '',
+            created_at: log.created_at,
+            old_data: log.old_data,
+            new_data: log.new_data,
+            ip_address: (log.ip_address as string) || null,
+            admin_email: adminUser?.email || 'Inconnu',
+            target_email: targetUser?.email || newDataEmail || oldDataEmail || 'Inconnu'
+          };
+        });
+        setActionLogs(enrichedLogs);
+      }
     } catch (error: any) {
       console.error('Error loading data:', error);
       toast({
@@ -181,10 +231,16 @@ const AdminRoles = () => {
             Gérez les droits d'administration de votre équipe
           </p>
         </div>
-        <Button onClick={exportAdmins} variant="outline">
-          <Download className="h-4 w-4 mr-2" />
-          Exporter CSV
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setShowHistory(!showHistory)} variant="outline">
+            <Shield className="h-4 w-4 mr-2" />
+            {showHistory ? 'Vue Utilisateurs' : 'Historique'}
+          </Button>
+          <Button onClick={exportAdmins} variant="outline">
+            <Download className="h-4 w-4 mr-2" />
+            Exporter CSV
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -237,86 +293,148 @@ const AdminRoles = () => {
         </CardContent>
       </Card>
 
-      {/* Search */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Utilisateurs</CardTitle>
-          <CardDescription>
-            Recherchez et gérez les rôles des utilisateurs
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center space-x-2 mb-4">
-            <Search className="h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Rechercher par email ou nom..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="max-w-sm"
-            />
-          </div>
+      {/* Users Table or History */}
+      {!showHistory ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Utilisateurs</CardTitle>
+            <CardDescription>
+              Recherchez et gérez les rôles des utilisateurs
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center space-x-2 mb-4">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher par email ou nom..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="max-w-sm"
+              />
+            </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Email</TableHead>
-                <TableHead>Nom</TableHead>
-                <TableHead>Rôle</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredUsers.map((user) => (
-                <TableRow key={user.user_id}>
-                  <TableCell className="font-medium">{user.email}</TableCell>
-                  <TableCell>
-                    {user.first_name || user.last_name
-                      ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
-                      : '-'}
-                  </TableCell>
-                  <TableCell>
-                    {user.role === 'admin' ? (
-                      <Badge variant="default" className="bg-primary">
-                        <Shield className="h-3 w-3 mr-1" />
-                        Admin
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary">Utilisateur</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {user.role === 'admin' ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setActionType('revoke');
-                        }}
-                      >
-                        <UserMinus className="h-4 w-4 mr-2" />
-                        Révoquer
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setActionType('promote');
-                        }}
-                      >
-                        <UserPlus className="h-4 w-4 mr-2" />
-                        Promouvoir
-                      </Button>
-                    )}
-                  </TableCell>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Nom</TableHead>
+                  <TableHead>Rôle</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+              </TableHeader>
+              <TableBody>
+                {filteredUsers.map((user) => (
+                  <TableRow key={user.user_id}>
+                    <TableCell className="font-medium">{user.email}</TableCell>
+                    <TableCell>
+                      {user.first_name || user.last_name
+                        ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
+                        : '-'}
+                    </TableCell>
+                    <TableCell>
+                      {user.role === 'admin' ? (
+                        <Badge variant="default" className="bg-primary">
+                          <Shield className="h-3 w-3 mr-1" />
+                          Admin
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary">Utilisateur</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {user.role === 'admin' ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setActionType('revoke');
+                          }}
+                        >
+                          <UserMinus className="h-4 w-4 mr-2" />
+                          Révoquer
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setActionType('promote');
+                          }}
+                        >
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Promouvoir
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Historique des Actions Admin
+            </CardTitle>
+            <CardDescription>
+              Historique complet de toutes les modifications de rôles
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date & Heure</TableHead>
+                  <TableHead>Administrateur</TableHead>
+                  <TableHead>Action</TableHead>
+                  <TableHead>Utilisateur Cible</TableHead>
+                  <TableHead>Adresse IP</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {actionLogs.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                      Aucune action enregistrée
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  actionLogs.map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell className="font-mono text-sm">
+                        {new Date(log.created_at).toLocaleString('fr-FR')}
+                      </TableCell>
+                      <TableCell className="font-medium">{log.admin_email}</TableCell>
+                      <TableCell>
+                        {log.action_type === 'promote_admin' ? (
+                          <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+                            <UserPlus className="h-3 w-3 mr-1" />
+                            Promotion Admin
+                          </Badge>
+                        ) : (
+                          <Badge variant="destructive">
+                            <UserMinus className="h-3 w-3 mr-1" />
+                            Révocation Admin
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>{log.target_email}</TableCell>
+                      <TableCell className="font-mono text-xs text-muted-foreground">
+                        {log.ip_address || '-'}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Confirmation Dialog */}
       <AlertDialog open={!!actionType} onOpenChange={() => setActionType(null)}>
