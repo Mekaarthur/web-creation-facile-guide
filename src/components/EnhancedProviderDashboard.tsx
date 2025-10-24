@@ -218,7 +218,7 @@ const EnhancedProviderDashboard = () => {
 
       <div className="max-w-7xl mx-auto p-6 space-y-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-4 lg:grid-cols-9 bg-card/80 backdrop-blur-sm p-1 h-auto shadow-lg rounded-xl border-0">
+          <TabsList className="grid grid-cols-4 lg:grid-cols-10 bg-card/80 backdrop-blur-sm p-1 h-auto shadow-lg rounded-xl border-0">
             <TabsTrigger 
               value="dashboard" 
               className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
