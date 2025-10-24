@@ -27,7 +27,7 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     
     if (authError || !user) {
-      console.error('Auth error:', authError);
+      console.error('[get-user-role] ⛔ Auth error - Unauthorized access attempt');
       return new Response(
         JSON.stringify({ error: 'Non authentifié' }),
         { 
@@ -37,42 +37,40 @@ serve(async (req) => {
       );
     }
 
-    console.log('Fetching role for user:', user.id);
+    console.log(`[get-user-role] Fetching role for user: ${user.id} (${user.email})`);
 
-    // Récupérer le rôle de l'utilisateur depuis user_roles
+    // Récupérer le rôle via la fonction SECURITY DEFINER (plus sécurisé)
     const { data: roleData, error: roleError } = await supabaseClient
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .maybeSingle();
+      .rpc('get_current_user_role');
 
     if (roleError) {
-      console.error('Role fetch error:', roleError);
-      return new Response(
-        JSON.stringify({ error: 'Erreur lors de la récupération du rôle' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
+      console.error('[get-user-role] Role fetch error:', roleError);
+      // Continue même si erreur - l'utilisateur n'a peut-être pas encore de rôle
     }
 
-    // Vérifier si l'utilisateur est un prestataire
+    // Vérifier si l'utilisateur est un prestataire vérifié
     const { data: providerData, error: providerError } = await supabaseClient
       .from('providers')
       .select('id, is_verified, status')
       .eq('user_id', user.id)
       .maybeSingle();
 
-    if (providerError) {
-      console.error('Provider fetch error:', providerError);
+    if (providerError && providerError.code !== 'PGRST116') {
+      console.error('[get-user-role] Provider fetch error:', providerError);
     }
 
-    const role = roleData?.role || 'user';
-    const isProvider = !!providerData;
+    const role = roleData || 'user';
+    const isProvider = !!(providerData && providerData.is_verified);
     const isVerifiedProvider = providerData?.is_verified || false;
 
-    console.log('User role:', role, 'isProvider:', isProvider, 'isVerified:', isVerifiedProvider);
+    // Logging d'audit pour traçabilité
+    if (role === 'admin') {
+      console.log(`[get-user-role] ✅ ADMIN ACCESS - User: ${user.id}, Email: ${user.email}`);
+    } else if (isProvider) {
+      console.log(`[get-user-role] 👷 PROVIDER ACCESS - User: ${user.id}, Email: ${user.email}, Status: ${providerData?.status}`);
+    } else {
+      console.log(`[get-user-role] 👤 USER ACCESS - User: ${user.id}, Role: ${role}`);
+    }
 
     return new Response(
       JSON.stringify({ 
@@ -88,9 +86,9 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Unexpected error:', error);
+    console.error('[get-user-role] ❌ Unexpected error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Erreur serveur interne' }),
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
