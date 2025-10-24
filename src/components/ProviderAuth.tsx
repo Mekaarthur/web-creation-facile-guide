@@ -415,7 +415,7 @@ const ProviderAuth = () => {
                         Nom complet
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="Votre nom complet" {...field} />
+                        <Input type="text" autoComplete="name" inputMode="text" placeholder="Votre nom complet" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -449,7 +449,7 @@ const ProviderAuth = () => {
                         Téléphone
                       </FormLabel>
                       <FormControl>
-                        <Input type="tel" placeholder="Votre numéro de téléphone" {...field} />
+                        <Input type="tel" autoComplete="tel" inputMode="tel" placeholder="Votre numéro de téléphone" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
