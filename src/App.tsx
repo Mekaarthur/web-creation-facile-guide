@@ -97,6 +97,7 @@ import AdminMatching from "./pages/admin/Matching";
 import TestsCritiques from "./pages/admin/TestsCritiques";
 import ProviderOnboarding from "./pages/provider/Onboarding";
 import AdminCooptation from "./pages/admin/Cooptation";
+import AdminRoles from "./pages/admin/AdminRoles";
 
 import NotFound from "./pages/NotFound";
 import AuditReport from "./components/AuditReport";
@@ -206,6 +207,7 @@ const App = () => (
                <Route path="rapports" element={<AdminReports />} />
                <Route path="outils" element={<AdminTools />} />
                <Route path="audit" element={<AuditReport />} />
+               <Route path="roles" element={<AdminRoles />} />
             </Route>
             
             {/* Modern Admin Routes */}

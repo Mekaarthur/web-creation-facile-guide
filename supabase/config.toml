@@ -142,3 +142,6 @@ verify_jwt = true  # Requires admin authentication
 
 [functions.get-user-role]
 verify_jwt = true  # Requires authentication to check user role
+
+[functions.admin-manage-roles]
+verify_jwt = true  # Requires admin authentication to manage roles
