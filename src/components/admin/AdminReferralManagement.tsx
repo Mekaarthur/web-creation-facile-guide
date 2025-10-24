@@ -125,6 +125,7 @@ interface PerformanceReward {
   missions_count: number;
   hours_worked: number;
   average_rating: number;
+  notes?: string;
   provider?: {
     business_name: string;
     profiles: {

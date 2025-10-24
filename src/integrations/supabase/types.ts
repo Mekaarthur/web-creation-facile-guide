@@ -2938,6 +2938,7 @@ export type Database = {
           hours_worked: number
           id: string
           missions_count: number
+          notes: string | null
           paid_date: string | null
           provider_id: string
           reward_tier: string
@@ -2953,6 +2954,7 @@ export type Database = {
           hours_worked?: number
           id?: string
           missions_count?: number
+          notes?: string | null
           paid_date?: string | null
           provider_id: string
           reward_tier: string
@@ -2968,6 +2970,7 @@ export type Database = {
           hours_worked?: number
           id?: string
           missions_count?: number
+          notes?: string | null
           paid_date?: string | null
           provider_id?: string
           reward_tier?: string
