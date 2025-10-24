@@ -500,9 +500,10 @@ const EnhancedAuth = () => {
                           autoFocus
                           enterKeyHint="next"
                           placeholder="Votre nom complet"
+                          maxLength={50}
                           value={field.value ?? ''}
-                          onChange={(e) => field.onChange(e)}
-                          onInput={(e) => field.onChange(e)}
+                          onChange={(e) => field.onChange((e.target as HTMLInputElement).value)}
+                          onInput={(e) => field.onChange((e.target as HTMLInputElement).value)}
                           onBlur={field.onBlur}
                           name={field.name}
                           ref={field.ref}
