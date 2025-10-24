@@ -6,6 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import PerformanceRewardFilters from './PerformanceRewardFilters';
+import PerformanceRewardNotes from './PerformanceRewardNotes';
+import ConfirmCalculateRewards from './ConfirmCalculateRewards';
+import { exportPerformanceRewardsToExcel } from '@/utils/exportPerformanceRewards';
 import {
   Users,
   Euro,
@@ -158,6 +162,16 @@ const AdminReferralManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [rewardTypeFilter, setRewardTypeFilter] = useState('all');
+  
+  // Performance reward filters
+  const [perfSearchTerm, setPerfSearchTerm] = useState('');
+  const [perfStatusFilter, setPerfStatusFilter] = useState('all');
+  const [perfTierFilter, setPerfTierFilter] = useState('all');
+  const [perfYearFilter, setPerfYearFilter] = useState('all');
+  
+  // Calculate rewards confirmation
+  const [showCalculateConfirm, setShowCalculateConfirm] = useState(false);
+  const [calculating, setCalculating] = useState(false);
   
   // Stats
   const [stats, setStats] = useState({
@@ -1166,6 +1180,20 @@ const AdminReferralManagement = () => {
             </Card>
           </div>
 
+          {/* Filters and Actions */}
+          <PerformanceRewardFilters
+            searchTerm={perfSearchTerm}
+            setSearchTerm={setPerfSearchTerm}
+            statusFilter={perfStatusFilter}
+            setStatusFilter={setPerfStatusFilter}
+            tierFilter={perfTierFilter}
+            setTierFilter={setPerfTierFilter}
+            yearFilter={perfYearFilter}
+            setYearFilter={setPerfYearFilter}
+            onExport={exportPerformanceRewards}
+            years={availableYears}
+          />
+
           {/* Calculate Button */}
           <Card>
             <CardContent className="p-4">
@@ -1176,13 +1204,21 @@ const AdminReferralManagement = () => {
                     Analyse tous les prestataires et génère les récompenses éligibles
                   </p>
                 </div>
-                <Button onClick={calculatePerformanceRewards} className="gap-2">
+                <Button onClick={calculatePerformanceRewards} disabled={calculating} className="gap-2">
                   <TrendingUp className="h-4 w-4" />
-                  Calculer
+                  {calculating ? 'Calcul...' : 'Calculer'}
                 </Button>
               </div>
             </CardContent>
           </Card>
+          
+          <ConfirmCalculateRewards
+            open={showCalculateConfirm}
+            onOpenChange={setShowCalculateConfirm}
+            eligibleProviders={eligibleProviders}
+            onConfirm={confirmCalculateRewards}
+            loading={calculating}
+          />
 
           {/* Eligible Providers Table */}
           {eligibleProviders.length > 0 && (
@@ -1257,7 +1293,7 @@ const AdminReferralManagement = () => {
                     <p className="text-muted-foreground">Aucune récompense de performance</p>
                   </div>
                 ) : (
-                  performanceRewards.map(reward => (
+                  getFilteredPerformanceRewards().map(reward => (
                     <div key={reward.id} className="border rounded-lg p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
@@ -1300,6 +1336,12 @@ const AdminReferralManagement = () => {
                             {reward.status === 'paid' ? 'Payé' : 
                              reward.status === 'pending' ? 'En attente' : 'Rejeté'}
                           </Badge>
+                          <PerformanceRewardNotes
+                            rewardId={reward.id}
+                            currentNotes={reward.notes}
+                            providerName={`${reward.provider?.profiles?.first_name} ${reward.provider?.profiles?.last_name}`}
+                            onSave={savePerformanceRewardNotes}
+                          />
                           {reward.status === 'pending' && (
                             <Button
                               size="sm"
