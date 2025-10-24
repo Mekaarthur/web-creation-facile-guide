@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { authSchema, type AuthForm } from '@/lib/validations';
+import { authSchema, providerSignupSchema, type AuthForm, type ProviderSignupForm } from '@/lib/validations';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Progress } from '@/components/ui/progress';
 import { 
@@ -27,9 +27,6 @@ type AuthStep = 'login' | 'signup';
 
 // Interface supprimée - plus de système de blocage
 
-interface ProviderAuthForm extends AuthForm {
-  phone?: string;
-}
 
 const ProviderAuth = () => {
   const [step, setStep] = useState<AuthStep>('login');
@@ -47,8 +44,8 @@ const ProviderAuth = () => {
     },
   });
 
-  const signupForm = useForm<ProviderAuthForm>({
-    resolver: zodResolver(authSchema),
+  const signupForm = useForm<ProviderSignupForm>({
+    resolver: zodResolver(providerSignupSchema),
     defaultValues: {
       email: '',
       password: '',
@@ -120,7 +117,7 @@ const ProviderAuth = () => {
     }
   };
 
-  const handleSignUp = async (data: ProviderAuthForm) => {
+  const handleSignUp = async (data: ProviderSignupForm) => {
     setLoading(true);
 
     try {

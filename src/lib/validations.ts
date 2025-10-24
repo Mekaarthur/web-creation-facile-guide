@@ -40,6 +40,14 @@ export const authSchema = z.object({
   phone: phoneSchema.optional(),
 });
 
+// Schéma spécifique pour l'inscription prestataire (nom obligatoire)
+export const providerSignupSchema = z.object({
+  email: emailSchema,
+  password: passwordSchema,
+  name: nameSchema,
+  phone: phoneSchema.optional(),
+});
+
 export const profileSchema = z.object({
   firstName: nameSchema,
   lastName: nameSchema,
@@ -85,6 +93,7 @@ export const fileUploadSchema = z.object({
 
 export type GuestCheckoutForm = z.infer<typeof guestCheckoutSchema>;
 export type AuthForm = z.infer<typeof authSchema>;
+export type ProviderSignupForm = z.infer<typeof providerSignupSchema>;
 export type ProfileForm = z.infer<typeof profileSchema>;
 export type BookingForm = z.infer<typeof bookingSchema>;
 export type ProviderApplicationForm = z.infer<typeof providerApplicationSchema>;
