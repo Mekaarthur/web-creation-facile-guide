@@ -427,6 +427,8 @@ const ProviderAuth = () => {
                           type="text"
                           autoComplete="name"
                           inputMode="text"
+                          autoFocus
+                          enterKeyHint="next"
                           placeholder="Votre nom complet"
                           value={field.value ?? ''}
                           onChange={(e) => {
@@ -435,9 +437,11 @@ const ProviderAuth = () => {
                             }
                             field.onChange(e);
                           }}
+                          onInput={(e) => field.onChange(e)}
                           onBlur={field.onBlur}
                           name={field.name}
                           ref={field.ref}
+                          aria-required="true"
                         />
                       </FormControl>
                       <FormMessage />
