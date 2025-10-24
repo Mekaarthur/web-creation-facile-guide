@@ -80,6 +80,29 @@ const ProviderAuth = () => {
         throw error;
       }
 
+      if (!authData.user) {
+        throw new Error('Erreur lors de la connexion');
+      }
+
+      // Vérifier si l'utilisateur est un prestataire vérifié
+      const { data: providerData, error: providerError } = await supabase
+        .from('providers')
+        .select('id, is_verified')
+        .eq('user_id', authData.user.id)
+        .maybeSingle();
+
+      if (providerError) {
+        console.error('Error checking provider status:', providerError);
+      }
+
+      // Si ce n'est pas un prestataire vérifié, afficher un message d'erreur
+      if (!providerData || !providerData.is_verified) {
+        // Se déconnecter immédiatement
+        await supabase.auth.signOut();
+        
+        throw new Error('Ce compte n\'est pas un compte prestataire vérifié. Veuillez utiliser la page de connexion client ou soumettre votre candidature pour devenir prestataire.');
+      }
+
       toast({
         title: "Connexion réussie",
         description: "Bienvenue dans votre espace prestataire",
