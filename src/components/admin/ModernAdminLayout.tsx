@@ -33,7 +33,8 @@ import {
   AlertTriangle,
   CreditCard,
   FileText,
-  PieChart
+  PieChart,
+  Gift
 } from "lucide-react";
 import { Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -114,8 +115,8 @@ const navigationGroups = [
       { 
         title: "Cooptation", 
         href: "/admin/cooptation", 
-        icon: Users,
-        badge: null
+        icon: Gift,
+        badge: { text: "Nouveau", variant: "default" }
       },
       { 
         title: "Analytics", 

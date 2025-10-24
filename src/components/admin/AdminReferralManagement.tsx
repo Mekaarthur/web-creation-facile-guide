@@ -384,18 +384,18 @@ const AdminReferralManagement = () => {
 
   const getRewardTypeColor = (type: string) => {
     switch (type) {
-      case 'validation': return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
-      case 'loyalty': return 'bg-purple-500/10 text-purple-600 border-purple-500/20';
-      case 'super_ambassador': return 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20';
+      case 'validation': return 'bg-info/10 text-info border-info/20';
+      case 'loyalty': return 'bg-primary/10 text-primary border-primary/20';
+      case 'super_ambassador': return 'bg-warning/10 text-warning border-warning/20';
       default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'paid': return 'bg-green-500/10 text-green-600 border-green-500/20';
-      case 'pending': return 'bg-orange-500/10 text-orange-600 border-orange-500/20';
-      case 'rejected': return 'bg-red-500/10 text-red-600 border-red-500/20';
+      case 'paid': return 'bg-success/10 text-success border-success/20';
+      case 'pending': return 'bg-warning/10 text-warning border-warning/20';
+      case 'rejected': return 'bg-destructive/10 text-destructive border-destructive/20';
       default: return 'bg-muted text-muted-foreground border-border';
     }
   };
@@ -493,7 +493,7 @@ const AdminReferralManagement = () => {
                     <p className="text-sm text-muted-foreground">En attente</p>
                     <p className="text-3xl font-bold">{stats.pendingAmount}€</p>
                   </div>
-                  <Clock className="h-10 w-10 text-orange-500 opacity-20" />
+                  <Clock className="h-10 w-10 text-warning/20" />
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
                   {stats.pendingRewards} récompenses
@@ -508,7 +508,7 @@ const AdminReferralManagement = () => {
                     <p className="text-sm text-muted-foreground">Total versé</p>
                     <p className="text-3xl font-bold">{stats.paidAmount}€</p>
                   </div>
-                  <CheckCircle className="h-10 w-10 text-green-500 opacity-20" />
+                  <CheckCircle className="h-10 w-10 text-success/20" />
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
                   Récompenses payées
@@ -523,7 +523,7 @@ const AdminReferralManagement = () => {
                     <p className="text-sm text-muted-foreground">Ambassadeurs</p>
                     <p className="text-3xl font-bold">{stats.totalAmbassadors}</p>
                   </div>
-                  <Star className="h-10 w-10 text-yellow-500 opacity-20" />
+                  <Star className="h-10 w-10 text-warning/20" />
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
                   Super Ambassadeurs
@@ -550,7 +550,7 @@ const AdminReferralManagement = () => {
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
                     <div 
-                      className="bg-blue-500 h-2 rounded-full"
+                      className="bg-info h-2 rounded-full"
                       style={{ 
                         width: `${stats.totalReferrals > 0 
                           ? (stats.validatedReferrals / stats.totalReferrals) * 100 
@@ -571,7 +571,7 @@ const AdminReferralManagement = () => {
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
                     <div 
-                      className="bg-purple-500 h-2 rounded-full"
+                      className="bg-primary h-2 rounded-full"
                       style={{ 
                         width: `${stats.totalReferrals > 0 
                           ? (stats.loyaltyReferrals / stats.totalReferrals) * 100 
@@ -590,9 +590,9 @@ const AdminReferralManagement = () => {
               <CardContent>
                 <div className="space-y-3">
                   {[
-                    { type: 'validation', label: 'Validation (30€)', color: 'bg-blue-500' },
-                    { type: 'loyalty', label: 'Fidélisation (50€)', color: 'bg-purple-500' },
-                    { type: 'super_ambassador', label: 'Super Ambassadeur (100€)', color: 'bg-yellow-500' }
+                    { type: 'validation', label: 'Validation (30€)', color: 'bg-info' },
+                    { type: 'loyalty', label: 'Fidélisation (50€)', color: 'bg-primary' },
+                    { type: 'super_ambassador', label: 'Super Ambassadeur (100€)', color: 'bg-warning' }
                   ].map(({ type, label, color }) => {
                     const count = rewards.filter(r => r.reward_type === type).length;
                     const total = rewards.length;
@@ -666,12 +666,12 @@ const AdminReferralManagement = () => {
                           <p className="text-muted-foreground">Statut</p>
                           <div className="flex gap-2">
                             {referral.first_reward_paid && (
-                              <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">
+                              <Badge className="bg-info/10 text-info border-info/20">
                                 Validé
                               </Badge>
                             )}
                             {referral.loyalty_bonus_paid && (
-                              <Badge className="bg-purple-500/10 text-purple-600 border-purple-500/20">
+                              <Badge className="bg-primary/10 text-primary border-primary/20">
                                 Fidélisé
                               </Badge>
                             )}
@@ -748,11 +748,11 @@ const AdminReferralManagement = () => {
 
           {/* Pending Rewards Actions */}
           {stats.pendingRewards > 0 && (
-            <Card className="border-orange-500/20 bg-orange-500/5">
+            <Card className="border-warning/20 bg-warning/5">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <AlertCircle className="h-5 w-5 text-orange-600" />
+                    <AlertCircle className="h-5 w-5 text-warning" />
                     <div>
                       <p className="font-medium">
                         {stats.pendingRewards} récompense{stats.pendingRewards > 1 ? 's' : ''} en attente
@@ -811,7 +811,7 @@ const AdminReferralManagement = () => {
                             </div>
                             <div>
                               <p className="text-muted-foreground">Montant</p>
-                              <p className="font-bold text-green-600">{reward.amount}€</p>
+                              <p className="font-bold text-success">{reward.amount}€</p>
                             </div>
                             <div>
                               <p className="text-muted-foreground">Date</p>
@@ -865,7 +865,7 @@ const AdminReferralManagement = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-yellow-500" />
+                <Star className="h-5 w-5 text-warning" />
                 Super Ambassadeurs
               </CardTitle>
               <CardDescription>
@@ -881,7 +881,7 @@ const AdminReferralManagement = () => {
                   </div>
                 ) : (
                   ambassadors.map(ambassador => (
-                    <div key={ambassador.id} className="border rounded-lg p-4 bg-gradient-to-r from-yellow-500/5 to-transparent">
+                    <div key={ambassador.id} className="border rounded-lg p-4 bg-gradient-to-r from-warning/5 to-transparent">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center">
