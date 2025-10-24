@@ -52,15 +52,23 @@ const ProviderAuth = () => {
       name: '',
       phone: '',
     },
+    mode: 'onChange',
   });
 
   // Nettoyage du localStorage au démarrage
   useEffect(() => {
     localStorage.removeItem('providerLoginAttempts');
   }, []);
+  // Focus automatique sur le champ Nom lors de l'inscription
+  useEffect(() => {
+    if (step === 'signup') {
+      setTimeout(() => {
+        signupForm.setFocus('name');
+      }, 0);
+    }
+  }, [step, signupForm]);
 
   // Fonction supprimée - plus de système de blocage
-
   const handleLogin = async (data: AuthForm) => {
     setLoading(true);
 
@@ -415,7 +423,22 @@ const ProviderAuth = () => {
                         Nom complet
                       </FormLabel>
                       <FormControl>
-                        <Input type="text" autoComplete="name" inputMode="text" placeholder="Votre nom complet" {...field} />
+                        <Input
+                          type="text"
+                          autoComplete="name"
+                          inputMode="text"
+                          placeholder="Votre nom complet"
+                          value={field.value ?? ''}
+                          onChange={(e) => {
+                            if (import.meta.env.DEV) {
+                              console.debug('signup.name change', e.target.value);
+                            }
+                            field.onChange(e);
+                          }}
+                          onBlur={field.onBlur}
+                          name={field.name}
+                          ref={field.ref}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
