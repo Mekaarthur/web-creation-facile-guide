@@ -109,6 +109,39 @@ interface SuperAmbassador {
   };
 }
 
+interface PerformanceReward {
+  id: string;
+  provider_id: string;
+  reward_tier: string;
+  amount: number;
+  year: number;
+  status: string;
+  earned_date: string;
+  paid_date?: string;
+  missions_count: number;
+  hours_worked: number;
+  average_rating: number;
+  provider?: {
+    business_name: string;
+    profiles: {
+      first_name: string;
+      last_name: string;
+    };
+  };
+}
+
+interface EligibleProvider {
+  provider_id: string;
+  business_name: string;
+  tier: string;
+  amount: number;
+  missions_count: number;
+  hours_worked: number;
+  average_rating: number;
+  months_active: number;
+  reward_created: boolean;
+}
+
 const AdminReferralManagement = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -118,6 +151,8 @@ const AdminReferralManagement = () => {
   const [rewards, setRewards] = useState<ReferralReward[]>([]);
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [ambassadors, setAmbassadors] = useState<SuperAmbassador[]>([]);
+  const [performanceRewards, setPerformanceRewards] = useState<PerformanceReward[]>([]);
+  const [eligibleProviders, setEligibleProviders] = useState<EligibleProvider[]>([]);
   
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -133,7 +168,14 @@ const AdminReferralManagement = () => {
     paidAmount: 0,
     totalAmbassadors: 0,
     validatedReferrals: 0,
-    loyaltyReferrals: 0
+    loyaltyReferrals: 0,
+    // Performance stats
+    pendingPerformanceRewards: 0,
+    pendingPerformanceAmount: 0,
+    paidPerformanceAmount: 0,
+    bronzeCount: 0,
+    silverCount: 0,
+    goldCount: 0
   });
 
   // Dialog states
@@ -200,8 +242,24 @@ const AdminReferralManagement = () => {
         setAmbassadors(ambassadorsData as any);
       }
 
+      // Load performance rewards
+      const { data: performanceData } = await supabase
+        .from('provider_rewards')
+        .select(`
+          *,
+          provider:providers!provider_rewards_provider_id_fkey(
+            business_name,
+            profiles(first_name, last_name)
+          )
+        `)
+        .order('earned_date', { ascending: false });
+
+      if (performanceData) {
+        setPerformanceRewards(performanceData as any);
+      }
+
       // Calculate stats
-      calculateStats(rewardsData || [], referralsData || [], ambassadorsData || []);
+      calculateStats(rewardsData || [], referralsData || [], ambassadorsData || [], performanceData || []);
 
     } catch (error) {
       console.error('Error loading data:', error);
@@ -215,9 +273,12 @@ const AdminReferralManagement = () => {
     }
   };
 
-  const calculateStats = (rewardsData: any[], referralsData: any[], ambassadorsData: any[]) => {
+  const calculateStats = (rewardsData: any[], referralsData: any[], ambassadorsData: any[], performanceData: any[]) => {
     const pending = rewardsData.filter(r => r.status === 'pending');
     const paid = rewardsData.filter(r => r.status === 'paid');
+    
+    const pendingPerformance = performanceData.filter(r => r.status === 'pending');
+    const paidPerformance = performanceData.filter(r => r.status === 'paid');
     
     setStats({
       totalReferrals: referralsData.length,
@@ -227,7 +288,14 @@ const AdminReferralManagement = () => {
       paidAmount: paid.reduce((sum, r) => sum + Number(r.amount), 0),
       totalAmbassadors: ambassadorsData.length,
       validatedReferrals: referralsData.filter(r => r.first_reward_paid).length,
-      loyaltyReferrals: referralsData.filter(r => r.loyalty_bonus_paid).length
+      loyaltyReferrals: referralsData.filter(r => r.loyalty_bonus_paid).length,
+      // Performance stats
+      pendingPerformanceRewards: pendingPerformance.length,
+      pendingPerformanceAmount: pendingPerformance.reduce((sum, r) => sum + Number(r.amount), 0),
+      paidPerformanceAmount: paidPerformance.reduce((sum, r) => sum + Number(r.amount), 0),
+      bronzeCount: performanceData.filter(r => r.reward_tier === 'bronze').length,
+      silverCount: performanceData.filter(r => r.reward_tier === 'silver').length,
+      goldCount: performanceData.filter(r => r.reward_tier === 'gold').length
     });
   };
 
@@ -397,6 +465,78 @@ const AdminReferralManagement = () => {
     }
   };
 
+  const calculatePerformanceRewards = async () => {
+    try {
+      const { data, error } = await supabase.rpc('calculate_all_provider_rewards');
+
+      if (error) throw error;
+
+      setEligibleProviders(data || []);
+
+      const totalCreated = data?.filter((r: any) => r.reward_created).length || 0;
+
+      toast({
+        title: 'Calcul terminé',
+        description: `${totalCreated} nouvelles récompenses performance générées`,
+      });
+
+      loadData();
+    } catch (error) {
+      console.error('Error calculating performance rewards:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de calculer les récompenses performance',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const markPerformanceRewardAsPaid = async (rewardId: string) => {
+    try {
+      const { error } = await supabase
+        .from('provider_rewards')
+        .update({ 
+          status: 'paid',
+          paid_date: new Date().toISOString()
+        })
+        .eq('id', rewardId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Récompense payée',
+        description: 'La récompense de performance a été marquée comme payée',
+      });
+
+      loadData();
+    } catch (error) {
+      console.error('Error marking performance reward as paid:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de marquer la récompense comme payée',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const getTierColor = (tier: string) => {
+    switch (tier) {
+      case 'bronze': return 'bg-amber-600/10 text-amber-600 border-amber-600/20';
+      case 'silver': return 'bg-slate-400/10 text-slate-600 border-slate-400/20';
+      case 'gold': return 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20';
+      default: return 'bg-muted text-muted-foreground border-border';
+    }
+  };
+
+  const getTierLabel = (tier: string) => {
+    switch (tier) {
+      case 'bronze': return '🥉 Bronze - 50€';
+      case 'silver': return '🥈 Silver - 100€';
+      case 'gold': return '🥇 Gold - 150€';
+      default: return tier;
+    }
+  };
+
   const getRewardTypeLabel = (type: string) => {
     switch (type) {
       case 'validation': return 'Validation (50h)';
@@ -483,7 +623,7 @@ const AdminReferralManagement = () => {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-5 w-full">
+        <TabsList className="grid grid-cols-6 w-full">
           <TabsTrigger value="dashboard" className="gap-2">
             <BarChart3 className="h-4 w-4" />
             Dashboard
@@ -498,6 +638,15 @@ const AdminReferralManagement = () => {
             {stats.pendingRewards > 0 && (
               <Badge variant="destructive" className="ml-2">
                 {stats.pendingRewards}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="performance" className="gap-2">
+            <Award className="h-4 w-4" />
+            Performance
+            {stats.pendingPerformanceRewards > 0 && (
+              <Badge variant="destructive" className="ml-2">
+                {stats.pendingPerformanceRewards}
               </Badge>
             )}
           </TabsTrigger>
@@ -571,6 +720,54 @@ const AdminReferralManagement = () => {
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
                   Super Ambassadeurs
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Performance Stats Row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Performance en attente</p>
+                    <p className="text-3xl font-bold">{stats.pendingPerformanceAmount}€</p>
+                  </div>
+                  <Award className="h-10 w-10 text-warning/20" />
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  {stats.pendingPerformanceRewards} récompenses
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Performance versée</p>
+                    <p className="text-3xl font-bold">{stats.paidPerformanceAmount}€</p>
+                  </div>
+                  <CheckCircle className="h-10 w-10 text-success/20" />
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  {stats.bronzeCount + stats.silverCount + stats.goldCount} récompenses
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Répartition Tiers</p>
+                    <p className="text-lg font-bold">🥉 {stats.bronzeCount} | 🥈 {stats.silverCount} | 🥇 {stats.goldCount}</p>
+                  </div>
+                  <TrendingUp className="h-10 w-10 text-primary/20" />
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Bronze, Silver, Gold
                 </p>
               </CardContent>
             </Card>
@@ -893,6 +1090,224 @@ const AdminReferralManagement = () => {
                                 <X className="h-4 w-4" />
                               </Button>
                             </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Performance Tab */}
+        <TabsContent value="performance" className="space-y-6">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">🥉 Bronze</p>
+                    <p className="text-3xl font-bold">{stats.bronzeCount}</p>
+                  </div>
+                  <Award className="h-10 w-10 text-amber-600/20" />
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  50€ par récompense
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">🥈 Silver</p>
+                    <p className="text-3xl font-bold">{stats.silverCount}</p>
+                  </div>
+                  <Award className="h-10 w-10 text-slate-400/20" />
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  100€ par récompense
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">🥇 Gold</p>
+                    <p className="text-3xl font-bold">{stats.goldCount}</p>
+                  </div>
+                  <Award className="h-10 w-10 text-yellow-500/20" />
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  150€ par récompense
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">En attente</p>
+                    <p className="text-3xl font-bold">{stats.pendingPerformanceAmount}€</p>
+                  </div>
+                  <Clock className="h-10 w-10 text-warning/20" />
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  {stats.pendingPerformanceRewards} récompenses
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Calculate Button */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Calculer les récompenses de performance</p>
+                  <p className="text-sm text-muted-foreground">
+                    Analyse tous les prestataires et génère les récompenses éligibles
+                  </p>
+                </div>
+                <Button onClick={calculatePerformanceRewards} className="gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  Calculer
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Eligible Providers Table */}
+          {eligibleProviders.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Prestataires Éligibles</CardTitle>
+                <CardDescription>
+                  {eligibleProviders.length} prestataire{eligibleProviders.length > 1 ? 's' : ''} analysé{eligibleProviders.length > 1 ? 's' : ''}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {eligibleProviders.map(provider => (
+                    <div key={provider.provider_id} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <p className="font-medium">{provider.business_name}</p>
+                          <div className="grid grid-cols-4 gap-4 text-sm mt-2">
+                            <div>
+                              <p className="text-muted-foreground">Missions</p>
+                              <p className="font-medium">{provider.missions_count}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Heures</p>
+                              <p className="font-medium">{provider.hours_worked.toFixed(1)}h</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Note</p>
+                              <p className="font-medium">{provider.average_rating.toFixed(1)}/5</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Ancienneté</p>
+                              <p className="font-medium">{provider.months_active} mois</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          {provider.tier !== 'none' ? (
+                            <>
+                              <Badge className={getTierColor(provider.tier)}>
+                                {getTierLabel(provider.tier)}
+                              </Badge>
+                              {provider.reward_created && (
+                                <Badge variant="default">✓ Créée</Badge>
+                              )}
+                            </>
+                          ) : (
+                            <Badge variant="secondary">Non éligible</Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Performance Rewards List */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Récompenses de Performance</CardTitle>
+              <CardDescription>
+                {performanceRewards.length} récompense{performanceRewards.length > 1 ? 's' : ''}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {performanceRewards.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Award className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
+                    <p className="text-muted-foreground">Aucune récompense de performance</p>
+                  </div>
+                ) : (
+                  performanceRewards.map(reward => (
+                    <div key={reward.id} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <Award className="h-5 w-5 text-primary" />
+                            <div>
+                              <p className="font-medium">
+                                {reward.provider?.profiles?.first_name} {reward.provider?.profiles?.last_name}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {reward.provider?.business_name}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-4 gap-4 text-sm">
+                            <div>
+                              <p className="text-muted-foreground">Tier</p>
+                              <Badge className={getTierColor(reward.reward_tier)}>
+                                {getTierLabel(reward.reward_tier)}
+                              </Badge>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Montant</p>
+                              <p className="font-bold text-success">{reward.amount}€</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Année</p>
+                              <p className="font-medium">{reward.year}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Métriques</p>
+                              <p className="font-medium text-xs">
+                                {reward.missions_count} missions | {reward.hours_worked.toFixed(0)}h | ⭐ {reward.average_rating.toFixed(1)}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Badge className={getStatusColor(reward.status)}>
+                            {reward.status === 'paid' ? 'Payé' : 
+                             reward.status === 'pending' ? 'En attente' : 'Rejeté'}
+                          </Badge>
+                          {reward.status === 'pending' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => markPerformanceRewardAsPaid(reward.id)}
+                            >
+                              <Check className="h-4 w-4" />
+                            </Button>
                           )}
                         </div>
                       </div>

@@ -3955,6 +3955,20 @@ export type Database = {
           success: boolean
         }[]
       }
+      calculate_all_provider_rewards: {
+        Args: never
+        Returns: {
+          amount: number
+          average_rating: number
+          business_name: string
+          hours_worked: number
+          missions_count: number
+          months_active: number
+          provider_id: string
+          reward_created: boolean
+          tier: string
+        }[]
+      }
       calculate_cart_total: { Args: { cart_id_param: string }; Returns: number }
       calculate_detailed_rating: {
         Args: {
