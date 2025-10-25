@@ -1,214 +1,45 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { Shield, UserPlus, UserMinus, Search, Download, Users, AlertCircle } from 'lucide-react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
-
-interface UserProfile {
-  user_id: string;
-  email: string;
-  first_name?: string;
-  last_name?: string;
-  role?: string;
-}
-
-interface AdminActionLog {
-  id: string;
-  admin_user_id: string;
-  entity_id: string;
-  action_type: string;
-  description: string;
-  created_at: string;
-  old_data: any;
-  new_data: any;
-  ip_address: string | null;
-  admin_email?: string;
-  target_email?: string;
-}
+import { useState } from 'react';
+import { AdminRolesHeader } from '@/components/admin/roles/AdminRolesHeader';
+import { AdminStatsCards } from '@/components/admin/roles/AdminStatsCards';
+import { SecurityWarningCard } from '@/components/admin/roles/SecurityWarningCard';
+import { UsersTable } from '@/components/admin/roles/UsersTable';
+import { HistoryTable } from '@/components/admin/roles/HistoryTable';
+import { RoleConfirmationDialog } from '@/components/admin/roles/RoleConfirmationDialog';
+import { useAdminRolesManagement } from '@/hooks/admin/useAdminRolesManagement';
+import { UserProfile } from '@/types/admin-roles';
 
 const AdminRoles = () => {
-  const [users, setUsers] = useState<UserProfile[]>([]);
-  const [admins, setAdmins] = useState<UserProfile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [showHistory, setShowHistory] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [actionType, setActionType] = useState<'promote' | 'revoke' | null>(null);
-  const [actionLogs, setActionLogs] = useState<AdminActionLog[]>([]);
-  const [showHistory, setShowHistory] = useState(false);
-  const { toast } = useToast();
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  const {
+    users,
+    admins,
+    loading,
+    actionLogs,
+    handlePromote,
+    handleRevoke,
+    exportAdmins,
+  } = useAdminRolesManagement();
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-
-      // Load all users
-      const { data: usersData, error: usersError } = await supabase
-        .from('profiles')
-        .select('user_id, email, first_name, last_name')
-        .order('email');
-
-      if (usersError) throw usersError;
-
-      // Load user roles
-      const { data: rolesData, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id, role');
-
-      if (rolesError) throw rolesError;
-
-      // Merge users with roles
-      const usersWithRoles = usersData?.map(user => ({
-        ...user,
-        role: rolesData?.find(r => r.user_id === user.user_id)?.role || 'user'
-      })) || [];
-
-      setUsers(usersWithRoles);
-      setAdmins(usersWithRoles.filter(u => u.role === 'admin'));
-
-      // Load admin action logs
-      const { data: logsData, error: logsError } = await supabase
-        .from('admin_actions_log')
-        .select('*')
-        .in('action_type', ['promote_admin', 'revoke_admin'])
-        .order('created_at', { ascending: false })
-        .limit(100);
-
-      if (logsError) {
-        console.error('Error loading logs:', logsError);
-      } else {
-        // Enrich logs with email information
-        const enrichedLogs = (logsData || []).map(log => {
-          const adminUser = usersWithRoles.find(u => u.user_id === log.admin_user_id);
-          const targetUser = usersWithRoles.find(u => u.user_id === log.entity_id);
-          const newDataEmail = typeof log.new_data === 'object' && log.new_data !== null ? (log.new_data as any).email : null;
-          const oldDataEmail = typeof log.old_data === 'object' && log.old_data !== null ? (log.old_data as any).email : null;
-          return {
-            id: log.id,
-            admin_user_id: log.admin_user_id,
-            entity_id: log.entity_id,
-            action_type: log.action_type,
-            description: log.description || '',
-            created_at: log.created_at,
-            old_data: log.old_data,
-            new_data: log.new_data,
-            ip_address: (log.ip_address as string) || null,
-            admin_email: adminUser?.email || 'Inconnu',
-            target_email: targetUser?.email || newDataEmail || oldDataEmail || 'Inconnu'
-          };
-        });
-        setActionLogs(enrichedLogs);
-      }
-    } catch (error: any) {
-      console.error('Error loading data:', error);
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de charger les données',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePromote = async () => {
+  const onConfirmAction = async () => {
     if (!selectedUser) return;
-
-    try {
-      const { error } = await supabase.functions.invoke('admin-manage-roles', {
-        body: { action: 'promote', targetUserId: selectedUser.user_id }
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: '✅ Promotion réussie',
-        description: `${selectedUser.email} est maintenant administrateur`,
-      });
-
-      await loadData();
-      setSelectedUser(null);
-      setActionType(null);
-    } catch (error: any) {
-      toast({
-        title: 'Erreur',
-        description: error.message || 'Échec de la promotion',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleRevoke = async () => {
-    if (!selectedUser) return;
-
-    try {
-      const { error } = await supabase.functions.invoke('admin-manage-roles', {
-        body: { action: 'revoke', targetUserId: selectedUser.user_id }
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: '✅ Révocation réussie',
-        description: `${selectedUser.email} n'est plus administrateur`,
-      });
-
-      await loadData();
-      setSelectedUser(null);
-      setActionType(null);
-    } catch (error: any) {
-      toast({
-        title: 'Erreur',
-        description: error.message || 'Échec de la révocation',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const exportAdmins = () => {
-    const csv = admins.map(admin => 
-      `${admin.email},${admin.first_name || ''},${admin.last_name || ''}`
-    ).join('\n');
     
-    const blob = new Blob([`Email,Prénom,Nom\n${csv}`], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `admins_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
+    if (actionType === 'promote') {
+      await handlePromote(selectedUser);
+    } else if (actionType === 'revoke') {
+      await handleRevoke(selectedUser);
+    }
+    
+    setSelectedUser(null);
+    setActionType(null);
   };
 
-  const filteredUsers = users.filter(user => 
-    user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.last_name?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const onCancelAction = () => {
+    setSelectedUser(null);
+    setActionType(null);
+  };
 
   if (loading) {
     return (
@@ -220,259 +51,42 @@ const AdminRoles = () => {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Shield className="h-8 w-8 text-primary" />
-            Gestion des Rôles Admin
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Gérez les droits d'administration de votre équipe
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button onClick={() => setShowHistory(!showHistory)} variant="outline">
-            <Shield className="h-4 w-4 mr-2" />
-            {showHistory ? 'Vue Utilisateurs' : 'Historique'}
-          </Button>
-          <Button onClick={exportAdmins} variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Exporter CSV
-          </Button>
-        </div>
-      </div>
+      <AdminRolesHeader
+        showHistory={showHistory}
+        onToggleHistory={() => setShowHistory(!showHistory)}
+        onExport={exportAdmins}
+      />
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Utilisateurs</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{users.length}</div>
-          </CardContent>
-        </Card>
+      <AdminStatsCards
+        totalUsers={users.length}
+        totalAdmins={admins.length}
+      />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Administrateurs</CardTitle>
-            <Shield className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-primary">{admins.length}</div>
-          </CardContent>
-        </Card>
+      <SecurityWarningCard />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Utilisateurs Standards</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{users.length - admins.length}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Security Warning */}
-      <Card className="border-orange-200 bg-orange-50">
-        <CardHeader>
-          <CardTitle className="text-sm flex items-center gap-2 text-orange-800">
-            <AlertCircle className="h-4 w-4" />
-            Avertissement de Sécurité
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-orange-700">
-          <ul className="list-disc list-inside space-y-1">
-            <li>Vous ne pouvez pas modifier votre propre rôle</li>
-            <li>Vous ne pouvez pas révoquer le dernier administrateur</li>
-            <li>Toutes les actions sont enregistrées dans les logs Supabase</li>
-          </ul>
-        </CardContent>
-      </Card>
-
-      {/* Users Table or History */}
       {!showHistory ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Utilisateurs</CardTitle>
-            <CardDescription>
-              Recherchez et gérez les rôles des utilisateurs
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-2 mb-4">
-              <Search className="h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher par email ou nom..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="max-w-sm"
-              />
-            </div>
-
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Nom</TableHead>
-                  <TableHead>Rôle</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user.user_id}>
-                    <TableCell className="font-medium">{user.email}</TableCell>
-                    <TableCell>
-                      {user.first_name || user.last_name
-                        ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
-                        : '-'}
-                    </TableCell>
-                    <TableCell>
-                      {user.role === 'admin' ? (
-                        <Badge variant="default" className="bg-primary">
-                          <Shield className="h-3 w-3 mr-1" />
-                          Admin
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary">Utilisateur</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {user.role === 'admin' ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setActionType('revoke');
-                          }}
-                        >
-                          <UserMinus className="h-4 w-4 mr-2" />
-                          Révoquer
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="default"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setActionType('promote');
-                          }}
-                        >
-                          <UserPlus className="h-4 w-4 mr-2" />
-                          Promouvoir
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        <UsersTable
+          users={users}
+          onPromote={(user) => {
+            setSelectedUser(user);
+            setActionType('promote');
+          }}
+          onRevoke={(user) => {
+            setSelectedUser(user);
+            setActionType('revoke');
+          }}
+        />
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Historique des Actions Admin
-            </CardTitle>
-            <CardDescription>
-              Historique complet de toutes les modifications de rôles
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date & Heure</TableHead>
-                  <TableHead>Administrateur</TableHead>
-                  <TableHead>Action</TableHead>
-                  <TableHead>Utilisateur Cible</TableHead>
-                  <TableHead>Adresse IP</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {actionLogs.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                      Aucune action enregistrée
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  actionLogs.map((log) => (
-                    <TableRow key={log.id}>
-                      <TableCell className="font-mono text-sm">
-                        {new Date(log.created_at).toLocaleString('fr-FR')}
-                      </TableCell>
-                      <TableCell className="font-medium">{log.admin_email}</TableCell>
-                      <TableCell>
-                        {log.action_type === 'promote_admin' ? (
-                          <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                            <UserPlus className="h-3 w-3 mr-1" />
-                            Promotion Admin
-                          </Badge>
-                        ) : (
-                          <Badge variant="destructive">
-                            <UserMinus className="h-3 w-3 mr-1" />
-                            Révocation Admin
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>{log.target_email}</TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {log.ip_address || '-'}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        <HistoryTable logs={actionLogs} />
       )}
 
-      {/* Confirmation Dialog */}
-      <AlertDialog open={!!actionType} onOpenChange={() => setActionType(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {actionType === 'promote' ? 'Promouvoir en Admin' : 'Révoquer Admin'}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {actionType === 'promote' ? (
-                <>
-                  Êtes-vous sûr de vouloir promouvoir <strong>{selectedUser?.email}</strong> en administrateur ?
-                  Cette personne aura accès à toutes les fonctionnalités d'administration.
-                </>
-              ) : (
-                <>
-                  Êtes-vous sûr de vouloir révoquer les droits d'administrateur de <strong>{selectedUser?.email}</strong> ?
-                  Cette personne n'aura plus accès aux fonctionnalités d'administration.
-                </>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => {
-              setSelectedUser(null);
-              setActionType(null);
-            }}>
-              Annuler
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={actionType === 'promote' ? handlePromote : handleRevoke}
-              className={actionType === 'revoke' ? 'bg-destructive' : ''}
-            >
-              {actionType === 'promote' ? 'Promouvoir' : 'Révoquer'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <RoleConfirmationDialog
+        open={!!actionType}
+        actionType={actionType}
+        selectedUser={selectedUser}
+        onConfirm={onConfirmAction}
+        onCancel={onCancelAction}
+      />
     </div>
   );
 };
