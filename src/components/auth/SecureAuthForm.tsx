@@ -159,26 +159,56 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
         throw error;
       }
 
-      // Récupérer le rôle réel de l'utilisateur
-      const { data: roleData, error: roleError } = await supabase.functions.invoke('get-user-role', {
-        headers: {
-          Authorization: `Bearer ${authData.session?.access_token}`
-        }
-      });
+      // Récupérer le rôle réel de l'utilisateur via edge function
+      let actualRole: 'admin' | 'user' = 'user';
+      let isProvider = false;
 
-      if (roleError) {
-        console.error('Erreur lors de la récupération du rôle:', roleError);
+      try {
+        const { data: roleData, error: roleError } = await supabase.functions.invoke('get-user-role', {
+          headers: {
+            Authorization: `Bearer ${authData.session?.access_token}`
+          }
+        });
+
+        if (!roleError && roleData) {
+          actualRole = (roleData.role as 'admin' | 'user') || 'user';
+          isProvider = !!roleData.isProvider;
+        } else {
+          console.warn('get-user-role error, using fallback:', roleError);
+        }
+      } catch (e) {
+        console.warn('get-user-role invoke failed, using fallback:', e);
       }
 
-      const actualRole = roleData?.role || 'user';
-      const isProvider = roleData?.isProvider || false;
+      // Fallback robuste en lecture directe si nécessaire
+      if (actualRole !== 'admin') {
+        try {
+          const { data: adminRow, error: adminErr } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', authData.user?.id)
+            .eq('role', 'admin')
+            .maybeSingle();
+          if (!adminErr && adminRow?.role === 'admin') actualRole = 'admin';
+        } catch {}
+      }
+      if (!isProvider) {
+        try {
+          const { data: providerRow, error: providerErr } = await supabase
+            .from('providers')
+            .select('is_verified')
+            .eq('user_id', authData.user?.id)
+            .maybeSingle();
+          if (!providerErr && providerRow?.is_verified) isProvider = true;
+        } catch {}
+      }
 
       toast({
         title: "Connexion réussie",
         description: "Bienvenue !",
       });
 
-      // Redirection selon le rôle
+      // Redirection selon le rôle détecté
       if (actualRole === 'admin') {
         navigate('/modern-admin');
       } else if (isProvider) {
