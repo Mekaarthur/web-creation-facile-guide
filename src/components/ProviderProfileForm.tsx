@@ -9,10 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, Upload, User, Mail, Phone, MapPin, Briefcase, Award, Clock, Euro, CheckCircle } from 'lucide-react';
+import { Loader2, Upload, User, Mail, Phone, MapPin, Briefcase, Award, Clock, Euro, CheckCircle, Shield } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useSecureForm } from '@/hooks/useSecureForm';
+import { providerProfileSchema } from '@/lib/security-validation';
+import { z } from 'zod';
 
 interface ProviderData {
   id?: string;
@@ -87,6 +90,16 @@ const ProviderProfileForm = () => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+
+  // Secure form validation
+  const { handleSubmit: secureSubmit, isSubmitting, errors } = useSecureForm({
+    schema: providerProfileSchema,
+    onSubmit: async (validatedData) => {
+      await executeSaveProfile(validatedData);
+    },
+    rateLimitKey: `provider_profile_${user?.id}`,
+    rateLimitAction: 'update_provider_profile'
+  });
 
   useEffect(() => {
     if (user) {
@@ -228,7 +241,19 @@ const ProviderProfileForm = () => {
     }
   };
 
-  const saveProfile = async () => {
+  const saveProfile = () => {
+    // Trigger secure validation
+    secureSubmit({
+      businessName: profile.business_name || '',
+      description: profile.description || '',
+      location: `${profile.city} ${profile.postal_code}` || '',
+      postalCode: profile.postal_code || '',
+      hourlyRate: profile.hourly_rate || 0,
+      services: profile.selected_services || [],
+    });
+  };
+
+  const executeSaveProfile = async (validatedData: z.infer<typeof providerProfileSchema>) => {
     setSaving(true);
     try {
       // Sauvegarder le profil
@@ -241,23 +266,24 @@ const ProviderProfileForm = () => {
           email: profile.email,
           phone: profile.phone,
           address: profile.address,
+          postal_code: validatedData.postalCode,
           avatar_url: profile.avatar_url,
           updated_at: new Date().toISOString(),
         });
 
       if (profileError) throw profileError;
 
-      // Sauvegarder les données prestataire
+      // Sauvegarder les données prestataire with sanitized data
       const { error: providerError } = await supabase
         .from('providers')
         .upsert({
           user_id: user?.id,
-          business_name: profile.business_name,
-          description: profile.description,
-          hourly_rate: profile.hourly_rate,
+          business_name: validatedData.businessName,
+          description: validatedData.description,
+          hourly_rate: validatedData.hourlyRate,
           postal_codes: profile.service_zones,
-          service_categories: profile.selected_services,
-          location: `${profile.city} ${profile.postal_code}`,
+          service_categories: validatedData.services,
+          location: validatedData.location,
           siret_number: profile.siret_number,
           updated_at: new Date().toISOString(),
         });
@@ -343,6 +369,10 @@ const ProviderProfileForm = () => {
             <CardTitle className="flex items-center space-x-2">
               <User className="h-5 w-5" />
               <span>Informations personnelles</span>
+              <Badge variant="outline" className="ml-2">
+                <Shield className="w-3 h-3 mr-1" />
+                Sécurisé
+              </Badge>
             </CardTitle>
             <CardDescription>
               Renseignez vos informations de base pour créer votre profil prestataire
@@ -416,6 +446,9 @@ const ProviderProfileForm = () => {
                   placeholder="votre@email.com"
                   required
                 />
+                {errors.email && (
+                  <p className="text-sm text-destructive">{errors.email}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -427,6 +460,9 @@ const ProviderProfileForm = () => {
                   placeholder="+33 6 12 34 56 78"
                   required
                 />
+                {errors.phone && (
+                  <p className="text-sm text-destructive">{errors.phone}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -476,6 +512,9 @@ const ProviderProfileForm = () => {
                     onChange={(e) => handleInputChange('postal_code', e.target.value)}
                     placeholder="75001"
                   />
+                  {errors.postalCode && (
+                    <p className="text-sm text-destructive">{errors.postalCode}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -623,6 +662,9 @@ const ProviderProfileForm = () => {
                     required
                   />
                 </div>
+                {errors.hourlyRate && (
+                  <p className="text-sm text-destructive">{errors.hourlyRate}</p>
+                )}
                 <p className="text-xs text-muted-foreground">
                   Montant que vous percevrez après commission Bikawo
                 </p>
@@ -638,10 +680,14 @@ const ProviderProfileForm = () => {
                 placeholder="Présentez-vous et décrivez vos compétences, votre expérience et vos spécialités..."
                 rows={6}
                 className="resize-none"
+                maxLength={1000}
                 required
               />
+              {errors.description && (
+                <p className="text-sm text-destructive">{errors.description}</p>
+              )}
               <p className="text-xs text-muted-foreground">
-                Cette description sera visible par les clients. Mettez en avant votre expertise et votre expérience.
+                {profile.description?.length || 0}/1000 caractères - Cette description sera visible par les clients.
               </p>
             </div>
 
@@ -760,8 +806,8 @@ const ProviderProfileForm = () => {
               Suivant
             </Button>
           ) : (
-            <Button onClick={saveProfile} disabled={saving}>
-              {saving ? (
+            <Button onClick={saveProfile} disabled={saving || isSubmitting}>
+              {saving || isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Sauvegarde...

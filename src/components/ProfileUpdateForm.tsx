@@ -7,8 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, Upload, User, Mail, Phone, MapPin, Globe, Briefcase, Award } from 'lucide-react';
+import { Loader2, Upload, User, Mail, Phone, MapPin, Globe, Briefcase, Award, Shield } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import { useSecureForm } from '@/hooks/useSecureForm';
+import { z } from 'zod';
+import { nameSchema, emailSchema, phoneSchema, postalCodeSchema } from '@/lib/security-validation';
+import { Badge } from '@/components/ui/badge';
 
 interface ProfileData {
   id?: string;
@@ -32,6 +36,17 @@ interface ProfileUpdateFormProps {
   userType?: 'client' | 'provider';
 }
 
+const profileSchema = z.object({
+  first_name: nameSchema,
+  last_name: nameSchema,
+  email: emailSchema.optional(),
+  phone: phoneSchema.optional(),
+  address: z.string().max(200, "Adresse trop longue (max 200 caractères)").optional(),
+  postal_code: postalCodeSchema.optional(),
+  city: z.string().max(100, "Ville trop longue").optional(),
+  country: z.string().max(100, "Pays trop long").optional(),
+});
+
 const ProfileUpdateForm = ({ userType = 'client' }: ProfileUpdateFormProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -39,6 +54,16 @@ const ProfileUpdateForm = ({ userType = 'client' }: ProfileUpdateFormProps) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  // Secure form validation
+  const { handleSubmit: secureSubmit, isSubmitting, errors } = useSecureForm({
+    schema: profileSchema,
+    onSubmit: async (validatedData) => {
+      await executeSaveProfile(validatedData);
+    },
+    rateLimitKey: `profile_${user?.id}`,
+    rateLimitAction: 'update_profile'
+  });
 
   useEffect(() => {
     if (user) {
@@ -132,47 +157,35 @@ const ProfileUpdateForm = ({ userType = 'client' }: ProfileUpdateFormProps) => {
     }
   };
 
-  const validateForm = () => {
-    if (!profile.first_name || !profile.last_name) {
-      toast({
-        title: "Champs requis",
-        description: "Le prénom et le nom sont obligatoires",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    if (profile.email && !/\S+@\S+\.\S+/.test(profile.email)) {
-      toast({
-        title: "Email invalide",
-        description: "Veuillez entrer un email valide",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    if (profile.phone && !/^[\d\s\-\+\(\)]+$/.test(profile.phone)) {
-      toast({
-        title: "Téléphone invalide",
-        description: "Veuillez entrer un numéro de téléphone valide",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    return true;
+  const saveProfile = () => {
+    // Trigger secure validation
+    secureSubmit({
+      first_name: profile.first_name,
+      last_name: profile.last_name,
+      email: profile.email,
+      phone: profile.phone,
+      address: profile.address,
+      postal_code: profile.postal_code,
+      city: profile.city,
+      country: profile.country,
+    });
   };
 
-  const saveProfile = async () => {
-    if (!validateForm()) return;
-    
+  const executeSaveProfile = async (validatedData: z.infer<typeof profileSchema>) => {
     setSaving(true);
     try {
       const { error } = await supabase
         .from('profiles')
         .upsert({
           user_id: user?.id,
-          ...profile,
+          ...validatedData,
+          // Keep existing fields not in validation
+          avatar_url: profile.avatar_url,
+          user_type: profile.user_type,
+          preferences: profile.preferences,
+          specialties: profile.specialties,
+          intervention_zones: profile.intervention_zones,
+          certifications: profile.certifications,
           updated_at: new Date().toISOString(),
         });
 
@@ -211,6 +224,10 @@ const ProfileUpdateForm = ({ userType = 'client' }: ProfileUpdateFormProps) => {
         <CardTitle className="flex items-center space-x-2">
           <User className="h-5 w-5" />
           <span>Mes informations personnelles</span>
+          <Badge variant="outline" className="ml-2">
+            <Shield className="w-3 h-3 mr-1" />
+            Sécurisé
+          </Badge>
         </CardTitle>
         <CardDescription>
           Mettez à jour vos informations personnelles et de contact
@@ -265,6 +282,9 @@ const ProfileUpdateForm = ({ userType = 'client' }: ProfileUpdateFormProps) => {
                 required
               />
             </div>
+            {errors.first_name && (
+              <p className="text-sm text-destructive">{errors.first_name}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -280,6 +300,9 @@ const ProfileUpdateForm = ({ userType = 'client' }: ProfileUpdateFormProps) => {
                 required
               />
             </div>
+            {errors.last_name && (
+              <p className="text-sm text-destructive">{errors.last_name}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -295,6 +318,9 @@ const ProfileUpdateForm = ({ userType = 'client' }: ProfileUpdateFormProps) => {
                 className="pl-10"
               />
             </div>
+            {errors.email && (
+              <p className="text-sm text-destructive">{errors.email}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -309,6 +335,9 @@ const ProfileUpdateForm = ({ userType = 'client' }: ProfileUpdateFormProps) => {
                 className="pl-10"
               />
             </div>
+            {errors.phone && (
+              <p className="text-sm text-destructive">{errors.phone}</p>
+            )}
           </div>
         </div>
 
@@ -338,6 +367,9 @@ const ProfileUpdateForm = ({ userType = 'client' }: ProfileUpdateFormProps) => {
                 onChange={(e) => handleInputChange('postal_code', e.target.value)}
                 placeholder="75001"
               />
+              {errors.postal_code && (
+                <p className="text-sm text-destructive">{errors.postal_code}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -443,10 +475,10 @@ const ProfileUpdateForm = ({ userType = 'client' }: ProfileUpdateFormProps) => {
         <div className="pt-4">
           <Button
             onClick={saveProfile}
-            disabled={saving}
+            disabled={saving || isSubmitting}
             className="w-full md:w-auto"
           >
-            {saving ? (
+            {saving || isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Sauvegarde...
