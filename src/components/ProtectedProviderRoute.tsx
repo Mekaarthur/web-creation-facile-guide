@@ -13,7 +13,7 @@ interface ProtectedProviderRouteProps {
 }
 
 const ProtectedProviderRoute = ({ children }: ProtectedProviderRouteProps) => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, session } = useAuth();
   const { t } = useTranslation();
   const [isProvider, setIsProvider] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
@@ -26,14 +26,30 @@ const ProtectedProviderRoute = ({ children }: ProtectedProviderRouteProps) => {
       }
 
       try {
-        // Vérifier d'abord si l'utilisateur existe dans la table providers
+        // 1) Tentative via edge function (si session présente)
+        if (session) {
+          const { data, error } = await supabase.functions.invoke('get-user-role', {
+            headers: { Authorization: `Bearer ${session.access_token}` }
+          });
+
+          if (!error && data) {
+            setIsProvider(!!data.isVerifiedProvider);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('[ProtectedProviderRoute] get-user-role error, fallback providers:', err);
+      }
+
+      try {
+        // 2) Fallback: check direct dans providers
         const { data: providerData, error: providerError } = await supabase
           .from('providers')
           .select('id, is_verified')
           .eq('user_id', user.id)
           .maybeSingle();
 
-        if (providerError) {
+        if (providerError && providerError.code !== 'PGRST116') {
           console.error('Error checking provider data:', providerError);
         }
 
@@ -47,7 +63,7 @@ const ProtectedProviderRoute = ({ children }: ProtectedProviderRouteProps) => {
     };
 
     checkProviderStatus();
-  }, [user]);
+  }, [user, session]);
 
   if (authLoading || loading) {
     return (

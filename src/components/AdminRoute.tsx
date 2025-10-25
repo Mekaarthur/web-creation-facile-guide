@@ -23,6 +23,7 @@ const AdminRoute = ({ children, redirectTo = '/auth' }: AdminRouteProps) => {
       }
 
       try {
+        // 1) Vérification via edge function (source de vérité)
         const { data, error } = await supabase.functions.invoke('get-user-role', {
           headers: {
             Authorization: `Bearer ${session.access_token}`
@@ -30,14 +31,38 @@ const AdminRoute = ({ children, redirectTo = '/auth' }: AdminRouteProps) => {
         });
 
         if (error) {
-          console.error('Erreur vérification admin:', error);
-          setIsAdmin(false);
+          console.warn('[AdminRoute] get-user-role error, fallback user_roles:', error);
+          // 2) Fallback direct sur user_roles (RLS contrôlé)
+          const { data: adminRow, error: adminError } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', user.id)
+            .eq('role', 'admin')
+            .maybeSingle();
+
+          if (adminError && adminError.code !== 'PGRST116') {
+            console.error('[AdminRoute] user_roles fallback error:', adminError);
+            setIsAdmin(false);
+          } else {
+            setIsAdmin(!!adminRow);
+          }
         } else {
           setIsAdmin(data?.role === 'admin');
         }
-      } catch (error) {
-        console.error('Erreur lors de la vérification du rôle admin:', error);
-        setIsAdmin(false);
+      } catch (err) {
+        console.error('[AdminRoute] Unexpected error:', err);
+        // Dernier fallback défensif
+        try {
+          const { data: adminRow } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', user.id)
+            .eq('role', 'admin')
+            .maybeSingle();
+          setIsAdmin(!!adminRow);
+        } catch (_) {
+          setIsAdmin(false);
+        }
       } finally {
         setChecking(false);
       }
