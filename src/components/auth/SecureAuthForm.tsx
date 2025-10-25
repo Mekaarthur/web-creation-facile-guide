@@ -208,13 +208,16 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
         description: "Bienvenue !",
       });
 
-      // Redirection selon le rôle détecté
+      // Attendre que la session soit bien établie dans le contexte
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Redirection selon le rôle détecté (rechargement complet pour éviter race conditions)
       if (actualRole === 'admin') {
-        navigate('/admin');
+        window.location.href = '/admin';
       } else if (isProvider) {
-        navigate('/dashboard-prestataire');
+        window.location.href = '/dashboard-prestataire';
       } else {
-        navigate('/dashboard-client');
+        window.location.href = '/dashboard-client';
       }
 
       if (onSuccess) {

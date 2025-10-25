@@ -31,7 +31,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     let mounted = true;
-    let authInitialized = false;
 
     const initAuth = async () => {
       try {
@@ -46,7 +45,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setSession(session);
           setUser(session?.user ?? null);
           setLoading(false);
-          authInitialized = true;
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
@@ -54,18 +52,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setSession(null);
           setUser(null);
           setLoading(false);
-          authInitialized = true;
         }
       }
     };
 
-    // 2. Configurer le listener pour les changements futurs
+    // 2. Configurer le listener pour les changements futurs (après init)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        // Ne mettre à jour que si on a déjà initialisé
-        if (mounted && authInitialized) {
+        if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);
+          setLoading(false);
         }
       }
     );
