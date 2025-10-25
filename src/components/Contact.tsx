@@ -15,22 +15,41 @@ import {
   ArrowRight,
   Sparkles,
   CheckCircle,
-  Zap
+  Zap,
+  AlertCircle
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from 'react-i18next';
+import { useSecureForm } from "@/hooks/useSecureForm";
+import { contactFormSchema, type ContactFormData } from "@/lib/security-validation";
 
 const Contact = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ContactFormData>({
     name: "",
     email: "",
-    subject: "",
+    phone: "",
     message: ""
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { t } = useTranslation();
+
+  // 🔒 Hook sécurisé avec validation Zod + Rate limiting
+  const { handleSubmit, isSubmitting, errors } = useSecureForm({
+    schema: contactFormSchema,
+    onSubmit: async (validatedData) => {
+      // TODO: Remplacer par un appel à l'edge function d'envoi d'email
+      console.log('Contact form submitted:', validatedData);
+      
+      // Simulation d'envoi
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Reset form on success
+      setFormData({ name: "", email: "", phone: "", message: "" });
+    },
+    rateLimitKey: formData.email || 'anonymous',
+    rateLimitAction: 'contact_form'
+  });
 
   const contactMethods = [
     {
@@ -67,26 +86,9 @@ const Contact = () => {
     }
   ];
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    
-    // Simulation d'envoi avec delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    toast({
-      title: t('contact.success'),
-      description: t('contact.successMessage'),
-    });
-    
-    // Reset form
-    setFormData({
-      name: "",
-      email: "",
-      subject: "",
-      message: ""
-    });
-    setIsSubmitting(false);
+    await handleSubmit(formData);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -205,24 +207,8 @@ const Contact = () => {
                   </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-8">
+                <form onSubmit={handleFormSubmit} className="space-y-8">
                   <div className="space-y-6">
-                    <div className="space-y-3">
-                      <label htmlFor="civility" className="text-lg font-semibold text-foreground flex items-center gap-2">
-                        <Star className="w-5 h-5 text-primary" />
-                        {t('contact.civility')} *
-                      </label>
-                      <Select required>
-                        <SelectTrigger className="h-14 text-lg border-2 hover:border-primary/50 transition-colors duration-300">
-                          <SelectValue placeholder={t('contact.selectCivility')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="mr">{t('contact.mr')}</SelectItem>
-                          <SelectItem value="mrs">{t('contact.mrs')}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-3">
                         <label htmlFor="name" className="text-lg font-semibold text-foreground">
@@ -234,9 +220,14 @@ const Contact = () => {
                           value={formData.name}
                           onChange={handleChange}
                           placeholder={t('contact.yourName')}
-                          required
-                          className="h-14 text-lg border-2 hover:border-primary/50 focus:border-primary transition-colors duration-300"
+                          className={`h-14 text-lg border-2 hover:border-primary/50 focus:border-primary transition-colors duration-300 ${errors.name ? 'border-destructive' : ''}`}
                         />
+                        {errors.name && (
+                          <p className="text-destructive text-sm flex items-center gap-2">
+                            <AlertCircle className="w-4 h-4" />
+                            {errors.name}
+                          </p>
+                        )}
                       </div>
                       
                       <div className="space-y-3">
@@ -250,26 +241,37 @@ const Contact = () => {
                           value={formData.email}
                           onChange={handleChange}
                           placeholder={t('contact.yourEmail')}
-                          required
-                          className="h-14 text-lg border-2 hover:border-primary/50 focus:border-primary transition-colors duration-300"
+                          className={`h-14 text-lg border-2 hover:border-primary/50 focus:border-primary transition-colors duration-300 ${errors.email ? 'border-destructive' : ''}`}
                         />
+                        {errors.email && (
+                          <p className="text-destructive text-sm flex items-center gap-2">
+                            <AlertCircle className="w-4 h-4" />
+                            {errors.email}
+                          </p>
+                        )}
                       </div>
                     </div>
-                  </div>
 
-                  <div className="space-y-3">
-                    <label htmlFor="subject" className="text-lg font-semibold text-foreground">
-                      {t('contact.subject')} *
-                    </label>
-                    <Input
-                      id="subject"
-                      name="subject"
-                      value={formData.subject}
-                      onChange={handleChange}
-                      placeholder={t('contact.subjectPlaceholder')}
-                      required
-                      className="h-14 text-lg border-2 hover:border-primary/50 focus:border-primary transition-colors duration-300"
-                    />
+                    <div className="space-y-3">
+                      <label htmlFor="phone" className="text-lg font-semibold text-foreground">
+                        {t('contact.phone') || 'Téléphone'} (optionnel)
+                      </label>
+                      <Input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        placeholder="+33 6 12 34 56 78"
+                        className={`h-14 text-lg border-2 hover:border-primary/50 focus:border-primary transition-colors duration-300 ${errors.phone ? 'border-destructive' : ''}`}
+                      />
+                      {errors.phone && (
+                        <p className="text-destructive text-sm flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4" />
+                          {errors.phone}
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-3">
@@ -282,10 +284,15 @@ const Contact = () => {
                       value={formData.message}
                       onChange={handleChange}
                       placeholder={t('contact.messagePlaceholder')}
-                      required
                       rows={6}
-                      className="resize-none text-lg border-2 hover:border-primary/50 focus:border-primary transition-colors duration-300"
+                      className={`resize-none text-lg border-2 hover:border-primary/50 focus:border-primary transition-colors duration-300 ${errors.message ? 'border-destructive' : ''}`}
                     />
+                    {errors.message && (
+                      <p className="text-destructive text-sm flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.message}
+                      </p>
+                    )}
                   </div>
 
                   <Button 
