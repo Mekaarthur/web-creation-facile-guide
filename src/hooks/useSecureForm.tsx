@@ -58,10 +58,7 @@ export function useSecureForm<T extends z.ZodType>({
       // Soumission
       await onSubmit(validatedData);
 
-      toast({
-        title: "Succès",
-        description: "Formulaire soumis avec succès",
-      });
+      // Ne pas afficher de toast générique, laisser onSubmit gérer les messages
     } catch (error) {
       if (error instanceof z.ZodError) {
         // Erreurs de validation

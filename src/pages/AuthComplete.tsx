@@ -26,10 +26,18 @@ const AuthComplete = () => {
         const hashParams = new URLSearchParams(url.hash.replace(/^#/, ''));
         const hashError = hashParams.get('error');
         const hashErrorDescription = hashParams.get('error_description');
+        const token = hashParams.get('access_token') || searchParams.get('token');
 
         if (error || hashError) {
           setStatus('error');
           setMessage(errorDescription || hashErrorDescription || 'Une erreur est survenue lors de la confirmation');
+          return;
+        }
+
+        // Si pas de token, on vient probablement de s'inscrire → afficher message "vérifiez email"
+        if (!token) {
+          setStatus('success');
+          setMessage('Inscription réussie ! Un email de confirmation vous a été envoyé.');
           return;
         }
 
@@ -53,7 +61,7 @@ const AuthComplete = () => {
 
           // Redirection automatique vers l'espace personnel
           setTimeout(() => {
-            navigate('/espace-personnel');
+            navigate('/dashboard-client');
           }, 2500);
           return;
         }
@@ -102,7 +110,7 @@ const AuthComplete = () => {
       case 'loading':
         return 'Confirmation en cours...';
       case 'success':
-        return 'Email confirmé !';
+        return message.includes('envoyé') ? 'Vérifiez vos emails !' : 'Email confirmé !';
       case 'error':
         return 'Erreur de confirmation';
     }
@@ -126,19 +134,45 @@ const AuthComplete = () => {
         <CardContent className="space-y-4">
           {status === 'success' && (
             <div className="space-y-4">
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                <p className="text-sm text-green-700">
-                  Vous allez être automatiquement redirigé vers votre espace personnel dans quelques secondes...
-                </p>
-              </div>
-              
-              <Button 
-                onClick={() => navigate('/espace-personnel')}
-                className="w-full"
-              >
-                Accéder à mon espace personnel
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+              {message.includes('envoyé') ? (
+                // Cas: Inscription réussie, email envoyé
+                <>
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <div className="flex items-center justify-center space-x-2 text-blue-700 mb-2">
+                      <Mail className="w-5 h-5" />
+                      <p className="font-medium">Vérifiez votre boîte mail</p>
+                    </div>
+                    <p className="text-sm text-blue-600">
+                      Un email de confirmation vous a été envoyé. Cliquez sur le lien dans l'email pour activer votre compte.
+                    </p>
+                  </div>
+                  
+                  <Button 
+                    variant="outline"
+                    onClick={() => navigate('/auth')}
+                    className="w-full"
+                  >
+                    Retour à la connexion
+                  </Button>
+                </>
+              ) : (
+                // Cas: Email confirmé avec succès
+                <>
+                  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                    <p className="text-sm text-green-700">
+                      Vous allez être automatiquement redirigé vers votre espace personnel dans quelques secondes...
+                    </p>
+                  </div>
+                  
+                  <Button 
+                    onClick={() => navigate('/dashboard-client')}
+                    className="w-full"
+                  >
+                    Accéder à mon espace personnel
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </>
+              )}
             </div>
           )}
 
