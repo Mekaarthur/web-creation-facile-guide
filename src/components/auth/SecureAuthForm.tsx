@@ -209,15 +209,15 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
       });
 
       // Attendre que la session soit bien établie dans le contexte
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 120));
 
-      // Redirection selon le rôle détecté (rechargement complet pour éviter race conditions)
+      // Redirection selon le rôle détecté (SPA navigation)
       if (actualRole === 'admin') {
-        window.location.href = '/admin';
+        navigate('/admin');
       } else if (isProvider) {
-        window.location.href = '/dashboard-prestataire';
+        navigate('/dashboard-prestataire');
       } else {
-        window.location.href = '/dashboard-client';
+        navigate('/dashboard-client');
       }
 
       if (onSuccess) {

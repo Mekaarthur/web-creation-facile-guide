@@ -32,43 +32,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
-    const initAuth = async () => {
-      try {
-        // 1. Récupérer la session existante d'abord
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
+    // 1) Installer le listener EN PREMIER (recommandation Supabase)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return;
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
+
+    // 2) Puis récupérer la session existante
+    supabase.auth.getSession()
+      .then(({ data: { session }, error }) => {
         if (error) {
           console.error('Error getting session:', error);
         }
-
-        if (mounted) {
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error('Auth initialization error:', error);
-        if (mounted) {
-          setSession(null);
-          setUser(null);
-          setLoading(false);
-        }
-      }
-    };
-
-    // 2. Configurer le listener pour les changements futurs (après init)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (mounted) {
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
-        }
-      }
-    );
-
-    // Initialiser l'authentification
-    initAuth();
+        if (!mounted) return;
+        setSession(session);
+        setUser(session?.user ?? null);
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
 
     return () => {
       mounted = false;
