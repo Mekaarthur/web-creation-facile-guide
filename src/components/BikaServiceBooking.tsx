@@ -8,12 +8,15 @@ import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, Clock, MapPin, Plus, Trash2 } from "lucide-react";
+import { CalendarIcon, Clock, MapPin, Plus, Trash2, Shield } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useBikawoCart } from "@/hooks/useBikawoCart";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useSecureForm } from "@/hooks/useSecureForm";
+import { bookingSchema } from "@/lib/security-validation";
+import { z } from "zod";
 
 interface TimeSlot {
   date: Date;
@@ -45,6 +48,17 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
   
   const { addToCart } = useBikawoCart();
   const { toast } = useToast();
+
+  // Secure form validation
+  const { handleSubmit: secureSubmit, isSubmitting, errors } = useSecureForm({
+    schema: bookingSchema,
+    onSubmit: async (validatedData) => {
+      // Data is already validated by schema
+      executeAddToCart(validatedData);
+    },
+    rateLimitKey: 'booking',
+    rateLimitAction: 'add_to_cart'
+  });
 
   const availableTimeSlots = [
     "08:00", "09:00", "10:00", "11:00", "12:00", "13:00",
@@ -126,6 +140,17 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
       return;
     }
 
+    // Validate with secure form
+    secureSubmit({
+      date: timeSlots[0].date.toISOString(),
+      startTime: timeSlots[0].startTime,
+      address: address,
+      postalCode: "75000", // Default - could be extracted from address
+      notes: notes || undefined
+    });
+  };
+
+  const executeAddToCart = (validatedData: z.infer<typeof bookingSchema>) => {
     const slotsDescription = timeSlots.map(slot => 
       `${format(slot.date, "dd/MM/yyyy", { locale: fr })} de ${slot.startTime} à ${slot.endTime}`
     ).join(", ");
@@ -145,7 +170,7 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
       return categoryMap[category] || 'bika_maison';
     };
 
-    // Adapter au format BikawoCartItem
+    // Adapter au format BikawoCartItem with sanitized data
     addToCart({
       serviceName: service.name,
       serviceCategory: mapServiceCategory(service.category) as any,
@@ -156,9 +181,9 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
         startTime: timeSlots[0].startTime,
         endTime: timeSlots[0].endTime
       },
-      address,
+      address: validatedData.address,
       description: `${slotsDescription}`,
-      notes: notes || undefined
+      notes: validatedData.notes
     });
 
     toast({
@@ -178,7 +203,13 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Réservation flexible - {service.name}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            Réservation flexible - {service.name}
+            <Badge variant="outline" className="ml-2">
+              <Shield className="w-3 h-3 mr-1" />
+              Sécurisé
+            </Badge>
+          </DialogTitle>
           <DialogDescription>
             Configurez vos créneaux de réservation selon vos besoins
           </DialogDescription>
@@ -317,6 +348,9 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
               onChange={(e) => setAddress(e.target.value)}
               placeholder="Saisissez l'adresse complète"
             />
+            {errors.address && (
+              <p className="text-sm text-destructive">{errors.address}</p>
+            )}
           </div>
 
           {/* Notes */}
@@ -328,7 +362,14 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Informations complémentaires, instructions spéciales..."
               rows={3}
+              maxLength={1000}
             />
+            {errors.notes && (
+              <p className="text-sm text-destructive">{errors.notes}</p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              {notes.length}/1000 caractères
+            </p>
           </div>
 
           {/* Summary */}
@@ -354,8 +395,12 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
           <Button variant="outline" onClick={onClose} className="flex-1">
             Annuler
           </Button>
-          <Button onClick={handleAddToCart} className="flex-1" disabled={timeSlots.length === 0 || !address}>
-            Ajouter au panier
+          <Button 
+            onClick={handleAddToCart} 
+            className="flex-1" 
+            disabled={timeSlots.length === 0 || !address || isSubmitting}
+          >
+            {isSubmitting ? "Ajout en cours..." : "Ajouter au panier"}
           </Button>
         </div>
       </DialogContent>
