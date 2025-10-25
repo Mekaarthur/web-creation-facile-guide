@@ -30,23 +30,53 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Écouter les changements d'état d'authentification AVANT de vérifier la session
+    let mounted = true;
+    let authInitialized = false;
+
+    const initAuth = async () => {
+      try {
+        // 1. Récupérer la session existante d'abord
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting session:', error);
+        }
+
+        if (mounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+          authInitialized = true;
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        if (mounted) {
+          setSession(null);
+          setUser(null);
+          setLoading(false);
+          authInitialized = true;
+        }
+      }
+    };
+
+    // 2. Configurer le listener pour les changements futurs
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
+      async (event, session) => {
+        // Ne mettre à jour que si on a déjà initialisé
+        if (mounted && authInitialized) {
+          setSession(session);
+          setUser(session?.user ?? null);
+        }
       }
     );
 
-    // Puis vérifier la session existante
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // Initialiser l'authentification
+    initAuth();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
