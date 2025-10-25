@@ -16,9 +16,9 @@ const AdminRoute = ({ children, redirectTo = '/auth' }: AdminRouteProps) => {
 
   useEffect(() => {
     const checkAdminRole = async () => {
+      // Attendre que la session soit disponible
       if (!user || !session) {
-        setIsAdmin(false);
-        setChecking(false);
+        setChecking(true);
         return;
       }
 
