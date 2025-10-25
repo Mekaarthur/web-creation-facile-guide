@@ -39,13 +39,46 @@ serve(async (req) => {
 
     console.log(`[get-user-role] Fetching role for user: ${user.id} (${user.email})`);
 
-    // Récupérer le rôle via la fonction SECURITY DEFINER (plus sécurisé)
+    // Récupérer le rôle via la fonction SECURITY DEFINER (plus sécurisé) + fallback
     const { data: roleData, error: roleError } = await supabaseClient
       .rpc('get_current_user_role');
 
-    if (roleError) {
-      console.error('[get-user-role] Role fetch error:', roleError);
-      // Continue même si erreur - l'utilisateur n'a peut-être pas encore de rôle
+    // Fallback robuste: si la RPC est absente/échoue, vérifier user_roles (priorité à admin)
+    let role = roleData || 'user';
+    if (roleError || !roleData) {
+      console.warn('[get-user-role] RPC get_current_user_role indisponible, fallback user_roles');
+
+      // 1) Vérifier si l'utilisateur est ADMIN
+      const { data: adminRow, error: adminCheckError } = await supabaseClient
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      if (adminCheckError && adminCheckError.code !== 'PGRST116') {
+        console.error('[get-user-role] Admin check error:', adminCheckError);
+      }
+
+      if (adminRow?.role === 'admin') {
+        role = 'admin';
+      } else {
+        // 2) Sinon, récupérer un éventuel autre rôle
+        const { data: anyRoleRow, error: anyRoleError } = await supabaseClient
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .limit(1)
+          .maybeSingle();
+
+        if (anyRoleError && anyRoleError.code !== 'PGRST116') {
+          console.error('[get-user-role] Role fetch fallback error:', anyRoleError);
+        }
+
+        if (anyRoleRow?.role) {
+          role = anyRoleRow.role;
+        }
+      }
     }
 
     // Vérifier si l'utilisateur est un prestataire vérifié
@@ -59,7 +92,6 @@ serve(async (req) => {
       console.error('[get-user-role] Provider fetch error:', providerError);
     }
 
-    const role = roleData || 'user';
     const isProvider = !!(providerData && providerData.is_verified);
     const isVerifiedProvider = providerData?.is_verified || false;
 
