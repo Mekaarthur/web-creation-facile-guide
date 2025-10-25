@@ -29,6 +29,8 @@ interface SecureAuthFormProps {
 
 export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null);
+  const [isResendingEmail, setIsResendingEmail] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -172,7 +174,17 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
         if (error.message.includes('Invalid login credentials')) {
           throw new Error('Email ou mot de passe incorrect');
         }
+        if (error.message.includes('Email not confirmed')) {
+          setUnconfirmedEmail(validatedData.email);
+          throw new Error('Votre email n\'est pas encore confirmé. Vérifiez votre boîte mail ou cliquez sur "Renvoyer l\'email de confirmation".');
+        }
         throw error;
+      }
+
+      // Vérifier si l'email est confirmé
+      if (!authData.user?.email_confirmed_at) {
+        setUnconfirmedEmail(validatedData.email);
+        throw new Error('Votre email n\'est pas encore confirmé. Vérifiez votre boîte mail ou cliquez sur "Renvoyer l\'email de confirmation".');
       }
 
       // Récupérer le rôle réel de l'utilisateur via edge function
@@ -224,8 +236,8 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
         description: "Bienvenue !",
       });
 
-      // Attendre que la session soit bien établie dans le contexte
-      await new Promise(resolve => setTimeout(resolve, 120));
+      // Attendre que le listener onAuthStateChange se déclenche et mette à jour le contexte
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       // Redirection selon le rôle détecté (SPA navigation)
       if (actualRole === 'admin') {
@@ -243,6 +255,38 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
     rateLimitKey: loginForm.watch('email') || 'anonymous',
     rateLimitAction: 'login'
   });
+
+  // Fonction pour renvoyer l'email de confirmation
+  const handleResendConfirmation = async () => {
+    if (!unconfirmedEmail) return;
+
+    setIsResendingEmail(true);
+    try {
+      const { error } = await supabase.functions.invoke('resend-confirmation-email', {
+        body: { email: unconfirmedEmail }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Email renvoyé ! 📧",
+        description: "Vérifiez votre boîte mail (et vos spams).",
+      });
+
+      setUnconfirmedEmail(null);
+    } catch (error: any) {
+      console.error('Erreur resend confirmation:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de renvoyer l'email",
+        variant: "destructive"
+      });
+    } finally {
+      setIsResendingEmail(false);
+    }
+  };
 
   // ========== RENDER ==========
   if (mode === 'signup') {
@@ -546,6 +590,29 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
             </>
           )}
         </Button>
+
+        {/* Bouton renvoyer email si non confirmé */}
+        {unconfirmedEmail && (
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={handleResendConfirmation}
+            disabled={isResendingEmail}
+          >
+            {isResendingEmail ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2" />
+                Envoi en cours...
+              </>
+            ) : (
+              <>
+                <Mail className="h-4 w-4 mr-2" />
+                Renvoyer l'email de confirmation
+              </>
+            )}
+          </Button>
+        )}
 
         {/* Avertissement sécurité */}
         <div className="text-xs text-muted-foreground text-center flex items-center justify-center gap-2 mt-4">
