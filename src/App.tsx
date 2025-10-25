@@ -132,7 +132,9 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/update-password" element={<UpdatePassword />} />
             <Route path="/espace-personnel" element={<ProtectedRoute><EspacePersonnel /></ProtectedRoute>} />
+            <Route path="/dashboard-client" element={<ProtectedRoute><EspacePersonnel /></ProtectedRoute>} />
             <Route path="/espace-prestataire" element={<ProtectedProviderRoute><EspacePrestataire /></ProtectedProviderRoute>} />
+            <Route path="/dashboard-prestataire" element={<ProtectedProviderRoute><EspacePrestataire /></ProtectedProviderRoute>} />
             <Route path="/provider-onboarding" element={<ProtectedProviderRoute><ProviderOnboarding /></ProtectedProviderRoute>} />
             <Route path="/nous-recrutons" element={<NousRecrutons />} />
             <Route path="/gestion-demandes" element={<GestionDemandes />} />

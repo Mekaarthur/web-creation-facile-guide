@@ -210,11 +210,11 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
 
       // Redirection selon le rôle détecté
       if (actualRole === 'admin') {
-        navigate('/modern-admin');
+        navigate('/admin');
       } else if (isProvider) {
-        navigate('/espace-prestataire');
+        navigate('/dashboard-prestataire');
       } else {
-        navigate('/espace-personnel');
+        navigate('/dashboard-client');
       }
 
       if (onSuccess) {
