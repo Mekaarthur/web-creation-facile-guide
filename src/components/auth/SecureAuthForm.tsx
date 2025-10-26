@@ -187,48 +187,31 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
         throw new Error('Votre email n\'est pas encore confirmé. Vérifiez votre boîte mail ou cliquez sur "Renvoyer l\'email de confirmation".');
       }
 
-      // Récupérer le rôle réel de l'utilisateur via edge function
+      // Déterminer le rôle et le statut prestataire en lecture directe (RLS)
       let actualRole: 'admin' | 'user' = 'user';
       let isProvider = false;
 
       try {
-        const { data: roleData, error: roleError } = await supabase.functions.invoke('get-user-role', {
-          headers: {
-            Authorization: `Bearer ${authData.session?.access_token}`
-          }
-        });
-
-        if (!roleError && roleData) {
-          actualRole = (roleData.role as 'admin' | 'user') || 'user';
-          isProvider = !!roleData.isProvider;
-        } else {
-          console.warn('get-user-role error, using fallback:', roleError);
-        }
+        const { data: adminRow } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', authData.user?.id)
+          .eq('role', 'admin')
+          .maybeSingle();
+        if (adminRow?.role === 'admin') actualRole = 'admin';
       } catch (e) {
-        console.warn('get-user-role invoke failed, using fallback:', e);
+        console.warn('admin role check error:', e);
       }
 
-      // Fallback robuste en lecture directe si nécessaire
-      if (actualRole !== 'admin') {
-        try {
-          const { data: adminRow, error: adminErr } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', authData.user?.id)
-            .eq('role', 'admin')
-            .maybeSingle();
-          if (!adminErr && adminRow?.role === 'admin') actualRole = 'admin';
-        } catch {}
-      }
-      if (!isProvider) {
-        try {
-          const { data: providerRow, error: providerErr } = await supabase
-            .from('providers')
-            .select('is_verified')
-            .eq('user_id', authData.user?.id)
-            .maybeSingle();
-          if (!providerErr && providerRow?.is_verified) isProvider = true;
-        } catch {}
+      try {
+        const { data: providerRow } = await supabase
+          .from('providers')
+          .select('is_verified')
+          .eq('user_id', authData.user?.id)
+          .maybeSingle();
+        if (providerRow?.is_verified) isProvider = true;
+      } catch (e) {
+        console.warn('provider check error:', e);
       }
 
       toast({

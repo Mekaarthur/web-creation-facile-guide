@@ -31,30 +31,16 @@ const EnhancedAuth = () => {
       try {
         let actualRole: 'admin' | 'user' = 'user';
         let isProvider = false;
-        // Try edge function first
-        if (session?.access_token) {
-          try {
-            const { data } = await supabase.functions.invoke('get-user-role', {
-              headers: { Authorization: `Bearer ${session.access_token}` }
-            });
-            if (data) {
-              actualRole = (data.role as 'admin' | 'user') || 'user';
-              isProvider = !!data.isVerifiedProvider;
-            }
-          } catch {}
-        }
-        // Fallbacks
-        if (actualRole !== 'admin') {
-          try {
-            const { data: adminRow } = await supabase
-              .from('user_roles')
-              .select('role')
-              .eq('user_id', user.id)
-              .eq('role', 'admin')
-              .maybeSingle();
-            if (adminRow?.role === 'admin') actualRole = 'admin';
-          } catch {}
-        }
+        // Direct checks only (avoid edge function flakiness)
+        try {
+          const { data: adminRow } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', user.id)
+            .eq('role', 'admin')
+            .maybeSingle();
+          if (adminRow?.role === 'admin') actualRole = 'admin';
+        } catch {}
         if (!isProvider) {
           try {
             const { data: providerRow } = await supabase

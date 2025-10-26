@@ -26,23 +26,7 @@ const ProtectedProviderRoute = ({ children }: ProtectedProviderRouteProps) => {
       }
 
       try {
-        // 1) Tentative via edge function (si session présente)
-        if (session) {
-          const { data, error } = await supabase.functions.invoke('get-user-role', {
-            headers: { Authorization: `Bearer ${session.access_token}` }
-          });
-
-          if (!error && data) {
-            setIsProvider(!!data.isVerifiedProvider);
-            return;
-          }
-        }
-      } catch (err) {
-        console.warn('[ProtectedProviderRoute] get-user-role error, fallback providers:', err);
-      }
-
-      try {
-        // 2) Fallback: check direct dans providers
+        // Vérification directe dans providers (RLS)
         const { data: providerData, error: providerError } = await supabase
           .from('providers')
           .select('id, is_verified')
