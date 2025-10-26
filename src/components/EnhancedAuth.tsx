@@ -24,7 +24,7 @@ const EnhancedAuth = () => {
   const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
+    if (authLoading || !user || !session) return;
     let cancelled = false;
     const run = async () => {
       setRedirecting(true);
