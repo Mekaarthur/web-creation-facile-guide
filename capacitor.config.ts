@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'bikawo',
   webDir: 'dist',
   server: {
-    url: "https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com?forceHideBadge=true",
+    url: "https://bikawo.com",
     cleartext: true
   },
   plugins: {
