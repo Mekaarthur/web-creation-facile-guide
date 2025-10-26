@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,8 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { SecureAuthForm } from '@/components/auth/SecureAuthForm';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 type UserType = 'client' | 'prestataire' | 'admin' | null;
 type AuthStep = 'userType' | 'login' | 'signup';
@@ -18,6 +20,64 @@ const EnhancedAuth = () => {
   const [step, setStep] = useState<AuthStep>('userType');
   const [userType, setUserType] = useState<UserType>(null);
   const navigate = useNavigate();
+  const { user, session, loading: authLoading } = useAuth();
+  const [redirecting, setRedirecting] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    const run = async () => {
+      setRedirecting(true);
+      try {
+        let actualRole: 'admin' | 'user' = 'user';
+        let isProvider = false;
+        // Try edge function first
+        if (session?.access_token) {
+          try {
+            const { data } = await supabase.functions.invoke('get-user-role', {
+              headers: { Authorization: `Bearer ${session.access_token}` }
+            });
+            if (data) {
+              actualRole = (data.role as 'admin' | 'user') || 'user';
+              isProvider = !!data.isVerifiedProvider;
+            }
+          } catch {}
+        }
+        // Fallbacks
+        if (actualRole !== 'admin') {
+          try {
+            const { data: adminRow } = await supabase
+              .from('user_roles')
+              .select('role')
+              .eq('user_id', user.id)
+              .eq('role', 'admin')
+              .maybeSingle();
+            if (adminRow?.role === 'admin') actualRole = 'admin';
+          } catch {}
+        }
+        if (!isProvider) {
+          try {
+            const { data: providerRow } = await supabase
+              .from('providers')
+              .select('is_verified')
+              .eq('user_id', user.id)
+              .maybeSingle();
+            if (providerRow?.is_verified) isProvider = true;
+          } catch {}
+        }
+        // Redirect according to role
+        await new Promise(r => setTimeout(r, 200));
+        if (cancelled) return;
+        if (actualRole === 'admin') navigate('/admin', { replace: true });
+        else if (isProvider) navigate('/espace-prestataire', { replace: true });
+        else navigate('/espace-personnel', { replace: true });
+      } finally {
+        if (!cancelled) setRedirecting(false);
+      }
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [user, session, navigate]);
 
   const handleUserTypeSelection = (type: UserType) => {
     setUserType(type);
@@ -45,6 +105,14 @@ const EnhancedAuth = () => {
         return '';
     }
   };
+
+  if (authLoading || redirecting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary/5 to-secondary/5 p-4">
