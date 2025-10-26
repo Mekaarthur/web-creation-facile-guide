@@ -222,14 +222,20 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
       // Attendre que le listener onAuthStateChange se déclenche et mette à jour le contexte
       await new Promise(resolve => setTimeout(resolve, 300));
 
-      // Redirection selon le rôle détecté (SPA navigation)
-      if (actualRole === 'admin') {
-        navigate('/admin');
+      // Redirection priorisant le choix de l'utilisateur
+      let destination = '';
+      if (userType === 'prestataire' && isProvider) {
+        destination = '/espace-prestataire';
+      } else if (userType === 'client') {
+        destination = '/espace-personnel';
+      } else if (userType === 'admin' || actualRole === 'admin') {
+        destination = '/admin';
       } else if (isProvider) {
-        navigate('/espace-prestataire');
+        destination = '/espace-prestataire';
       } else {
-        navigate('/espace-personnel');
+        destination = '/espace-personnel';
       }
+      navigate(destination);
 
       if (onSuccess) {
         onSuccess();
