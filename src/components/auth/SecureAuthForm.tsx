@@ -243,9 +243,9 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
       if (actualRole === 'admin') {
         navigate('/admin');
       } else if (isProvider) {
-        navigate('/dashboard-prestataire');
+        navigate('/espace-prestataire');
       } else {
-        navigate('/dashboard-client');
+        navigate('/espace-personnel');
       }
 
       if (onSuccess) {
