@@ -25,6 +25,12 @@ const EnhancedAuth = () => {
 
   useEffect(() => {
     if (authLoading || !user || !session) return;
+
+    // Éviter l'auto-redirection pendant un flux explicite (login/signup)
+    // lorsque l'utilisateur a choisi Client/Prestataire/Admin.
+    // On laisse SecureAuthForm gérer la redirection pour respecter le choix.
+    if ((step === 'login' || step === 'signup') && userType) return;
+
     let cancelled = false;
     const run = async () => {
       setRedirecting(true);
@@ -41,16 +47,14 @@ const EnhancedAuth = () => {
             .maybeSingle();
           if (adminRow?.role === 'admin') actualRole = 'admin';
         } catch {}
-        if (!isProvider) {
-          try {
-            const { data: providerRow } = await supabase
-              .from('providers')
-              .select('is_verified')
-              .eq('user_id', user.id)
-              .maybeSingle();
-            if (providerRow?.is_verified) isProvider = true;
-          } catch {}
-        }
+        try {
+          const { data: providerRow } = await supabase
+            .from('providers')
+            .select('is_verified')
+            .eq('user_id', user.id)
+            .maybeSingle();
+          if (providerRow?.is_verified) isProvider = true;
+        } catch {}
         // Redirect according to role
         await new Promise(r => setTimeout(r, 200));
         if (cancelled) return;
@@ -63,7 +67,7 @@ const EnhancedAuth = () => {
     };
     run();
     return () => { cancelled = true; };
-  }, [user, session, navigate]);
+  }, [authLoading, user, session, step, userType, navigate]);
 
   const handleUserTypeSelection = (type: UserType) => {
     setUserType(type);
