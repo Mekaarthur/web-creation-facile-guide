@@ -7,9 +7,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { User, MapPin, Clock, MessageSquare, CheckCircle } from "lucide-react";
+import { User, MapPin, MessageSquare, CheckCircle, AlertCircle } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { providerCandidateSchema, type ProviderCandidateForm } from "@/lib/validations";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -48,67 +52,51 @@ const AVAILABILITY_OPTIONS = [
 
 const ProviderSignup = () => {
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState('');
   
-  const [formData, setFormData] = useState<FormData>({
-    first_name: '',
-    last_name: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    postal_code: '',
-    services: [],
-    coverage_zone: '',
-    availability: '',
-    motivation: ''
+  const form = useForm<ProviderCandidateForm>({
+    resolver: zodResolver(providerCandidateSchema),
+    defaultValues: {
+      first_name: '',
+      last_name: '',
+      email: '',
+      phone: '',
+      address: '',
+      city: '',
+      postal_code: '',
+      services: [],
+      coverage_zone: '',
+      availability: '',
+      motivation: ''
+    }
   });
 
-  const updateFormData = (field: keyof FormData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
   const toggleService = (serviceId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      services: prev.services.includes(serviceId)
-        ? prev.services.filter(s => s !== serviceId)
-        : [...prev.services, serviceId]
-    }));
+    const currentServices = form.getValues('services');
+    if (currentServices.includes(serviceId)) {
+      form.setValue('services', currentServices.filter(s => s !== serviceId));
+    } else {
+      form.setValue('services', [...currentServices, serviceId]);
+    }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
+  const onSubmit = async (data: ProviderCandidateForm) => {
     try {
-      // Validation basique
-      if (!formData.first_name || !formData.last_name || !formData.email || 
-          !formData.phone || !formData.address || formData.services.length === 0 ||
-          !formData.coverage_zone || !formData.availability) {
-        toast({
-          title: "Erreur",
-          description: "Veuillez remplir tous les champs obligatoires.",
-          variant: "destructive"
-        });
-        return;
-      }
-
       // Sauvegarder la candidature
       const { error } = await supabase
         .from('job_applications')
         .insert({
-          first_name: formData.first_name,
-          last_name: formData.last_name,
-          email: formData.email,
-          phone: formData.phone,
-          city: formData.city,
-          postal_code: formData.postal_code,
-          service_categories: formData.services,
-          availability: formData.availability,
-          motivation: formData.motivation,
-          coverage_address: `${formData.address}, ${formData.city} ${formData.postal_code}`,
+          first_name: data.first_name,
+          last_name: data.last_name,
+          email: data.email,
+          phone: data.phone,
+          city: data.city,
+          postal_code: data.postal_code,
+          service_categories: data.services,
+          availability: data.availability,
+          motivation: data.motivation || '',
+          coverage_address: `${data.address}, ${data.city} ${data.postal_code}`,
           coverage_radius: 20,
           status: 'pending',
           category: 'multi-services'
@@ -125,14 +113,14 @@ const ProviderSignup = () => {
       }
 
       // Envoyer les notifications
-      const servicesText = formData.services.map(s => SERVICES.find(service => service.id === s)?.label).join(', ');
+      const servicesText = data.services.map(s => SERVICES.find(service => service.id === s)?.label).join(', ');
       
       // Email de confirmation au candidat
       await supabase.functions.invoke('send-provider-signup-notification', {
         body: {
-          email: formData.email,
-          first_name: formData.first_name,
-          last_name: formData.last_name,
+          email: data.email,
+          first_name: data.first_name,
+          last_name: data.last_name,
           services: servicesText,
           type: 'candidate'
         }
@@ -141,14 +129,15 @@ const ProviderSignup = () => {
       // Notification admin
       await supabase.functions.invoke('send-provider-signup-notification', {
         body: {
-          email: formData.email,
-          first_name: formData.first_name,
-          last_name: formData.last_name,
+          email: data.email,
+          first_name: data.first_name,
+          last_name: data.last_name,
           services: servicesText,
           type: 'admin'
         }
       });
 
+      setSubmittedEmail(data.email);
       setIsSubmitted(true);
       
       toast({
@@ -163,8 +152,6 @@ const ProviderSignup = () => {
         description: "Une erreur inattendue est survenue.",
         variant: "destructive"
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -184,7 +171,7 @@ const ProviderSignup = () => {
                 et vous recontacterons sous 48h.
               </p>
               <p className="text-sm text-muted-foreground mb-8">
-                Un email de confirmation vous a été envoyé à l'adresse : <strong>{formData.email}</strong>
+                Un email de confirmation vous a été envoyé à l'adresse : <strong>{submittedEmail}</strong>
               </p>
               <Button 
                 onClick={() => window.location.href = '/'}
@@ -214,7 +201,8 @@ const ProviderSignup = () => {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             {/* Informations personnelles */}
             <Card>
               <CardHeader>
@@ -225,77 +213,104 @@ const ProviderSignup = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="first_name">Prénom *</Label>
-                    <Input
-                      id="first_name"
-                      value={formData.first_name}
-                      onChange={(e) => updateFormData('first_name', e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="last_name">Nom *</Label>
-                    <Input
-                      id="last_name"
-                      value={formData.last_name}
-                      onChange={(e) => updateFormData('last_name', e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => updateFormData('email', e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone">Téléphone *</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => updateFormData('phone', e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="address">Adresse complète *</Label>
-                  <Input
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) => updateFormData('address', e.target.value)}
-                    placeholder="Numéro, rue, ville, code postal"
-                    required
+                  <FormField
+                    control={form.control}
+                    name="first_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Prénom *</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Jean" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="last_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nom *</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Dupont" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="city">Ville</Label>
-                    <Input
-                      id="city"
-                      value={formData.city}
-                      onChange={(e) => updateFormData('city', e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="postal_code">Code postal</Label>
-                    <Input
-                      id="postal_code"
-                      value={formData.postal_code}
-                      onChange={(e) => updateFormData('postal_code', e.target.value)}
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email *</FormLabel>
+                        <FormControl>
+                          <Input {...field} type="email" placeholder="email@exemple.com" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Téléphone *</FormLabel>
+                        <FormControl>
+                          <Input {...field} type="tel" placeholder="+33 6 12 34 56 78" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Adresse complète *</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Numéro, rue" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="city"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Ville *</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Paris" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="postal_code"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Code postal *</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="75001" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -309,20 +324,29 @@ const ProviderSignup = () => {
                 </p>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {SERVICES.map((service) => (
-                    <div key={service.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={service.id}
-                        checked={formData.services.includes(service.id)}
-                        onCheckedChange={() => toggleService(service.id)}
-                      />
-                      <Label htmlFor={service.id} className="cursor-pointer">
-                        {service.label}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
+                <FormField
+                  control={form.control}
+                  name="services"
+                  render={() => (
+                    <FormItem>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {SERVICES.map((service) => (
+                          <div key={service.id} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={service.id}
+                              checked={form.watch('services').includes(service.id)}
+                              onCheckedChange={() => toggleService(service.id)}
+                            />
+                            <Label htmlFor={service.id} className="cursor-pointer">
+                              {service.label}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </CardContent>
             </Card>
 
@@ -335,35 +359,44 @@ const ProviderSignup = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="coverage_zone">Zone géographique d'intervention *</Label>
-                  <Input
-                    id="coverage_zone"
-                    value={formData.coverage_zone}
-                    onChange={(e) => updateFormData('coverage_zone', e.target.value)}
-                    placeholder="Ex: Paris et proche banlieue, Hauts-de-Seine..."
-                    required
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="coverage_zone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Zone géographique d'intervention *</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Ex: Paris et proche banlieue, Hauts-de-Seine..." />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                <div>
-                  <Label htmlFor="availability">Disponibilités *</Label>
-                  <Select 
-                    value={formData.availability} 
-                    onValueChange={(value) => updateFormData('availability', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionnez vos disponibilités" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {AVAILABILITY_OPTIONS.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <FormField
+                  control={form.control}
+                  name="availability"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Disponibilités *</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionnez vos disponibilités" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {AVAILABILITY_OPTIONS.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </CardContent>
             </Card>
 
@@ -379,11 +412,21 @@ const ProviderSignup = () => {
                 </p>
               </CardHeader>
               <CardContent>
-                <Textarea
-                  value={formData.motivation}
-                  onChange={(e) => updateFormData('motivation', e.target.value)}
-                  placeholder="Décrivez votre expérience, vos motivations et pourquoi vous souhaitez rejoindre Bikawo..."
-                  rows={5}
+                <FormField
+                  control={form.control}
+                  name="motivation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          placeholder="Décrivez votre expérience, vos motivations et pourquoi vous souhaitez rejoindre Bikawo..."
+                          rows={5}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </CardContent>
             </Card>
@@ -394,10 +437,10 @@ const ProviderSignup = () => {
               <Button
                 type="submit"
                 size="lg"
-                disabled={isLoading}
+                disabled={form.formState.isSubmitting}
                 className="w-full md:w-auto px-8 py-3 bg-primary hover:bg-primary/90"
               >
-                {isLoading ? 'Envoi en cours...' : 'Envoyer ma candidature'}
+                {form.formState.isSubmitting ? 'Envoi en cours...' : 'Envoyer ma candidature'}
               </Button>
               
               <p className="text-sm text-muted-foreground text-center">
@@ -406,6 +449,7 @@ const ProviderSignup = () => {
               </p>
             </div>
           </form>
+          </Form>
         </div>
       </div>
       <Footer />

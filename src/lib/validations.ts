@@ -76,6 +76,21 @@ export const providerApplicationSchema = z.object({
   experience: z.string().min(20, "Expérience requise (minimum 20 caractères)"),
 });
 
+// Schéma pour le formulaire de candidature prestataire complet
+export const providerCandidateSchema = z.object({
+  first_name: nameSchema,
+  last_name: nameSchema,
+  email: emailSchema,
+  phone: phoneSchema,
+  address: z.string().min(5, "L'adresse doit contenir au moins 5 caractères"),
+  city: z.string().min(2, "Ville requise"),
+  postal_code: z.string().regex(/^[0-9]{5}$/, "Code postal invalide (5 chiffres)"),
+  services: z.array(z.string()).min(1, "Veuillez sélectionner au moins un service"),
+  coverage_zone: z.string().min(3, "Zone géographique requise"),
+  availability: z.string().min(1, "Disponibilités requises"),
+  motivation: z.string().optional(),
+});
+
 export const contactSchema = z.object({
   name: nameSchema,
   email: emailSchema,
@@ -97,5 +112,6 @@ export type ProviderSignupForm = z.infer<typeof providerSignupSchema>;
 export type ProfileForm = z.infer<typeof profileSchema>;
 export type BookingForm = z.infer<typeof bookingSchema>;
 export type ProviderApplicationForm = z.infer<typeof providerApplicationSchema>;
+export type ProviderCandidateForm = z.infer<typeof providerCandidateSchema>;
 export type ContactForm = z.infer<typeof contactSchema>;
 export type FileUploadForm = z.infer<typeof fileUploadSchema>;
