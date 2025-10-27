@@ -310,6 +310,7 @@ const TestsSystems: React.FC = () => {
                 description="Testez l'upload de fichiers vers Supabase Storage"
                 onUploadComplete={handleFileUpload}
                 multiple={true}
+                useUserIdPrefix={false}
               />
             </CardContent>
           </Card>

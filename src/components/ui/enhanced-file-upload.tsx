@@ -17,6 +17,7 @@ interface EnhancedFileUploadProps {
   description?: string;
   multiple?: boolean;
   disabled?: boolean;
+  useUserIdPrefix?: boolean; // Si true, préfixe le path avec auth.uid()
 }
 
 interface UploadedFile {
@@ -35,6 +36,7 @@ export const EnhancedFileUpload: React.FC<EnhancedFileUploadProps> = ({
   title,
   description,
   multiple = false,
+  useUserIdPrefix = true, // Par défaut, on préfixe avec auth.uid()
   disabled = false,
 }) => {
   const [dragActive, setDragActive] = useState(false);
@@ -79,7 +81,11 @@ export const EnhancedFileUpload: React.FC<EnhancedFileUploadProps> = ({
 
     const fileExtension = file.name.split('.').pop();
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`;
-    const filePath = `${path}/${fileName}`;
+    
+    // Construire le chemin avec ou sans préfixe user_id selon la config
+    const filePath = useUserIdPrefix 
+      ? `${user.id}/${path}/${fileName}`
+      : `${path}/${fileName}`;
 
     // Simuler le progrès de l'upload
     const progressInterval = setInterval(() => {

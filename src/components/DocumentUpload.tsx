@@ -53,7 +53,7 @@ export const DocumentUpload = ({
       }, 100);
 
       const { error: uploadError } = await supabase.storage
-        .from('provider-applications')
+        .from('provider-documents')
         .upload(fileName, file);
 
       clearInterval(progressInterval);
@@ -62,7 +62,7 @@ export const DocumentUpload = ({
       if (uploadError) throw uploadError;
 
       const { data } = supabase.storage
-        .from('provider-applications')
+        .from('provider-documents')
         .getPublicUrl(fileName);
 
       onUploadComplete(data.publicUrl);

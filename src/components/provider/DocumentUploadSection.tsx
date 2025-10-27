@@ -67,9 +67,13 @@ export const DocumentUploadSection = ({ providerId, onDocumentsUpdated }: Docume
         throw new Error('Format non autorisé. Utilisez PDF, JPG ou PNG');
       }
 
-      // Upload vers Supabase Storage
+      // Récupérer l'ID de l'utilisateur authentifié
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Non authentifié');
+
+      // Upload vers Supabase Storage avec auth.uid() dans le chemin
       const fileExt = file.name.split('.').pop();
-      const fileName = `${providerId}/${documentType}_${Date.now()}.${fileExt}`;
+      const fileName = `${user.id}/${documentType}_${Date.now()}.${fileExt}`;
       
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('provider-documents')
