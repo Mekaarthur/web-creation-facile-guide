@@ -53,6 +53,7 @@ export function ValidatedForm<T extends Record<string, any>>({
   const form = useForm<T>({
     resolver: zodResolver(schema),
     defaultValues: defaultValues as any,
+    mode: 'onChange',
   });
 
   const handleSubmit = async (data: T) => {

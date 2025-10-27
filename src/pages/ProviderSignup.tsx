@@ -250,7 +250,7 @@ const ProviderSignup = () => {
                       <FormItem>
                         <FormLabel>Email *</FormLabel>
                         <FormControl>
-                          <Input {...field} type="email" placeholder="email@exemple.com" />
+                          <Input {...field} type="email" placeholder="email@exemple.com" autoComplete="email" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

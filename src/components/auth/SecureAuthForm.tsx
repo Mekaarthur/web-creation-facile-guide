@@ -349,6 +349,7 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
                       {...field}
                       type="email"
                       placeholder="email@exemple.com"
+                      autoComplete="email"
                       className="pl-10"
                     />
                   </div>
@@ -484,6 +485,7 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
                     {...field}
                     type="email"
                     placeholder="email@exemple.com"
+                    autoComplete="email"
                     className="pl-10"
                   />
                 </div>

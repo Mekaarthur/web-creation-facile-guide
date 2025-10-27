@@ -5,7 +5,7 @@ export const phoneSchema = z
   .string()
   .regex(/^(?:\+33|0)[1-9](?:[0-9]{8})$/, "Format de téléphone invalide");
 
-export const emailSchema = z.string().email("Email invalide");
+export const emailSchema = z.string().trim().min(1, "L'email est requis").max(255, "Email trop long").email("Email invalide");
 
 export const nameSchema = z
   .string()
