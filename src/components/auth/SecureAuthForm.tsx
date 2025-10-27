@@ -37,6 +37,7 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
   // ========== SIGNUP FORM ==========
   const signupForm = useForm<SignupData>({
     resolver: zodResolver(signupSchema),
+    mode: 'onChange',
     defaultValues: {
       firstName: '',
       lastName: '',
@@ -156,6 +157,7 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
   // ========== LOGIN FORM ==========
   const loginForm = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
+    mode: 'onChange',
     defaultValues: {
       email: '',
       password: '',
@@ -299,16 +301,10 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
                       <Input
                         {...field}
                         placeholder="Jean"
-                        className={`pl-10 ${signupErrors.firstName ? 'border-destructive' : ''}`}
+                        className="pl-10"
                       />
                     </div>
                   </FormControl>
-                  {signupErrors.firstName && (
-                    <p className="text-destructive text-sm flex items-center gap-1">
-                      <AlertCircle className="h-4 w-4" />
-                      {signupErrors.firstName}
-                    </p>
-                  )}
                   <FormMessage />
                 </FormItem>
               )}
@@ -326,16 +322,10 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
                       <Input
                         {...field}
                         placeholder="Dupont"
-                        className={`pl-10 ${signupErrors.lastName ? 'border-destructive' : ''}`}
+                        className="pl-10"
                       />
                     </div>
                   </FormControl>
-                  {signupErrors.lastName && (
-                    <p className="text-destructive text-sm flex items-center gap-1">
-                      <AlertCircle className="h-4 w-4" />
-                      {signupErrors.lastName}
-                    </p>
-                  )}
                   <FormMessage />
                 </FormItem>
               )}
@@ -356,16 +346,10 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
                       {...field}
                       type="email"
                       placeholder="email@exemple.com"
-                      className={`pl-10 ${signupErrors.email ? 'border-destructive' : ''}`}
+                      className="pl-10"
                     />
                   </div>
                 </FormControl>
-                {signupErrors.email && (
-                  <p className="text-destructive text-sm flex items-center gap-1">
-                    <AlertCircle className="h-4 w-4" />
-                    {signupErrors.email}
-                  </p>
-                )}
                 <FormMessage />
               </FormItem>
             )}
@@ -385,7 +369,7 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
                       {...field}
                       type={showPassword ? 'text' : 'password'}
                       placeholder="••••••••"
-                      className={`pl-10 pr-10 ${signupErrors.password ? 'border-destructive' : ''}`}
+                      className="pl-10 pr-10"
                     />
                     <button
                       type="button"
@@ -396,12 +380,6 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
                     </button>
                   </div>
                 </FormControl>
-                {signupErrors.password && (
-                  <p className="text-destructive text-sm flex items-center gap-1">
-                    <AlertCircle className="h-4 w-4" />
-                    {signupErrors.password}
-                  </p>
-                )}
                 <p className="text-xs text-muted-foreground mt-1">
                   Min 8 caractères, 1 majuscule, 1 minuscule, 1 chiffre, 1 caractère spécial
                 </p>
@@ -422,15 +400,8 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
                     {...field}
                     type="tel"
                     placeholder="+33 6 12 34 56 78"
-                    className={signupErrors.phone ? 'border-destructive' : ''}
                   />
                 </FormControl>
-                {signupErrors.phone && (
-                  <p className="text-destructive text-sm flex items-center gap-1">
-                    <AlertCircle className="h-4 w-4" />
-                    {signupErrors.phone}
-                  </p>
-                )}
                 <FormMessage />
               </FormItem>
             )}
@@ -510,16 +481,10 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
                     {...field}
                     type="email"
                     placeholder="email@exemple.com"
-                    className={`pl-10 ${loginErrors.email ? 'border-destructive' : ''}`}
+                    className="pl-10"
                   />
                 </div>
               </FormControl>
-              {loginErrors.email && (
-                <p className="text-destructive text-sm flex items-center gap-1">
-                  <AlertCircle className="h-4 w-4" />
-                  {loginErrors.email}
-                </p>
-              )}
               <FormMessage />
             </FormItem>
           )}
@@ -539,7 +504,7 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
                     {...field}
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
-                    className={`pl-10 pr-10 ${loginErrors.password ? 'border-destructive' : ''}`}
+                    className="pl-10 pr-10"
                   />
                   <button
                     type="button"
@@ -550,12 +515,6 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
                   </button>
                 </div>
               </FormControl>
-              {loginErrors.password && (
-                <p className="text-destructive text-sm flex items-center gap-1">
-                  <AlertCircle className="h-4 w-4" />
-                  {loginErrors.password}
-                </p>
-              )}
               <FormMessage />
             </FormItem>
           )}

@@ -57,6 +57,7 @@ const ProviderSignup = () => {
   
   const form = useForm<ProviderCandidateForm>({
     resolver: zodResolver(providerCandidateSchema),
+    mode: 'onChange',
     defaultValues: {
       first_name: '',
       last_name: '',
