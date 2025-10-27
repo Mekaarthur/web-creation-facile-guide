@@ -224,13 +224,16 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
       // Attendre que le listener onAuthStateChange se déclenche et mette à jour le contexte
       await new Promise(resolve => setTimeout(resolve, 300));
 
-      // Redirection priorisant le choix de l'utilisateur
+      // Redirection priorisant le choix explicite de l'utilisateur
       let destination = '';
-      if (userType === 'prestataire' && isProvider) {
+      if (userType === 'prestataire') {
+        // Toujours respecter le choix prestataire, même si l'utilisateur a aussi un rôle admin
         destination = '/espace-prestataire';
       } else if (userType === 'client') {
         destination = '/espace-personnel';
-      } else if (userType === 'admin' || actualRole === 'admin') {
+      } else if (userType === 'admin') {
+        destination = '/admin';
+      } else if (actualRole === 'admin') {
         destination = '/admin';
       } else if (isProvider) {
         destination = '/espace-prestataire';
