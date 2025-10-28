@@ -47,7 +47,7 @@ Cordialement,`);
   };
 
   const copyPhoneNumber = () => {
-    navigator.clipboard.writeText("+33 0609085390").then(() => {
+    navigator.clipboard.writeText("0609085390").then(() => {
       toast({
         title: "Numéro copié !",
         description: "Le numéro de téléphone a été copié dans votre presse-papiers",
@@ -55,7 +55,7 @@ Cordialement,`);
     }).catch(() => {
       toast({
         title: "Erreur",
-        description: "Impossible de copier le numéro. Veuillez le noter : +33 0609085390",
+        description: "Impossible de copier le numéro. Veuillez le noter : 0609085390",
         variant: "destructive",
       });
     });
@@ -109,7 +109,7 @@ Cordialement,`);
             <div className="text-center">
               <div className="bg-primary/10 rounded-lg p-6">
                 <div className="text-2xl font-bold text-primary mb-2">
-                  +33 0609085390
+                  0609085390
                 </div>
                 <p className="text-sm text-muted-foreground mb-4">
                   Disponible 7j/7 de 8h à 20h

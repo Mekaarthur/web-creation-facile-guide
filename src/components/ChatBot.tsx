@@ -131,7 +131,7 @@ const ChatBot = () => {
       
       const errorMessage: Message = {
         id: 'error',
-        text: 'Désolé, je rencontre des difficultés techniques momentanées. 😅\n\nVous pouvez :\n📞 Nous appeler au 06 09 08 53 90\n✉️ Nous écrire à contact@bikawo.fr\n🌐 Aller sur www.bikawo.fr\n\nNous sommes là pour vous aider !',
+        text: 'Désolé, je rencontre des difficultés techniques momentanées. 😅\n\nVous pouvez :\n📞 Nous appeler au 0609085390\n✉️ Nous écrire à contact@bikawo.fr\n🌐 Aller sur www.bikawo.fr\n\nNous sommes là pour vous aider !',
         sender: 'bot',
         timestamp: new Date()
       };

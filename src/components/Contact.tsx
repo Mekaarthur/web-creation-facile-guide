@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   Phone, 
   Mail, 
@@ -38,14 +39,27 @@ const Contact = () => {
   const { handleSubmit, isSubmitting, errors } = useSecureForm({
     schema: contactFormSchema,
     onSubmit: async (validatedData) => {
-      // TODO: Remplacer par un appel à l'edge function d'envoi d'email
-      console.log('Contact form submitted:', validatedData);
-      
-      // Simulation d'envoi
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Reset form on success
-      setFormData({ name: "", email: "", phone: "", message: "" });
+      try {
+        const { data, error } = await supabase.functions.invoke('send-contact-email', {
+          body: validatedData
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Message envoyé ! 📧",
+          description: "Nous vous répondrons dans les plus brefs délais.",
+        });
+        
+        // Reset form on success
+        setFormData({ name: "", email: "", phone: "", message: "" });
+      } catch (error: any) {
+        toast({
+          title: "Erreur d'envoi",
+          description: error.message || "Une erreur s'est produite",
+          variant: "destructive",
+        });
+      }
     },
     rateLimitKey: formData.email || 'anonymous',
     rateLimitAction: 'contact_form'
@@ -55,7 +69,7 @@ const Contact = () => {
     {
       icon: Phone,
       title: t('contact.phone'),
-      content: "06 09 08 53 90",
+      content: "0609085390",
       description: t('contact.phoneTime'),
       color: "from-success/80 to-success",
       bgColor: "from-success/5 to-success/10"

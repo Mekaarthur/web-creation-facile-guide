@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -33,6 +33,11 @@ export const DocumentUploadSection = ({ providerId, onDocumentsUpdated }: Docume
   const [documents, setDocuments] = useState<Document[]>([]);
   const [uploading, setUploading] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Charger les documents au montage
+  useEffect(() => {
+    loadDocuments();
+  }, [providerId]);
 
   const loadDocuments = async () => {
     try {

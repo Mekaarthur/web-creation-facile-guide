@@ -235,7 +235,7 @@ const ProviderProfileForm = () => {
       case 2:
         return !!(profile.service_zones?.length && profile.selected_services?.length);
       case 3:
-        return !!(profile.hourly_rate && profile.description);
+        return !!(profile.description);
       default:
         return true;
     }
@@ -273,14 +273,14 @@ const ProviderProfileForm = () => {
 
       if (profileError) throw profileError;
 
-      // Sauvegarder les données prestataire with sanitized data
+      // Sauvegarder les données prestataire with sanitized data (tarif fixe à 22€)
       const { error: providerError } = await supabase
         .from('providers')
         .upsert({
           user_id: user?.id,
           business_name: validatedData.businessName,
           description: validatedData.description,
-          hourly_rate: validatedData.hourlyRate,
+          hourly_rate: 22,
           postal_codes: profile.service_zones,
           service_categories: validatedData.services,
           location: validatedData.location,
@@ -632,44 +632,19 @@ const ProviderProfileForm = () => {
         </Card>
       )}
 
-      {/* Étape 3: Tarification et Description */}
+      {/* Étape 3: Présentation */}
       {currentStep === 3 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Euro className="h-5 w-5" />
-              <span>Tarification et présentation</span>
+              <Briefcase className="h-5 w-5" />
+              <span>Présentation</span>
             </CardTitle>
             <CardDescription>
-              Définissez votre tarif horaire et présentez votre expertise
+              Présentez votre expertise et vos compétences
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="hourly_rate">Tarif horaire souhaité (€) *</Label>
-                <div className="relative">
-                  <Euro className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="hourly_rate"
-                    type="number"
-                    value={profile.hourly_rate || 18}
-                    onChange={(e) => handleInputChange('hourly_rate', parseFloat(e.target.value))}
-                    placeholder="18"
-                    className="pl-10"
-                    min="10"
-                    max="100"
-                    required
-                  />
-                </div>
-                {errors.hourlyRate && (
-                  <p className="text-sm text-destructive">{errors.hourlyRate}</p>
-                )}
-                <p className="text-xs text-muted-foreground">
-                  Montant que vous percevrez après commission Bikawo
-                </p>
-              </div>
-            </div>
 
             <div className="space-y-2">
               <Label htmlFor="description">Présentation et compétences *</Label>

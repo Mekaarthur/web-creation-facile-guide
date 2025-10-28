@@ -75,7 +75,7 @@ const Footer = () => {
                     </div>
                     <div>
                       <p className="text-xs text-white/60">{t('footer.phone')}</p>
-                      <p className="text-sm font-medium">06 09 08 53 90</p>
+                      <p className="text-sm font-medium">0609085390</p>
                     </div>
                   </div>
                 </div>

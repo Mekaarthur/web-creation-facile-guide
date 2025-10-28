@@ -209,7 +209,7 @@ const ProviderDashboardNew = () => {
               </Badge>
               <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-3 py-2 rounded-lg">
                 <Phone className="h-4 w-4" />
-                <span>Support: 06 09 08 53 90</span>
+                <span>Support: 0609085390</span>
               </div>
               <Button variant="outline" size="sm" className="hover:bg-primary/10">
                 <Settings className="h-4 w-4 mr-2" />
