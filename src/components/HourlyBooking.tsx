@@ -27,7 +27,7 @@ const HourlyBooking = () => {
 
   const serviceTypes = [
     { value: "childcare", label: "Garde d'enfants", price: 22 },
-    { value: "cleaning", label: "Ménage", price: 20 },
+    { value: "cleaning", label: "Préparation culinaire / batch cooking", price: 20 },
     { value: "shopping", label: "Courses", price: 18 },
     { value: "admin", label: "Aide administrative", price: 25 },
     { value: "elderly", label: "Aide aux seniors", price: 24 },

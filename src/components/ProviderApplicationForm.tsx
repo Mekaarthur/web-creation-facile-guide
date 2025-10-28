@@ -58,7 +58,7 @@ interface FormData {
 }
 
 const SERVICE_CATEGORIES = [
-  'Ménage et entretien',
+  'Préparation culinaire / batch cooking',
   'Garde d\'enfants',
   'Aide aux seniors',
   'Coiffure',

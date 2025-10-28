@@ -336,7 +336,7 @@ export const AdminJobApplications = () => {
                 <SelectItem value="all">Toutes catégories</SelectItem>
                 <SelectItem value="Aide à domicile">Aide à domicile</SelectItem>
                 <SelectItem value="Garde d'enfants">Garde d'enfants</SelectItem>
-                <SelectItem value="Ménage">Ménage</SelectItem>
+                <SelectItem value="Préparation culinaire">Préparation culinaire</SelectItem>
                 <SelectItem value="Jardinage">Jardinage</SelectItem>
                 <SelectItem value="Bricolage">Bricolage</SelectItem>
               </SelectContent>

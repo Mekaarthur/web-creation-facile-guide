@@ -60,7 +60,7 @@ const serviceCategories = [
   {
     id: 'bika_maison',
     name: 'Bika Maison',
-    description: 'Services ménagers et entretien du domicile',
+    description: 'Services de préparation culinaire / batch cooking',
     icon: Home,
     color: 'from-blue-500 to-cyan-500',
     bgColor: 'bg-blue-50'

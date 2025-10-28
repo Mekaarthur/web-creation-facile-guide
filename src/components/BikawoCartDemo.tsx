@@ -35,7 +35,7 @@ const BikawoCartDemo = () => {
       description: "Garde d'enfants avec activités éducatives"
     },
     {
-      serviceName: "Ménage à domicile",
+      serviceName: "Préparation culinaire à domicile",
       serviceCategory: 'maison' as const,
       packageTitle: "Bika Maison - Nettoyage",
       price: 20,
@@ -209,7 +209,7 @@ const BikawoCartDemo = () => {
               <div className="space-y-2 text-sm">
                 <p><strong>💡 Testez les conflits :</strong></p>
                 <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                  <li>Garde d'enfants + Ménage = 🚫 Créneaux incompatibles</li>
+                  <li>Garde d'enfants + Préparation culinaire = 🚫 Créneaux incompatibles</li>
                   <li>Services sur dates différentes = ✅ Compatible</li>
                   <li>Voyage + Services domicile = 🚫 Incompatible</li>
                 </ul>

@@ -267,7 +267,7 @@ export const AdminMatchingPanel = () => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Garde d'enfants">🧸 Garde d'enfants</SelectItem>
-                          <SelectItem value="Ménage">🏠 Ménage</SelectItem>
+                          <SelectItem value="Préparation culinaire">🏠 Préparation culinaire</SelectItem>
                           <SelectItem value="Garde d'animaux">🐾 Garde d'animaux</SelectItem>
                           <SelectItem value="Assistance seniors">👴 Assistance seniors</SelectItem>
                           <SelectItem value="Transport">✈️ Transport</SelectItem>
@@ -445,7 +445,7 @@ export const AdminMatchingPanel = () => {
                       <span className="text-muted-foreground">Il y a 2 min</span>
                     </div>
                     <div className="flex items-center justify-between p-2 bg-blue-50 rounded">
-                      <span>🔍 Recherche de prestataires - Service: Ménage - Lyon</span>
+                      <span>🔍 Recherche de prestataires - Service: Préparation culinaire - Lyon</span>
                       <span className="text-muted-foreground">Il y a 5 min</span>
                     </div>
                     <div className="flex items-center justify-between p-2 bg-red-50 rounded">

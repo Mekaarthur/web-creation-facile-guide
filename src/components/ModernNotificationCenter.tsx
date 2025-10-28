@@ -116,7 +116,7 @@ const ModernNotificationCenter = () => {
           firstName: 'Alex'
         },
         data: {
-          serviceName: 'Ménage à domicile',
+          serviceName: 'Préparation culinaire à domicile',
           serviceDescription: 'Nettoyage complet de votre domicile',
           bookingDate: new Date().toLocaleDateString('fr-FR'),
           startTime: '14:00',
@@ -181,7 +181,7 @@ const ModernNotificationCenter = () => {
     const previewWindow = window.open('', '_blank', 'width=800,height=900');
     if (previewWindow) {
       const mockData = {
-        serviceName: 'Ménage à domicile',
+        serviceName: 'Préparation culinaire à domicile',
         bookingDate: new Date().toLocaleDateString('fr-FR'),
         startTime: '14:00',
         endTime: '16:00',

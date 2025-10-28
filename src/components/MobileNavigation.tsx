@@ -65,7 +65,7 @@ const servicesNavItems: MobileNavItem[] = [
     title: "Bika Maison",
     href: "/services/bika-maison", 
     icon: Home,
-    description: "Ménage & entretien"
+    description: "Préparation culinaire & entretien"
   },
   {
     title: "Bika Vie",

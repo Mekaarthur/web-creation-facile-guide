@@ -61,9 +61,9 @@ const ServiceReservationForm = ({ service, packageTitle, onClose }: ServiceReser
     if (service.category === "enfants") {
       return [...baseOptions, "Garde d'enfants", "Aide aux devoirs", "Sorties éducatives"];
     } else if (service.category === "maison") {
-      return [...baseOptions, "Ménage", "Jardinage", "Bricolage", "Déménagement"];
+      return [...baseOptions, "Préparation culinaire / batch cooking", "Jardinage", "Bricolage", "Déménagement"];
     } else if (service.category === "seniors") {
-      return [...baseOptions, "Accompagnement", "Aide ménagère", "Courses"];
+      return [...baseOptions, "Accompagnement", "Aide à domicile", "Courses"];
     }
     
     return baseOptions;

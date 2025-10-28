@@ -158,7 +158,7 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
     // Mapper les catégories de services
     const mapServiceCategory = (category: string) => {
       const categoryMap: Record<string, string> = {
-        'Ménage': 'bika_maison',
+        'Préparation culinaire': 'bika_maison',
         'Jardinage': 'entretien_espaces_verts',
         'Garde d\'enfants': 'bika_kids',
         'Aide aux seniors': 'bika_seniors',

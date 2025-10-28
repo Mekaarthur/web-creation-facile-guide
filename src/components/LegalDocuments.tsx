@@ -21,7 +21,7 @@ Article 2 - Services proposés
 Bikawo propose des services d'assistance à domicile dans les domaines suivants :
 - Garde d'enfants et soutien scolaire
 - Assistance aux personnes âgées
-- Services de ménage et logistique domestique
+- Services de préparation culinaire / batch cooking et logistique domestique
 - Garde d'animaux
 - Assistance voyage et conciergerie
 

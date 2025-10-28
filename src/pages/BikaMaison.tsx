@@ -11,14 +11,14 @@ const BikaMaison = () => {
     {
       icon: <Sparkles className="w-10 h-10 text-white" />,
       title: "On est méticuleux",
-      description: "Ménage et entretien irréprochables avec attention aux détails. Votre maison comme neuve.",
+      description: "Préparation culinaire / batch cooking avec attention aux détails. Des repas sains et savoureux pour toute la semaine.",
       bgGradient: "bg-gradient-subtle",
       iconGradient: "bg-gradient-primary"
     },
     {
       icon: <Home className="w-10 h-10 text-white" />,
       title: "On est pratique",
-      description: "Services complets : ménage, repassage, petites réparations. Tout pour votre confort.",
+      description: "Services complets : préparation culinaire / batch cooking, repassage, petites réparations. Tout pour votre confort.",
       bgGradient: "bg-gradient-subtle",
       iconGradient: "bg-gradient-accent"
     },
@@ -37,7 +37,7 @@ const BikaMaison = () => {
       
       <ServicePageLayout
         title="Services maison à domicile"
-        subtitle="Ménage, repassage et entretien"
+        subtitle="Préparation culinaire / batch cooking, repassage et entretien"
         rating={5}
         reviewCount="2 500+ avis vérifiés"
         price="Dès 15€/h"
@@ -45,7 +45,7 @@ const BikaMaison = () => {
         heroImage={serviceMaisonImage}
         heroImageAlt="Services maison Bika Maison"
         keyPoints={[
-          "Ménage et entretien professionnels",
+          "Préparation culinaire / batch cooking professionnels",
           "Matériel et produits fournis",
           "Services flexibles et personnalisés"
         ]}

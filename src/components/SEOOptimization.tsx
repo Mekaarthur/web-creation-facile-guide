@@ -11,8 +11,8 @@ interface SEOOptimizationProps {
 
 const SEOOptimization = ({ 
   title = "Bikawo - Assistant Personnel à Domicile | Services Famille Paris",
-  description = "Assistant personnel à domicile Paris. Garde d'enfants, ménage, aide seniors, démarches administratives. Un seul prestataire de confiance pour tous vos besoins. Crédit d'impôt 50%.",
-  keywords = "assistant personnel, services domicile, garde enfants Paris, ménage domicile, aide seniors, démarches administratives, conciergerie familiale, prestataire confiance, crédit impôt 50%, Bikawo",
+  description = "Assistant personnel à domicile Paris. Garde d'enfants, préparation culinaire / batch cooking, aide seniors, démarches administratives. Un seul prestataire de confiance pour tous vos besoins. Crédit d'impôt 50%.",
+  keywords = "assistant personnel, services domicile, garde enfants Paris, préparation culinaire domicile, batch cooking, aide seniors, démarches administratives, conciergerie familiale, prestataire confiance, crédit impôt 50%, Bikawo",
   image = "/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png",
   type = "website"
 }: SEOOptimizationProps) => {
@@ -107,8 +107,8 @@ const SEOOptimization = ({
               "@type": "Offer", 
               "itemOffered": {
                 "@type": "Service",
-                "name": "Ménage et entretien domicile",
-                "description": "Service de ménage et entretien à domicile"
+                "name": "Préparation culinaire / batch cooking",
+                "description": "Service de préparation culinaire / batch cooking à domicile"
               }
             },
             {

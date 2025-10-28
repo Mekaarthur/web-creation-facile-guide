@@ -28,7 +28,7 @@ const ChatBot = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'Bonjour ! 👋 Je suis l\'assistant virtuel de Bikawo, votre plateforme de services à domicile en Île-de-France.\n\n🏠 Nos services BIKA :\n• KIDS - Garde d\'enfants & soutien scolaire\n• MAISON - Courses, ménage & logistique  \n• VIE - Conciergerie & administratif\n• TRAVEL - Organisation voyages\n• ANIMAL - Garde & soins animaux\n• SENIORS - Assistance personnes âgées\n• PRO - Services aux entreprises\n• PLUS - Services sur mesure premium\n\nComment puis-je vous aider aujourd\'hui ? 😊',
+      text: 'Bonjour ! 👋 Je suis l\'assistant virtuel de Bikawo, votre plateforme de services à domicile en Île-de-France.\n\n🏠 Nos services BIKA :\n• KIDS - Garde d\'enfants & soutien scolaire\n• MAISON - Courses, préparation culinaire / batch cooking & logistique  \n• VIE - Conciergerie & administratif\n• TRAVEL - Organisation voyages\n• ANIMAL - Garde & soins animaux\n• SENIORS - Assistance personnes âgées\n• PRO - Services aux entreprises\n• PLUS - Services sur mesure premium\n\nComment puis-je vous aider aujourd\'hui ? 😊',
       sender: 'bot',
       timestamp: new Date()
     }

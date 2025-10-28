@@ -111,7 +111,7 @@ export const IntelligentProviderSearch: React.FC<IntelligentProviderSearchProps>
             <div>
               <label className="text-sm font-medium mb-2 block">Type de service</label>
               <Input
-                placeholder="Ex: Ménage, Jardinage, Garde d'enfants..."
+                placeholder="Ex: Préparation culinaire, Jardinage, Garde d'enfants..."
                 value={serviceType}
                 onChange={(e) => setServiceType(e.target.value)}
                 className="w-full"

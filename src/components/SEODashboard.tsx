@@ -127,7 +127,7 @@ const SEODashboard = () => {
 
   const keywordTracking = [
     { keyword: "charge mentale", position: 8, volume: 2900, difficulty: 65, trend: "up" },
-    { keyword: "aide ménagère Paris", position: 15, volume: 1200, difficulty: 58, trend: "up" },
+    { keyword: "préparation culinaire Paris", position: 15, volume: 1200, difficulty: 58, trend: "up" },
     { keyword: "garde enfants domicile", position: 22, volume: 800, difficulty: 72, trend: "down" },
     { keyword: "déléguer sans culpabiliser", position: 3, volume: 400, difficulty: 35, trend: "up" },
     { keyword: "assistant familial", position: 18, volume: 600, difficulty: 45, trend: "stable" }
@@ -137,7 +137,7 @@ const SEODashboard = () => {
     { competitor: "Babysits", da: 65, keywords: 1200, traffic: "125K", gap: "Faible blog" },
     { competitor: "Wecasa", da: 58, keywords: 980, traffic: "89K", gap: "Pas de charge mentale" },
     { competitor: "Yoopies", da: 72, keywords: 1500, traffic: "156K", gap: "Services séparés" },
-    { competitor: "Helpling", da: 55, keywords: 750, traffic: "67K", gap: "Que ménage" }
+    { competitor: "Helpling", da: 55, keywords: 750, traffic: "67K", gap: "Que préparation culinaire" }
   ];
 
   return (

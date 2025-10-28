@@ -279,7 +279,7 @@ const AdminClientRequests = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Tous les services</SelectItem>
-                    <SelectItem value="ménage">Ménage</SelectItem>
+                    <SelectItem value="préparation-culinaire">Préparation culinaire</SelectItem>
                     <SelectItem value="garde-enfants">Garde d'enfants</SelectItem>
                     <SelectItem value="aide-seniors">Aide aux seniors</SelectItem>
                     <SelectItem value="jardinage">Jardinage</SelectItem>

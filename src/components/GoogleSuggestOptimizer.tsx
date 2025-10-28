@@ -16,7 +16,7 @@ const GoogleSuggestOptimizer = () => {
               "name": "Combien coûte un assistant personnel à domicile ?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Nos services d'assistant personnel débutent à 22€/h avec un crédit d'impôt de 50%. Les tarifs varient selon le type de service : garde d'enfants, ménage, aide administrative."
+                "text": "Nos services d'assistant personnel débutent à 22€/h avec un crédit d'impôt de 50%. Les tarifs varient selon le type de service : garde d'enfants, préparation culinaire / batch cooking, aide administrative."
               }
             },
             {
@@ -24,7 +24,7 @@ const GoogleSuggestOptimizer = () => {
               "name": "Quels services propose Bikawo ?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Bikawo propose 6 services principaux : Bika Kids (garde d'enfants), Bika Maison (ménage et courses), Bika Seniors (aide aux personnes âgées), Bika Animals (soins animaux), Bika Travel (assistance voyage), et Bika Plus (service premium)."
+                "text": "Bikawo propose 6 services principaux : Bika Kids (garde d'enfants), Bika Maison (préparation culinaire / batch cooking et courses), Bika Seniors (aide aux personnes âgées), Bika Animals (soins animaux), Bika Travel (assistance voyage), et Bika Plus (service premium)."
               }
             },
             {
@@ -51,7 +51,7 @@ const GoogleSuggestOptimizer = () => {
           "@context": "https://schema.org",
           "@type": "Service",
           "name": "Assistant Personnel à Domicile - Bikawo",
-          "description": "Services d'assistant personnel et de conciergerie à domicile. Garde d'enfants, ménage, aide seniors, démarches administratives avec crédit d'impôt 50%.",
+          "description": "Services d'assistant personnel et de conciergerie à domicile. Garde d'enfants, préparation culinaire / batch cooking, aide seniors, démarches administratives avec crédit d'impôt 50%.",
           "provider": {
             "@type": "Organization",
             "name": "Bikawo",
@@ -139,7 +139,7 @@ const GoogleSuggestOptimizer = () => {
             {
               "@type": "HowToStep",
               "name": "Choisir votre service",
-              "text": "Sélectionnez le service souhaité parmi nos 6 offres : garde d'enfants, ménage, aide seniors, etc.",
+              "text": "Sélectionnez le service souhaité parmi nos 6 offres : garde d'enfants, préparation culinaire / batch cooking, aide seniors, etc.",
               "image": {
                 "@type": "ImageObject",
                 "url": "https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png"
@@ -190,7 +190,7 @@ const GoogleSuggestOptimizer = () => {
       const voiceSearchQueries = [
         "assistant personnel à domicile paris",
         "garde d'enfants à domicile crédit impôt",
-        "service ménage domicile île de france",
+        "service préparation culinaire domicile île de france",
         "aide personnes âgées à domicile",
         "conciergerie familiale paris",
         "prestataire services domicile fiable"
@@ -271,7 +271,7 @@ ${pages.map(page => `
       
       {/* Schema.org pour les suggestions */}
       <meta itemProp="name" content="Bikawo - Assistant Personnel Domicile Paris" />
-      <meta itemProp="description" content="Service d'assistant personnel à domicile. Garde enfants, ménage, aide seniors. Crédit impôt 50%. Intervention Paris et Île-de-France." />
+      <meta itemProp="description" content="Service d'assistant personnel à domicile. Garde enfants, préparation culinaire / batch cooking, aide seniors. Crédit impôt 50%. Intervention Paris et Île-de-France." />
       <meta itemProp="image" content="https://bikawo.com/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png" />
       
       {/* Données pour les rich snippets */}

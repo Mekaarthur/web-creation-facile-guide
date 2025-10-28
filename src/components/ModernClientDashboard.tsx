@@ -65,7 +65,7 @@ const ModernClientDashboard = ({
   // Services distribution data (mock data)
   const servicesData = useMemo(() => {
     const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1'];
-    const services = ['Ménage', 'Garde d\'enfants', 'Aide seniors', 'Jardinage', 'Courses'];
+    const services = ['Préparation culinaire', 'Garde d\'enfants', 'Aide seniors', 'Jardinage', 'Courses'];
     
     return services.map((service, index) => ({
       name: service,
