@@ -89,11 +89,12 @@ export const serviceTranslations: ServiceTranslations = {
       'logistique-organisation': {
         title: 'Logistics & Organization',
         description:
-          'Parcel pickup and deliveries, scheduling artisans/technicians, coordinating works and renovations.',
+          'Parcel pickup and deliveries, wardrobe organization, ironing and clothes storage.',
         options: [
           'Parcel pickup and deliveries',
-          'Scheduling artisans/technicians',
-          'Coordinating works and renovations',
+          'Wardrobe organization',
+          'Ironing',
+          'Clothes storage',
         ],
       },
       'aide-demenagement-amenagement': {

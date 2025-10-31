@@ -163,14 +163,15 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
       {
         slug: "logistique-organisation",
         title: "Logistique & Organisation",
-        price: 25,
-        priceDisplay: "25€/h",
+        price: 30,
+        priceDisplay: "30€/h",
         image: serviceHouseLogistics,
-        description: "Retrait des colis et livraisons, gestion des rendez-vous artisans/techniciens, coordination des travaux et rénovations.",
+        description: "Retrait des colis et livraisons, rangement d'armoire, repassage et rangement de vêtements.",
         options: [
           "Retrait des colis et livraisons",
-          "Gestion des rendez-vous artisans/techniciens",
-          "Coordination des travaux et rénovations"
+          "Rangement d'armoire",
+          "Repassage",
+          "Rangement de vêtements"
         ],
       },
       {
