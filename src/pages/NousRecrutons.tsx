@@ -252,7 +252,7 @@ const NousRecrutons = () => {
                 </Button>
                 <Button variant="outline" size="xl">
                   <Phone className="w-5 h-5 mr-2" />
-                  01 85 08 24 42
+                  0609085390
                 </Button>
               </div>
             </div>
