@@ -10,11 +10,11 @@ import {
   AlertTriangle, 
   Clock, 
   MapPin,
-  CreditCard,
-  Split
+  ArrowRight
 } from "lucide-react";
 import { useBikawoCart } from "@/hooks/useBikawoCart";
 import { useToast } from "@/hooks/use-toast";
+import BookingCheckout from "./BookingCheckout";
 
 interface BikawoCartProps {
   isOpen?: boolean;
@@ -48,7 +48,7 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
     };
   };
 
-  const proceedToPayment = () => {
+  const proceedToCheckout = () => {
     if (cartItems.length === 0) {
       toast({
         title: "Panier vide",
@@ -61,117 +61,12 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
     setIsPaymentMode(true);
   };
 
-  const handleGroupedPayment = () => {
-    // Simulation du paiement groupé
-    const totalAmount = getCartTotal();
-    const bookingsCount = getSeparatedBookingsCount();
-
-    toast({
-      title: "🎉 Paiement validé !",
-      description: `Paiement unique de ${totalAmount}€ pour ${bookingsCount} réservation${bookingsCount > 1 ? 's' : ''}.`,
-    });
-
-    // Vider le panier après paiement
-    clearCart();
-    setIsPaymentMode(false);
-    if (onClose) onClose();
-  };
-
   if (!isOpen && cartItems.length === 0) {
     return null;
   }
 
   if (isPaymentMode) {
-    return (
-      <Card className="w-full max-w-2xl mx-auto">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="w-5 h-5" />
-            Paiement Groupé Bikawo
-          </CardTitle>
-        </CardHeader>
-        
-        <CardContent className="space-y-6">
-          {/* Résumé des réservations séparées */}
-          {hasIncompatibleServices() && (
-            <Alert className="border-orange-200 bg-orange-50">
-              <Split className="w-4 h-4" />
-              <AlertDescription>
-                Vos services ont été automatiquement séparés en <strong>{getSeparatedBookingsCount()} réservations</strong> en raison d'incompatibilités.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          <div className="space-y-4">
-            <h3 className="font-semibold">Détail des réservations :</h3>
-            {separatedBookings.map((booking, index) => (
-              <Card key={booking.id} className="p-4 bg-muted/30">
-                <div className="flex justify-between items-start mb-3">
-                  <h4 className="font-medium">Réservation #{index + 1}</h4>
-                  <Badge variant="secondary">{booking.totalPrice}€</Badge>
-                </div>
-                
-                {booking.conflictReason && (
-                  <Alert className="mb-3 border-yellow-200 bg-yellow-50">
-                    <AlertTriangle className="w-4 h-4" />
-                    <AlertDescription className="text-sm">
-                      {booking.conflictReason}
-                    </AlertDescription>
-                  </Alert>
-                )}
-                
-                <div className="space-y-2">
-                  {booking.items.map((item) => {
-                    const slot = formatTimeSlot(item.timeSlot);
-                    return (
-                      <div key={item.id} className="text-sm">
-                        <div className="font-medium">{item.serviceName}</div>
-                        <div className="text-muted-foreground flex items-center gap-2">
-                          <Clock className="w-3 h-3" />
-                          {slot.date}, {slot.time}
-                        </div>
-                        <div className="text-muted-foreground flex items-center gap-2">
-                          <MapPin className="w-3 h-3" />
-                          {item.address}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </Card>
-            ))}
-          </div>
-
-          <Separator />
-
-          <div className="bg-primary/5 p-4 rounded-lg">
-            <div className="flex justify-between items-center text-lg font-semibold">
-              <span>Total à payer :</span>
-              <span className="text-primary">{getCartTotal()}€</span>
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              Un seul paiement pour toutes vos réservations
-            </p>
-          </div>
-
-          <div className="flex gap-3">
-            <Button 
-              variant="outline" 
-              onClick={() => setIsPaymentMode(false)}
-              className="flex-1"
-            >
-              Retour au panier
-            </Button>
-            <Button 
-              onClick={handleGroupedPayment}
-              className="flex-1"
-            >
-              Payer {getCartTotal()}€
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <BookingCheckout onBack={() => setIsPaymentMode(false)} />;
   }
 
   return (
@@ -272,11 +167,12 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
             </div>
 
             <Button 
-              onClick={proceedToPayment} 
+              onClick={proceedToCheckout} 
               className="w-full"
               size="lg"
             >
-              Procéder au paiement
+              <span>Procéder au paiement</span>
+              <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </>
         )}

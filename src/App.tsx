@@ -42,6 +42,7 @@ import BikaPro from "./pages/BikaPro";
 import Reservation from "./pages/Reservation";
 import ReservationConfirmee from "./pages/ReservationConfirmee";
 import SubServicePage from "./pages/SubService";
+import CartPage from "./pages/Cart";
 
 // Admin Layout and Pages
 import { AdminLayout } from "./components/admin/layout/AdminLayout";
@@ -138,8 +139,9 @@ const App = () => (
             <Route path="/provider-onboarding" element={<ProtectedProviderRoute><ProviderOnboarding /></ProtectedProviderRoute>} />
             <Route path="/nous-recrutons" element={<NousRecrutons />} />
             <Route path="/gestion-demandes" element={<GestionDemandes />} />
-              <Route path="/services" element={<ServicesPage />} />
-              <Route path="/services/:category/:slug" element={<SubServicePage />} />
+            <Route path="/services" element={<ServicesPage />} />
+            <Route path="/services/:category/:slug" element={<SubServicePage />} />
+            <Route path="/panier" element={<CartPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/aide" element={<Aide />} />
             <Route path="/panier-demo" element={<BikawoCartDemo />} />
