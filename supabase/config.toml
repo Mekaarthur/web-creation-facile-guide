@@ -151,3 +151,24 @@ verify_jwt = true  # Requires admin authentication to manage roles
 
 [functions.send-contact-email]
 verify_jwt = false  # Public contact form accessible to all users
+
+[functions.stripe-webhook]
+verify_jwt = false  # Public webhook - Stripe needs to call this without auth
+
+[functions.create-payment]
+verify_jwt = true  # Requires authentication
+
+[functions.create-subscription]
+verify_jwt = true  # Requires authentication
+
+[functions.get-payment-methods]
+verify_jwt = true  # Requires authentication
+
+[functions.create-payment-method]
+verify_jwt = true  # Requires authentication
+
+[functions.create-booking]
+verify_jwt = false  # Can be called by anonymous users
+
+[functions.send-booking-confirmation]
+verify_jwt = false  # Email sending - no auth required

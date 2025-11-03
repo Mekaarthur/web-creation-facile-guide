@@ -43,6 +43,7 @@ import Reservation from "./pages/Reservation";
 import ReservationConfirmee from "./pages/ReservationConfirmee";
 import SubServicePage from "./pages/SubService";
 import CartPage from "./pages/Cart";
+import PaymentSuccess from "./pages/PaymentSuccess";
 
 // Admin Layout and Pages
 import { AdminLayout } from "./components/admin/layout/AdminLayout";
@@ -142,6 +143,7 @@ const App = () => (
             <Route path="/services" element={<ServicesPage />} />
             <Route path="/services/:category/:slug" element={<SubServicePage />} />
             <Route path="/panier" element={<CartPage />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/aide" element={<Aide />} />
             <Route path="/panier-demo" element={<BikawoCartDemo />} />

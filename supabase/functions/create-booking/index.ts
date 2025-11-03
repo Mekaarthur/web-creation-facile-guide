@@ -13,7 +13,7 @@ serve(async (req) => {
 
   try {
     const supabaseClient = createClient(
-      Denv.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {

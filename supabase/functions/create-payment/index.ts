@@ -21,8 +21,8 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { amount, bookingId, description, serviceName } = await req.json();
-    logStep("Request data received", { amount, bookingId, description, serviceName });
+    const { amount, bookingId, description, serviceName, metadata } = await req.json();
+    logStep("Request data received", { amount, bookingId, description, serviceName, hasMetadata: !!metadata });
     
     if (!amount || amount <= 0) {
       throw new Error("Valid amount is required");
@@ -82,19 +82,21 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/espace-personnel?tab=factures&payment=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get("origin")}/espace-personnel?tab=factures&payment=cancel`,
+      success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.get("origin")}/panier`,
       metadata: {
         booking_id: bookingId || "",
         user_id: user.id,
         service_name: serviceName || "Service Bikawo",
-        amount: amount.toString()
+        amount: amount.toString(),
+        ...(metadata || {})
       },
       payment_intent_data: {
         metadata: {
           booking_id: bookingId || "",
           user_id: user.id,
-          service_name: serviceName || "Service Bikawo"
+          service_name: serviceName || "Service Bikawo",
+          ...(metadata || {})
         }
       }
     });

@@ -109,84 +109,53 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
         }
       }));
 
-      // Use the first item's date as preferred date
       const preferredDate = cartItems[0]?.timeSlot.date.toISOString().split('T')[0];
       const preferredTime = cartItems[0]?.timeSlot.startTime;
+      const totalAmount = getCartTotal();
 
-      // Call edge function to create booking
-      const { data, error } = await supabase.functions.invoke('create-booking', {
+      // Create Stripe payment session
+      const { data: paymentData, error: paymentError } = await supabase.functions.invoke('create-payment', {
         body: {
-          clientInfo,
-          services,
-          preferredDate,
-          preferredTime,
-          totalAmount: getCartTotal(),
-          notes: cartItems.map(item => item.notes).filter(Boolean).join('; ')
+          amount: totalAmount,
+          description: `Réservation Bikawo - ${services.length} service(s)`,
+          serviceName: services.map(s => s.serviceName).join(', '),
+          metadata: {
+            clientInfo: JSON.stringify(clientInfo),
+            services: JSON.stringify(services),
+            preferredDate,
+            preferredTime,
+            notes: cartItems.map(item => item.notes).filter(Boolean).join('; ')
+          }
         }
       });
 
-      if (error) throw error;
+      if (paymentError) throw paymentError;
 
-      // Send confirmation email
-      const bookingId = data.bookings?.[0]?.id || `BKW-${Date.now()}`;
-      
-      await supabase.functions.invoke('send-booking-confirmation', {
-        body: {
-          to: clientInfo.email,
-          clientName: `${clientInfo.firstName} ${clientInfo.lastName}`,
-          services: services.map(s => ({
-            serviceName: s.serviceName,
-            packageTitle: s.packageTitle,
-            price: s.price
-          })),
-          bookingId,
-          preferredDate,
-          totalAmount: getCartTotal()
-        }
-      });
-
-      // Clear cart
-      clearCart();
-
-      // Show success and redirect
-      toast({
-        title: "🎉 Réservation confirmée !",
-        description: "Un email de confirmation vous a été envoyé",
-      });
-
-      // Store reservation in localStorage for confirmation page
-      const reservation = {
-        id: bookingId,
+      // Store pending booking in localStorage for recovery after payment
+      const pendingBooking = {
         clientInfo,
+        services,
         preferredDate,
         preferredTime,
-        services: services.map(s => ({
-          serviceName: s.serviceName,
-          packageTitle: s.packageTitle,
-          price: s.price,
-          customBooking: s.customBooking
-        })),
-        totalEstimated: getCartTotal(),
-        status: 'pending',
-        createdAt: new Date().toISOString()
+        totalAmount,
+        notes: cartItems.map(item => item.notes).filter(Boolean).join('; ')
       };
+      localStorage.setItem('bikawo-pending-booking', JSON.stringify(pendingBooking));
 
-      const existingReservations = JSON.parse(localStorage.getItem('bikawo-reservations') || '[]');
-      localStorage.setItem('bikawo-reservations', JSON.stringify([...existingReservations, reservation]));
-
-      // Navigate to confirmation page
-      setTimeout(() => {
-        navigate('/reservation-confirmee', { state: { reservationId: bookingId } });
-      }, 1000);
+      // Redirect to Stripe checkout
+      if (paymentData?.url) {
+        window.location.href = paymentData.url;
+      } else {
+        throw new Error('URL de paiement non reçue');
+      }
 
     } catch (error: any) {
-      console.error('Error creating booking:', error);
+      console.error('Error creating payment:', error);
       toast({
         title: "Erreur",
-        description: error.message || "Une erreur est survenue lors de la création de la réservation",
+        description: error.message || "Une erreur est survenue lors de la création du paiement",
         variant: "destructive",
       });
-    } finally {
       setIsProcessing(false);
     }
   };
