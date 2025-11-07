@@ -52,6 +52,7 @@ const ProviderDocuments = () => {
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [submitting, setSubmitting] = useState(false);
   const [previewDocId, setPreviewDocId] = useState<string | null>(null);
+  const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({});
 
   const documentRequirements: DocumentRequirement[] = [
     {
@@ -365,6 +366,40 @@ const ProviderDocuments = () => {
     window.open(document.file_url, '_blank');
   };
 
+  const handlePreview = async (doc: Document) => {
+    // Toggle off
+    if (previewDocId === doc.id) {
+      setPreviewDocId(null);
+      const url = previewUrls[doc.id];
+      if (url?.startsWith('blob:')) URL.revokeObjectURL(url);
+      setPreviewUrls((prev) => {
+        const copy = { ...prev };
+        delete copy[doc.id];
+        return copy;
+      });
+      return;
+    }
+
+    try {
+      setPreviewDocId(doc.id);
+      if (isPdf(doc.file_name)) {
+        const res = await fetch(doc.file_url, { credentials: 'omit' });
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        setPreviewUrls((prev) => ({ ...prev, [doc.id]: blobUrl }));
+      } else {
+        setPreviewUrls((prev) => ({ ...prev, [doc.id]: doc.file_url }));
+      }
+    } catch (e) {
+      console.error('Preview error', e);
+      toast({
+        title: 'Prévisualisation indisponible',
+        description: 'Téléchargez le fichier pour le consulter.',
+        variant: 'destructive',
+      });
+      setPreviewDocId(null);
+    }
+  };
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12">
@@ -456,7 +491,7 @@ const ProviderDocuments = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => setPreviewDocId(previewDocId === document.id ? null : document.id)}
+                                onClick={() => handlePreview(document)}
                                 className="gap-1"
                               >
                                 <Eye className="w-4 h-4" />
@@ -481,10 +516,10 @@ const ProviderDocuments = () => {
                             {previewDocId === document.id && (
                               <div className="mt-3 border rounded-lg overflow-hidden">
                                 {isImage(document.file_name) ? (
-                                  <img src={document.file_url} alt={document.file_name} className="w-full max-h-[480px] object-contain bg-muted" />
+                                  <img src={previewUrls[document.id] || document.file_url} alt={document.file_name} className="w-full max-h-[480px] object-contain bg-muted" />
                                 ) : isPdf(document.file_name) ? (
                                   <iframe
-                                    src={document.file_url}
+                                    src={previewUrls[document.id]}
                                     className="w-full h-[520px] bg-muted"
                                     title={`Aperçu ${document.file_name}`}
                                   />
