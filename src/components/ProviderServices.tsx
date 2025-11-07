@@ -342,10 +342,18 @@ const ProviderServices = () => {
                                 </h4>
                                 <div className="flex items-center gap-4 text-sm">
                                   <span className="text-muted-foreground">
-                                    Client : <span className="font-semibold text-foreground">{subService.clientPrice}€/h</span>
+                                    Client : <span className="font-semibold text-foreground">
+                                      {typeof subService.clientPrice === 'number' 
+                                        ? `${subService.clientPrice}€/h` 
+                                        : subService.clientPrice}
+                                    </span>
                                   </span>
                                   <span className="text-green-600">
-                                    → Vous gagnez : <span className="font-bold">{subService.providerPrice}€/h</span>
+                                    → Vous gagnez : <span className="font-bold">
+                                      {typeof subService.providerPrice === 'number'
+                                        ? `${subService.providerPrice}€/h`
+                                        : subService.providerPrice}
+                                    </span>
                                   </span>
                                 </div>
                               </div>

@@ -1,8 +1,8 @@
 export interface SubService {
   id: string;
   name: string;
-  clientPrice: number; // Prix payé par le client
-  providerPrice: number; // Prix reçu par le prestataire (calculé automatiquement)
+  clientPrice: number | string; // Prix payé par le client (peut être "Sur devis")
+  providerPrice: number | string; // Prix reçu par le prestataire (calculé automatiquement)
 }
 
 export interface UniverseCategory {
@@ -12,40 +12,43 @@ export interface UniverseCategory {
   subServices: SubService[];
 }
 
-// Fonction pour calculer le prix prestataire
+// Fonction pour calculer le prix prestataire (72% du prix client)
 export const calculateProviderPrice = (clientPrice: number): number => {
-  if (clientPrice === 30) return 22;
   if (clientPrice === 25) return 18;
-  return clientPrice * 0.72; // Par défaut, 72% du prix client
+  if (clientPrice === 30) return 22;
+  if (clientPrice === 40) return 29;
+  if (clientPrice === 50) return 36;
+  if (clientPrice === 60) return 43;
+  return Math.round(clientPrice * 0.72);
 };
 
 export const universeServices: UniverseCategory[] = [
   {
     id: 'bika_kids',
     name: 'Bika Kids',
-    description: 'Garde d\'enfants et activités éducatives',
+    description: 'Services dédiés aux enfants',
     subServices: [
       {
-        id: 'garde_ponctuelle',
-        name: 'Garde ponctuelle et régulière',
+        id: 'garde-enfants-babysitting',
+        name: 'Garde d\'enfants & Baby-sitting',
         clientPrice: 25,
         providerPrice: 18
       },
       {
-        id: 'garde_nuit',
-        name: 'Gardes de nuit, urgences et accompagnement enfants malades',
+        id: 'gardes-de-nuit-urgence',
+        name: 'Gardes de nuit ou d\'urgence',
         clientPrice: 30,
         providerPrice: 22
       },
       {
-        id: 'anniversaires',
-        name: 'Organisation d\'anniversaires, animations et événements personnalisés',
+        id: 'anniversaires-evenements',
+        name: 'Anniversaires & Évènements',
         clientPrice: 30,
         providerPrice: 22
       },
       {
-        id: 'soutien_scolaire',
-        name: 'Soutien scolaire et préparation aux examens',
+        id: 'soutien-scolaire',
+        name: 'Soutien scolaire',
         clientPrice: 30,
         providerPrice: 22
       }
@@ -54,29 +57,41 @@ export const universeServices: UniverseCategory[] = [
   {
     id: 'bika_maison',
     name: 'Bika Maison',
-    description: 'Services de préparation culinaire / batch cooking',
+    description: 'Gestion du foyer',
     subServices: [
       {
-        id: 'batch_cooking',
-        name: 'Batch cooking et préparation de repas',
+        id: 'courses-approvisionnement',
+        name: 'Courses & Approvisionnement',
+        clientPrice: 25,
+        providerPrice: 18
+      },
+      {
+        id: 'courses-urgentes-nuit',
+        name: 'Courses urgentes et de nuit',
         clientPrice: 30,
         providerPrice: 22
       },
       {
-        id: 'menage',
-        name: 'Ménage et entretien du domicile',
-        clientPrice: 25,
-        providerPrice: 18
+        id: 'logistique-organisation',
+        name: 'Logistique & Organisation',
+        clientPrice: 30,
+        providerPrice: 22
       },
       {
-        id: 'repassage',
-        name: 'Repassage et entretien du linge',
-        clientPrice: 25,
-        providerPrice: 18
+        id: 'aide-demenagement-amenagement',
+        name: 'Aide au déménagement et à l\'aménagement',
+        clientPrice: 30,
+        providerPrice: 22
       },
       {
-        id: 'jardinage',
-        name: 'Jardinage et entretien espaces verts',
+        id: 'entretien-jardins-espaces-verts',
+        name: 'Entretien jardins et espaces verts',
+        clientPrice: 30,
+        providerPrice: 22
+      },
+      {
+        id: 'maintenance',
+        name: 'Maintenance',
         clientPrice: 30,
         providerPrice: 22
       }
@@ -85,29 +100,23 @@ export const universeServices: UniverseCategory[] = [
   {
     id: 'bika_vie',
     name: 'Bika Vie',
-    description: 'Conciergerie et assistance quotidienne',
+    description: 'Conciergerie complète',
     subServices: [
       {
-        id: 'courses',
-        name: 'Courses et logistique du quotidien',
+        id: 'services-administratifs-familiaux',
+        name: 'Services administratifs familiaux',
         clientPrice: 25,
         providerPrice: 18
       },
       {
-        id: 'demarches',
-        name: 'Accompagnement aux démarches administratives',
-        clientPrice: 30,
-        providerPrice: 22
-      },
-      {
-        id: 'rdv_medicaux',
-        name: 'Accompagnement rendez-vous médicaux',
+        id: 'services-personnels',
+        name: 'Services personnels',
         clientPrice: 25,
         providerPrice: 18
       },
       {
-        id: 'conciergerie',
-        name: 'Services de conciergerie personnalisés',
+        id: 'assistance-quotidienne',
+        name: 'Assistance quotidienne',
         clientPrice: 30,
         providerPrice: 22
       }
@@ -116,54 +125,23 @@ export const universeServices: UniverseCategory[] = [
   {
     id: 'bika_travel',
     name: 'Bika Travel',
-    description: 'Organisation de voyages et accompagnement',
+    description: 'Assistance voyage',
     subServices: [
       {
-        id: 'organisation_voyage',
-        name: 'Organisation complète de voyages',
+        id: 'preparation-voyage',
+        name: 'Préparation voyage',
         clientPrice: 30,
         providerPrice: 22
       },
       {
-        id: 'accompagnement',
-        name: 'Accompagnement durant le voyage',
+        id: 'formalites-documents',
+        name: 'Formalités & Documents',
         clientPrice: 30,
         providerPrice: 22
       },
       {
-        id: 'transferts',
-        name: 'Transferts et transport',
-        clientPrice: 25,
-        providerPrice: 18
-      }
-    ]
-  },
-  {
-    id: 'bika_seniors',
-    name: 'Bika Seniors',
-    description: 'Accompagnement des personnes âgées',
-    subServices: [
-      {
-        id: 'compagnie',
-        name: 'Compagnie et présence',
-        clientPrice: 25,
-        providerPrice: 18
-      },
-      {
-        id: 'aide_quotidienne',
-        name: 'Aide aux tâches quotidiennes',
-        clientPrice: 25,
-        providerPrice: 18
-      },
-      {
-        id: 'accompagnement_medical',
-        name: 'Accompagnement médical et sorties',
-        clientPrice: 30,
-        providerPrice: 22
-      },
-      {
-        id: 'activites',
-        name: 'Activités et stimulation cognitive',
+        id: 'assistance-24-7',
+        name: 'Assistance 24h/7j en cas de problème',
         clientPrice: 30,
         providerPrice: 22
       }
@@ -171,32 +149,51 @@ export const universeServices: UniverseCategory[] = [
   },
   {
     id: 'bika_animals',
-    name: 'Bika Animals',
-    description: 'Soins et garde d\'animaux',
+    name: 'Bika Animal',
+    description: 'Univers animalier',
     subServices: [
       {
-        id: 'garde_domicile',
-        name: 'Garde d\'animaux à domicile',
+        id: 'soins-quotidiens',
+        name: 'Soins quotidiens',
         clientPrice: 25,
         providerPrice: 18
       },
       {
-        id: 'promenades',
-        name: 'Promenades et sorties',
-        clientPrice: 25,
-        providerPrice: 18
-      },
-      {
-        id: 'soins',
-        name: 'Soins et toilettage',
+        id: 'services-veterinaires',
+        name: 'Services vétérinaires',
         clientPrice: 30,
         providerPrice: 22
       },
       {
-        id: 'veterinaire',
-        name: 'Accompagnement vétérinaire',
+        id: 'garde-pension',
+        name: 'Garde & Pension',
         clientPrice: 30,
         providerPrice: 22
+      }
+    ]
+  },
+  {
+    id: 'bika_seniors',
+    name: 'Bika Seniors',
+    description: 'Accompagnement personnes âgées',
+    subServices: [
+      {
+        id: 'assistance-quotidienne',
+        name: 'Assistance quotidienne',
+        clientPrice: 30,
+        providerPrice: 22
+      },
+      {
+        id: 'support-medical',
+        name: 'Support médical',
+        clientPrice: 30,
+        providerPrice: 22
+      },
+      {
+        id: 'urgences-24-7',
+        name: 'Urgences 24h/7j',
+        clientPrice: 40,
+        providerPrice: 29
       }
     ]
   },
@@ -206,47 +203,47 @@ export const universeServices: UniverseCategory[] = [
     description: 'Services aux entreprises',
     subServices: [
       {
-        id: 'assistant_admin',
-        name: 'Assistance administrative',
-        clientPrice: 30,
-        providerPrice: 22
+        id: 'support-administratif',
+        name: 'Support administratif',
+        clientPrice: 40,
+        providerPrice: 29
       },
       {
-        id: 'evenements',
-        name: 'Organisation d\'événements professionnels',
-        clientPrice: 30,
-        providerPrice: 22
+        id: 'assistance-dirigeants',
+        name: 'Assistance dirigeants',
+        clientPrice: 60,
+        providerPrice: 43
       },
       {
-        id: 'conciergerie_entreprise',
+        id: 'conciergerie-entreprise',
         name: 'Conciergerie d\'entreprise',
-        clientPrice: 30,
-        providerPrice: 22
+        clientPrice: 50,
+        providerPrice: 36
       }
     ]
   },
   {
     id: 'bika_plus',
     name: 'Bika Plus',
-    description: 'Services premium et conciergerie de luxe',
+    description: 'Services sur mesure',
     subServices: [
       {
-        id: 'conciergerie_luxe',
-        name: 'Conciergerie de luxe',
-        clientPrice: 30,
-        providerPrice: 22
+        id: 'projets-personnalises',
+        name: 'Projets personnalisés',
+        clientPrice: 'Sur devis',
+        providerPrice: 'Sur devis'
       },
       {
-        id: 'evenements_prestige',
-        name: 'Organisation d\'événements prestige',
-        clientPrice: 30,
-        providerPrice: 22
+        id: 'services-exclusifs',
+        name: 'Services exclusifs',
+        clientPrice: 'Sur devis',
+        providerPrice: 'Sur devis'
       },
       {
-        id: 'services_personnalises',
-        name: 'Services ultra-personnalisés',
-        clientPrice: 30,
-        providerPrice: 22
+        id: 'formules-premium',
+        name: 'Formules premium',
+        clientPrice: 1500,
+        providerPrice: 1080
       }
     ]
   }
