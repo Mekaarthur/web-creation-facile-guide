@@ -78,17 +78,18 @@ Fait le ${new Date().toLocaleDateString('fr-FR')}
 
       if (error) throw error;
 
-      // Appeler l'edge function pour générer le PDF
-      const { error: pdfError } = await supabase.functions.invoke('generate-mandate-pdf', {
-        body: {
-          providerId,
-          providerName,
-          signatureData,
-          mandateText
-        }
-      });
-
-      if (pdfError) console.error('PDF generation error:', pdfError);
+      // Notifier l'admin
+      await supabase
+        .from('communications')
+        .insert({
+          type: 'notification',
+          destinataire_id: null,
+          sujet: 'Mandat de facturation signé',
+          contenu: `${providerName} a signé le mandat de facturation. Provider ID: ${providerId}`,
+          related_entity_type: 'provider',
+          related_entity_id: providerId,
+          status: 'en_attente'
+        });
 
       toast.success('Mandat signé avec succès', {
         description: 'Vous pouvez maintenant continuer votre inscription'

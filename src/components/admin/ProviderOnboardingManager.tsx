@@ -31,6 +31,8 @@ interface Provider {
   created_at: string;
   user_id?: string;
   is_verified?: boolean;
+  documents_submitted?: boolean;
+  identity_verified?: boolean;
 }
 
 const ProviderOnboardingManager = () => {
@@ -46,8 +48,8 @@ const ProviderOnboardingManager = () => {
     try {
       const { data, error } = await supabase
         .from('providers')
-        .select('id, business_name, status, formation_completed, mandat_facturation_accepte, created_at, user_id, is_verified')
-        .in('status', ['pending', 'documents_pending', 'training_pending', 'inactive'])
+        .select('id, business_name, status, formation_completed, mandat_facturation_accepte, created_at, user_id, is_verified, documents_submitted, identity_verified')
+        .neq('status', 'active')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -61,17 +63,37 @@ const ProviderOnboardingManager = () => {
 
   const validateDocuments = async (providerId: string) => {
     try {
+      // Valider les documents sans activer le prestataire
       const { error } = await supabase
         .from('providers')
         .update({
-          status: 'active'
+          status: 'documents_validated'
         })
         .eq('id', providerId);
 
       if (error) throw error;
 
+      // Notifier le prestataire
+      const { data: provider } = await supabase
+        .from('providers')
+        .select('user_id, business_name')
+        .eq('id', providerId)
+        .single();
+
+      if (provider) {
+        await supabase
+          .from('communications')
+          .insert({
+            type: 'email',
+            destinataire_id: provider.user_id,
+            sujet: 'Documents validés - Étape suivante',
+            contenu: `Bonjour ${provider.business_name},\n\nVos documents ont été validés avec succès. Vous pouvez maintenant signer le mandat de facturation dans votre espace prestataire.`,
+            status: 'en_attente'
+          });
+      }
+
       toast.success('Documents validés', {
-        description: 'Prestataire mis à jour'
+        description: 'Le prestataire peut maintenant signer le mandat'
       });
       loadProviders();
     } catch (error: any) {
@@ -101,6 +123,44 @@ const ProviderOnboardingManager = () => {
 
   const activateProvider = async (providerId: string) => {
     try {
+      // Vérifier que toutes les étapes sont complétées
+      const { data: provider, error: fetchError } = await supabase
+        .from('providers')
+        .select('documents_submitted, mandat_facturation_accepte, formation_completed, identity_verified')
+        .eq('id', providerId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      if (!provider.documents_submitted) {
+        toast.error('Documents non soumis', {
+          description: 'Le prestataire doit d\'abord soumettre ses documents'
+        });
+        return;
+      }
+
+      if (!provider.mandat_facturation_accepte) {
+        toast.error('Mandat non signé', {
+          description: 'Le prestataire doit signer le mandat de facturation'
+        });
+        return;
+      }
+
+      if (!provider.formation_completed) {
+        toast.error('Formation non complétée', {
+          description: 'Le prestataire doit terminer sa formation'
+        });
+        return;
+      }
+
+      if (!provider.identity_verified) {
+        toast.error('Identité non vérifiée', {
+          description: 'L\'identité du prestataire doit être vérifiée'
+        });
+        return;
+      }
+
+      // Tout est OK, activer le prestataire
       const { error } = await supabase
         .from('providers')
         .update({
@@ -110,6 +170,25 @@ const ProviderOnboardingManager = () => {
         .eq('id', providerId);
 
       if (error) throw error;
+
+      // Notifier le prestataire
+      const { data: providerData } = await supabase
+        .from('providers')
+        .select('user_id, business_name')
+        .eq('id', providerId)
+        .single();
+
+      if (providerData) {
+        await supabase
+          .from('communications')
+          .insert({
+            type: 'email',
+            destinataire_id: providerData.user_id,
+            sujet: 'Compte activé - Bienvenue sur Bikawo !',
+            contenu: `Félicitations ${providerData.business_name} !\n\nVotre compte prestataire est maintenant actif. Vous pouvez commencer à recevoir des missions.\n\nBienvenue dans la famille Bikawo !`,
+            status: 'en_attente'
+          });
+      }
 
       toast.success('Prestataire activé !', {
         description: 'Il peut maintenant recevoir des missions'
@@ -161,18 +240,41 @@ const ProviderOnboardingManager = () => {
   const filterProviders = (status: string) => {
     switch (status) {
       case 'pending_documents':
-        return providers.filter(p => p.status === 'pending' || p.status === 'documents_pending');
+        // Documents en attente de validation
+        return providers.filter(p => 
+          (p.status === 'pending_validation' || p.status === 'documents_pending') && 
+          !p.mandat_facturation_accepte
+        );
       case 'pending_mandate':
-        return providers.filter(p => p.status === 'active' && !p.mandat_facturation_accepte);
+        // Documents validés, mandat en attente
+        return providers.filter(p => 
+          (p.status === 'documents_validated' || p.status === 'active') && 
+          !p.mandat_facturation_accepte
+        );
       case 'pending_training':
-        return providers.filter(p => p.mandat_facturation_accepte && !p.formation_completed);
+        // Mandat signé, formation en attente
+        return providers.filter(p => 
+          p.mandat_facturation_accepte && 
+          !p.formation_completed
+        );
       case 'pending_identity':
+        // Formation complétée, identité en attente
         return providers.filter(p => 
           p.mandat_facturation_accepte && 
           p.formation_completed && 
+          !p.is_verified &&
+          p.status !== 'active'
+        );
+      case 'ready_activation':
+        // Tout complété, prêt à activer
+        return providers.filter(p => 
+          p.mandat_facturation_accepte && 
+          p.formation_completed && 
+          p.is_verified &&
           p.status !== 'active'
         );
       case 'activated':
+        // Activés
         return providers.filter(p => p.status === 'active' && p.is_verified);
       default:
         return providers;
@@ -206,7 +308,7 @@ const ProviderOnboardingManager = () => {
       </Card>
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="pending_documents">
             Documents ({filterProviders('pending_documents').length})
           </TabsTrigger>
@@ -217,14 +319,17 @@ const ProviderOnboardingManager = () => {
             Formation ({filterProviders('pending_training').length})
           </TabsTrigger>
           <TabsTrigger value="pending_identity">
-            Identité ({filterProviders('ready_activation').length})
+            Identité ({filterProviders('pending_identity').length})
           </TabsTrigger>
           <TabsTrigger value="ready_activation">
+            À activer ({filterProviders('ready_activation').length})
+          </TabsTrigger>
+          <TabsTrigger value="activated">
             Activés ({filterProviders('activated').length})
           </TabsTrigger>
         </TabsList>
 
-        {['pending_documents', 'pending_mandate', 'pending_training', 'pending_identity', 'ready_activation'].map(tab => (
+        {['pending_documents', 'pending_mandate', 'pending_training', 'pending_identity', 'ready_activation', 'activated'].map(tab => (
           <TabsContent key={tab} value={tab} className="space-y-4">
             {filterProviders(tab).length === 0 ? (
               <Card>
@@ -344,6 +449,15 @@ const ProviderOnboardingManager = () => {
                           </Dialog>
                         )}
                         {tab === 'ready_activation' && (
+                          <Button
+                            size="sm"
+                            onClick={() => activateProvider(provider.id)}
+                          >
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Activer le prestataire
+                          </Button>
+                        )}
+                        {tab === 'activated' && (
                           <Badge variant="default" className="gap-1">
                             <CheckCircle className="h-3 w-3" />
                             Prestataire actif

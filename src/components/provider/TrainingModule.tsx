@@ -174,6 +174,19 @@ export const TrainingModule = ({ providerId, onCompleted }: TrainingModuleProps)
 
         if (error) throw error;
 
+        // Notifier l'admin que la formation est complétée
+        await supabase
+          .from('communications')
+          .insert({
+            type: 'notification',
+            destinataire_id: null,
+            sujet: 'Formation prestataire complétée',
+            contenu: `Un prestataire a terminé sa formation avec succès (${Math.round(finalScore)}%). Vérification d'identité requise. Provider ID: ${providerId}`,
+            related_entity_type: 'provider',
+            related_entity_id: providerId,
+            status: 'en_attente'
+          });
+
         toast.success('Formation réussie !', {
           description: `Vous avez obtenu ${correctCount}/${QUIZ_QUESTIONS.length} (${Math.round(finalScore)}%)`
         });

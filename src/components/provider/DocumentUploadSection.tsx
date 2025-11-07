@@ -104,6 +104,39 @@ export const DocumentUploadSection = ({ providerId, onDocumentsUpdated }: Docume
 
       if (dbError) throw dbError;
 
+      // Vérifier si tous les documents requis sont uploadés
+      const allRequiredDocs = DOCUMENT_TYPES.filter(dt => dt.required);
+      const uploadedDocs = [...documents, { document_type: documentType }];
+      const allRequiredUploaded = allRequiredDocs.every(reqDoc => 
+        uploadedDocs.some(doc => doc.document_type === reqDoc.value)
+      );
+
+      // Si tous les documents requis sont uploadés, mettre à jour le status provider
+      if (allRequiredUploaded) {
+        const { error: statusError } = await supabase
+          .from('providers')
+          .update({
+            documents_submitted: true,
+            status: 'documents_pending'
+          })
+          .eq('id', providerId);
+
+        if (statusError) console.error('Status update error:', statusError);
+
+        // Notifier l'admin via communications table
+        await supabase
+          .from('communications')
+          .insert({
+            type: 'notification',
+            destinataire_id: null, // Admin notification
+            sujet: 'Nouveaux documents à valider',
+            contenu: `Un prestataire a soumis tous ses documents et attend validation. Provider ID: ${providerId}`,
+            related_entity_type: 'provider',
+            related_entity_id: providerId,
+            status: 'en_attente'
+          });
+      }
+
       toast.success('Document uploadé avec succès');
       loadDocuments();
       onDocumentsUpdated?.();
