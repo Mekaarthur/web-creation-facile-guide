@@ -49,6 +49,8 @@ const ProviderDocuments = () => {
   const [provider, setProvider] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [submitting, setSubmitting] = useState(false);
 
   const documentRequirements: DocumentRequirement[] = [
     {
@@ -153,6 +155,7 @@ const ProviderDocuments = () => {
     if (!provider || !file) return;
 
     setUploading(documentType);
+    setUploadProgress(0);
 
     try {
       // Vérifier la taille du fichier (max 10MB)
@@ -165,6 +168,9 @@ const ProviderDocuments = () => {
       if (!allowedTypes.includes(file.type)) {
         throw new Error('Seuls les fichiers PDF, JPEG et PNG sont acceptés');
       }
+
+      // Simuler la progression pendant l'upload
+      setUploadProgress(20);
 
       // Si un document de ce type existe déjà, on le remplace
       const existingDoc = getDocumentForType(documentType);
@@ -179,12 +185,16 @@ const ProviderDocuments = () => {
       const fileExt = file.name.split('.').pop();
       const fileName = `${user?.id}/${documentType}_${Date.now()}.${fileExt}`;
 
+      setUploadProgress(40);
+
       // Upload vers Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('provider-documents')
         .upload(fileName, file);
 
       if (uploadError) throw uploadError;
+
+      setUploadProgress(70);
 
       // Obtenir l'URL publique
       const { data: urlData } = supabase.storage
@@ -217,12 +227,14 @@ const ProviderDocuments = () => {
         if (dbError) throw dbError;
       }
 
+      setUploadProgress(100);
+
       toast({
         title: 'Document téléchargé',
         description: 'Votre document a été envoyé et est en cours de vérification',
       });
 
-      loadProviderDocuments();
+      await loadProviderDocuments();
     } catch (error: any) {
       console.error('Erreur upload:', error);
       toast({
@@ -232,6 +244,50 @@ const ProviderDocuments = () => {
       });
     } finally {
       setUploading(null);
+      setUploadProgress(0);
+    }
+  };
+
+  const submitAllDocuments = async () => {
+    setSubmitting(true);
+    try {
+      const requiredDocs = documentRequirements.filter(req => req.required);
+      const missingDocs = requiredDocs.filter(req => !getDocumentForType(req.type));
+      
+      if (missingDocs.length > 0) {
+        toast({
+          title: "Documents manquants",
+          description: `Il manque ${missingDocs.length} document(s) requis`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Mettre à jour le statut du provider pour indiquer que les documents sont soumis
+      const { error } = await supabase
+        .from('providers')
+        .update({ 
+          documents_submitted: true,
+          documents_submitted_at: new Date().toISOString()
+        })
+        .eq('id', provider.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Documents soumis avec succès ! 🎉",
+        description: "Vos documents seront examinés sous 48h ouvrées",
+      });
+
+      await loadProviderDocuments();
+    } catch (error: any) {
+      toast({
+        title: "Erreur de soumission",
+        description: error.message || "Impossible de soumettre les documents",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
     }
   };
   const deleteDocument = async (doc: Document) => {
@@ -370,7 +426,15 @@ const ProviderDocuments = () => {
                         {requirement.description}
                       </p>
                       
-                      {document ? (
+                      {uploading === requirement.type ? (
+                        <div className="space-y-2 w-full">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">Téléchargement en cours...</span>
+                            <span className="font-medium">{uploadProgress}%</span>
+                          </div>
+                          <Progress value={uploadProgress} className="w-full" />
+                        </div>
+                      ) : document ? (
                         <div className="flex items-center gap-3">
                           <Badge className={getStatusColor(document.status)}>
                             {getStatusIcon(document.status)}
@@ -453,6 +517,45 @@ const ProviderDocuments = () => {
           );
         })}
       </div>
+
+      {/* Bouton de soumission */}
+      {getCompletionPercentage() === 100 && (
+        <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-lg">Tous vos documents sont prêts !</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Soumettez vos documents pour validation par notre équipe
+                  </p>
+                </div>
+              </div>
+              <Button 
+                size="lg" 
+                onClick={submitAllDocuments}
+                disabled={submitting}
+                className="gap-2"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Soumission...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4" />
+                    Soumettre tous mes documents
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Informations importantes */}
       <Card className="bg-blue-50 border-blue-200">
