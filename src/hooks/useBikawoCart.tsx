@@ -238,7 +238,17 @@ export const useBikawoCart = () => {
     toast({
       title: compatibility.isCompatible ? "✅ Service ajouté" : "⚠️ Service ajouté (réservation séparée)",
       description: `${item.serviceName} ajouté${!compatibility.isCompatible ? ' dans une réservation séparée' : ''}.`,
+      duration: 4000,
     });
+
+    // Animer l'icône du panier
+    setTimeout(() => {
+      const cartButton = document.querySelector('[data-cart-indicator]');
+      if (cartButton) {
+        cartButton.classList.add('animate-bounce');
+        setTimeout(() => cartButton.classList.remove('animate-bounce'), 1000);
+      }
+    }, 100);
   }, [cartItems, toast, saveToSession, generateSeparatedBookings]);
 
   // Retirer un item du panier

@@ -27,24 +27,26 @@ const BikawoCartIndicator = ({
   const bookingsCount = getSeparatedBookingsCount();
 
   if (itemCount === 0) {
-    return (
-      <Button 
-        variant="outline" 
-        size="sm" 
-        className={`relative ${className} border-primary/30 hover:bg-primary/10`}
-        onClick={onOpenCart}
-      >
-        <ShoppingCart className="h-5 w-5 text-primary" />
-      </Button>
-    );
+  return (
+    <Button 
+      variant="outline" 
+      size="sm" 
+      className={`relative ${className} border-primary/30 hover:bg-primary/10 transition-all duration-300`}
+      onClick={onOpenCart}
+      data-cart-indicator
+    >
+      <ShoppingCart className="h-5 w-5 text-primary" />
+    </Button>
+  );
   }
 
   return (
     <Button 
       variant="outline" 
       size="sm" 
-      className={`relative ${className} border-primary/30 hover:bg-primary/10`}
+      className={`relative ${className} border-primary/30 hover:bg-primary/10 transition-all duration-300`}
       onClick={onOpenCart}
+      data-cart-indicator
     >
       <div className="flex items-center gap-2">
         <div className="relative">

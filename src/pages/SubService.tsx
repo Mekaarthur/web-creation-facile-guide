@@ -4,6 +4,7 @@ import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ServiceBreadcrumb from "@/components/ServiceBreadcrumb";
+import FloatingCartButton from "@/components/FloatingCartButton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -118,6 +119,8 @@ const SubServicePage = () => {
         service={{ name: displayTitle, description: displayDescription, price: sub.price, category: currentCategory.key }}
         packageTitle={currentCategory.packageTitle}
       />
+
+      <FloatingCartButton />
 
       <Footer />
     </div>
