@@ -131,11 +131,11 @@ export const bookingSchema = z.object({
 
 // Profil prestataire
 export const providerProfileSchema = z.object({
-  businessName: nameSchema,
+  businessName: nameSchema.optional().or(z.literal('')),
   description: messageSchema,
-  location: addressSchema,
-  postalCode: postalCodeSchema,
-  hourlyRate: amountSchema,
+  location: addressSchema.optional().or(z.literal('')),
+  postalCode: postalCodeSchema.optional().or(z.literal('')),
+  hourlyRate: amountSchema.optional(),
   services: z.array(z.string().uuid()).optional(),
 });
 

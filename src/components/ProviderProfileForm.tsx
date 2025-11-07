@@ -48,11 +48,19 @@ const ProviderProfileForm = () => {
   const { handleSubmit: secureSubmit, isSubmitting, errors } = useSecureForm({
     schema: providerProfileSchema,
     onSubmit: async (validatedData) => {
+      console.log('Données validées:', validatedData);
       await executeSaveProfile(validatedData);
     },
     rateLimitKey: `provider_profile_${user?.id}`,
     rateLimitAction: 'update_provider_profile'
   });
+
+  // Afficher les erreurs de validation dans la console
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      console.error('Erreurs de validation:', errors);
+    }
+  }, [errors]);
 
   useEffect(() => {
     if (user) {
@@ -161,15 +169,22 @@ const ProviderProfileForm = () => {
   };
 
   const saveProfile = () => {
-    // Trigger secure validation
-    secureSubmit({
-      businessName: profile.business_name || '',
-      description: profile.description || '',
-      location: `${profile.city} ${profile.postal_code}` || '',
-      postalCode: profile.postal_code || '',
-      hourlyRate: profile.hourly_rate || 0,
+    // Prepare data for validation
+    const dataToValidate = {
+      businessName: profile.business_name?.trim() || '',
+      description: profile.description?.trim() || '',
+      location: profile.city && profile.postal_code 
+        ? `${profile.city} ${profile.postal_code}`.trim() 
+        : profile.city?.trim() || '',
+      postalCode: profile.postal_code?.trim() || '',
+      hourlyRate: profile.hourly_rate || 22,
       services: [],
-    });
+    };
+
+    console.log('Données envoyées pour validation:', dataToValidate);
+    
+    // Trigger secure validation
+    secureSubmit(dataToValidate);
   };
 
   const executeSaveProfile = async (validatedData: z.infer<typeof providerProfileSchema>) => {
@@ -482,11 +497,16 @@ const ProviderProfileForm = () => {
                 required
               />
               {errors.description && (
-                <p className="text-sm text-destructive">{errors.description}</p>
+                <p className="text-sm text-destructive font-medium">{errors.description}</p>
               )}
               <p className="text-xs text-muted-foreground">
                 {profile.description?.length || 0}/1000 caractères - Cette description sera visible par les clients.
               </p>
+              {(!profile.description || profile.description.length < 10) && (
+                <p className="text-sm text-amber-600 dark:text-amber-500">
+                  ⚠️ Minimum 10 caractères requis pour la description
+                </p>
+              )}
             </div>
 
           </CardContent>
