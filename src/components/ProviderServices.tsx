@@ -28,6 +28,8 @@ interface ProviderSubService {
   universe_id: string;
   sub_service_id: string;
   is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 const serviceCategories = [
@@ -124,11 +126,11 @@ const ProviderServices = () => {
 
         // Load provider's selected sub-services
         const { data: providerSubServicesData } = await supabase
-          .from('provider_sub_services')
+          .from('provider_sub_services' as any)
           .select('*')
           .eq('provider_id', providerData.id);
 
-        setProviderSubServices(providerSubServicesData || []);
+        setProviderSubServices((providerSubServicesData as any) || []);
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -148,7 +150,7 @@ const ProviderServices = () => {
     try {
       if (isActive) {
         const { error } = await supabase
-          .from('provider_sub_services')
+          .from('provider_sub_services' as any)
           .insert({
             provider_id: provider.id,
             universe_id: universeId,
@@ -164,7 +166,7 @@ const ProviderServices = () => {
         });
       } else {
         const { error } = await supabase
-          .from('provider_sub_services')
+          .from('provider_sub_services' as any)
           .delete()
           .eq('provider_id', provider.id)
           .eq('universe_id', universeId)
@@ -395,14 +397,14 @@ const ProviderServices = () => {
         <CardContent className="p-6">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center">
-              <AlertCircle className="h-6 w-6 text-white" />
+              <Info className="h-6 w-6 text-white" />
             </div>
             <div>
               <h3 className="font-semibold mb-2">Comment ça marche ?</h3>
               <ul className="text-sm text-muted-foreground space-y-1">
                 <li>• Sélectionnez uniquement les services que vous maîtrisez</li>
                 <li>• Vous ne recevrez que les missions correspondant à vos services actifs</li>
-                <li>• Personnalisez vos tarifs selon votre expertise</li>
+                <li>• Les tarifs affichés sont fixes et calculés automatiquement</li>
                 <li>• Plus vous avez de services actifs, plus vous recevez d'opportunités</li>
               </ul>
             </div>

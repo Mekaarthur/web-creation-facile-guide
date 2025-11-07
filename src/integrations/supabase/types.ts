@@ -3077,6 +3077,51 @@ export type Database = {
           },
         ]
       }
+      provider_sub_services: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          provider_id: string
+          sub_service_id: string
+          universe_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          provider_id: string
+          sub_service_id: string
+          universe_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          provider_id?: string
+          sub_service_id?: string
+          universe_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_sub_services_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_sub_services_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       providers: {
         Row: {
           acceptance_rate: number | null
