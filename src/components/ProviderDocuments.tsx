@@ -51,6 +51,7 @@ const ProviderDocuments = () => {
   const [uploading, setUploading] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [submitting, setSubmitting] = useState(false);
+  const [previewDocId, setPreviewDocId] = useState<string | null>(null);
 
   const documentRequirements: DocumentRequirement[] = [
     {
@@ -348,6 +349,8 @@ const ProviderDocuments = () => {
       default: return <FileText className="w-4 h-4" />;
     }
   };
+  const isImage = (name: string) => /\.(png|jpe?g|webp)$/i.test(name);
+  const isPdf = (name: string) => /\.(pdf)$/i.test(name);
 
   const getCompletionPercentage = () => {
     const requiredDocs = documentRequirements.filter(req => req.required);
@@ -449,26 +452,47 @@ const ProviderDocuments = () => {
                               />
                             </div>
                           )}
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => viewDocument(document)}
-                              className="gap-1"
-                            >
-                              <Eye className="w-4 h-4" />
-                              Voir
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => deleteDocument(document)}
-                              className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-50"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                              Supprimer
-                            </Button>
-                          </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setPreviewDocId(previewDocId === document.id ? null : document.id)}
+                                className="gap-1"
+                              >
+                                <Eye className="w-4 h-4" />
+                                {previewDocId === document.id ? 'Masquer' : 'Aperçu'}
+                              </Button>
+                              <Button variant="outline" size="sm" asChild className="gap-1">
+                                <a href={document.file_url} target="_blank" rel="noopener noreferrer">
+                                  Télécharger
+                                </a>
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => deleteDocument(document)}
+                                className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                                Supprimer
+                              </Button>
+                            </div>
+
+                            {previewDocId === document.id && (
+                              <div className="mt-3 border rounded-lg overflow-hidden">
+                                {isImage(document.file_name) ? (
+                                  <img src={document.file_url} alt={document.file_name} className="w-full max-h-[480px] object-contain bg-muted" />
+                                ) : isPdf(document.file_name) ? (
+                                  <iframe
+                                    src={document.file_url}
+                                    className="w-full h-[520px] bg-muted"
+                                    title={`Aperçu ${document.file_name}`}
+                                  />
+                                ) : (
+                                  <p className="text-sm text-muted-foreground p-4">Aperçu non disponible pour ce format. Utilisez Télécharger.</p>
+                                )}
+                              </div>
+                            )}
                         </div>
                       ) : (
                         <p className="text-sm text-muted-foreground">Aucun document téléchargé</p>
