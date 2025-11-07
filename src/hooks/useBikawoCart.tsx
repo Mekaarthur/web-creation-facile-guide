@@ -57,33 +57,53 @@ export const useBikawoCart = () => {
 
   // Charger le panier depuis sessionStorage uniquement (non-persistant)
   useEffect(() => {
-    const sessionCart = sessionStorage.getItem('bikawo-session-cart');
-    if (sessionCart) {
-      try {
-        const parsed = JSON.parse(sessionCart);
-        setCartItems(parsed);
-        generateSeparatedBookings(parsed);
-      } catch (error) {
-        console.error('Erreur lors du chargement du panier session:', error);
-        // En cas d'erreur, on vide le panier
-        sessionStorage.removeItem('bikawo-session-cart');
+    const loadFromSession = () => {
+      const sessionCart = sessionStorage.getItem('bikawo-session-cart');
+      if (sessionCart) {
+        try {
+          const parsed = JSON.parse(sessionCart) as BikawoCartItem[];
+          // Normaliser les dates
+          const normalized = parsed.map((it) => {
+            const raw = (it as any)?.timeSlot?.date as any;
+            const date = raw instanceof Date ? raw : new Date(raw);
+            return {
+              ...it,
+              timeSlot: { ...it.timeSlot, date },
+            } as BikawoCartItem;
+          });
+          setCartItems(normalized);
+          generateSeparatedBookings(normalized);
+        } catch (error) {
+          console.error('Erreur lors du chargement du panier session:', error);
+          sessionStorage.removeItem('bikawo-session-cart');
+        }
       }
-    }
+    };
+
+    loadFromSession();
+
+    // Synchronisation multi-composants / onglets
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'bikawo-session-cart') loadFromSession();
+    };
+    const onCustom = () => loadFromSession();
+
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('bikawo-cart-updated', onCustom as any);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('bikawo-cart-updated', onCustom as any);
+    };
   }, []);
 
-  // Vider automatiquement le panier au démarrage de l'application
+  // Session active flag (sans suppression auto)
   useEffect(() => {
-    const shouldClearCart = !sessionStorage.getItem('bikawo-cart-session-active');
-    if (shouldClearCart) {
-      sessionStorage.removeItem('bikawo-session-cart');
+    if (!sessionStorage.getItem('bikawo-cart-session-active')) {
       sessionStorage.setItem('bikawo-cart-session-active', 'true');
     }
-
-    // Nettoyer la session à la fermeture de l'onglet
     const handleBeforeUnload = () => {
       sessionStorage.removeItem('bikawo-cart-session-active');
     };
-
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
@@ -91,6 +111,7 @@ export const useBikawoCart = () => {
   // Sauvegarder dans sessionStorage
   const saveToSession = useCallback((items: BikawoCartItem[]) => {
     sessionStorage.setItem('bikawo-session-cart', JSON.stringify(items));
+    window.dispatchEvent(new Event('bikawo-cart-updated'));
   }, []);
 
   // Vérifier la compatibilité entre services
@@ -138,17 +159,15 @@ export const useBikawoCart = () => {
 
   // Vérifier si deux créneaux horaires se chevauchent
   const isTimeSlotConflicting = (slot1: BikawoCartItem['timeSlot'], slot2: BikawoCartItem['timeSlot']): boolean => {
-    const date1 = slot1.date.toDateString();
-    const date2 = slot2.date.toDateString();
-    
-    // Vérifier si c'est le même jour
+    const d1 = (slot1.date instanceof Date) ? slot1.date : new Date(slot1.date as any);
+    const d2 = (slot2.date instanceof Date) ? slot2.date : new Date(slot2.date as any);
+    const date1 = d1.toDateString();
+    const date2 = d2.toDateString();
     if (date1 !== date2) return false;
-
     const start1 = new Date(`${date1} ${slot1.startTime}`);
     const end1 = new Date(`${date1} ${slot1.endTime}`);
     const start2 = new Date(`${date2} ${slot2.startTime}`);
     const end2 = new Date(`${date2} ${slot2.endTime}`);
-
     return (start1 < end2 && start2 < end1);
   };
 
