@@ -31,56 +31,10 @@ interface ProviderData {
   city?: string;
   avatar_url?: string;
   hourly_rate?: number;
-  service_zones?: string[];
-  selected_services?: string[];
-  availability?: {
-    monday?: { start: string; end: string; available: boolean };
-    tuesday?: { start: string; end: string; available: boolean };
-    wednesday?: { start: string; end: string; available: boolean };
-    thursday?: { start: string; end: string; available: boolean };
-    friday?: { start: string; end: string; available: boolean };
-    saturday?: { start: string; end: string; available: boolean };
-    sunday?: { start: string; end: string; available: boolean };
-  };
   certifications?: string;
   siret_number?: string;
   is_verified?: boolean;
 }
-
-// Zones géographiques disponibles (Île-de-France)
-const ZONES_INTERVENTION = [
-  { code: '75', name: 'Paris (75)' },
-  { code: '77', name: 'Seine-et-Marne (77)' },
-  { code: '78', name: 'Yvelines (78)' },
-  { code: '91', name: 'Essonne (91)' },
-  { code: '92', name: 'Hauts-de-Seine (92)' },
-  { code: '93', name: 'Seine-Saint-Denis (93)' },
-  { code: '94', name: 'Val-de-Marne (94)' },
-  { code: '95', name: 'Val-d\'Oise (95)' },
-  { code: '60', name: 'Oise (60)' },
-];
-
-// Services disponibles
-const SERVICES_DISPONIBLES = [
-  { key: 'kids', name: 'Bika Kids - Services aux enfants', icon: '🧸' },
-  { key: 'maison', name: 'Bika Maison - Gestion du foyer', icon: '🏠' },
-  { key: 'vie', name: 'Bika Vie - Conciergerie complète', icon: '🔑' },
-  { key: 'travel', name: 'Bika Travel - Assistance voyage', icon: '✈️' },
-  { key: 'animals', name: 'Bika Animal - Univers animalier', icon: '🐾' },
-  { key: 'seniors', name: 'Bika Seniors - Accompagnement seniors', icon: '👴' },
-  { key: 'pro', name: 'Bika Pro - Services aux entreprises', icon: '💼' },
-  { key: 'plus', name: 'Bika Plus - Services premium', icon: '💎' },
-];
-
-const JOURS_SEMAINE = [
-  { key: 'monday', name: 'Lundi' },
-  { key: 'tuesday', name: 'Mardi' },
-  { key: 'wednesday', name: 'Mercredi' },
-  { key: 'thursday', name: 'Jeudi' },
-  { key: 'friday', name: 'Vendredi' },
-  { key: 'saturday', name: 'Samedi' },
-  { key: 'sunday', name: 'Dimanche' },
-];
 
 const ProviderProfileForm = () => {
   const { user } = useAuth();
@@ -135,8 +89,6 @@ const ProviderProfileForm = () => {
       const combinedProfile = {
         ...profileData,
         ...providerData,
-        service_zones: providerData?.postal_codes || [],
-        selected_services: providerData?.service_zones || [],
       };
 
       setProfile(combinedProfile);
@@ -158,36 +110,6 @@ const ProviderProfileForm = () => {
     }));
   };
 
-  const handleZoneToggle = (zoneCode: string) => {
-    const currentZones = profile.service_zones || [];
-    const newZones = currentZones.includes(zoneCode)
-      ? currentZones.filter(z => z !== zoneCode)
-      : [...currentZones, zoneCode];
-    
-    handleInputChange('service_zones', newZones);
-  };
-
-  const handleServiceToggle = (serviceKey: string) => {
-    const currentServices = profile.selected_services || [];
-    const newServices = currentServices.includes(serviceKey)
-      ? currentServices.filter(s => s !== serviceKey)
-      : [...currentServices, serviceKey];
-    
-    handleInputChange('selected_services', newServices);
-  };
-
-  const handleAvailabilityChange = (day: string, field: 'start' | 'end' | 'available', value: string | boolean) => {
-    setProfile(prev => ({
-      ...prev,
-      availability: {
-        ...prev.availability,
-        [day]: {
-          ...prev.availability?.[day],
-          [field]: value
-        }
-      }
-    }));
-  };
 
   const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -233,8 +155,6 @@ const ProviderProfileForm = () => {
       case 1:
         return !!(profile.first_name && profile.last_name && profile.email && profile.phone);
       case 2:
-        return !!(profile.service_zones?.length && profile.selected_services?.length);
-      case 3:
         return !!(profile.description);
       default:
         return true;
@@ -249,7 +169,7 @@ const ProviderProfileForm = () => {
       location: `${profile.city} ${profile.postal_code}` || '',
       postalCode: profile.postal_code || '',
       hourlyRate: profile.hourly_rate || 0,
-      services: profile.selected_services || [],
+      services: [],
     });
   };
 
@@ -281,8 +201,6 @@ const ProviderProfileForm = () => {
           business_name: validatedData.businessName,
           description: validatedData.description,
           hourly_rate: 22,
-          postal_codes: profile.service_zones,
-          service_categories: validatedData.services,
           location: validatedData.location,
           siret_number: profile.siret_number,
           updated_at: new Date().toISOString(),
@@ -311,7 +229,7 @@ const ProviderProfileForm = () => {
 
   const nextStep = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep(prev => Math.min(prev + 1, 4));
+      setCurrentStep(prev => Math.min(prev + 1, 2));
     } else {
       toast({
         title: "Informations manquantes",
@@ -335,7 +253,7 @@ const ProviderProfileForm = () => {
 
   const renderStepIndicator = () => (
     <div className="flex items-center justify-center space-x-4 mb-8">
-      {[1, 2, 3, 4].map((step) => (
+      {[1, 2].map((step) => (
         <div key={step} className="flex items-center">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
             currentStep >= step 
@@ -348,7 +266,7 @@ const ProviderProfileForm = () => {
               step
             )}
           </div>
-          {step < 4 && (
+          {step < 2 && (
             <div className={`w-12 h-0.5 ${
               currentStep > step ? 'bg-primary' : 'bg-muted'
             }`} />
@@ -532,108 +450,8 @@ const ProviderProfileForm = () => {
         </Card>
       )}
 
-      {/* Étape 2: Zones et Services */}
+      {/* Étape 2: Présentation */}
       {currentStep === 2 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <MapPin className="h-5 w-5" />
-              <span>Zones d'intervention et services</span>
-            </CardTitle>
-            <CardDescription>
-              Définissez vos zones d'intervention et les types de services que vous proposez
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Zones d'intervention */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <MapPin className="h-5 w-5" />
-                <Label className="text-base font-medium">Zones d'intervention *</Label>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Sélectionnez les départements où vous pouvez intervenir
-              </p>
-              
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {ZONES_INTERVENTION.map((zone) => (
-                  <div key={zone.code} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`zone-${zone.code}`}
-                      checked={profile.service_zones?.includes(zone.code) || false}
-                      onCheckedChange={() => handleZoneToggle(zone.code)}
-                    />
-                    <Label htmlFor={`zone-${zone.code}`} className="text-sm font-normal">
-                      {zone.name}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-              
-              {profile.service_zones?.length ? (
-                <div className="flex flex-wrap gap-2">
-                  {profile.service_zones.map((zoneCode) => {
-                    const zone = ZONES_INTERVENTION.find(z => z.code === zoneCode);
-                    return zone ? (
-                      <Badge key={zoneCode} variant="secondary">
-                        {zone.name}
-                      </Badge>
-                    ) : null;
-                  })}
-                </div>
-              ) : null}
-            </div>
-
-            <Separator />
-
-            {/* Types de services */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Briefcase className="h-5 w-5" />
-                <Label className="text-base font-medium">Types de services proposés *</Label>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Choisissez les catégories de services que vous souhaitez proposer
-              </p>
-              
-              <div className="grid gap-3">
-                {SERVICES_DISPONIBLES.map((service) => (
-                  <div key={service.key} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-accent">
-                    <Checkbox
-                      id={`service-${service.key}`}
-                      checked={profile.selected_services?.includes(service.key) || false}
-                      onCheckedChange={() => handleServiceToggle(service.key)}
-                    />
-                    <div className="flex-1">
-                      <Label htmlFor={`service-${service.key}`} className="text-sm font-medium cursor-pointer">
-                        <span className="mr-2">{service.icon}</span>
-                        {service.name}
-                      </Label>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              {profile.selected_services?.length ? (
-                <div className="flex flex-wrap gap-2">
-                  {profile.selected_services.map((serviceKey) => {
-                    const service = SERVICES_DISPONIBLES.find(s => s.key === serviceKey);
-                    return service ? (
-                      <Badge key={serviceKey} variant="outline">
-                        <span className="mr-1">{service.icon}</span>
-                        {service.name.split(' - ')[0]}
-                      </Badge>
-                    ) : null;
-                  })}
-                </div>
-              ) : null}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Étape 3: Présentation */}
-      {currentStep === 3 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -681,90 +499,6 @@ const ProviderProfileForm = () => {
         </Card>
       )}
 
-      {/* Étape 4: Disponibilités */}
-      {currentStep === 4 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Clock className="h-5 w-5" />
-              <span>Disponibilités</span>
-            </CardTitle>
-            <CardDescription>
-              Définissez vos créneaux de disponibilité pour recevoir des demandes
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-4">
-              {JOURS_SEMAINE.map((jour) => (
-                <div key={jour.key} className="flex items-center space-x-4 p-4 border rounded-lg">
-                  <div className="flex items-center space-x-2 min-w-[120px]">
-                    <Checkbox
-                      id={`available-${jour.key}`}
-                      checked={profile.availability?.[jour.key]?.available || false}
-                      onCheckedChange={(checked) => 
-                        handleAvailabilityChange(jour.key, 'available', checked)
-                      }
-                    />
-                    <Label htmlFor={`available-${jour.key}`} className="font-medium">
-                      {jour.name}
-                    </Label>
-                  </div>
-
-                  {profile.availability?.[jour.key]?.available && (
-                    <div className="flex items-center space-x-2">
-                      <Label className="text-sm">De</Label>
-                      <Select
-                        value={profile.availability[jour.key]?.start || '08:00'}
-                        onValueChange={(value) => 
-                          handleAvailabilityChange(jour.key, 'start', value)
-                        }
-                      >
-                        <SelectTrigger className="w-24">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Array.from({length: 24}, (_, i) => (
-                            <SelectItem key={i} value={`${i.toString().padStart(2, '0')}:00`}>
-                              {`${i.toString().padStart(2, '0')}:00`}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-
-                      <Label className="text-sm">à</Label>
-                      <Select
-                        value={profile.availability[jour.key]?.end || '18:00'}
-                        onValueChange={(value) => 
-                          handleAvailabilityChange(jour.key, 'end', value)
-                        }
-                      >
-                        <SelectTrigger className="w-24">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Array.from({length: 24}, (_, i) => (
-                            <SelectItem key={i} value={`${i.toString().padStart(2, '0')}:00`}>
-                              {`${i.toString().padStart(2, '0')}:00`}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            <div className="p-4 bg-muted/50 rounded-lg">
-              <p className="text-sm text-muted-foreground">
-                💡 <strong>Astuce :</strong> Plus vous êtes disponible, plus vous recevrez de demandes. 
-                Vous pourrez toujours refuser une mission si elle ne vous convient pas.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Navigation */}
       <div className="flex justify-between items-center">
         <Button 
@@ -776,7 +510,7 @@ const ProviderProfileForm = () => {
         </Button>
 
         <div className="flex items-center space-x-2">
-          {currentStep < 4 ? (
+          {currentStep < 2 ? (
             <Button onClick={nextStep}>
               Suivant
             </Button>

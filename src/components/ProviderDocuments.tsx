@@ -20,7 +20,8 @@ import {
   Building,
   User as UserIcon,
   Loader2,
-  Trash2
+  Trash2,
+  Award
 } from 'lucide-react';
 
 interface Document {
@@ -72,9 +73,16 @@ const ProviderDocuments = () => {
       required: true
     },
     {
-      type: 'insurance_document',
-      label: 'Assurance professionnelle',
-      description: 'Attestation d\'assurance responsabilité civile professionnelle',
+      type: 'diploma',
+      label: 'Diplôme',
+      description: 'Diplôme(s) ou certificat(s) de formation pertinent(s)',
+      icon: Award,
+      required: false
+    },
+    {
+      type: 'certification',
+      label: 'Certification ou accréditation',
+      description: 'Certification professionnelle ou accréditation officielle',
       icon: Shield,
       required: false
     },
