@@ -350,7 +350,7 @@ const ProviderPerformanceRewards = () => {
               <div className="space-y-1">
                 <h4 className="font-semibold">Or - 150€</h4>
                 <p className="text-sm text-muted-foreground">
-                  50+ missions OU 400+ heures • Note ≥ 4.5/5 • 6+ mois d'ancienneté
+                  400+ heures • Note ≥ 4.5/5 • 6+ mois d'ancienneté
                 </p>
               </div>
             </div>
@@ -360,7 +360,7 @@ const ProviderPerformanceRewards = () => {
               <div className="space-y-1">
                 <h4 className="font-semibold">Argent - 100€</h4>
                 <p className="text-sm text-muted-foreground">
-                  30+ missions OU 240+ heures • Note ≥ 4.3/5 • 6+ mois d'ancienneté
+                  240+ heures • Note ≥ 4.3/5 • 6+ mois d'ancienneté
                 </p>
               </div>
             </div>
@@ -370,7 +370,7 @@ const ProviderPerformanceRewards = () => {
               <div className="space-y-1">
                 <h4 className="font-semibold">Bronze - 50€</h4>
                 <p className="text-sm text-muted-foreground">
-                  15+ missions OU 120+ heures • Note ≥ 4.0/5 • 6+ mois d'ancienneté
+                  120+ heures • Note ≥ 4.0/5 • 6+ mois d'ancienneté
                 </p>
               </div>
             </div>
