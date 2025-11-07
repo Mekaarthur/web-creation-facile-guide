@@ -435,31 +435,45 @@ const ProviderDocuments = () => {
                           <Progress value={uploadProgress} className="w-full" />
                         </div>
                       ) : document ? (
-                        <div className="flex items-center gap-3">
-                          <Badge className={getStatusColor(document.status)}>
-                            {getStatusIcon(document.status)}
-                            <span className="ml-1">{getStatusLabel(document.status)}</span>
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            {document.file_name}
-                          </span>
-                          <div className="flex items-center gap-1">
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-3 flex-wrap">
+                            <Badge className={getStatusColor(document.status)}>
+                              {getStatusIcon(document.status)}
+                              <span className="ml-1">{getStatusLabel(document.status)}</span>
+                            </Badge>
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <FileText className="w-3 h-3" />
+                              {document.file_name}
+                            </span>
+                          </div>
+                          {/* Aperçu du document si c'est une image */}
+                          {document.file_url && (document.file_name.endsWith('.jpg') || document.file_name.endsWith('.jpeg') || document.file_name.endsWith('.png')) && (
+                            <div className="relative w-32 h-32 rounded-lg overflow-hidden border-2 border-border">
+                              <img 
+                                src={document.file_url} 
+                                alt={document.file_name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2">
                             <Button
-                              variant="ghost"
+                              variant="outline"
                               size="sm"
                               onClick={() => viewDocument(document)}
-                              title="Voir le document"
+                              className="gap-1"
                             >
                               <Eye className="w-4 h-4" />
+                              Voir
                             </Button>
                             <Button
-                              variant="ghost"
+                              variant="outline"
                               size="sm"
                               onClick={() => deleteDocument(document)}
-                              title="Supprimer le document"
-                              className="text-red-600 hover:text-red-700"
+                              className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-50"
                             >
                               <Trash2 className="w-4 h-4" />
+                              Supprimer
                             </Button>
                           </div>
                         </div>
