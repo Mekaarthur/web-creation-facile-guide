@@ -61,6 +61,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
   };
 
   const validateForm = () => {
+    // Validation des champs requis
     if (!clientInfo.firstName || !clientInfo.lastName || !clientInfo.email || 
         !clientInfo.phone || !clientInfo.address) {
       toast({
@@ -71,6 +72,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       return false;
     }
 
+    // Validation email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(clientInfo.email)) {
       toast({
@@ -81,11 +83,42 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       return false;
     }
 
+    // Validation téléphone
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(clientInfo.phone.replace(/\s/g, ''))) {
       toast({
         title: "Téléphone invalide",
         description: "Veuillez saisir un numéro de téléphone valide (10 chiffres)",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // Validation des dates (toutes doivent être dans le futur)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const invalidDates = cartItems.filter(item => {
+      const itemDate = new Date(item.timeSlot.date);
+      itemDate.setHours(0, 0, 0, 0);
+      return itemDate < today;
+    });
+
+    if (invalidDates.length > 0) {
+      toast({
+        title: "Dates invalides",
+        description: "Toutes les dates de réservation doivent être dans le futur",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // Validation des durées (toutes > 0)
+    const invalidDurations = cartItems.filter(item => item.quantity <= 0);
+    if (invalidDurations.length > 0) {
+      toast({
+        title: "Durées invalides",
+        description: "Toutes les durées doivent être supérieures à 0 heure",
         variant: "destructive",
       });
       return false;

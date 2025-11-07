@@ -55,10 +55,24 @@ export const useBikawoCart = () => {
   const [separatedBookings, setSeparatedBookings] = useState<SeparatedBooking[]>([]);
   const { toast } = useToast();
 
-  // Charger le panier depuis sessionStorage au montage
+  // Charger le panier depuis localStorage au montage avec vérification expiration (30 min)
   useEffect(() => {
-    const stored = sessionStorage.getItem('bikawo-session-cart');
-    if (stored) {
+    const stored = localStorage.getItem('bikawo-cart');
+    const timestamp = localStorage.getItem('bikawo-cart-timestamp');
+    
+    if (stored && timestamp) {
+      const now = Date.now();
+      const cartAge = now - parseInt(timestamp);
+      const THIRTY_MINUTES = 30 * 60 * 1000;
+      
+      // Vérifier si le panier a plus de 30 minutes
+      if (cartAge > THIRTY_MINUTES) {
+        console.log('Panier expiré (> 30 min), suppression');
+        localStorage.removeItem('bikawo-cart');
+        localStorage.removeItem('bikawo-cart-timestamp');
+        return;
+      }
+      
       try {
         const parsed = JSON.parse(stored);
         // Normaliser les dates
@@ -72,7 +86,8 @@ export const useBikawoCart = () => {
         setCartItems(items);
       } catch (error) {
         console.error('Erreur lors du chargement du panier:', error);
-        sessionStorage.removeItem('bikawo-session-cart');
+        localStorage.removeItem('bikawo-cart');
+        localStorage.removeItem('bikawo-cart-timestamp');
       }
     }
   }, []);
@@ -80,7 +95,7 @@ export const useBikawoCart = () => {
   // Écouter les changements de panier (séparé pour éviter les re-renders)
   useEffect(() => {
     const handleCartUpdate = () => {
-      const stored = sessionStorage.getItem('bikawo-session-cart');
+      const stored = localStorage.getItem('bikawo-cart');
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
@@ -107,21 +122,10 @@ export const useBikawoCart = () => {
     };
   }, []);
 
-  // Session active flag (sans suppression auto)
-  useEffect(() => {
-    if (!sessionStorage.getItem('bikawo-cart-session-active')) {
-      sessionStorage.setItem('bikawo-cart-session-active', 'true');
-    }
-    const handleBeforeUnload = () => {
-      sessionStorage.removeItem('bikawo-cart-session-active');
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, []);
-
-  // Sauvegarder dans sessionStorage
-  const saveToSession = useCallback((items: BikawoCartItem[]) => {
-    sessionStorage.setItem('bikawo-session-cart', JSON.stringify(items));
+  // Sauvegarder dans localStorage avec timestamp
+  const saveToStorage = useCallback((items: BikawoCartItem[]) => {
+    localStorage.setItem('bikawo-cart', JSON.stringify(items));
+    localStorage.setItem('bikawo-cart-timestamp', Date.now().toString());
     // Utiliser setTimeout pour éviter les updates pendant le render
     setTimeout(() => {
       window.dispatchEvent(new Event('bikawo-cart-updated'));
@@ -224,10 +228,35 @@ export const useBikawoCart = () => {
 
   // Ajouter un item au panier avec validation
   const addToCart = useCallback((item: Omit<BikawoCartItem, 'id'> | Omit<BikawoCartItem, 'id' | 'quantity'>) => {
+    // Validation : date future
+    const itemDate = new Date(item.timeSlot.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (itemDate < today) {
+      toast({
+        title: "❌ Date invalide",
+        description: "La date de réservation doit être dans le futur",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validation : durée > 0
+    const quantity = 'quantity' in item ? item.quantity : 1;
+    if (quantity <= 0) {
+      toast({
+        title: "❌ Durée invalide",
+        description: "La durée doit être supérieure à 0 heure",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const newItem: BikawoCartItem = {
       ...item,
       id: `${item.serviceCategory}-${item.packageTitle}-${Date.now()}`,
-      quantity: 'quantity' in item ? item.quantity : 1,
+      quantity,
     };
 
     const compatibility = checkServiceCompatibility(newItem, cartItems);
@@ -263,7 +292,7 @@ export const useBikawoCart = () => {
         updatedItems = [...prev, newItem];
       }
 
-      saveToSession(updatedItems);
+      saveToStorage(updatedItems);
       generateSeparatedBookings(updatedItems);
       return updatedItems;
     });
@@ -282,13 +311,13 @@ export const useBikawoCart = () => {
         setTimeout(() => cartButton.classList.remove('animate-bounce'), 1000);
       }
     }, 100);
-  }, [cartItems, toast, saveToSession, generateSeparatedBookings]);
+  }, [cartItems, toast, saveToStorage, generateSeparatedBookings]);
 
   // Retirer un item du panier
   const removeFromCart = useCallback((itemId: string) => {
     setCartItems(prev => {
       const updatedItems = prev.filter(item => item.id !== itemId);
-      saveToSession(updatedItems);
+      saveToStorage(updatedItems);
       generateSeparatedBookings(updatedItems);
       return updatedItems;
     });
@@ -297,13 +326,14 @@ export const useBikawoCart = () => {
       title: "Service retiré",
       description: "Le service a été retiré de votre panier",
     });
-  }, [saveToSession, generateSeparatedBookings, toast]);
+  }, [saveToStorage, generateSeparatedBookings, toast]);
 
   // Vider le panier
   const clearCart = useCallback(() => {
     setCartItems([]);
     setSeparatedBookings([]);
-    sessionStorage.removeItem('bikawo-session-cart');
+    localStorage.removeItem('bikawo-cart');
+    localStorage.removeItem('bikawo-cart-timestamp');
 
     toast({
       title: "Panier vidé",

@@ -101,17 +101,17 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
             <ShoppingCart className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
             <p className="text-muted-foreground">Votre panier est vide</p>
             <p className="text-sm text-muted-foreground mt-1">
-              Panier temporaire - Se vide à la fermeture de l'onglet
+              Le panier est conservé pendant 30 minutes
             </p>
           </div>
         ) : (
           <>
             {/* Alerte si services incompatibles */}
             {hasIncompatibleServices() && (
-              <Alert className="border-orange-200 bg-orange-50">
-                <AlertTriangle className="w-4 h-4" />
-                <AlertDescription>
-                  Services incompatibles détectés. Ils seront séparés en <strong>{getSeparatedBookingsCount()} réservations</strong>.
+              <Alert className="border-orange-200 bg-orange-50 animate-fade-in">
+                <AlertTriangle className="w-4 h-4 text-orange-600" />
+                <AlertDescription className="text-sm">
+                  Services incompatibles détectés. Ils seront séparés en <strong>{getSeparatedBookingsCount()} réservations</strong> distinctes.
                 </AlertDescription>
               </Alert>
             )}
@@ -125,22 +125,25 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
                     className="p-3 bg-muted/50 rounded-lg transition-all duration-200 hover:shadow-md hover:bg-muted/70 animate-fade-in"
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    <div className="flex justify-between items-start mb-2">
+                    <div className="flex justify-between items-start mb-3">
                       <div className="flex-1">
-                        <h4 className="font-medium text-sm">{item.serviceName}</h4>
-                        <p className="text-xs text-muted-foreground">{item.packageTitle}</p>
+                        <h4 className="font-semibold text-sm mb-1">{item.serviceName}</h4>
+                        <p className="text-xs text-muted-foreground mb-2">{item.packageTitle}</p>
                         
-                        <div className="text-xs text-muted-foreground mt-2 space-y-1">
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {slot.date}, {slot.time}
+                        <div className="text-xs text-muted-foreground space-y-1.5">
+                          <div className="flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5 text-primary" />
+                            <span className="font-medium">{slot.date}</span>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {item.address}
+                          <div className="flex items-center gap-1.5 text-xs">
+                            {slot.time}
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <MapPin className="w-3.5 h-3.5 text-primary" />
+                            <span>{item.address}</span>
                           </div>
                           {item.notes && (
-                            <p className="italic">{item.notes}</p>
+                            <p className="italic text-xs mt-1 pl-5">{item.notes}</p>
                           )}
                         </div>
                       </div>
@@ -149,17 +152,22 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
                         size="sm" 
                         variant="ghost" 
                         onClick={() => removeFromCart(item.id)}
-                        className="text-destructive hover:text-destructive hover-scale"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10 hover-scale ml-2"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                     
-                    <div className="flex justify-between items-center">
-                      <Badge variant="secondary">
-                        {item.price}€ × {item.quantity}h
-                      </Badge>
-                      <span className="text-sm font-medium">
+                    <Separator className="my-2" />
+                    
+                    <div className="flex justify-between items-center pt-2">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-xs">
+                          {item.price}€/h
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">× {item.quantity}h</span>
+                      </div>
+                      <span className="text-base font-bold text-primary">
                         {item.price * item.quantity}€
                       </span>
                     </div>
@@ -170,14 +178,19 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
 
             <Separator />
 
-            <div className="space-y-2">
+            <div className="space-y-3 bg-gradient-subtle p-4 rounded-lg">
+              <div className="flex justify-between items-center text-sm text-muted-foreground">
+                <span>Sous-total</span>
+                <span>{getCartTotal()}€</span>
+              </div>
+              <Separator />
               <div className="flex justify-between items-center">
-                <span className="font-medium">Total :</span>
-                <span className="font-bold text-primary">{getCartTotal()}€</span>
+                <span className="text-lg font-semibold">Total à payer</span>
+                <span className="text-2xl font-bold text-primary">{getCartTotal()}€</span>
               </div>
               {hasIncompatibleServices() && (
-                <p className="text-xs text-muted-foreground">
-                  Un seul paiement pour {getSeparatedBookingsCount()} réservations séparées
+                <p className="text-xs text-muted-foreground text-center pt-2 border-t">
+                  💳 Un seul paiement pour {getSeparatedBookingsCount()} réservations séparées
                 </p>
               )}
             </div>
