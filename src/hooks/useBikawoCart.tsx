@@ -209,11 +209,11 @@ export const useBikawoCart = () => {
   }, []);
 
   // Ajouter un item au panier avec validation
-  const addToCart = useCallback((item: Omit<BikawoCartItem, 'id' | 'quantity'>) => {
+  const addToCart = useCallback((item: Omit<BikawoCartItem, 'id'> | Omit<BikawoCartItem, 'id' | 'quantity'>) => {
     const newItem: BikawoCartItem = {
       ...item,
       id: `${item.serviceCategory}-${item.packageTitle}-${Date.now()}`,
-      quantity: 1,
+      quantity: 'quantity' in item ? item.quantity : 1,
     };
 
     const compatibility = checkServiceCompatibility(newItem, cartItems);
