@@ -3930,29 +3930,7 @@ export type Database = {
           type: string | null
           updated_at: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "internal_conversations_booking_id_fkey"
-            columns: ["booking_id"]
-            isOneToOne: false
-            referencedRelation: "bookings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "internal_conversations_client_request_id_fkey"
-            columns: ["client_request_id"]
-            isOneToOne: false
-            referencedRelation: "client_requests"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "internal_conversations_job_application_id_fkey"
-            columns: ["job_application_id"]
-            isOneToOne: false
-            referencedRelation: "job_applications"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       providers_public_view: {
         Row: {
