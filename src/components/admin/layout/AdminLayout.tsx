@@ -5,7 +5,7 @@ import { Bell, Settings, User, LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Outlet } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { useSecureLogout } from "@/hooks/useSecureLogout";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,44 +16,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function AdminLayout() {
-  const { signOut, user } = useAuth();
-
-  const handleLogout = async () => {
-    try {
-      console.log('[AdminLayout] Logging out admin:', user?.email);
-      
-      // Appeler la méthode signOut qui nettoie tout
-      await signOut();
-      
-      // Nettoyer le localStorage de toute donnée résiduelle
-      const keysToRemove = Object.keys(localStorage).filter(key => 
-        key.includes('supabase') || 
-        key.includes('bikawo') ||
-        key.includes('auth')
-      );
-      
-      keysToRemove.forEach(key => localStorage.removeItem(key));
-      
-      // Nettoyer sessionStorage aussi
-      sessionStorage.clear();
-      
-      console.log('[AdminLayout] Session cleared successfully');
-      
-      toast.success('Déconnexion réussie', {
-        description: 'À bientôt sur Bikawo !'
-      });
-      
-      // Force reload pour être sûr que tout est nettoyé
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 100);
-    } catch (error) {
-      console.error('[AdminLayout] Error during logout:', error);
-      toast.error('Erreur de déconnexion', {
-        description: 'Une erreur est survenue'
-      });
-    }
-  };
+  const { user } = useAuth();
+  const { handleLogout } = useSecureLogout();
 
   return (
     <SidebarProvider>

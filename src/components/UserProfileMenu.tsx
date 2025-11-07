@@ -11,13 +11,15 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Settings, Lock, LogOut, ChevronDown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useSecureLogout } from "@/hooks/useSecureLogout";
 
 interface UserProfileMenuProps {
   userType?: 'client' | 'provider';
 }
 
 const UserProfileMenu = ({ userType = 'client' }: UserProfileMenuProps) => {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
+  const { handleLogout } = useSecureLogout();
   const [isOpen, setIsOpen] = useState(false);
 
   if (!user) return null;
@@ -26,33 +28,9 @@ const UserProfileMenu = ({ userType = 'client' }: UserProfileMenuProps) => {
     return email.charAt(0).toUpperCase();
   };
 
-  const handleSignOut = async () => {
-    try {
-      // Appeler la méthode signOut qui nettoie tout
-      await signOut();
-      
-      // Nettoyer le localStorage de toute donnée résiduelle
-      const keysToRemove = Object.keys(localStorage).filter(key => 
-        key.includes('supabase') || 
-        key.includes('bikawo') ||
-        key.includes('auth')
-      );
-      
-      keysToRemove.forEach(key => localStorage.removeItem(key));
-      
-      // Nettoyer sessionStorage aussi
-      sessionStorage.clear();
-      
-      setIsOpen(false);
-      
-      // Force reload pour être sûr que tout est nettoyé
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 100);
-    } catch (error) {
-      console.error('[UserProfileMenu] Error during logout:', error);
-      setIsOpen(false);
-    }
+  const handleSignOut = () => {
+    handleLogout();
+    setIsOpen(false);
   };
 
   const profileLink = userType === 'provider' ? '/espace-prestataire' : '/espace-personnel?tab=profil';
