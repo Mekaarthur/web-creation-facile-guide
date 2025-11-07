@@ -115,7 +115,6 @@ const ProviderServiceZones = () => {
   const { toast } = useToast();
   const [selectedZones, setSelectedZones] = useState<string[]>([]);
   const [maxDistance, setMaxDistance] = useState<number>(20);
-  const [travelCost, setTravelCost] = useState<number>(2);
   const [provider, setProvider] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -285,23 +284,6 @@ const ProviderServiceZones = () => {
               />
               <p className="text-xs text-muted-foreground mt-1">
                 Distance maximale pour vous déplacer depuis votre domicile
-              </p>
-            </div>
-            
-            <div>
-              <Label htmlFor="travelCost">Coût kilométrique (€/km)</Label>
-              <Input
-                id="travelCost"
-                type="number"
-                value={travelCost}
-                onChange={(e) => setTravelCost(Number(e.target.value))}
-                min="0"
-                max="10"
-                step="0.1"
-                className="mt-1"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Coût ajouté pour les déplacements (optionnel)
               </p>
             </div>
           </CardContent>
