@@ -48,7 +48,7 @@ import { LoadingSkeleton, DashboardLoadingSkeleton } from '@/components/ui/loadi
 import ProviderMissionManager from '@/components/ProviderMissionManager';
 import ProviderAppointments from '@/components/ProviderAppointments';
 import ProviderMessaging from '@/components/ProviderMessaging';
-import ProviderUniverseServices from '@/components/ProviderUniverseServices';
+import ProviderServices from '@/components/ProviderServices';
 import ProviderServiceZones from '@/components/ProviderServiceZones';
 import ProviderReferralProgram from '@/components/ProviderReferralProgram';
 import ProviderPerformanceRewards from '@/components/provider/ProviderPerformanceRewards';
@@ -540,7 +540,7 @@ const EnhancedProviderDashboard = () => {
 
           {/* Services Tab */}
           <TabsContent value="services" className="mt-8">
-            <ProviderUniverseServices />
+            <ProviderServices />
           </TabsContent>
 
           {/* Zones Tab */}
