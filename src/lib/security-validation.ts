@@ -122,12 +122,11 @@ export const signupSchema = z.object({
 
 // Réservation
 export const bookingSchema = z.object({
-  serviceId: z.string().uuid("ID service invalide"),
-  date: futureDateSchema,
+  date: z.string().min(1, "La date est requise"),
   startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Format heure invalide (HH:MM)"),
-  duration: z.number().min(1, "Durée minimum 1 heure").max(24, "Durée maximum 24 heures"),
   address: addressSchema,
-  notes: messageSchema.optional(),
+  postalCode: z.string().optional(),
+  notes: z.string().max(1000, "Les notes ne peuvent pas dépasser 1000 caractères").optional(),
 });
 
 // Profil prestataire
