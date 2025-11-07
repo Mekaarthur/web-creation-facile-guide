@@ -185,7 +185,6 @@ const ProviderProfileForm = () => {
           email: profile.email,
           phone: profile.phone,
           address: profile.address,
-          postal_code: validatedData.postalCode,
           avatar_url: profile.avatar_url,
           updated_at: new Date().toISOString(),
         });
@@ -201,6 +200,7 @@ const ProviderProfileForm = () => {
           description: validatedData.description,
           hourly_rate: 22,
           location: validatedData.location,
+          postal_codes: profile.postal_code ? [profile.postal_code] : [],
           siret_number: profile.siret_number,
           updated_at: new Date().toISOString(),
         });
