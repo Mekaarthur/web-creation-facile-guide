@@ -59,6 +59,35 @@ const ProviderReferralProgram = () => {
     }
   }, [user]);
 
+  const generateReferralCode = async (providerId: string) => {
+    try {
+      const { data: newCode, error: rpcError } = await supabase.rpc('generate_referral_code');
+      const code = newCode || Math.random().toString(36).substring(2, 10).toUpperCase();
+      const { error: insertError } = await supabase.from('referrals' as any).insert({
+        referrer_id: providerId,
+        referrer_type: 'provider',
+        referral_code: code,
+        status: 'pending'
+      });
+      if (rpcError) console.warn('RPC generate_referral_code error:', rpcError);
+      if (insertError) {
+        console.warn('Insert referral code error:', insertError);
+        toast({
+          title: 'Code généré localement',
+          description: 'Le code a été généré mais pas encore enregistré côté serveur.'
+        });
+      }
+      setReferralCode(code);
+    } catch (e) {
+      console.error('Error generating referral code:', e);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de générer le code. Réessayez.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const loadReferralData = async () => {
     try {
       setLoading(true);
@@ -74,27 +103,18 @@ const ProviderReferralProgram = () => {
         setProvider(providerData);
 
         // Get or create referral code
-        const { data: existingReferral } = await supabase
-          .from('referrals')
+        const { data: existingReferral } = await (supabase
+          .from('referrals' as any) as any)
           .select('referral_code')
           .eq('referrer_id', providerData.id)
           .eq('referrer_type', 'provider')
-          .single();
+          .maybeSingle();
 
-        if (existingReferral) {
-          setReferralCode(existingReferral.referral_code);
+        const codeFromDb = (existingReferral as any)?.referral_code;
+        if (codeFromDb) {
+          setReferralCode(codeFromDb);
         } else {
-          // Generate new code
-          const { data: newCode } = await supabase.rpc('generate_referral_code');
-          if (newCode) {
-            await supabase.from('referrals').insert({
-              referrer_id: providerData.id,
-              referrer_type: 'provider',
-              referral_code: newCode,
-              status: 'pending'
-            });
-            setReferralCode(newCode);
-          }
+          await generateReferralCode(providerData.id);
         }
 
         // Get referrals list
@@ -328,7 +348,12 @@ const ProviderReferralProgram = () => {
           ) : (
             <div className="text-center py-4">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-              <p className="text-muted-foreground">Génération de votre code en cours...</p>
+              <p className="text-muted-foreground mb-2">Génération de votre code en cours...</p>
+              {provider?.id && (
+                <Button variant="outline" onClick={() => generateReferralCode(provider.id)}>
+                  Réessayer
+                </Button>
+              )}
             </div>
           )}
         </CardContent>
