@@ -202,6 +202,8 @@ const ProviderProfileForm = () => {
           address: profile.address,
           avatar_url: profile.avatar_url,
           updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id'
         });
 
       if (profileError) throw profileError;
@@ -218,6 +220,8 @@ const ProviderProfileForm = () => {
           postal_codes: profile.postal_code ? [profile.postal_code] : [],
           siret_number: profile.siret_number,
           updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id'
         });
 
       if (providerError) throw providerError;
