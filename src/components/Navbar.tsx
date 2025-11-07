@@ -274,7 +274,10 @@ const Navbar = () => {
           </div>
 
           {/* Navigation Mobile */}
-          <MobileNavigation />
+          <div className="flex lg:hidden items-center gap-2">
+            <BikawoCartIndicator onOpenCart={() => setIsCartOpen(true)} className="mr-1" />
+            <MobileNavigation />
+          </div>
         </div>
       </div>
       

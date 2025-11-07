@@ -29,27 +29,26 @@ const BikawoCartIndicator = ({
   if (itemCount === 0) {
     return (
       <Button 
-        variant="ghost" 
+        variant="outline" 
         size="sm" 
-        className={`relative ${className}`}
+        className={`relative ${className} border-primary/30 hover:bg-primary/10`}
         onClick={onOpenCart}
-        disabled
       >
-        <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+        <ShoppingCart className="h-5 w-5 text-primary" />
       </Button>
     );
   }
 
   return (
     <Button 
-      variant="ghost" 
+      variant="outline" 
       size="sm" 
-      className={`relative ${className}`}
+      className={`relative ${className} border-primary/30 hover:bg-primary/10`}
       onClick={onOpenCart}
     >
       <div className="flex items-center gap-2">
         <div className="relative">
-          <ShoppingCart className="h-4 w-4" />
+          <ShoppingCart className="h-5 w-5 text-primary" />
           
           {/* Indicator de nombre d'items */}
           {itemCount > 0 && (

@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
-import { useCart } from "@/components/Cart";
+import { useBikawoCart } from "@/hooks/useBikawoCart";
 
 interface MobileNavItem {
   title: string;
@@ -174,7 +174,7 @@ const getClientNavItems = (cartCount: number): MobileNavItem[] => [
   },
   {
     title: "Mon panier",
-    href: "/espace-personnel?tab=panier",
+    href: "/panier",
     icon: ShoppingCart,
     badge: cartCount > 0 ? cartCount.toString() : undefined,
     description: "Mes services sélectionnés"
@@ -254,7 +254,7 @@ export const MobileNavigation = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
-  const { getCartItemsCount } = useCart();
+  const { getCartItemsCount } = useBikawoCart();
 
   // Déterminer le type d'utilisateur et les éléments de navigation
   const getUserNavItems = () => {
