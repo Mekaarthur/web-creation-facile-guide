@@ -390,6 +390,9 @@ const ProviderProfileForm = () => {
                   onChange={(e) => handleInputChange('business_name', e.target.value)}
                   placeholder="Nom de votre entreprise"
                 />
+                {errors.businessName && (
+                  <p className="text-sm text-destructive">{errors.businessName}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -442,6 +445,9 @@ const ProviderProfileForm = () => {
                     onChange={(e) => handleInputChange('city', e.target.value)}
                     placeholder="Paris"
                   />
+                  {errors.location && (
+                    <p className="text-sm text-destructive">{errors.location}</p>
+                  )}
                 </div>
               </div>
             </div>

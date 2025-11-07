@@ -136,7 +136,7 @@ export const providerProfileSchema = z.object({
   location: addressSchema,
   postalCode: postalCodeSchema,
   hourlyRate: amountSchema,
-  services: z.array(z.string().uuid()).min(1, "Sélectionnez au moins un service"),
+  services: z.array(z.string().uuid()).optional(),
 });
 
 // ============================================
