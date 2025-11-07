@@ -27,8 +27,32 @@ const UserProfileMenu = ({ userType = 'client' }: UserProfileMenuProps) => {
   };
 
   const handleSignOut = async () => {
-    await signOut();
-    setIsOpen(false);
+    try {
+      // Appeler la méthode signOut qui nettoie tout
+      await signOut();
+      
+      // Nettoyer le localStorage de toute donnée résiduelle
+      const keysToRemove = Object.keys(localStorage).filter(key => 
+        key.includes('supabase') || 
+        key.includes('bikawo') ||
+        key.includes('auth')
+      );
+      
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      
+      // Nettoyer sessionStorage aussi
+      sessionStorage.clear();
+      
+      setIsOpen(false);
+      
+      // Force reload pour être sûr que tout est nettoyé
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
+    } catch (error) {
+      console.error('[UserProfileMenu] Error during logout:', error);
+      setIsOpen(false);
+    }
   };
 
   const profileLink = userType === 'provider' ? '/espace-prestataire' : '/espace-personnel?tab=profil';
