@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -20,32 +16,18 @@ import {
   Briefcase,
   Crown,
   Check,
-  X,
-  Euro,
-  Star,
-  Search,
-  Plus,
-  Edit,
-  Save,
-  AlertCircle
+  ChevronRight,
+  Info
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { universeServices } from '@/utils/universeServices';
 
-interface Service {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  price_per_hour: number;
+interface ProviderSubService {
+  id?: string;
+  provider_id: string;
+  universe_id: string;
+  sub_service_id: string;
   is_active: boolean;
-}
-
-interface ProviderService {
-  id: string;
-  service_id: string;
-  price_override: number | null;
-  is_active: boolean;
-  services?: Service;
 }
 
 const serviceCategories = [
@@ -118,13 +100,10 @@ const serviceCategories = [
 const ProviderServices = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [services, setServices] = useState<Service[]>([]);
-  const [providerServices, setProviderServices] = useState<ProviderService[]>([]);
+  const [providerSubServices, setProviderSubServices] = useState<ProviderSubService[]>([]);
   const [provider, setProvider] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [editingPrices, setEditingPrices] = useState<Record<string, number>>({});
+  const [selectedUniverse, setSelectedUniverse] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -134,7 +113,6 @@ const ProviderServices = () => {
 
   const loadData = async () => {
     try {
-      // Get provider data
       const { data: providerData } = await supabase
         .from('providers')
         .select('*')
@@ -144,25 +122,13 @@ const ProviderServices = () => {
       if (providerData) {
         setProvider(providerData);
 
-        // Load all services
-        const { data: servicesData } = await supabase
-          .from('services')
+        // Load provider's selected sub-services
+        const { data: providerSubServicesData } = await supabase
+          .from('provider_sub_services')
           .select('*')
-          .eq('is_active', true)
-          .order('name');
-
-        setServices(servicesData || []);
-
-        // Load provider's selected services
-        const { data: providerServicesData } = await supabase
-          .from('provider_services')
-          .select(`
-            *,
-            services(*)
-          `)
           .eq('provider_id', providerData.id);
 
-        setProviderServices(providerServicesData || []);
+        setProviderSubServices(providerSubServicesData || []);
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -176,47 +142,45 @@ const ProviderServices = () => {
     }
   };
 
-  const toggleService = async (serviceId: string, isActive: boolean) => {
+  const toggleSubService = async (universeId: string, subServiceId: string, isActive: boolean) => {
     if (!provider) return;
 
     try {
       if (isActive) {
-        // Add service
-        const service = services.find(s => s.id === serviceId);
         const { error } = await supabase
-          .from('provider_services')
+          .from('provider_sub_services')
           .insert({
             provider_id: provider.id,
-            service_id: serviceId,
-            price_override: null,
+            universe_id: universeId,
+            sub_service_id: subServiceId,
             is_active: true
           });
 
         if (error) throw error;
 
         toast({
-          title: "Service ajouté",
-          description: `${service?.name} a été ajouté à vos prestations`,
+          title: "Service activé",
+          description: "Le service a été ajouté à vos prestations",
         });
       } else {
-        // Remove service
         const { error } = await supabase
-          .from('provider_services')
+          .from('provider_sub_services')
           .delete()
           .eq('provider_id', provider.id)
-          .eq('service_id', serviceId);
+          .eq('universe_id', universeId)
+          .eq('sub_service_id', subServiceId);
 
         if (error) throw error;
 
         toast({
-          title: "Service retiré",
+          title: "Service désactivé",
           description: "Le service a été retiré de vos prestations",
         });
       }
 
       loadData();
     } catch (error) {
-      console.error('Error toggling service:', error);
+      console.error('Error toggling sub-service:', error);
       toast({
         title: "Erreur",
         description: "Impossible de modifier le service",
@@ -225,58 +189,20 @@ const ProviderServices = () => {
     }
   };
 
-  const updatePrice = async (serviceId: string, price: number) => {
-    if (!provider) return;
-
-    try {
-      const { error } = await supabase
-        .from('provider_services')
-        .update({ price_override: price })
-        .eq('provider_id', provider.id)
-        .eq('service_id', serviceId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Prix mis à jour",
-        description: "Votre tarif personnalisé a été enregistré",
-      });
-
-      setEditingPrices(prev => {
-        const { [serviceId]: _, ...rest } = prev;
-        return rest;
-      });
-
-      loadData();
-    } catch (error) {
-      console.error('Error updating price:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour le prix",
-        variant: "destructive",
-      });
-    }
+  const isSubServiceActive = (universeId: string, subServiceId: string) => {
+    return providerSubServices.some(
+      ps => ps.universe_id === universeId && ps.sub_service_id === subServiceId && ps.is_active
+    );
   };
 
-  const filteredServices = services.filter(service => {
-    const matchesSearch = searchTerm === '' ||
-      service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      service.description.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesCategory = selectedCategory === 'all' ||
-      service.category.toLowerCase().includes(selectedCategory.toLowerCase());
-
-    return matchesSearch && matchesCategory;
-  });
-
-  const isServiceActive = (serviceId: string) => {
-    return providerServices.some(ps => ps.service_id === serviceId && ps.is_active);
+  const getActiveServicesCount = (universeId: string) => {
+    return providerSubServices.filter(
+      ps => ps.universe_id === universeId && ps.is_active
+    ).length;
   };
 
-  const getServicePrice = (serviceId: string) => {
-    const providerService = providerServices.find(ps => ps.service_id === serviceId);
-    const service = services.find(s => s.id === serviceId);
-    return providerService?.price_override || service?.price_per_hour || 0;
+  const getTotalActiveServices = () => {
+    return providerSubServices.filter(ps => ps.is_active).length;
   };
 
   const formatCurrency = (amount: number) => {
@@ -300,71 +226,70 @@ const ProviderServices = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Mes Prestations
+            Configuration de mes prestations
           </h2>
           <p className="text-muted-foreground">
-            Sélectionnez les services que vous souhaitez proposer
+            Sélectionnez les univers puis activez les services que vous souhaitez proposer
           </p>
         </div>
         
         <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200">
-          {providerServices.filter(ps => ps.is_active).length} services actifs
+          {getTotalActiveServices()} services actifs
         </Badge>
       </div>
 
-      {/* Search and filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Rechercher un service..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        
-        <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-          <TabsList className="bg-white shadow-sm border">
-            <TabsTrigger value="all">Tous</TabsTrigger>
-            {serviceCategories.slice(0, 3).map((category) => (
-              <TabsTrigger key={category.id} value={category.id}>
-                {category.name}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-      </div>
+      {/* Info Card */}
+      <Card className="border-blue-200 bg-blue-50/50">
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-blue-900">
+              <p className="font-medium mb-1">Tarifs prestataires</p>
+              <p>Les tarifs affichés sont fixes et calculés automatiquement :</p>
+              <ul className="list-disc list-inside mt-1 space-y-0.5">
+                <li>Service à 25€/h → Vous gagnez 18€/h</li>
+                <li>Service à 30€/h → Vous gagnez 22€/h</li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Service categories overview */}
+      {/* Universe Categories */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {serviceCategories.map((category) => {
-          const categoryServices = services.filter(s => 
-            s.category.toLowerCase().includes(category.id.toLowerCase())
-          );
-          const activeServices = categoryServices.filter(s => isServiceActive(s.id));
+          const universe = universeServices.find(u => u.id === category.id);
+          const activeCount = getActiveServicesCount(category.id);
+          const totalCount = universe?.subServices.length || 0;
           
           return (
             <Card 
               key={category.id}
               className={cn(
-                "cursor-pointer transition-all hover:shadow-lg border-0 shadow-md",
-                selectedCategory === category.id && "ring-2 ring-primary",
+                "cursor-pointer transition-all hover:shadow-lg border-2",
+                selectedUniverse === category.id ? "ring-2 ring-primary border-primary" : "border-transparent",
                 category.bgColor
               )}
-              onClick={() => setSelectedCategory(selectedCategory === category.id ? 'all' : category.id)}
+              onClick={() => setSelectedUniverse(selectedUniverse === category.id ? null : category.id)}
             >
               <CardContent className="p-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br", category.color)}>
-                    <category.icon className="h-5 w-5 text-white" />
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-3">
+                    <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br", category.color)}>
+                      <category.icon className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-sm">{category.name}</h3>
+                      <p className="text-xs text-muted-foreground">
+                        {activeCount}/{totalCount} actifs
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-sm">{category.name}</h3>
-                    <p className="text-xs text-muted-foreground">
-                      {activeServices.length}/{categoryServices.length} actifs
-                    </p>
-                  </div>
+                  {selectedUniverse === category.id && (
+                    <div className="flex items-center justify-center text-primary">
+                      <ChevronRight className="h-4 w-4 rotate-90" />
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -372,142 +297,98 @@ const ProviderServices = () => {
         })}
       </div>
 
-      {/* Services list */}
-      <div className="grid gap-4">
-        {filteredServices.length > 0 ? (
-          filteredServices.map((service) => {
-            const isActive = isServiceActive(service.id);
-            const currentPrice = getServicePrice(service.id);
-            const isEditingPrice = editingPrices.hasOwnProperty(service.id);
-            const category = serviceCategories.find(c => 
-              service.category.toLowerCase().includes(c.id.toLowerCase())
-            );
-            
-            return (
-              <Card 
-                key={service.id} 
-                className={cn(
-                  "group hover:shadow-lg transition-all duration-300 border-0 shadow-md",
-                  isActive && "ring-2 ring-green-200 bg-green-50/30"
-                )}
-              >
-                <CardContent className="p-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-center">
-                    {/* Service info */}
-                    <div className="lg:col-span-2 flex items-center gap-4">
-                      <div className={cn(
-                        "w-12 h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br",
-                        category?.color || "from-gray-500 to-slate-500"
-                      )}>
-                        {category?.icon && <category.icon className="h-6 w-6 text-white" />}
+      {/* Sub-Services List */}
+      {selectedUniverse && (
+        <div className="space-y-4 animate-fade-in">
+          {universeServices
+            .filter(universe => universe.id === selectedUniverse)
+            .map(universe => {
+              const category = serviceCategories.find(c => c.id === universe.id);
+              
+              return (
+                <div key={universe.id}>
+                  <div className="flex items-center gap-3 mb-4">
+                    {category && (
+                      <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br", category.color)}>
+                        <category.icon className="h-5 w-5 text-white" />
                       </div>
-                      
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-lg">{service.name}</h3>
-                          <Badge variant="outline" className="text-xs">
-                            {category?.name}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {service.description}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Prix de base: {formatCurrency(service.price_per_hour)}/h
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Pricing */}
-                    <div className="flex items-center gap-3">
-                      {isActive && (
-                        <div className="flex items-center gap-2">
-                          {isEditingPrice ? (
-                            <div className="flex items-center gap-2">
-                              <Input
-                                type="number"
-                                value={editingPrices[service.id]}
-                                onChange={(e) => setEditingPrices(prev => ({
-                                  ...prev,
-                                  [service.id]: Number(e.target.value)
-                                }))}
-                                className="w-20 text-sm"
-                                min="0"
-                                step="0.5"
-                              />
-                              <span className="text-sm text-muted-foreground">€/h</span>
-                              <Button
-                                size="sm"
-                                onClick={() => updatePrice(service.id, editingPrices[service.id])}
-                                className="h-8 w-8 p-0"
-                              >
-                                <Save className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2">
-                              <div className="text-right">
-                                <p className="font-bold text-lg text-primary">
-                                  {formatCurrency(currentPrice)}/h
-                                </p>
-                                {currentPrice !== service.price_per_hour && (
-                                  <p className="text-xs text-green-600">Tarif personnalisé</p>
-                                )}
-                              </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setEditingPrices(prev => ({
-                                  ...prev,
-                                  [service.id]: currentPrice
-                                }))}
-                                className="h-8 w-8 p-0"
-                              >
-                                <Edit className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center justify-end gap-3">
-                      <div className="flex items-center gap-2">
-                        <Label htmlFor={`service-${service.id}`} className="text-sm font-medium">
-                          {isActive ? 'Actif' : 'Inactif'}
-                        </Label>
-                        <Switch
-                          id={`service-${service.id}`}
-                          checked={isActive}
-                          onCheckedChange={(checked) => toggleService(service.id, checked)}
-                        />
-                      </div>
-                      
-                      {isActive && (
-                        <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
-                          <Check className="h-3 w-3 mr-1" />
-                          Éligible
-                        </Badge>
-                      )}
+                    )}
+                    <div>
+                      <h3 className="text-xl font-bold">{universe.name}</h3>
+                      <p className="text-sm text-muted-foreground">{universe.description}</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })
-        ) : (
-          <Card className="border-dashed border-2">
-            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-              <AlertCircle className="h-16 w-16 text-muted-foreground mb-4 opacity-50" />
-              <h3 className="text-lg font-semibold mb-2">Aucun service trouvé</h3>
-              <p className="text-muted-foreground">
-                Modifiez vos critères de recherche pour voir plus de services
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+
+                  <div className="grid gap-3">
+                    {universe.subServices.map(subService => {
+                      const isActive = isSubServiceActive(universe.id, subService.id);
+                      
+                      return (
+                        <Card 
+                          key={subService.id}
+                          className={cn(
+                            "transition-all duration-300",
+                            isActive && "ring-2 ring-green-200 bg-green-50/30"
+                          )}
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between gap-4">
+                              {/* Service Info */}
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-base mb-1">
+                                  {subService.name}
+                                </h4>
+                                <div className="flex items-center gap-4 text-sm">
+                                  <span className="text-muted-foreground">
+                                    Client : <span className="font-semibold text-foreground">{subService.clientPrice}€/h</span>
+                                  </span>
+                                  <span className="text-green-600">
+                                    → Vous gagnez : <span className="font-bold">{subService.providerPrice}€/h</span>
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Toggle Switch */}
+                              <div className="flex items-center gap-2">
+                                <Label htmlFor={`sub-service-${subService.id}`} className="text-sm font-medium">
+                                  {isActive ? 'Actif' : 'Inactif'}
+                                </Label>
+                                <Switch
+                                  id={`sub-service-${subService.id}`}
+                                  checked={isActive}
+                                  onCheckedChange={(checked) => toggleSubService(universe.id, subService.id, checked)}
+                                />
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+      )}
+
+      {/* Empty state when no universe selected */}
+      {!selectedUniverse && (
+        <Card className="border-dashed border-2">
+          <CardContent className="p-12 text-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                <ChevronRight className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Sélectionnez un univers</h3>
+                <p className="text-muted-foreground">
+                  Cliquez sur une catégorie ci-dessus pour voir et activer ses services
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Info panel */}
       <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
