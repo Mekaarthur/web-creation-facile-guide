@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import {
 import { useBikawoCart } from "@/hooks/useBikawoCart";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 interface BookingCheckoutProps {
   onBack: () => void;
@@ -32,6 +33,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
   const { toast } = useToast();
   
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const [clientInfo, setClientInfo] = useState({
     firstName: "",
     lastName: "",
@@ -39,6 +41,11 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
     phone: "",
     address: ""
   });
+
+  // Animation d'entrée
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
 
   const formatTimeSlot = (timeSlot: any) => {
     const date = new Date(timeSlot.date);
@@ -161,9 +168,12 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 pb-32 space-y-6">
-      <div className="flex items-center gap-4 mb-6">
-        <Button variant="ghost" onClick={onBack} disabled={isProcessing}>
+    <div className={cn(
+      "max-w-5xl mx-auto px-4 py-8 pb-32 space-y-6 transition-opacity duration-500",
+      isVisible ? "opacity-100" : "opacity-0"
+    )}>
+      <div className="flex items-center gap-4 mb-6 animate-fade-in">
+        <Button variant="ghost" onClick={onBack} disabled={isProcessing} className="hover-scale">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour au panier
         </Button>
@@ -171,8 +181,8 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       </div>
 
       {/* Récapitulatif mobile - En haut */}
-      <div className="lg:hidden">
-        <Card className="border-primary/20 shadow-elegant">
+      <div className="lg:hidden animate-fade-in">
+        <Card className="border-primary/20 shadow-elegant transition-all duration-200 hover:shadow-lg">
           <CardHeader className="bg-gradient-subtle">
             <CardTitle className="flex items-center gap-2 text-lg">
               <CreditCard className="w-5 h-5" />
@@ -229,8 +239,8 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Client Information */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
+        <div className="lg:col-span-2 space-y-6 animate-fade-in" style={{ animationDelay: "100ms" }}>
+          <Card className="transition-all duration-200 hover:shadow-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="w-5 h-5" />
@@ -309,8 +319,8 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
         </div>
 
         {/* Right Column - Order Summary - Desktop uniquement */}
-        <div className="hidden lg:block space-y-6">
-          <Card className="sticky top-24">
+        <div className="hidden lg:block space-y-6 animate-fade-in" style={{ animationDelay: "200ms" }}>
+          <Card className="sticky top-24 transition-all duration-200 hover:shadow-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="w-5 h-5" />
@@ -368,7 +378,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
 
               <Button 
                 onClick={handleSubmitBooking}
-                className="w-full bg-gradient-primary hover:opacity-90"
+                className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-200 hover-scale"
                 size="lg"
                 disabled={isProcessing}
               >
@@ -394,13 +404,13 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       </div>
 
       {/* Bouton fixe mobile */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t shadow-elegant z-50">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t shadow-elegant z-50 animate-slide-in-bottom">
         <div className="mb-2 text-center text-sm font-semibold">
           Total: <span className="text-primary text-lg">{getCartTotal()}€</span>
         </div>
         <Button 
           onClick={handleSubmitBooking}
-          className="w-full bg-gradient-primary hover:opacity-90"
+          className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-200 hover-scale"
           size="lg"
           disabled={isProcessing}
         >

@@ -55,44 +55,55 @@ export const useBikawoCart = () => {
   const [separatedBookings, setSeparatedBookings] = useState<SeparatedBooking[]>([]);
   const { toast } = useToast();
 
-  // Charger le panier depuis sessionStorage uniquement (non-persistant)
+  // Charger le panier depuis sessionStorage au montage
   useEffect(() => {
-    const loadFromSession = () => {
-      const sessionCart = sessionStorage.getItem('bikawo-session-cart');
-      if (sessionCart) {
+    const stored = sessionStorage.getItem('bikawo-session-cart');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        // Normaliser les dates
+        const items = parsed.map((item: any) => ({
+          ...item,
+          timeSlot: {
+            ...item.timeSlot,
+            date: new Date(item.timeSlot.date)
+          }
+        }));
+        setCartItems(items);
+      } catch (error) {
+        console.error('Erreur lors du chargement du panier:', error);
+        sessionStorage.removeItem('bikawo-session-cart');
+      }
+    }
+  }, []);
+
+  // Écouter les changements de panier (séparé pour éviter les re-renders)
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      const stored = sessionStorage.getItem('bikawo-session-cart');
+      if (stored) {
         try {
-          const parsed = JSON.parse(sessionCart) as BikawoCartItem[];
-          // Normaliser les dates
-          const normalized = parsed.map((it) => {
-            const raw = (it as any)?.timeSlot?.date as any;
-            const date = raw instanceof Date ? raw : new Date(raw);
-            return {
-              ...it,
-              timeSlot: { ...it.timeSlot, date },
-            } as BikawoCartItem;
-          });
-          setCartItems(normalized);
-          generateSeparatedBookings(normalized);
+          const parsed = JSON.parse(stored);
+          const items = parsed.map((item: any) => ({
+            ...item,
+            timeSlot: {
+              ...item.timeSlot,
+              date: new Date(item.timeSlot.date)
+            }
+          }));
+          setCartItems(items);
         } catch (error) {
-          console.error('Erreur lors du chargement du panier session:', error);
-          sessionStorage.removeItem('bikawo-session-cart');
+          console.error('Erreur lors du chargement du panier:', error);
         }
       }
     };
 
-    loadFromSession();
-
-    // Synchronisation multi-composants / onglets
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === 'bikawo-session-cart') loadFromSession();
-    };
-    const onCustom = () => loadFromSession();
-
-    window.addEventListener('storage', onStorage);
-    window.addEventListener('bikawo-cart-updated', onCustom as any);
+    window.addEventListener('bikawo-cart-updated', handleCartUpdate);
+    window.addEventListener('storage', handleCartUpdate);
+    
     return () => {
-      window.removeEventListener('storage', onStorage);
-      window.removeEventListener('bikawo-cart-updated', onCustom as any);
+      window.removeEventListener('bikawo-cart-updated', handleCartUpdate);
+      window.removeEventListener('storage', handleCartUpdate);
     };
   }, []);
 
@@ -111,7 +122,10 @@ export const useBikawoCart = () => {
   // Sauvegarder dans sessionStorage
   const saveToSession = useCallback((items: BikawoCartItem[]) => {
     sessionStorage.setItem('bikawo-session-cart', JSON.stringify(items));
-    window.dispatchEvent(new Event('bikawo-cart-updated'));
+    // Utiliser setTimeout pour éviter les updates pendant le render
+    setTimeout(() => {
+      window.dispatchEvent(new Event('bikawo-cart-updated'));
+    }, 0);
   }, []);
 
   // Vérifier la compatibilité entre services

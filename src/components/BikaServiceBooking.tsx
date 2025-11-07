@@ -135,20 +135,21 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
       notes: validatedData.notes
     });
 
-    toast({
-      title: "✅ Service ajouté au panier",
-      description: `${service.name} - ${duration}h pour ${getTotalPrice()}€`,
-      duration: 5000,
-    });
-
-    // Animer l'icône du panier
+    // Utiliser setTimeout pour éviter les updates pendant le render
     setTimeout(() => {
+      toast({
+        title: "✅ Service ajouté au panier",
+        description: `${service.name} - ${duration}h pour ${getTotalPrice()}€`,
+        duration: 5000,
+      });
+
+      // Animer l'icône du panier
       const cartButton = document.querySelector('[data-cart-indicator]');
       if (cartButton) {
         cartButton.classList.add('animate-bounce');
         setTimeout(() => cartButton.classList.remove('animate-bounce'), 1000);
       }
-    }, 100);
+    }, 0);
 
     // Montrer les options après ajout
     setShowSuccessOptions(true);
