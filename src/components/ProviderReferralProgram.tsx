@@ -294,26 +294,43 @@ const ProviderReferralProgram = () => {
         </Card>
       </div>
 
-      {/* Code de parrainage */}
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-primary/5 to-secondary/5">
+      {/* Code de parrainage - Section mise en évidence */}
+      <Card className="border-2 border-primary shadow-xl bg-gradient-to-br from-primary/10 to-secondary/10">
         <CardHeader>
-          <CardTitle>Votre code de parrainage</CardTitle>
-          <CardDescription>Partagez ce code avec d'autres prestataires</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-3">
-            <Input 
-              value={referralCode} 
-              readOnly 
-              className="text-2xl font-bold text-center tracking-wider"
-            />
-            <Button onClick={copyReferralCode} variant="outline" size="icon">
-              <Copy className="h-4 w-4" />
-            </Button>
-            <Button onClick={shareReferralCode} size="icon">
-              <Share2 className="h-4 w-4" />
-            </Button>
+          <div className="flex items-center gap-2">
+            <Gift className="h-6 w-6 text-primary" />
+            <div>
+              <CardTitle className="text-xl">Votre code de parrainage unique</CardTitle>
+              <CardDescription className="text-base">Partagez ce code avec d'autres prestataires pour gagner des récompenses</CardDescription>
+            </div>
           </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {referralCode ? (
+            <>
+              <div className="flex gap-3">
+                <Input 
+                  value={referralCode} 
+                  readOnly 
+                  className="text-3xl font-bold text-center tracking-wider bg-white border-2 border-primary/20"
+                />
+                <Button onClick={copyReferralCode} variant="outline" size="icon" className="h-auto">
+                  <Copy className="h-5 w-5" />
+                </Button>
+                <Button onClick={shareReferralCode} size="icon" className="h-auto">
+                  <Share2 className="h-5 w-5" />
+                </Button>
+              </div>
+              <p className="text-sm text-center text-muted-foreground">
+                Cliquez sur <Copy className="h-4 w-4 inline" /> pour copier ou <Share2 className="h-4 w-4 inline" /> pour partager
+              </p>
+            </>
+          ) : (
+            <div className="text-center py-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+              <p className="text-muted-foreground">Génération de votre code en cours...</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
