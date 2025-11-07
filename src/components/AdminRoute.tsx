@@ -1,53 +1,25 @@
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Shield } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 interface AdminRouteProps {
   children: ReactNode;
   redirectTo?: string;
 }
 
+/**
+ * Route protégée pour les administrateurs uniquement
+ * Redirige les non-admins vers leur espace approprié
+ * Sécurité maximale avec vérification des rôles
+ */
 const AdminRoute = ({ children, redirectTo = '/auth' }: AdminRouteProps) => {
-  const { user, loading: authLoading, session } = useAuth();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [checking, setChecking] = useState(true);
+  const { user, loading, hasRole, primaryRole } = useAuth();
 
-  useEffect(() => {
-    const checkAdminRole = async () => {
-      // Attendre que la session soit disponible
-      if (!user || !session) {
-        setChecking(true);
-        return;
-      }
-
-      try {
-        const { data: adminRow, error: adminError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .eq('role', 'admin')
-          .maybeSingle();
-
-        if (adminError && adminError.code !== 'PGRST116') {
-          console.error('[AdminRoute] user_roles error:', adminError);
-          setIsAdmin(false);
-        } else {
-          setIsAdmin(!!adminRow);
-        }
-      } catch (err) {
-        console.error('[AdminRoute] Unexpected error:', err);
-        setIsAdmin(false);
-      } finally {
-        setChecking(false);
-      }
-    };
-
-    checkAdminRole();
-  }, [user, session]);
-
-  if (authLoading || checking) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4 text-muted-foreground">
@@ -58,17 +30,60 @@ const AdminRoute = ({ children, redirectTo = '/auth' }: AdminRouteProps) => {
     );
   }
 
-  if (!user || isAdmin === false) {
+  if (!user) {
+    return <Navigate to={redirectTo} replace />;
+  }
+
+  // Vérifier si l'utilisateur est admin ou moderator
+  const isAuthorized = hasRole('admin') || hasRole('moderator');
+
+  if (!isAuthorized) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4 p-8 border border-destructive/20 rounded-lg bg-destructive/5">
-          <Shield className="h-12 w-12 text-destructive" />
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-foreground mb-2">Accès Refusé</h2>
-            <p className="text-muted-foreground">Vous n'avez pas les permissions nécessaires pour accéder à cette page.</p>
-          </div>
-          <Navigate to={redirectTo} replace />
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md border-destructive/50">
+          <CardHeader>
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-destructive/10 mx-auto mb-4">
+              <Shield className="h-8 w-8 text-destructive" />
+            </div>
+            <CardTitle className="text-center text-destructive">
+              Accès Refusé
+            </CardTitle>
+            <CardDescription className="text-center">
+              Vous n'avez pas les permissions nécessaires pour accéder à l'espace administration.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="p-4 bg-muted rounded-lg">
+              <p className="text-sm text-center text-muted-foreground">
+                Cette section est réservée aux administrateurs de la plateforme Bikawo.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              {primaryRole === 'provider' && (
+                <Link to="/espace-prestataire" className="w-full">
+                  <Button className="w-full" variant="default">
+                    Accéder à mon espace prestataire
+                  </Button>
+                </Link>
+              )}
+              {(primaryRole === 'client' || primaryRole === 'user') && (
+                <Link to="/espace-personnel" className="w-full">
+                  <Button className="w-full" variant="default">
+                    Accéder à mon espace personnel
+                  </Button>
+                </Link>
+              )}
+              <Link to="/" className="w-full">
+                <Button className="w-full" variant="outline">
+                  Retour à l'accueil
+                </Button>
+              </Link>
+            </div>
+            <p className="text-xs text-center text-muted-foreground">
+              Si vous pensez qu'il s'agit d'une erreur, contactez le support.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     );
   }

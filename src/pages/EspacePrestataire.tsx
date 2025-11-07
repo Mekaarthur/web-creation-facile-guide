@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { 
+import {
   User, 
   Calendar, 
   FileText, 
@@ -31,9 +31,25 @@ import ProviderProfileForm from '@/components/ProviderProfileForm';
 import { useTranslation } from 'react-i18next';
 
 const EspacePrestataire = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, hasRole, primaryRole } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  // Rediriger les non-prestataires vers leur espace approprié
+  useEffect(() => {
+    if (!loading && user && primaryRole) {
+      if (!hasRole('provider')) {
+        if (primaryRole === 'admin' || primaryRole === 'moderator') {
+          navigate('/modern-admin', { replace: true });
+        } else if (primaryRole === 'client' || primaryRole === 'user') {
+          navigate('/espace-personnel', { replace: true });
+        } else {
+          navigate('/auth', { replace: true });
+        }
+      }
+    }
+  }, [user, loading, primaryRole, hasRole, navigate]);
 
   if (loading) {
     return (

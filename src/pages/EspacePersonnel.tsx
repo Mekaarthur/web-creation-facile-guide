@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { 
+import {
   User, 
   Calendar, 
   FileText, 
@@ -36,12 +37,23 @@ import BikawoCart from '@/components/BikawoCart';
 import { useTranslation } from 'react-i18next';
 
 const EspacePersonnel = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, primaryRole } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState(user ? "dashboard" : "connexion");
   const [isCartOpen, setIsCartOpen] = useState(false);
 
+  // Rediriger les non-clients vers leur espace approprié
+  useEffect(() => {
+    if (!loading && user && primaryRole) {
+      if (primaryRole === 'admin' || primaryRole === 'moderator') {
+        navigate('/modern-admin', { replace: true });
+      } else if (primaryRole === 'provider') {
+        navigate('/espace-prestataire', { replace: true });
+      }
+    }
+  }, [user, loading, primaryRole, navigate]);
 
   // Rediriger vers connexion si pas authentifié et tentative d'accès à un onglet protégé
   useEffect(() => {

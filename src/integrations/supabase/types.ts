@@ -3951,6 +3951,13 @@ export type Database = {
       }
     }
     Functions: {
+      add_user_role: {
+        Args: {
+          new_role: Database["public"]["Enums"]["app_role"]
+          target_user_id: string
+        }
+        Returns: undefined
+      }
       analyze_binome_performance: {
         Args: { p_binome_id: string }
         Returns: Json
@@ -4189,6 +4196,10 @@ export type Database = {
             }[]
           }
       get_platform_stats: { Args: never; Returns: Json }
+      get_primary_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
       get_profile_display_info: {
         Args: { p_user_id: string }
         Returns: {
@@ -4238,6 +4249,10 @@ export type Database = {
         Returns: number
       }
       get_user_data_for_export: { Args: { p_user_id: string }; Returns: Json }
+      get_user_roles: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"][]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -4354,6 +4369,13 @@ export type Database = {
       redistribute_binome_missions: {
         Args: { p_binome_id: string }
         Returns: number
+      }
+      remove_user_role: {
+        Args: {
+          old_role: Database["public"]["Enums"]["app_role"]
+          target_user_id: string
+        }
+        Returns: undefined
       }
       request_gdpr_export: { Args: { p_user_id: string }; Returns: string }
       reset_mission_queue: { Args: never; Returns: number }
