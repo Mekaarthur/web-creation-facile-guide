@@ -166,12 +166,50 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         price: 30,
         priceDisplay: "30€/h",
         image: serviceHouseLogistics,
-        description: "Retrait des colis et livraisons, rangement d'armoire, repassage et rangement de vêtements.",
+        description: "Retrait des colis et livraisons, gestion des documents et courriers.",
         options: [
           "Retrait des colis et livraisons",
-          "Rangement d'armoire",
-          "Repassage",
-          "Rangement de vêtements"
+          "Gestion des documents et courriers"
+        ],
+      },
+      {
+        slug: "rangement-armoire",
+        title: "Rangement d'armoire",
+        price: 30,
+        priceDisplay: "30€/h",
+        image: serviceHouseLogistics,
+        description: "Organisation et rangement de vos armoires et espaces de rangement.",
+        options: [
+          "Tri et organisation des vêtements",
+          "Optimisation de l'espace",
+          "Conseils de rangement"
+        ],
+      },
+      {
+        slug: "repassage-vetements",
+        title: "Repassage des vêtements",
+        price: 30,
+        priceDisplay: "30€/h",
+        image: serviceMaisonFull,
+        description: "Repassage et pliage soigné de vos vêtements.",
+        options: [
+          "Repassage de tout type de vêtements",
+          "Pliage et rangement",
+          "Traitement des textiles délicats"
+        ],
+      },
+      {
+        slug: "batch-cooking",
+        title: "Batch cooking",
+        price: 30,
+        priceDisplay: "30€/h",
+        image: serviceMaison,
+        description: "Préparation de repas en grande quantité pour la semaine.",
+        options: [
+          "Planification des menus hebdomadaires",
+          "Courses et approvisionnement",
+          "Préparation et conditionnement des repas",
+          "Adaptations aux régimes spécifiques"
         ],
       },
       {

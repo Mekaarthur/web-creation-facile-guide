@@ -78,6 +78,24 @@ export const universeServices: UniverseCategory[] = [
         providerPrice: 22
       },
       {
+        id: 'rangement-armoire',
+        name: 'Rangement d\'armoire',
+        clientPrice: 30,
+        providerPrice: 22
+      },
+      {
+        id: 'repassage-vetements',
+        name: 'Repassage des vêtements',
+        clientPrice: 30,
+        providerPrice: 22
+      },
+      {
+        id: 'batch-cooking',
+        name: 'Batch cooking',
+        clientPrice: 30,
+        providerPrice: 22
+      },
+      {
         id: 'aide-demenagement-amenagement',
         name: 'Aide au déménagement et à l\'aménagement',
         clientPrice: 30,
