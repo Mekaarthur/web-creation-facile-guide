@@ -172,3 +172,6 @@ verify_jwt = false  # Can be called by anonymous users
 
 [functions.send-booking-confirmation]
 verify_jwt = false  # Email sending - no auth required
+
+[functions.verify-user-role]
+verify_jwt = true  # Requires authentication to verify roles
