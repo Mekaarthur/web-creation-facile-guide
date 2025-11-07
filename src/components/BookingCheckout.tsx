@@ -311,7 +311,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
 
               <Button 
                 onClick={handleSubmitBooking}
-                className="w-full"
+                className="w-full bg-gradient-primary hover:opacity-90"
                 size="lg"
                 disabled={isProcessing}
               >
@@ -321,16 +321,41 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                     Traitement en cours...
                   </>
                 ) : (
-                  `Confirmer la réservation`
+                  <>
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Confirmer et payer {getCartTotal()}€
+                  </>
                 )}
               </Button>
 
               <p className="text-xs text-muted-foreground text-center">
-                Un conseiller vous contactera sous 24h pour confirmer
+                Paiement sécurisé via Stripe • Un conseiller vous contactera sous 24h
               </p>
             </CardContent>
           </Card>
         </div>
+      </div>
+
+      {/* Bouton fixe mobile */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-background border-t shadow-elegant z-50">
+        <Button 
+          onClick={handleSubmitBooking}
+          className="w-full bg-gradient-primary hover:opacity-90"
+          size="lg"
+          disabled={isProcessing}
+        >
+          {isProcessing ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Traitement...
+            </>
+          ) : (
+            <>
+              <CreditCard className="w-4 h-4 mr-2" />
+              Confirmer et payer {getCartTotal()}€
+            </>
+          )}
+        </Button>
       </div>
     </div>
   );
