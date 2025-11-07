@@ -4042,6 +4042,10 @@ export type Database = {
         Args: { p_provider_id: string }
         Returns: number
       }
+      calculate_provider_price: {
+        Args: { client_price: number }
+        Returns: number
+      }
       calculate_provider_reward_tier: {
         Args: {
           p_average_rating: number
