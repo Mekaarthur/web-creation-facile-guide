@@ -3539,7 +3539,7 @@ export type Database = {
         Insert: {
           action_type: string
           created_at?: string | null
-          event_type: string
+          event_type?: string
           id?: string
           ip_address?: unknown
           record_id?: string | null
