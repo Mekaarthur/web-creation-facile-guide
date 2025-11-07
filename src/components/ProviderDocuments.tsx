@@ -269,7 +269,7 @@ const ProviderDocuments = () => {
         .update({ 
           documents_submitted: true,
           documents_submitted_at: new Date().toISOString()
-        })
+        } as any)
         .eq('id', provider.id);
 
       if (error) throw error;

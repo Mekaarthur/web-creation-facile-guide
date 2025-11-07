@@ -3131,6 +3131,8 @@ export type Database = {
           created_at: string
           description: string | null
           diploma_document_url: string | null
+          documents_submitted: boolean | null
+          documents_submitted_at: string | null
           forfait_rate: number | null
           formation_completed: boolean | null
           formation_completed_at: string | null
@@ -3186,6 +3188,8 @@ export type Database = {
           created_at?: string
           description?: string | null
           diploma_document_url?: string | null
+          documents_submitted?: boolean | null
+          documents_submitted_at?: string | null
           forfait_rate?: number | null
           formation_completed?: boolean | null
           formation_completed_at?: string | null
@@ -3241,6 +3245,8 @@ export type Database = {
           created_at?: string
           description?: string | null
           diploma_document_url?: string | null
+          documents_submitted?: boolean | null
+          documents_submitted_at?: string | null
           forfait_rate?: number | null
           formation_completed?: boolean | null
           formation_completed_at?: string | null
