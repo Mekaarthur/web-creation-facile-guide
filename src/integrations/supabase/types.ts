@@ -3956,34 +3956,15 @@ export type Database = {
       }
       providers_public_view: {
         Row: {
+          avatar_url: string | null
           business_name: string | null
-          description: string | null
+          first_name: string | null
+          hourly_rate: number | null
           id: string | null
           is_verified: boolean | null
+          last_name: string | null
           location: string | null
-          profile_photo_url: string | null
           rating: number | null
-          status: string | null
-        }
-        Insert: {
-          business_name?: string | null
-          description?: never
-          id?: string | null
-          is_verified?: boolean | null
-          location?: never
-          profile_photo_url?: never
-          rating?: number | null
-          status?: string | null
-        }
-        Update: {
-          business_name?: string | null
-          description?: never
-          id?: string | null
-          is_verified?: boolean | null
-          location?: never
-          profile_photo_url?: never
-          rating?: number | null
-          status?: string | null
         }
         Relationships: []
       }
