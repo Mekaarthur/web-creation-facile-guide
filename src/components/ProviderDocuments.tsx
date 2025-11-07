@@ -75,13 +75,6 @@ const ProviderDocuments = () => {
       required: true
     },
     {
-      type: 'diploma',
-      label: 'Diplôme',
-      description: 'Diplôme(s) ou certificat(s) de formation pertinent(s)',
-      icon: Award,
-      required: false
-    },
-    {
       type: 'certification',
       label: 'Certification ou accréditation',
       description: 'Certification professionnelle ou accréditation officielle',
