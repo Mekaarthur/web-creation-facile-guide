@@ -161,13 +161,70 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-      <div className="flex items-center gap-4">
+    <div className="max-w-5xl mx-auto px-4 py-8 pb-32 space-y-6">
+      <div className="flex items-center gap-4 mb-6">
         <Button variant="ghost" onClick={onBack} disabled={isProcessing}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour au panier
         </Button>
         <h1 className="text-2xl font-bold">Finalisation de la réservation</h1>
+      </div>
+
+      {/* Récapitulatif mobile - En haut */}
+      <div className="lg:hidden">
+        <Card className="border-primary/20 shadow-elegant">
+          <CardHeader className="bg-gradient-subtle">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <CreditCard className="w-5 h-5" />
+              Récapitulatif de commande
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 pt-4">
+            {hasIncompatibleServices() && (
+              <Alert className="border-orange-200 bg-orange-50">
+                <AlertTriangle className="w-4 h-4" />
+                <AlertDescription className="text-xs">
+                  Services séparés en <strong>{getSeparatedBookingsCount()} réservations</strong>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <div className="space-y-3 max-h-60 overflow-y-auto">
+              {cartItems.map((item) => {
+                const slot = formatTimeSlot(item.timeSlot);
+                return (
+                  <div key={item.id} className="p-3 bg-muted/30 rounded-lg text-sm">
+                    <div className="font-medium">{item.serviceName}</div>
+                    <div className="text-xs text-muted-foreground">{item.packageTitle}</div>
+                    <div className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {slot.date}
+                    </div>
+                    <div className="mt-2 flex justify-between items-center">
+                      <Badge variant="secondary" className="text-xs">
+                        {item.price}€ × {item.quantity}h
+                      </Badge>
+                      <span className="font-medium">{item.price * item.quantity}€</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <Separator />
+
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-sm">
+                <span>Sous-total</span>
+                <span>{getCartTotal()}€</span>
+              </div>
+              <div className="flex justify-between items-center text-xl font-bold border-t pt-2">
+                <span>Total</span>
+                <span className="text-primary">{getCartTotal()}€</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -251,9 +308,9 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
           </Card>
         </div>
 
-        {/* Right Column - Order Summary */}
-        <div className="space-y-6">
-          <Card>
+        {/* Right Column - Order Summary - Desktop uniquement */}
+        <div className="hidden lg:block space-y-6">
+          <Card className="sticky top-24">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="w-5 h-5" />
@@ -337,7 +394,10 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       </div>
 
       {/* Bouton fixe mobile */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-background border-t shadow-elegant z-50">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t shadow-elegant z-50">
+        <div className="mb-2 text-center text-sm font-semibold">
+          Total: <span className="text-primary text-lg">{getCartTotal()}€</span>
+        </div>
         <Button 
           onClick={handleSubmitBooking}
           className="w-full bg-gradient-primary hover:opacity-90"
@@ -352,10 +412,13 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
           ) : (
             <>
               <CreditCard className="w-4 h-4 mr-2" />
-              Confirmer et payer {getCartTotal()}€
+              Confirmer et payer
             </>
           )}
         </Button>
+        <p className="text-xs text-muted-foreground text-center mt-2">
+          Paiement sécurisé via Stripe
+        </p>
       </div>
     </div>
   );
