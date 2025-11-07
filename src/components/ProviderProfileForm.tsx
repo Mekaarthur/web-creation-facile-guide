@@ -31,7 +31,6 @@ interface ProviderData {
   city?: string;
   avatar_url?: string;
   hourly_rate?: number;
-  certifications?: string;
   siret_number?: string;
   is_verified?: boolean;
 }
@@ -484,17 +483,6 @@ const ProviderProfileForm = () => {
               </p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="certifications">Certifications et diplômes</Label>
-              <Textarea
-                id="certifications"
-                value={profile.certifications || ''}
-                onChange={(e) => handleInputChange('certifications', e.target.value)}
-                placeholder="Listez vos certifications, diplômes et formations pertinentes..."
-                rows={3}
-                className="resize-none"
-              />
-            </div>
           </CardContent>
         </Card>
       )}
