@@ -2253,6 +2253,92 @@ export type Database = {
         }
         Relationships: []
       }
+      prestataire_zones: {
+        Row: {
+          adresse_reference: string
+          average_rating: number | null
+          created_at: string
+          disponibilite: Json | null
+          id: string
+          last_activity_at: string | null
+          latitude: number | null
+          longitude: number | null
+          missions_accepted: number | null
+          missions_count: number | null
+          prestataire_id: string
+          rayon_km: number
+          statut: string
+          total_revenue: number | null
+          updated_at: string
+          zone_id: string | null
+        }
+        Insert: {
+          adresse_reference: string
+          average_rating?: number | null
+          created_at?: string
+          disponibilite?: Json | null
+          id?: string
+          last_activity_at?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          missions_accepted?: number | null
+          missions_count?: number | null
+          prestataire_id: string
+          rayon_km?: number
+          statut?: string
+          total_revenue?: number | null
+          updated_at?: string
+          zone_id?: string | null
+        }
+        Update: {
+          adresse_reference?: string
+          average_rating?: number | null
+          created_at?: string
+          disponibilite?: Json | null
+          id?: string
+          last_activity_at?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          missions_accepted?: number | null
+          missions_count?: number | null
+          prestataire_id?: string
+          rayon_km?: number
+          statut?: string
+          total_revenue?: number | null
+          updated_at?: string
+          zone_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prestataire_zones_prestataire_id_fkey"
+            columns: ["prestataire_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prestataire_zones_prestataire_id_fkey"
+            columns: ["prestataire_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prestataire_zones_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zone_statistics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prestataire_zones_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones_geographiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prestations_realisees: {
         Row: {
           booking_id: string | null
@@ -4116,6 +4202,59 @@ export type Database = {
           updated_at: string | null
         }
         Relationships: []
+      }
+      prestataire_zones_stats: {
+        Row: {
+          adresse_reference: string | null
+          average_rating: number | null
+          created_at: string | null
+          disponibilite: Json | null
+          id: string | null
+          last_activity_at: string | null
+          last_mission_date: string | null
+          latitude: number | null
+          longitude: number | null
+          missions_accepted: number | null
+          missions_received: number | null
+          prestataire_id: string | null
+          rayon_km: number | null
+          statut: string | null
+          total_revenue: number | null
+          type_zone: string | null
+          updated_at: string | null
+          zone_id: string | null
+          zone_name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prestataire_zones_prestataire_id_fkey"
+            columns: ["prestataire_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prestataire_zones_prestataire_id_fkey"
+            columns: ["prestataire_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prestataire_zones_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zone_statistics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prestataire_zones_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones_geographiques"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       providers_public_view: {
         Row: {

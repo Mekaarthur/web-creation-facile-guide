@@ -49,7 +49,7 @@ import ProviderMissionManager from '@/components/ProviderMissionManager';
 import ProviderAppointments from '@/components/ProviderAppointments';
 import ProviderMessaging from '@/components/ProviderMessaging';
 import ProviderServices from '@/components/ProviderServices';
-import ProviderServiceZones from '@/components/ProviderServiceZones';
+import MyZones from '@/pages/provider/MyZones';
 import ProviderReferralProgram from '@/components/ProviderReferralProgram';
 import ProviderPerformanceRewards from '@/components/provider/ProviderPerformanceRewards';
 
@@ -545,7 +545,7 @@ const EnhancedProviderDashboard = () => {
 
           {/* Zones Tab */}
           <TabsContent value="zones" className="mt-8">
-            <ProviderServiceZones />
+            <MyZones />
           </TabsContent>
 
           {/* Cooptation Tab */}

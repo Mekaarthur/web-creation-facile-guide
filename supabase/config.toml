@@ -199,3 +199,6 @@ verify_jwt = false  # Called automatically when mission completes - uses service
 
 [functions.check-zone-alerts]
 verify_jwt = false  # Called by cron job or manually - uses service role key
+
+[functions.provider-zones]
+verify_jwt = true  # Requires provider authentication
