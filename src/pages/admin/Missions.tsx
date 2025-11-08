@@ -1,25 +1,42 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, MapPin, Clock, User, Star, Search, Filter } from "lucide-react";
+import { Calendar, MapPin, Clock, User, Search, DollarSign, TrendingUp, Eye } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { MissionDetailsModal } from "@/components/admin/MissionDetailsModal";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface Mission {
   id: string;
-  title: string;
-  client_name: string;
-  provider_name?: string;
-  service_type: string;
-  status: 'pending' | 'assigned' | 'in_progress' | 'completed' | 'cancelled';
-  scheduled_date: string;
-  location: string;
-  duration: number;
-  price: number;
-  priority: 'low' | 'medium' | 'high';
+  booking_date: string;
+  start_time: string;
+  end_time: string;
+  address: string | null;
+  total_price: number;
+  status: string;
   created_at: string;
+  client_id: string;
+  provider_id: string | null;
+  service_id: string;
+  notes?: string | null;
+  cancellation_reason?: string | null;
+  services: {
+    name: string;
+    category: string;
+  } | null;
+  client_profile?: {
+    first_name: string | null;
+    last_name: string | null;
+    email: string | null;
+  } | null;
+  provider_profile?: {
+    first_name: string | null;
+    last_name: string | null;
+  } | null;
 }
 
 const AdminMissions = () => {
@@ -27,94 +44,120 @@ const AdminMissions = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-
-  // Mock data
-  const mockMissions: Mission[] = [
-    {
-      id: '1',
-      title: 'Garde d\'enfants',
-      client_name: 'Marie Dubois',
-      provider_name: 'Sophie Martin',
-      service_type: 'BikaKids',
-      status: 'in_progress',
-      scheduled_date: '2024-12-15T14:00:00Z',
-      location: 'Paris 15ème',
-      duration: 4,
-      price: 120,
-      priority: 'medium',
-      created_at: '2024-12-10T10:00:00Z'
-    },
-    {
-      id: '2',
-      title: 'Ménage à domicile',
-      client_name: 'Pierre Martin',
-      service_type: 'BikaMaison',
-      status: 'pending',
-      scheduled_date: '2024-12-16T09:00:00Z',
-      location: 'Neuilly-sur-Seine',
-      duration: 3,
-      price: 90,
-      priority: 'high',
-      created_at: '2024-12-10T15:30:00Z'
-    },
-    {
-      id: '3',
-      title: 'Accompagnement senior',
-      client_name: 'Isabelle Leroy',
-      provider_name: 'Jean Dupont',
-      service_type: 'BikaSeniors',
-      status: 'completed',
-      scheduled_date: '2024-12-12T10:00:00Z',
-      location: 'Versailles',
-      duration: 2,
-      price: 80,
-      priority: 'low',
-      created_at: '2024-12-08T11:20:00Z'
-    }
-  ];
+  const [universeFilter, setUniverseFilter] = useState("all");
+  const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
+  const [stats, setStats] = useState({
+    total: 0,
+    revenue: 0,
+    commission: 0,
+    providerPayment: 0
+  });
 
   useEffect(() => {
-    const loadMissions = async () => {
-      try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setMissions(mockMissions);
-      } finally {
-        setLoading(false);
-      }
-    };
     loadMissions();
   }, []);
 
-  const filteredMissions = missions.filter(mission => {
-    const matchesSearch = mission.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         mission.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         mission.service_type.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || mission.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const loadMissions = async () => {
+    try {
+      setLoading(true);
+      const { data: bookingsData, error } = await supabase
+        .from('bookings')
+        .select(`
+          *,
+          services (
+            name,
+            category
+          )
+        `)
+        .order('created_at', { ascending: false });
 
-  const getStatusBadge = (status: Mission['status']) => {
-    const variants = {
-      pending: { variant: 'outline' as const, label: 'En attente' },
-      assigned: { variant: 'secondary' as const, label: 'Assignée' },
-      in_progress: { variant: 'default' as const, label: 'En cours' },
-      completed: { variant: 'default' as const, label: 'Terminée' },
-      cancelled: { variant: 'destructive' as const, label: 'Annulée' }
-    };
+      if (error) throw error;
 
-    const config = variants[status];
-    return <Badge variant={config.variant}>{config.label}</Badge>;
+      // Load client and provider profiles separately
+      const missionsWithDetails = await Promise.all(
+        (bookingsData || []).map(async (booking) => {
+          // Load client profile
+          const { data: clientProfile } = await supabase
+            .from('profiles')
+            .select('first_name, last_name, email')
+            .eq('user_id', booking.client_id)
+            .single();
+
+          let providerProfile = null;
+          if (booking.provider_id) {
+            const { data: providerData } = await supabase
+              .from('providers')
+              .select('user_id')
+              .eq('id', booking.provider_id)
+              .single();
+
+            if (providerData?.user_id) {
+              const { data: profileData } = await supabase
+                .from('profiles')
+                .select('first_name, last_name')
+                .eq('user_id', providerData.user_id)
+                .single();
+
+              providerProfile = profileData;
+            }
+          }
+
+          return {
+            ...booking,
+            client_profile: clientProfile,
+            provider_profile: providerProfile
+          };
+        })
+      );
+
+      setMissions(missionsWithDetails as Mission[]);
+
+      // Calculate stats
+      const totalRevenue = missionsWithDetails.reduce((sum, m) => sum + (Number(m.total_price) || 0), 0);
+      const commission = totalRevenue * 0.28;
+      const providerPayment = totalRevenue * 0.72;
+
+      setStats({
+        total: missionsWithDetails.length,
+        revenue: totalRevenue,
+        commission,
+        providerPayment
+      });
+    } catch (error) {
+      console.error('Error loading missions:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getPriorityBadge = (priority: Mission['priority']) => {
-    const variants = {
-      low: { variant: 'outline' as const, label: 'Faible', color: 'text-green-600' },
-      medium: { variant: 'secondary' as const, label: 'Moyenne', color: 'text-yellow-600' },
-      high: { variant: 'destructive' as const, label: 'Haute', color: 'text-red-600' }
+  const filteredMissions = missions.filter(mission => {
+    const matchesSearch = 
+      (mission.services?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (mission.client_profile?.first_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (mission.client_profile?.last_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (mission.provider_profile?.first_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (mission.provider_profile?.last_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (mission.address || '').toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === "all" || mission.status === statusFilter;
+    const matchesUniverse = universeFilter === "all" || mission.services?.category === universeFilter;
+    
+    return matchesSearch && matchesStatus && matchesUniverse;
+  });
+
+  const getStatusBadge = (status: string) => {
+    const variants: Record<string, { variant: any, label: string }> = {
+      pending: { variant: 'outline', label: 'En attente' },
+      assigned: { variant: 'secondary', label: 'Assignée' },
+      accepted: { variant: 'default', label: 'Acceptée' },
+      in_progress: { variant: 'default', label: 'En cours' },
+      completed: { variant: 'default', label: 'Terminée' },
+      cancelled: { variant: 'destructive', label: 'Annulée' },
+      paid: { variant: 'default', label: 'Payée' }
     };
 
-    const config = variants[priority];
-    return <Badge variant={config.variant} className={config.color}>{config.label}</Badge>;
+    const config = variants[status] || { variant: 'outline', label: status };
+    return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
   const getStatusCount = (status: string) => {
@@ -122,17 +165,43 @@ const AdminMissions = () => {
     return missions.filter(mission => mission.status === status).length;
   };
 
+  const calculateDuration = (startTime: string, endTime: string) => {
+    const start = new Date(`2000-01-01T${startTime}`);
+    const end = new Date(`2000-01-01T${endTime}`);
+    const diff = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+    return diff.toFixed(1);
+  };
+
+  const calculateCommission = (totalPrice: number) => {
+    return (totalPrice * 0.28).toFixed(2);
+  };
+
+  const calculateProviderPayment = (totalPrice: number) => {
+    return (totalPrice * 0.72).toFixed(2);
+  };
+
   if (loading) {
-    return <div className="p-6">Chargement des missions...</div>;
+    return (
+      <div className="space-y-6 p-4 sm:p-6">
+        <Skeleton className="h-12 w-64" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-32" />
+          ))}
+        </div>
+        <Skeleton className="h-96" />
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6 p-4 sm:p-6">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold">Missions</h1>
-        <p className="text-muted-foreground text-sm sm:text-base">Gestion des missions et assignations</p>
+        <p className="text-muted-foreground text-sm sm:text-base">Gestion complète des missions et paiements</p>
       </div>
 
+      {/* Statistics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -140,49 +209,62 @@ const AdminMissions = () => {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{missions.length}</div>
+            <div className="text-2xl font-bold">{stats.total}</div>
+            <p className="text-xs text-muted-foreground">
+              {getStatusCount('pending')} en attente
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En attente</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Chiffre d'affaires</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{getStatusCount('pending')}</div>
+            <div className="text-2xl font-bold">{stats.revenue.toFixed(2)}€</div>
+            <p className="text-xs text-muted-foreground">
+              Total des missions
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En cours</CardTitle>
+            <CardTitle className="text-sm font-medium">Commission Bikawo</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.commission.toFixed(2)}€</div>
+            <p className="text-xs text-muted-foreground">
+              28% des missions
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Reversé prestataires</CardTitle>
             <User className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{getStatusCount('in_progress')}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Terminées</CardTitle>
-            <Star className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{getStatusCount('completed')}</div>
+            <div className="text-2xl font-bold">{stats.providerPayment.toFixed(2)}€</div>
+            <p className="text-xs text-muted-foreground">
+              72% des missions
+            </p>
           </CardContent>
         </Card>
       </div>
 
+      {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Filtres</CardTitle>
+          <CardTitle>Filtres et recherche</CardTitle>
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Rechercher une mission..."
+                placeholder="Rechercher par client, prestataire, adresse..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-8"
@@ -196,87 +278,152 @@ const AdminMissions = () => {
                 <SelectItem value="all">Tous les statuts</SelectItem>
                 <SelectItem value="pending">En attente</SelectItem>
                 <SelectItem value="assigned">Assignée</SelectItem>
+                <SelectItem value="accepted">Acceptée</SelectItem>
                 <SelectItem value="in_progress">En cours</SelectItem>
                 <SelectItem value="completed">Terminée</SelectItem>
                 <SelectItem value="cancelled">Annulée</SelectItem>
+                <SelectItem value="paid">Payée</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={universeFilter} onValueChange={setUniverseFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Univers" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les univers</SelectItem>
+                <SelectItem value="bika_kids">Bika Kids</SelectItem>
+                <SelectItem value="bika_maison">Bika Maison</SelectItem>
+                <SelectItem value="bika_vie">Bika Vie</SelectItem>
+                <SelectItem value="bika_travel">Bika Travel</SelectItem>
+                <SelectItem value="bika_animals">Bika Animal</SelectItem>
+                <SelectItem value="bika_seniors">Bika Seniors</SelectItem>
+                <SelectItem value="bika_pro">Bika Pro</SelectItem>
+                <SelectItem value="bika_plus">Bika Plus</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {filteredMissions.map((mission) => (
-              <Card key={mission.id} className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <h3 className="font-semibold">{mission.title}</h3>
-                      {getStatusBadge(mission.status)}
-                      {getPriorityBadge(mission.priority)}
-                    </div>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-muted-foreground">
-                      <div className="space-y-1">
-                        <div className="flex items-center space-x-2">
-                          <User className="h-4 w-4 flex-shrink-0" />
-                          <span className="truncate">Client: {mission.client_name}</span>
-                        </div>
-                        {mission.provider_name && (
-                          <div className="flex items-center space-x-2">
-                            <User className="h-4 w-4 flex-shrink-0" />
-                            <span className="truncate">Prestataire: {mission.provider_name}</span>
-                          </div>
-                        )}
-                        <div className="flex items-center space-x-2">
-                          <MapPin className="h-4 w-4 flex-shrink-0" />
-                          <span className="truncate">{mission.location}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-1">
-                        <div className="flex items-center space-x-2">
-                          <Calendar className="h-4 w-4 flex-shrink-0" />
-                          <span className="truncate">{new Date(mission.scheduled_date).toLocaleDateString('fr-FR')}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Clock className="h-4 w-4 flex-shrink-0" />
-                          <span className="truncate">{mission.duration}h - €{mission.price}</span>
-                        </div>
-                        <div>
-                          <span className="font-medium truncate block">{mission.service_type}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-col sm:flex-row gap-2 mt-4 sm:mt-0">
-                    <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                      Voir détails
-                    </Button>
-                    {mission.status === 'pending' && (
-                      <Button size="sm" className="w-full sm:w-auto">
-                        Assigner
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+      </Card>
 
-          {filteredMissions.length === 0 && (
-            <div className="text-center py-8">
-              <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-lg font-medium text-muted-foreground">
-                Aucune mission trouvée
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Essayez de modifier vos critères de recherche
-              </p>
-            </div>
-          )}
+      {/* Missions Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Liste des missions ({filteredMissions.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>N° Mission</TableHead>
+                  <TableHead>Client</TableHead>
+                  <TableHead>Prestataire</TableHead>
+                  <TableHead>Univers / Service</TableHead>
+                  <TableHead>Date & Heure</TableHead>
+                  <TableHead>Durée</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead>Montant total</TableHead>
+                  <TableHead>Commission</TableHead>
+                  <TableHead>Revenu prestataire</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredMissions.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={11} className="text-center py-8">
+                      <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-lg font-medium text-muted-foreground">
+                        Aucune mission trouvée
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Essayez de modifier vos critères de recherche
+                      </p>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredMissions.map((mission) => (
+                    <TableRow key={mission.id}>
+                      <TableCell className="font-mono text-xs">
+                        {mission.id.substring(0, 8)}
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">
+                            {mission.client_profile?.first_name} {mission.client_profile?.last_name}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {mission.client_profile?.email}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {mission.provider_profile ? (
+                          <div className="font-medium">
+                            {mission.provider_profile.first_name} {mission.provider_profile.last_name}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">Non assigné</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{mission.services?.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {mission.services?.category}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div>{new Date(mission.booking_date).toLocaleDateString('fr-FR')}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {mission.start_time} - {mission.end_time}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {calculateDuration(mission.start_time, mission.end_time)}h
+                      </TableCell>
+                      <TableCell>
+                        {getStatusBadge(mission.status)}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {Number(mission.total_price).toFixed(2)}€
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {calculateCommission(Number(mission.total_price))}€
+                      </TableCell>
+                      <TableCell className="font-medium text-green-600">
+                        {calculateProviderPayment(Number(mission.total_price))}€
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedMission(mission)}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Détails
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Mission Details Modal */}
+      {selectedMission && (
+        <MissionDetailsModal
+          mission={selectedMission}
+          onClose={() => setSelectedMission(null)}
+          onUpdate={loadMissions}
+        />
+      )}
     </div>
   );
 };
