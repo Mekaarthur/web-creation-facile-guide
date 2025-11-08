@@ -181,9 +181,9 @@ const AdminClients = () => {
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.active}</div>
+              <div className="text-2xl font-bold">{stats.active || 0}</div>
               <p className="text-xs text-muted-foreground">
-                Taux: {stats.activity_rate}%
+                Taux: {(stats.activity_rate || 0)}%
               </p>
             </CardContent>
           </Card>
@@ -194,9 +194,9 @@ const AdminClients = () => {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.total_revenue.toFixed(0)}€</div>
+              <div className="text-2xl font-bold">{(stats.total_revenue || 0).toFixed(0)}€</div>
               <p className="text-xs text-muted-foreground">
-                Moy: {stats.average_revenue_per_client.toFixed(0)}€/client
+                Moy: {(stats.average_revenue_per_client || 0).toFixed(0)}€/client
               </p>
             </CardContent>
           </Card>
@@ -207,9 +207,9 @@ const AdminClients = () => {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.retention_rate}%</div>
+              <div className="text-2xl font-bold">{(stats.retention_rate || 0)}%</div>
               <p className="text-xs text-muted-foreground">
-                {stats.blocked} bloqués
+                {stats.blocked || 0} bloqués
               </p>
             </CardContent>
           </Card>
@@ -297,12 +297,12 @@ const AdminClients = () => {
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Total dépensé:</span>
-                  <span className="font-medium">{client.stats?.total_spent?.toFixed(2) || 0}€</span>
+                  <span className="font-medium">{(client.stats?.total_spent || 0).toFixed(2)}€</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Panier moyen:</span>
                   <span className="font-medium">
-                    {client.stats?.average_booking_value?.toFixed(2) || 0}€
+                    {(client.stats?.average_booking_value || 0).toFixed(2)}€
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
