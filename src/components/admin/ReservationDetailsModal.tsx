@@ -96,18 +96,36 @@ export const ReservationDetailsModal = ({ reservation, onClose, onUpdate }: Rese
     loadFinancialTransaction();
   }, [reservation.provider_id, reservation.client_id, reservation.id]);
 
-  // Nouveau modèle de commission: markup fixe de 5€
-  const calculateFinancials = (basePrice: number) => {
-    const markup = 5; // 5€ de markup
-    const clientPrice = basePrice + markup;
-    const providerPayment = basePrice;
-    const bikawoCommission = markup;
+  // Calcul de la durée en heures
+  const calculateDuration = () => {
+    const start = new Date(`2000-01-01T${reservation.start_time}`);
+    const end = new Date(`2000-01-01T${reservation.end_time}`);
+    return (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+  };
+
+  // Nouveau modèle de commission basé sur le prix horaire
+  const calculateFinancials = () => {
+    const duration = calculateDuration();
+    const hourlyRate = reservation.hourly_rate || (reservation.total_price / duration);
+    
+    // Commission de 28% du prix horaire (environ)
+    // Exemples: 25€/h → 7€/h commission, 30€/h → 8€/h commission
+    const commissionPerHour = Math.round(hourlyRate * 0.28);
+    const providerPerHour = hourlyRate - commissionPerHour;
+    
+    const totalClient = hourlyRate * duration;
+    const totalProvider = providerPerHour * duration;
+    const totalCommission = commissionPerHour * duration;
     
     return {
-      clientPrice,
-      providerPayment,
-      bikawoCommission,
-      markupPercentage: ((markup / basePrice) * 100).toFixed(1)
+      hourlyRate,
+      duration,
+      commissionPerHour,
+      providerPerHour,
+      totalClient,
+      totalProvider,
+      totalCommission,
+      commissionPercentage: ((commissionPerHour / hourlyRate) * 100).toFixed(1)
     };
   };
 
@@ -446,17 +464,29 @@ export const ReservationDetailsModal = ({ reservation, onClose, onUpdate }: Rese
   };
 
   const handleConvertToMission = async () => {
+    if (!reservation.provider_id) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez d'abord assigner un prestataire",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
+      // Convertir la réservation en mission active
       const { error } = await supabase
         .from('bookings')
         .update({ 
-          status: 'in_progress'
+          status: 'in_progress',
+          mission_started_at: new Date().toISOString()
         })
         .eq('id', reservation.id);
 
       if (error) throw error;
 
+      // Logger l'action
       await supabase.from('admin_actions_log').insert({
         admin_user_id: (await supabase.auth.getUser()).data.user?.id,
         entity_type: 'booking',
@@ -465,9 +495,25 @@ export const ReservationDetailsModal = ({ reservation, onClose, onUpdate }: Rese
         description: 'Réservation convertie en mission active'
       });
 
+      // Notifier le prestataire
+      const { data: providerData } = await supabase
+        .from('providers')
+        .select('user_id')
+        .eq('id', reservation.provider_id)
+        .single();
+
+      if (providerData?.user_id) {
+        await supabase.from('notifications').insert({
+          user_id: providerData.user_id,
+          title: 'Mission démarrée',
+          message: `Votre mission du ${new Date(reservation.booking_date).toLocaleDateString('fr-FR')} est maintenant active.`,
+          type: 'mission_started'
+        });
+      }
+
       toast({
         title: "Convertie en mission",
-        description: "La réservation est maintenant une mission active",
+        description: "La réservation est maintenant une mission active. Le prestataire a été notifié.",
       });
 
       onUpdate();
@@ -484,8 +530,7 @@ export const ReservationDetailsModal = ({ reservation, onClose, onUpdate }: Rese
     }
   };
 
-  const basePrice = reservation.services?.base_price || reservation.total_price - 5;
-  const financials = calculateFinancials(basePrice);
+  const financials = calculateFinancials();
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -541,21 +586,12 @@ export const ReservationDetailsModal = ({ reservation, onClose, onUpdate }: Rese
                   </div>
                   <div>
                     <Label className="text-muted-foreground">Durée</Label>
-                    <p className="font-medium">
-                      {(() => {
-                        const start = new Date(`2000-01-01T${reservation.start_time}`);
-                        const end = new Date(`2000-01-01T${reservation.end_time}`);
-                        const hours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
-                        return `${hours}h`;
-                      })()}
-                    </p>
+                    <p className="font-medium">{financials.duration}h</p>
                   </div>
-                  {reservation.hourly_rate && (
-                    <div>
-                      <Label className="text-muted-foreground">Prix horaire</Label>
-                      <p className="font-medium">{reservation.hourly_rate.toFixed(2)}€/h</p>
-                    </div>
-                  )}
+                  <div>
+                    <Label className="text-muted-foreground">Prix horaire client</Label>
+                    <p className="font-medium">{financials.hourlyRate.toFixed(2)}€/h</p>
+                  </div>
                   <div>
                     <Label className="text-muted-foreground">Adresse</Label>
                     <div className="flex items-center gap-2">
@@ -613,33 +649,52 @@ export const ReservationDetailsModal = ({ reservation, onClose, onUpdate }: Rese
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="text-center p-4 border rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-1">Prix service</p>
-                    <p className="text-xl font-bold">{basePrice.toFixed(2)}€</p>
-                    <p className="text-xs text-muted-foreground">Prix de base</p>
+                <div className="space-y-3 mb-4 p-3 bg-muted/50 rounded-lg">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Prix horaire client:</span>
+                    <span className="font-medium">{financials.hourlyRate.toFixed(2)}€/h</span>
                   </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Prix horaire prestataire:</span>
+                    <span className="font-medium">{financials.providerPerHour.toFixed(2)}€/h</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Commission horaire Bikawo:</span>
+                    <span className="font-medium">{financials.commissionPerHour.toFixed(2)}€/h</span>
+                  </div>
+                  <div className="flex justify-between text-sm border-t pt-2">
+                    <span className="text-muted-foreground">Durée:</span>
+                    <span className="font-medium">{financials.duration}h</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
                   <div className="text-center p-4 border rounded-lg bg-primary/5">
                     <p className="text-sm text-muted-foreground mb-1">Client paye</p>
                     <p className="text-2xl font-bold text-primary">
-                      {financials.clientPrice.toFixed(2)}€
+                      {financials.totalClient.toFixed(2)}€
                     </p>
-                    <p className="text-xs text-muted-foreground">+5€ markup</p>
+                    <p className="text-xs text-muted-foreground">{financials.hourlyRate.toFixed(2)}€/h × {financials.duration}h</p>
                   </div>
                   <div className="text-center p-4 border rounded-lg bg-green-50 dark:bg-green-950">
                     <p className="text-sm text-muted-foreground mb-1">Prestataire reçoit</p>
                     <p className="text-2xl font-bold text-green-600">
-                      {financials.providerPayment.toFixed(2)}€
+                      {financials.totalProvider.toFixed(2)}€
                     </p>
-                    <p className="text-xs text-muted-foreground">Prix service</p>
+                    <p className="text-xs text-muted-foreground">{financials.providerPerHour.toFixed(2)}€/h × {financials.duration}h</p>
+                  </div>
+                  <div className="text-center p-4 border rounded-lg bg-amber-50 dark:bg-amber-950">
+                    <p className="text-sm text-muted-foreground mb-1">Commission Bikawo</p>
+                    <p className="text-2xl font-bold text-amber-600">
+                      {financials.totalCommission.toFixed(2)}€
+                    </p>
+                    <p className="text-xs text-muted-foreground">{financials.commissionPerHour.toFixed(2)}€/h × {financials.duration}h</p>
                   </div>
                 </div>
 
-                <div className="p-4 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg">
-                  <p className="font-semibold text-amber-900 dark:text-amber-100 mb-2">Commission Bikawo</p>
-                  <p className="text-2xl font-bold text-amber-600">{financials.bikawoCommission.toFixed(2)}€</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Markup fixe de 5€ ({financials.markupPercentage}% du service)
+                <div className="p-3 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg">
+                  <p className="text-sm text-muted-foreground">
+                    Commission: <span className="font-semibold text-amber-900 dark:text-amber-100">{financials.commissionPercentage}%</span> du prix horaire
                   </p>
                 </div>
 
