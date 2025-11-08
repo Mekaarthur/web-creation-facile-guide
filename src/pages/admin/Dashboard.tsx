@@ -86,21 +86,21 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <div>
-        <h1 className="text-3xl font-bold">Tableau de bord</h1>
-        <p className="text-muted-foreground">Vue d'ensemble de votre plateforme</p>
+        <h1 className="text-2xl sm:text-3xl font-bold">Tableau de bord</h1>
+        <p className="text-muted-foreground text-sm sm:text-base">Vue d'ensemble de votre plateforme</p>
       </div>
 
       {/* Statistiques principales */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Utilisateurs actifs</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-xs sm:text-sm font-medium">Utilisateurs actifs</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground flex-shrink-0" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total_users}</div>
+            <div className="text-xl sm:text-2xl font-bold">{stats.total_users}</div>
             <p className="text-xs text-muted-foreground">
               +12% par rapport au mois dernier
             </p>

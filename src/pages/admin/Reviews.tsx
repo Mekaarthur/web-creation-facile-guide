@@ -224,13 +224,13 @@ const AdminReviews = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <div>
-        <h1 className="text-3xl font-bold">Avis & Notes</h1>
-        <p className="text-muted-foreground">Modération des avis clients</p>
+        <h1 className="text-2xl sm:text-3xl font-bold">Avis & Notes</h1>
+        <p className="text-muted-foreground text-sm sm:text-base">Modération des avis clients</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total avis</CardTitle>
@@ -280,8 +280,8 @@ const AdminReviews = () => {
       <Card>
         <CardHeader>
           <CardTitle>Filtres</CardTitle>
-          <div className="flex space-x-4">
-            <div className="relative flex-1 max-w-sm">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Rechercher un avis..."
@@ -291,7 +291,7 @@ const AdminReviews = () => {
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Statut" />
               </SelectTrigger>
               <SelectContent>

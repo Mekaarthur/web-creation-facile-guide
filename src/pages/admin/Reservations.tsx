@@ -131,11 +131,11 @@ const AdminReservations = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Réservations</h1>
-          <p className="text-muted-foreground">Gestion des réservations de services</p>
+          <h1 className="text-2xl sm:text-3xl font-bold">Réservations</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">Gestion des réservations de services</p>
         </div>
         <ExcelExportButton
           data={filteredReservations}
@@ -146,7 +146,7 @@ const AdminReservations = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total</CardTitle>
@@ -193,8 +193,8 @@ const AdminReservations = () => {
       <Card>
         <CardHeader>
           <CardTitle>Filtres</CardTitle>
-          <div className="flex space-x-4">
-            <div className="relative flex-1 max-w-sm">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Rechercher une réservation..."
@@ -204,7 +204,7 @@ const AdminReservations = () => {
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Statut" />
               </SelectTrigger>
               <SelectContent>

@@ -127,13 +127,13 @@ const AdminMissions = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <div>
-        <h1 className="text-3xl font-bold">Missions</h1>
-        <p className="text-muted-foreground">Gestion des missions et assignations</p>
+        <h1 className="text-2xl sm:text-3xl font-bold">Missions</h1>
+        <p className="text-muted-foreground text-sm sm:text-base">Gestion des missions et assignations</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total missions</CardTitle>
@@ -178,8 +178,8 @@ const AdminMissions = () => {
       <Card>
         <CardHeader>
           <CardTitle>Filtres</CardTitle>
-          <div className="flex space-x-4">
-            <div className="relative flex-1 max-w-sm">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Rechercher une mission..."
@@ -189,7 +189,7 @@ const AdminMissions = () => {
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Statut" />
               </SelectTrigger>
               <SelectContent>
@@ -215,46 +215,46 @@ const AdminMissions = () => {
                       {getPriorityBadge(mission.priority)}
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-muted-foreground">
                       <div className="space-y-1">
                         <div className="flex items-center space-x-2">
-                          <User className="h-4 w-4" />
-                          <span>Client: {mission.client_name}</span>
+                          <User className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">Client: {mission.client_name}</span>
                         </div>
                         {mission.provider_name && (
                           <div className="flex items-center space-x-2">
-                            <User className="h-4 w-4" />
-                            <span>Prestataire: {mission.provider_name}</span>
+                            <User className="h-4 w-4 flex-shrink-0" />
+                            <span className="truncate">Prestataire: {mission.provider_name}</span>
                           </div>
                         )}
                         <div className="flex items-center space-x-2">
-                          <MapPin className="h-4 w-4" />
-                          <span>{mission.location}</span>
+                          <MapPin className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">{mission.location}</span>
                         </div>
                       </div>
                       
                       <div className="space-y-1">
                         <div className="flex items-center space-x-2">
-                          <Calendar className="h-4 w-4" />
-                          <span>{new Date(mission.scheduled_date).toLocaleDateString('fr-FR')}</span>
+                          <Calendar className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">{new Date(mission.scheduled_date).toLocaleDateString('fr-FR')}</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Clock className="h-4 w-4" />
-                          <span>{mission.duration}h - €{mission.price}</span>
+                          <Clock className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">{mission.duration}h - €{mission.price}</span>
                         </div>
                         <div>
-                          <span className="font-medium">{mission.service_type}</span>
+                          <span className="font-medium truncate block">{mission.service_type}</span>
                         </div>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm">
+                  <div className="flex flex-col sm:flex-row gap-2 mt-4 sm:mt-0">
+                    <Button variant="outline" size="sm" className="w-full sm:w-auto">
                       Voir détails
                     </Button>
                     {mission.status === 'pending' && (
-                      <Button size="sm">
+                      <Button size="sm" className="w-full sm:w-auto">
                         Assigner
                       </Button>
                     )}

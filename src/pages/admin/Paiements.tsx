@@ -236,14 +236,14 @@ export default function AdminPaiements() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <div>
-        <h1 className="text-3xl font-bold">Gestion des paiements</h1>
-        <p className="text-muted-foreground">Suivi des transactions et revenus de la plateforme</p>
+        <h1 className="text-2xl sm:text-3xl font-bold">Gestion des paiements</h1>
+        <p className="text-muted-foreground text-sm sm:text-base">Suivi des transactions et revenus de la plateforme</p>
       </div>
 
       {/* Statistiques financières */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -363,20 +363,20 @@ export default function AdminPaiements() {
 
       {/* Onglets par statut */}
       <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="all">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1">
+          <TabsTrigger value="all" className="text-xs sm:text-sm">
             Tous ({statusCounts.all})
           </TabsTrigger>
-          <TabsTrigger value="payé">
+          <TabsTrigger value="payé" className="text-xs sm:text-sm">
             Payés ({statusCounts.payé})
           </TabsTrigger>
-          <TabsTrigger value="en_attente">
+          <TabsTrigger value="en_attente" className="text-xs sm:text-sm">
             En attente ({statusCounts.en_attente})
           </TabsTrigger>
-          <TabsTrigger value="échoué">
+          <TabsTrigger value="échoué" className="text-xs sm:text-sm">
             Échoués ({statusCounts.échoué})
           </TabsTrigger>
-          <TabsTrigger value="remboursé">
+          <TabsTrigger value="remboursé" className="text-xs sm:text-sm">
             Remboursés ({statusCounts.remboursé})
           </TabsTrigger>
         </TabsList>
@@ -391,17 +391,17 @@ export default function AdminPaiements() {
             </Card>
           ) : (
             <Card>
-              <CardContent className="p-0">
+              <CardContent className="p-0 overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Montant</TableHead>
-                      <TableHead>Client</TableHead>
-                      <TableHead>Méthode</TableHead>
-                      <TableHead>Statut</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Transaction ID</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead className="min-w-[100px]">Montant</TableHead>
+                      <TableHead className="min-w-[120px]">Client</TableHead>
+                      <TableHead className="min-w-[100px]">Méthode</TableHead>
+                      <TableHead className="min-w-[100px]">Statut</TableHead>
+                      <TableHead className="min-w-[100px]">Date</TableHead>
+                      <TableHead className="min-w-[120px]">Transaction ID</TableHead>
+                      <TableHead className="text-right min-w-[120px]">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

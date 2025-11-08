@@ -265,7 +265,7 @@ export default function AdminPaniers() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border rounded-md"
+              className="w-full sm:w-auto px-3 py-2 border rounded-md"
             >
               <option value="all">Tous les statuts</option>
               <option value="active">Actifs</option>
@@ -273,11 +273,11 @@ export default function AdminPaniers() {
               <option value="expiré">Expirés</option>
               <option value="payé">Payés</option>
             </select>
-            <Button variant="outline" size="sm" onClick={loadCarts}>
+            <Button variant="outline" size="sm" onClick={loadCarts} className="w-full sm:w-auto">
               <RefreshCw className="w-4 h-4 mr-2" />
               Actualiser
             </Button>
-            <Button variant="outline" size="sm" onClick={expireOldCarts}>
+            <Button variant="outline" size="sm" onClick={expireOldCarts} className="w-full sm:w-auto">
               <Clock className="w-4 h-4 mr-2" />
               Expirer anciens
             </Button>
@@ -287,7 +287,7 @@ export default function AdminPaniers() {
 
       {/* Liste des paniers */}
       <Card>
-        <CardContent className="p-0">
+        <CardContent className="p-0 overflow-x-auto">
           {filteredCarts.length === 0 ? (
             <div className="text-center py-8">
               <ShoppingCart className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
@@ -297,13 +297,13 @@ export default function AdminPaniers() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Client</TableHead>
-                  <TableHead>Montant estimé</TableHead>
-                  <TableHead>Articles</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Expire le</TableHead>
-                  <TableHead>Créé le</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="min-w-[120px]">Client</TableHead>
+                  <TableHead className="min-w-[120px]">Montant estimé</TableHead>
+                  <TableHead className="min-w-[100px]">Articles</TableHead>
+                  <TableHead className="min-w-[100px]">Statut</TableHead>
+                  <TableHead className="min-w-[150px]">Expire le</TableHead>
+                  <TableHead className="min-w-[120px]">Créé le</TableHead>
+                  <TableHead className="text-right min-w-[120px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

@@ -329,11 +329,11 @@ const AdminAssignment = () => {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Assignation automatique</h1>
-          <p className="text-muted-foreground">Gestion des règles d'assignation des missions</p>
+          <h1 className="text-2xl sm:text-3xl font-bold">Assignation automatique</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">Gestion des règles d'assignation des missions</p>
         </div>
         <Badge variant={autoAssignEnabled ? "default" : "secondary"}>
           {autoAssignEnabled ? "Actif" : "Inactif"}
@@ -341,16 +341,16 @@ const AdminAssignment = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {assignmentStats.map((stat, index) => (
           <Card key={index}>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
-                  <p className="text-2xl font-bold">{stat.value}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-muted-foreground truncate">{stat.label}</p>
+                  <p className="text-xl sm:text-2xl font-bold">{stat.value}</p>
                 </div>
-                <stat.icon className={`h-8 w-8 ${stat.color}`} />
+                <stat.icon className={`h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0 ml-2 ${stat.color}`} />
               </div>
             </CardContent>
           </Card>
@@ -370,8 +370,8 @@ const AdminAssignment = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="space-y-0.5 flex-1">
                 <Label htmlFor="auto-assign">Assignation automatique</Label>
                 <p className="text-sm text-muted-foreground">
                   Assigner automatiquement les missions aux prestataires
@@ -382,6 +382,7 @@ const AdminAssignment = () => {
                 checked={autoAssignEnabled}
                 onCheckedChange={handleToggleAutoAssign}
                 disabled={loading.toggle}
+                className="flex-shrink-0"
               />
             </div>
 
@@ -449,21 +450,21 @@ const AdminAssignment = () => {
                 </div>
               ) : pendingMissions.length > 0 ? (
                 pendingMissions.map((mission) => (
-                  <div key={mission.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium">{mission.service}</p>
-                      <p className="text-sm text-muted-foreground">{mission.location}</p>
+                  <div key={mission.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 border rounded-lg">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{mission.service}</p>
+                      <p className="text-sm text-muted-foreground truncate">{mission.location}</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="text-right">
+                    <div className="flex items-center gap-2 justify-between sm:justify-end">
+                      <div className="text-left sm:text-right">
                         <Badge variant={mission.priority === "Haute" ? "destructive" : mission.priority === "Normale" ? "default" : "outline"} className="mb-1">
                           {mission.priority}
                         </Badge>
                         <p className="text-xs text-muted-foreground">{mission.timeWaiting}</p>
                       </div>
-                      <Button size="sm" onClick={() => handleViewMission(mission)}>
-                        <Eye className="w-4 h-4 mr-1" />
-                        Voir
+                      <Button size="sm" onClick={() => handleViewMission(mission)} className="flex-shrink-0">
+                        <Eye className="w-4 h-4 sm:mr-1" />
+                        <span className="hidden sm:inline">Voir</span>
                       </Button>
                     </div>
                   </div>
@@ -486,9 +487,9 @@ const AdminAssignment = () => {
               </Button>
               
               {pendingMissions.length > 0 && (
-                <div className="flex gap-2 mt-2">
+                <div className="flex flex-col sm:flex-row gap-2 mt-2">
                   <Button 
-                    className="flex-1" 
+                    className="flex-1 w-full" 
                     onClick={handleBulkAssign} 
                     disabled={loading.bulkAssign}
                     size="sm"
