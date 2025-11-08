@@ -142,7 +142,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
         price: item.price,
         quantity: item.quantity,
         customBooking: {
-          date: item.timeSlot.date.toISOString().split('T')[0],
+          date: new Date(item.timeSlot.date).toISOString().split('T')[0],
           startTime: item.timeSlot.startTime,
           endTime: item.timeSlot.endTime,
           hours: item.quantity,
@@ -150,8 +150,8 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
         }
       }));
 
-      const preferredDate = cartItems[0]?.timeSlot.date.toISOString().split('T')[0];
-      const preferredTime = cartItems[0]?.timeSlot.startTime;
+      const preferredDate = cartItems[0]?.timeSlot?.date ? new Date(cartItems[0].timeSlot.date).toISOString().split('T')[0] : undefined;
+      const preferredTime = cartItems[0]?.timeSlot?.startTime;
       const totalAmount = getCartTotal();
 
       // Create Stripe payment session
