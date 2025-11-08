@@ -304,7 +304,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Client Information */}
-        <div className="lg:col-span-2 space-y-6 animate-fade-in" style={{ animationDelay: "100ms" }}>
+        <div className="lg:col-span-2 space-y-6 animate-fade-in relative z-10 pointer-events-auto" style={{ animationDelay: "100ms" }}>
           <Card className="transition-all duration-200 hover:shadow-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -422,7 +422,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
         </div>
 
         {/* Right Column - Order Summary - Desktop uniquement */}
-        <div className="hidden lg:block space-y-6 animate-fade-in" style={{ animationDelay: "200ms" }}>
+        <div className="hidden lg:block space-y-6 animate-fade-in relative z-0" style={{ animationDelay: "200ms" }}>
           <Card className="sticky top-24 transition-all duration-200 hover:shadow-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
