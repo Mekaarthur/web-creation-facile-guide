@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Outlet } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useSecureLogout } from "@/hooks/useSecureLogout";
+import { SecureLogout } from "@/components/SecureLogout";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,6 +50,9 @@ export function AdminLayout() {
                 <Button variant="ghost" size="sm">
                   <Settings className="h-4 w-4" />
                 </Button>
+                
+                {/* Logout Button */}
+                <SecureLogout variant="outline" size="sm" />
                 
                 {/* User Menu */}
                 <DropdownMenu>

@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import BikawoCart from "@/components/BikawoCart";
 import BikawoCartIndicator from "@/components/BikawoCartIndicator";
 import UserProfileMenu from "@/components/UserProfileMenu";
+import { SecureLogout } from "@/components/SecureLogout";
 import { servicesData } from "@/utils/servicesData";
 // Import service images
 import serviceKids from '@/assets/service-kids.jpg';
@@ -249,6 +250,7 @@ const Navbar = () => {
                   </Link>
                 )}
                 <UserProfileMenu userType="client" />
+                <SecureLogout variant="outline" size="sm" />
               </div>
             ) : (
               <div className="flex items-center space-x-2">

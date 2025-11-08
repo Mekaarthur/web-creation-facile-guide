@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import Cart from "@/components/Cart";
 import CartIndicator from "@/components/CartIndicator";
 import UserProfileMenu from "@/components/UserProfileMenu";
+import { SecureLogout } from "@/components/SecureLogout";
 
 const ProviderNavbar = () => {
   const { t } = useTranslation();
@@ -152,7 +153,10 @@ const ProviderNavbar = () => {
             <NotificationCenter />
             
             {user ? (
-              <UserProfileMenu userType="provider" />
+              <div className="flex items-center space-x-3">
+                <UserProfileMenu userType="provider" />
+                <SecureLogout variant="outline" size="sm" />
+              </div>
             ) : (
               <div className="flex items-center space-x-3">
                 <Link to="/auth">
