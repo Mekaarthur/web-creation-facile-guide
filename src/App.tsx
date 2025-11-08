@@ -147,6 +147,7 @@ const App = () => (
             <Route path="/services" element={<ServicesPage />} />
             <Route path="/services/:category/:slug" element={<SubServicePage />} />
             <Route path="/panier" element={<CartPage />} />
+            <Route path="/cart" element={<CartPage />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/aide" element={<Aide />} />
