@@ -33,6 +33,10 @@ interface ProviderData {
   hourly_rate?: number;
   siret_number?: string;
   is_verified?: boolean;
+  gender?: string;
+  verification_status?: string;
+  rejection_reason?: string;
+  last_status_change_at?: string;
 }
 
 const ProviderProfileForm = () => {
@@ -201,6 +205,7 @@ const ProviderProfileForm = () => {
           phone: profile.phone,
           address: profile.address,
           avatar_url: profile.avatar_url,
+          gender: profile.gender,
           updated_at: new Date().toISOString(),
         }, {
           onConflict: 'user_id'
@@ -423,6 +428,20 @@ const ProviderProfileForm = () => {
                   placeholder="12345678901234"
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="gender">Genre</Label>
+                <Select value={profile.gender || ''} onValueChange={(value) => handleInputChange('gender', value)}>
+                  <SelectTrigger id="gender">
+                    <SelectValue placeholder="Sélectionnez votre genre" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="homme">Homme</SelectItem>
+                    <SelectItem value="femme">Femme</SelectItem>
+                    <SelectItem value="autre">Autre</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Adresse */}
@@ -548,24 +567,66 @@ const ProviderProfileForm = () => {
       </div>
 
       {/* Statut de vérification */}
-      {profile.is_verified !== undefined && (
-        <Card>
+      {profile.verification_status && (
+        <Card className={`border-2 ${
+          profile.verification_status === 'active' ? 'border-green-200 bg-green-50' :
+          profile.verification_status === 'in_review' ? 'border-amber-200 bg-amber-50' :
+          profile.verification_status === 'suspended' ? 'border-red-200 bg-red-50' :
+          'border-yellow-200 bg-yellow-50'
+        }`}>
           <CardContent className="pt-6">
-            <div className={`flex items-center space-x-2 ${
-              profile.is_verified ? 'text-green-600' : 'text-amber-600'
-            }`}>
-              <CheckCircle className="h-5 w-5" />
-              <span className="font-medium">
-                {profile.is_verified 
-                  ? 'Profil vérifié et activé' 
-                  : 'En attente de vérification'}
-              </span>
+            <div className="flex items-start gap-3">
+              <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
+                profile.verification_status === 'active' ? 'bg-green-600' :
+                profile.verification_status === 'in_review' ? 'bg-amber-600' :
+                profile.verification_status === 'suspended' ? 'bg-red-600' :
+                'bg-yellow-600'
+              }`}>
+                <span className="text-white text-xl">
+                  {profile.verification_status === 'active' ? '🟢' :
+                   profile.verification_status === 'in_review' ? '🟠' :
+                   profile.verification_status === 'suspended' ? '🔴' :
+                   '🟡'}
+                </span>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-semibold text-lg">
+                    {profile.verification_status === 'active' ? 'Profil Actif' :
+                     profile.verification_status === 'in_review' ? 'En cours de vérification' :
+                     profile.verification_status === 'suspended' ? 'Profil Suspendu' :
+                     'En attente'}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {profile.verification_status === 'active' 
+                    ? 'Votre profil est validé et vous pouvez recevoir des missions.' 
+                    : profile.verification_status === 'in_review'
+                    ? 'Vos documents sont en cours de vérification par notre équipe.'
+                    : profile.verification_status === 'suspended'
+                    ? 'Votre profil est temporairement suspendu.'
+                    : 'Votre profil ne peut pas encore recevoir de missions. Merci de compléter vos documents.'}
+                </p>
+                {profile.rejection_reason && (
+                  <div className="mt-3 p-3 bg-red-100 border border-red-300 rounded-lg">
+                    <p className="text-sm text-red-800">
+                      <strong>Motif :</strong> {profile.rejection_reason}
+                    </p>
+                  </div>
+                )}
+                {profile.last_status_change_at && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Dernière mise à jour : {new Date(profile.last_status_change_at).toLocaleString('fr-FR', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                )}
+              </div>
             </div>
-            <p className="text-sm text-muted-foreground mt-2">
-              {profile.is_verified
-                ? 'Votre profil est actif et visible par les clients.'
-                : 'Votre profil sera examiné par notre équipe sous 48h.'}
-            </p>
           </CardContent>
         </Card>
       )}

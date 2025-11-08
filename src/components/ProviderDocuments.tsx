@@ -32,6 +32,9 @@ interface Document {
   status: string;
   upload_date: string;
   notes?: string;
+  approved_at?: string;
+  rejected_at?: string;
+  rejection_reason?: string;
 }
 
 interface DocumentRequirement {
@@ -333,11 +336,17 @@ const ProviderDocuments = () => {
     }
   };
 
-  const getStatusLabel = (status: string) => {
+  const getStatusLabel = (status: string, doc?: Document) => {
     switch (status) {
-      case 'approved': return 'Approuvé';
-      case 'pending': return 'En attente';
-      case 'rejected': return 'Rejeté';
+      case 'approved': 
+        return doc?.approved_at 
+          ? `✅ Validé le ${new Date(doc.approved_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}`
+          : '✅ Validé';
+      case 'pending': return '⏳ En attente de validation';
+      case 'rejected': 
+        return doc?.rejected_at 
+          ? `❌ Refusé le ${new Date(doc.rejected_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}`
+          : '❌ Refusé';
       default: return status;
     }
   };
@@ -466,17 +475,17 @@ const ProviderDocuments = () => {
                           <Progress value={uploadProgress} className="w-full" />
                         </div>
                       ) : document ? (
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-3 flex-wrap">
-                            <Badge className={getStatusColor(document.status)}>
-                              {getStatusIcon(document.status)}
-                              <span className="ml-1">{getStatusLabel(document.status)}</span>
-                            </Badge>
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                              <FileText className="w-3 h-3" />
-                              {document.file_name}
-                            </span>
-                          </div>
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-3 flex-wrap">
+                              <Badge className={getStatusColor(document.status)}>
+                                {getStatusIcon(document.status)}
+                                <span className="ml-1">{getStatusLabel(document.status, document)}</span>
+                              </Badge>
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                <FileText className="w-3 h-3" />
+                                {document.file_name}
+                              </span>
+                            </div>
                           {/* Aperçu du document si c'est une image */}
                           {document.file_url && (document.file_name.endsWith('.jpg') || document.file_name.endsWith('.jpeg') || document.file_name.endsWith('.png')) && (
                             <div className="relative w-32 h-32 rounded-lg overflow-hidden border-2 border-border">
@@ -571,10 +580,10 @@ const ProviderDocuments = () => {
                   </div>
                 </div>
                 
-                {document?.status === 'rejected' && document.notes && (
+                {document?.status === 'rejected' && (document.rejection_reason || document.notes) && (
                   <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                     <p className="text-sm text-red-800">
-                      <strong>Motif du rejet :</strong> {document.notes}
+                      <strong>Motif du rejet :</strong> {document.rejection_reason || document.notes}
                     </p>
                   </div>
                 )}
