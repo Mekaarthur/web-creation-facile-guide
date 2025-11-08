@@ -177,13 +177,14 @@ const App = () => (
              <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
              <Route path="/audit-qualite" element={<AdminRoute><AuditReport /></AdminRoute>} />
              {/* Admin Routes with Layout */}
-             <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
-               <Route index element={<ModernAdminDashboard />} />
-               <Route path="dashboard" element={<ModernAdminDashboard />} />
-               <Route path="alertes" element={<AdminAlertes />} />
-               <Route path="kanban" element={<AdminKanban />} />
-               <Route path="utilisateurs" element={<AdminUtilisateurs />} />
-               <Route path="prestataires" element={<AdminPrestataires />} />
+              <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
+                <Route index element={<ModernAdminDashboard />} />
+                <Route path="dashboard" element={<ModernAdminDashboard />} />
+                <Route path="alertes" element={<AdminAlertes />} />
+                <Route path="kanban" element={<AdminKanban />} />
+                <Route path="utilisateurs" element={<AdminUtilisateurs />} />
+                <Route path="clients" element={<AdminClients />} />
+                <Route path="prestataires" element={<AdminPrestataires />} />
               <Route path="binomes" element={<AdminBinomes />} />
               <Route path="monitoring" element={<Monitoring />} />
               <Route path="tests-emails" element={<TestsEmails />} />

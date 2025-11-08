@@ -18,7 +18,9 @@ import {
   PieChart,
   Mail,
   CheckSquare,
-  Zap
+  Zap,
+  UserCog,
+  Building2
 } from "lucide-react"
 
 import {
@@ -54,55 +56,194 @@ export function AdminSidebar() {
       ]
     },
     {
-      title: "Gestion Utilisateurs",
+      title: "🔧 Vue Technique",
+      description: "Gestion des comptes et authentification",
       items: [
-        { title: "Clients", url: "/modern-admin/clients", icon: Users },
-        { title: "Prestataires", url: "/modern-admin/providers", icon: UserCheck, badge: counts?.prestatairesPending },
-        { title: "Onboarding", url: "/modern-admin/onboarding", icon: CheckSquare },
-        { title: "Matching IA", url: "/modern-admin/matching", icon: Zap },
-        { title: "Candidatures", url: "/modern-admin/applications", icon: FileText, badge: counts?.candidatures },
-        { title: "Binômes", url: "/modern-admin/binomes", icon: Star },
+        { 
+          title: "Utilisateurs", 
+          url: "/admin/utilisateurs", 
+          icon: UserCog,
+          description: "Gestion AUTH globale • Activation/Suspension rapide"
+        },
       ]
     },
     {
-      title: "Operations",
+      title: "💼 Gestion Business",
+      description: "Suivi clients, prestataires et relations commerciales",
       items: [
-        { title: "Missions", url: "/modern-admin/missions", icon: Calendar },
-        { title: "Réservations", url: "/modern-admin/reservations", icon: Clock },
-        { title: "Paiements", url: "/modern-admin/payments", icon: Euro },
-        { title: "Factures", url: "/modern-admin/invoices", icon: FileText },
+        { 
+          title: "Clients", 
+          url: "/admin/clients", 
+          icon: Users,
+          description: "Profils détaillés • Stats CA • Rétention"
+        },
+        { 
+          title: "Prestataires", 
+          url: "/modern-admin/providers", 
+          icon: UserCheck, 
+          badge: counts?.prestatairesPending,
+          description: "Gestion prestataires • Validation • Performance"
+        },
+        { 
+          title: "Candidatures", 
+          url: "/modern-admin/applications", 
+          icon: FileText, 
+          badge: counts?.candidatures,
+          description: "Validation candidatures • Création auto prestataire"
+        },
+        { 
+          title: "Binômes", 
+          url: "/modern-admin/binomes", 
+          icon: Star,
+          description: "Gestion des binômes client-prestataire"
+        },
       ]
     },
     {
-      title: "Communication",
+      title: "🤖 Automatisation",
+      description: "Outils intelligents et automatisation",
       items: [
-        { title: "Messages", url: "/modern-admin/messages", icon: MessageSquare, badge: counts?.messages },
-        { title: "Notifications", url: "/modern-admin/notifications", icon: Mail },
-        { title: "Avis & Notes", url: "/modern-admin/reviews", icon: Star, badge: counts?.moderation },
+        { 
+          title: "Onboarding", 
+          url: "/modern-admin/onboarding", 
+          icon: CheckSquare,
+          description: "Parcours d'intégration automatisé"
+        },
+        { 
+          title: "Matching IA", 
+          url: "/modern-admin/matching", 
+          icon: Zap,
+          description: "Attribution intelligente des missions"
+        },
       ]
     },
     {
-      title: "Modération",
+      title: "📋 Opérations",
+      description: "Missions, réservations et facturation",
       items: [
-        { title: "Alertes", url: "/modern-admin/alerts", icon: AlertTriangle, badge: counts?.alerts },
-        { title: "Signalements", url: "/modern-admin/reports", icon: Shield },
-        { title: "Qualité", url: "/modern-admin/quality", icon: Star },
+        { 
+          title: "Missions", 
+          url: "/modern-admin/missions", 
+          icon: Calendar,
+          description: "Suivi des missions en cours"
+        },
+        { 
+          title: "Réservations", 
+          url: "/modern-admin/reservations", 
+          icon: Clock,
+          description: "Gestion des réservations"
+        },
+        { 
+          title: "Paiements", 
+          url: "/modern-admin/payments", 
+          icon: Euro,
+          description: "Transactions et paiements"
+        },
+        { 
+          title: "Factures", 
+          url: "/modern-admin/invoices", 
+          icon: FileText,
+          description: "Facturation et comptabilité"
+        },
       ]
     },
     {
-      title: "Configuration",
+      title: "💬 Communication",
+      description: "Messages, notifications et avis",
       items: [
-        { title: "Zones", url: "/modern-admin/zones", icon: MapPin },
-        { title: "Paramètres", url: "/modern-admin/settings", icon: Settings },
-        { title: "Rapports", url: "/modern-admin/reports-data", icon: PieChart },
+        { 
+          title: "Messages", 
+          url: "/modern-admin/messages", 
+          icon: MessageSquare, 
+          badge: counts?.messages,
+          description: "Messagerie plateforme"
+        },
+        { 
+          title: "Notifications", 
+          url: "/modern-admin/notifications", 
+          icon: Mail,
+          description: "Notifications système"
+        },
+        { 
+          title: "Avis & Notes", 
+          url: "/modern-admin/reviews", 
+          icon: Star, 
+          badge: counts?.moderation,
+          description: "Modération des avis"
+        },
       ]
     },
     {
-      title: "Tests & Systèmes",
+      title: "🛡️ Modération",
+      description: "Alertes, signalements et qualité",
       items: [
-        { title: "Monitoring", url: "/admin/monitoring", icon: Activity },
-        { title: "Tests Critiques", url: "/modern-admin/tests-critiques", icon: Shield },
-        { title: "Tests Emails", url: "/admin/tests-emails", icon: Mail },
+        { 
+          title: "Alertes", 
+          url: "/modern-admin/alerts", 
+          icon: AlertTriangle, 
+          badge: counts?.alerts,
+          description: "Alertes système"
+        },
+        { 
+          title: "Signalements", 
+          url: "/modern-admin/reports", 
+          icon: Shield,
+          description: "Contenus signalés"
+        },
+        { 
+          title: "Qualité", 
+          url: "/modern-admin/quality", 
+          icon: Star,
+          description: "Contrôle qualité"
+        },
+      ]
+    },
+    {
+      title: "⚙️ Configuration",
+      description: "Paramètres et rapports",
+      items: [
+        { 
+          title: "Zones", 
+          url: "/modern-admin/zones", 
+          icon: MapPin,
+          description: "Gestion des zones géographiques"
+        },
+        { 
+          title: "Paramètres", 
+          url: "/modern-admin/settings", 
+          icon: Settings,
+          description: "Configuration système"
+        },
+        { 
+          title: "Rapports", 
+          url: "/modern-admin/reports-data", 
+          icon: PieChart,
+          description: "Rapports et analyses"
+        },
+      ]
+    },
+    {
+      title: "🔬 Tests & Systèmes",
+      description: "Monitoring et tests techniques",
+      items: [
+        { 
+          title: "Monitoring", 
+          url: "/admin/monitoring", 
+          icon: Activity,
+          description: "Surveillance système"
+        },
+        { 
+          title: "Tests Critiques", 
+          url: "/modern-admin/tests-critiques", 
+          icon: Shield,
+          description: "Tests de sécurité"
+        },
+        { 
+          title: "Tests Emails", 
+          url: "/admin/tests-emails", 
+          icon: Mail,
+          description: "Tests envoi emails"
+        },
       ]
     }
   ]
@@ -134,9 +275,16 @@ export function AdminSidebar() {
         {menuItems.map((section) => (
           <SidebarGroup key={section.title}>
             {!collapsed && (
-              <SidebarGroupLabel className="text-xs font-medium text-muted-foreground px-4 py-2">
-                {section.title}
-              </SidebarGroupLabel>
+              <div className="px-4 py-2">
+                <SidebarGroupLabel className="text-xs font-semibold text-foreground">
+                  {section.title}
+                </SidebarGroupLabel>
+                {section.description && (
+                  <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">
+                    {section.description}
+                  </p>
+                )}
+              </div>
             )}
             <SidebarGroupContent>
               <SidebarMenu>
@@ -148,6 +296,7 @@ export function AdminSidebar() {
                         className={({ isActive }) => 
                           `flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${getNavCls({ isActive })}`
                         }
+                        title={item.description}
                       >
                         <item.icon className="h-4 w-4 flex-shrink-0" />
                         {!collapsed && (
