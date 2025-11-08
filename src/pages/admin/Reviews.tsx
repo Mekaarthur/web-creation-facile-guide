@@ -96,12 +96,7 @@ export default function AdminReviews() {
       
       let query = supabase
         .from('reviews')
-        .select(`
-          *,
-          client:profiles!reviews_client_id_fkey(first_name, last_name, email),
-          provider:profiles!reviews_provider_id_fkey(first_name, last_name),
-          service:services(name, category)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       // Appliquer les filtres
@@ -122,13 +117,37 @@ export default function AdminReviews() {
 
       if (error) throw error;
       
-      // Normaliser les données (gérer l'ancien champ is_approved)
-      const normalizedData = (data || []).map(review => ({
-        ...review,
-        status: (review.status || (review.is_approved ? 'published' : 'pending')) as 'pending' | 'published' | 'rejected' | 'deleted'
-      }));
-      
-      setReviews(normalizedData);
+      // Récupérer les profils séparément
+      if (data && data.length > 0) {
+        const clientIds = [...new Set(data.map(r => r.client_id))];
+        const providerIds = [...new Set(data.map(r => r.provider_id))];
+        const serviceIds = [...new Set(data.map(r => r.service_id).filter(Boolean))];
+
+        const [clientsData, providersData, servicesData] = await Promise.all([
+          supabase.from('profiles').select('id, first_name, last_name, email').in('id', clientIds),
+          supabase.from('profiles').select('id, first_name, last_name').in('id', providerIds),
+          serviceIds.length > 0 
+            ? supabase.from('services').select('id, name, category').in('id', serviceIds) 
+            : Promise.resolve({ data: [] })
+        ]);
+
+        // Mapper les données
+        const clientsMap = new Map((clientsData.data || []).map(c => [c.id, c]));
+        const providersMap = new Map((providersData.data || []).map(p => [p.id, p]));
+        const servicesMap = new Map((servicesData.data || []).map(s => [s.id, s]));
+
+        const normalizedData = data.map(review => ({
+          ...review,
+          status: (review.status || (review.is_approved ? 'published' : 'pending')) as 'pending' | 'published' | 'rejected' | 'deleted',
+          client: clientsMap.get(review.client_id) || undefined,
+          provider: providersMap.get(review.provider_id) || undefined,
+          service: review.service_id ? servicesMap.get(review.service_id) : undefined
+        }));
+        
+        setReviews(normalizedData as Review[]);
+      } else {
+        setReviews([]);
+      }
     } catch (error) {
       console.error('Erreur chargement avis:', error);
       toast({

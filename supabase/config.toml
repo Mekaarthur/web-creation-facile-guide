@@ -193,3 +193,6 @@ verify_jwt = false  # Called automatically by message triggers - uses service ro
 
 [functions.create-admin-notification]
 verify_jwt = false  # Called automatically by system triggers - uses service role key
+
+[functions.send-review-request]
+verify_jwt = false  # Called automatically when mission completes - uses service role key
