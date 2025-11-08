@@ -14,7 +14,14 @@ import {
   Globe,
   Map,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Users,
+  TrendingUp,
+  Building2,
+  Star,
+  MapPinOff,
+  UserPlus,
+  Filter
 } from "lucide-react";
 import {
   Dialog,
@@ -25,7 +32,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -33,16 +39,39 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface GeographicZone {
   id: string;
   nom_zone: string;
-  type_zone: 'departement' | 'ville' | 'secteur';
+  type_zone: 'region' | 'ville' | 'metropole' | 'departement' | 'secteur';
   codes_postaux: string[];
+  villes_couvertes: string[];
   rayon_km?: number;
   active: boolean;
+  statut: 'active' | 'inactive' | 'test';
+  description?: string;
+  responsable_id?: string;
   provider_count?: number;
-  request_count?: number;
+  client_count?: number;
+  missions_count?: number;
+  satisfaction_moyenne?: number;
+  ca_total?: number;
   created_at: string;
   updated_at: string;
 }
@@ -57,10 +86,17 @@ const Zones = () => {
   const [formData, setFormData] = useState({
     nom_zone: '',
     codes_postaux: '',
-    type_zone: 'departement',
+    villes_couvertes: '',
+    type_zone: 'ville',
     rayon_km: '',
+    statut: 'active',
+    description: '',
     active: true
   });
+  const [showProviderDialog, setShowProviderDialog] = useState(false);
+  const [selectedZoneForProviders, setSelectedZoneForProviders] = useState<GeographicZone | null>(null);
+  const [availableProviders, setAvailableProviders] = useState<any[]>([]);
+  const [providerSearch, setProviderSearch] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -69,21 +105,22 @@ const Zones = () => {
 
   const loadZones = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('admin-zones', {
-        body: { action: 'list' }
-      });
+      // Charger les zones avec statistiques depuis la vue
+      const { data: zonesData, error } = await supabase
+        .from('zone_statistics')
+        .select('*')
+        .order('nom_zone');
 
       if (error) throw error;
-      if (!data.success) throw new Error(data.error);
       
-      // Calculer les statistiques des prestataires par zone (mock pour l'instant)
-      const zonesWithStats = data.data.map((zone: any) => ({
+      // Cast le type_zone pour correspondre à l'interface
+      const formattedZones = (zonesData || []).map(zone => ({
         ...zone,
-        provider_count: Math.floor(Math.random() * 200) + 50,
-        request_count: Math.floor(Math.random() * 500) + 100
+        type_zone: zone.type_zone as 'region' | 'ville' | 'metropole' | 'departement' | 'secteur',
+        statut: (zone.statut || 'active') as 'active' | 'inactive' | 'test'
       }));
       
-      setZones(zonesWithStats);
+      setZones(formattedZones);
     } catch (error) {
       console.error('Erreur lors du chargement des zones:', error);
       toast({
@@ -93,6 +130,29 @@ const Zones = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadAvailableProviders = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('providers')
+        .select(`
+          id,
+          business_name,
+          is_verified,
+          postal_codes,
+          profiles!providers_user_id_fkey (
+            first_name,
+            last_name
+          )
+        `)
+        .eq('is_verified', true);
+
+      if (error) throw error;
+      setAvailableProviders(data || []);
+    } catch (error) {
+      console.error('Erreur lors du chargement des prestataires:', error);
     }
   };
 
@@ -126,12 +186,20 @@ const Zones = () => {
       .split(',')
       .map(code => code.trim())
       .filter(code => code.length > 0);
+      
+    const villesCouvertes = formData.villes_couvertes
+      .split(',')
+      .map(ville => ville.trim())
+      .filter(ville => ville.length > 0);
 
     const zoneData = {
       nom_zone: formData.nom_zone,
       codes_postaux: codesPostaux,
+      villes_couvertes: villesCouvertes,
       type_zone: formData.type_zone,
       rayon_km: formData.rayon_km ? parseInt(formData.rayon_km) : null,
+      statut: formData.statut,
+      description: formData.description || null,
       active: formData.active
     };
 
@@ -155,7 +223,16 @@ const Zones = () => {
 
       setIsDialogOpen(false);
       setEditingZone(null);
-      setFormData({ nom_zone: '', codes_postaux: '', type_zone: 'departement', rayon_km: '', active: true });
+      setFormData({ 
+        nom_zone: '', 
+        codes_postaux: '', 
+        villes_couvertes: '',
+        type_zone: 'ville', 
+        rayon_km: '', 
+        statut: 'active',
+        description: '',
+        active: true 
+      });
       loadZones();
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
@@ -172,11 +249,75 @@ const Zones = () => {
     setFormData({
       nom_zone: zone.nom_zone,
       codes_postaux: zone.codes_postaux.join(', '),
+      villes_couvertes: zone.villes_couvertes?.join(', ') || '',
       type_zone: zone.type_zone,
       rayon_km: zone.rayon_km?.toString() || '',
+      statut: zone.statut,
+      description: zone.description || '',
       active: zone.active
     });
     setIsDialogOpen(true);
+  };
+
+  const handleAssignProviders = async (zone: GeographicZone) => {
+    setSelectedZoneForProviders(zone);
+    await loadAvailableProviders();
+    setShowProviderDialog(true);
+  };
+
+  const handleToggleProviderAssignment = async (providerId: string) => {
+    if (!selectedZoneForProviders) return;
+
+    try {
+      // Vérifier si le prestataire est déjà assigné
+      const { data: existing } = await supabase
+        .from('zone_prestataires')
+        .select('id')
+        .eq('zone_id', selectedZoneForProviders.id)
+        .eq('prestataire_id', providerId)
+        .single();
+
+      if (existing) {
+        // Retirer l'assignation
+        const { error } = await supabase
+          .from('zone_prestataires')
+          .delete()
+          .eq('zone_id', selectedZoneForProviders.id)
+          .eq('prestataire_id', providerId);
+
+        if (error) throw error;
+        
+        toast({
+          title: "Prestataire retiré",
+          description: "Le prestataire a été retiré de cette zone"
+        });
+      } else {
+        // Ajouter l'assignation
+        const { error } = await supabase
+          .from('zone_prestataires')
+          .insert({
+            zone_id: selectedZoneForProviders.id,
+            prestataire_id: providerId
+          });
+
+        if (error) throw error;
+        
+        toast({
+          title: "Prestataire assigné",
+          description: "Le prestataire a été assigné à cette zone"
+        });
+      }
+
+      // Recharger les zones pour mettre à jour les compteurs
+      loadZones();
+    } catch (error) {
+      console.error('Erreur lors de l\'assignation:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de modifier l'assignation",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleDeleteZone = async (zoneId: string, zoneName: string) => {
@@ -212,8 +353,11 @@ const Zones = () => {
     const updatedZoneData = {
       nom_zone: zone.nom_zone,
       codes_postaux: zone.codes_postaux,
+      villes_couvertes: zone.villes_couvertes,
       type_zone: zone.type_zone,
       rayon_km: zone.rayon_km,
+      statut: zone.statut,
+      description: zone.description,
       active: !zone.active
     };
 
@@ -278,7 +422,16 @@ const Zones = () => {
           <DialogTrigger asChild>
             <Button onClick={() => {
               setEditingZone(null);
-              setFormData({ nom_zone: '', codes_postaux: '', type_zone: 'departement', rayon_km: '', active: true });
+              setFormData({ 
+                nom_zone: '', 
+                codes_postaux: '', 
+                villes_couvertes: '',
+                type_zone: 'ville', 
+                rayon_km: '', 
+                statut: 'active',
+                description: '',
+                active: true 
+              });
             }}>
               <Plus className="w-4 h-4 mr-2" />
               Nouvelle Zone
@@ -293,56 +446,99 @@ const Zones = () => {
                 Configurez les paramètres de la zone géographique
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="nom_zone">Nom de la zone</Label>
-                <Input
-                  id="nom_zone"
-                  value={formData.nom_zone}
-                  onChange={(e) => setFormData({ ...formData, nom_zone: e.target.value })}
-                  placeholder="Ex: 75 - Paris"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="type_zone">Type de zone</Label>
-                <Select 
-                  value={formData.type_zone} 
-                  onValueChange={(value) => setFormData({ ...formData, type_zone: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner le type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="departement">Département</SelectItem>
-                    <SelectItem value="ville">Ville</SelectItem>
-                    <SelectItem value="secteur">Secteur personnalisé</SelectItem>
-                  </SelectContent>
-                </Select>
+            <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nom_zone">Nom de la zone *</Label>
+                  <Input
+                    id="nom_zone"
+                    value={formData.nom_zone}
+                    onChange={(e) => setFormData({ ...formData, nom_zone: e.target.value })}
+                    placeholder="Ex: Île-de-France"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="type_zone">Type de zone *</Label>
+                  <Select 
+                    value={formData.type_zone} 
+                    onValueChange={(value) => setFormData({ ...formData, type_zone: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner le type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="region">Région</SelectItem>
+                      <SelectItem value="departement">Département</SelectItem>
+                      <SelectItem value="metropole">Métropole</SelectItem>
+                      <SelectItem value="ville">Ville</SelectItem>
+                      <SelectItem value="secteur">Secteur personnalisé</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="codes_postaux">Codes postaux (séparés par des virgules)</Label>
+                <Label htmlFor="villes_couvertes">Villes couvertes (séparées par des virgules)</Label>
+                <Input
+                  id="villes_couvertes"
+                  value={formData.villes_couvertes}
+                  onChange={(e) => setFormData({ ...formData, villes_couvertes: e.target.value })}
+                  placeholder="Paris, Boulogne-Billancourt, Nanterre..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="codes_postaux">Codes postaux (séparés par des virgules) *</Label>
                 <Input
                   id="codes_postaux"
                   value={formData.codes_postaux}
                   onChange={(e) => setFormData({ ...formData, codes_postaux: e.target.value })}
-                  placeholder="75001, 75002, 75003..."
+                  placeholder="75001, 75002, 92100..."
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="rayon_km">Rayon en km (optionnel)</Label>
+                  <Input
+                    id="rayon_km"
+                    type="number"
+                    value={formData.rayon_km}
+                    onChange={(e) => setFormData({ ...formData, rayon_km: e.target.value })}
+                    placeholder="20"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="statut">Statut</Label>
+                  <Select 
+                    value={formData.statut} 
+                    onValueChange={(value) => setFormData({ ...formData, statut: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">✅ Active</SelectItem>
+                      <SelectItem value="inactive">❌ Inactive</SelectItem>
+                      <SelectItem value="test">🟡 En test</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="rayon_km">Rayon en km (optionnel)</Label>
+                <Label htmlFor="description">Description (optionnelle)</Label>
                 <Input
-                  id="rayon_km"
-                  type="number"
-                  value={formData.rayon_km}
-                  onChange={(e) => setFormData({ ...formData, rayon_km: e.target.value })}
-                  placeholder="20"
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Description de la zone..."
                 />
               </div>
 
-              <div className="flex justify-end space-x-2">
+              <div className="flex justify-end space-x-2 pt-4">
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Annuler
                 </Button>
@@ -356,7 +552,7 @@ const Zones = () => {
       </div>
 
       {/* Statistiques */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Total Zones</CardTitle>
@@ -385,28 +581,63 @@ const Zones = () => {
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Demandes Total</CardTitle>
+            <CardTitle className="text-sm font-medium">Missions Total</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {zones.reduce((sum, zone) => sum + (zone.request_count || 0), 0)}
+              {zones.reduce((sum, zone) => sum + (zone.missions_count || 0), 0)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Sur 30 derniers jours
+              Missions réalisées
             </p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Zones Inactives</CardTitle>
+            <CardTitle className="text-sm font-medium">CA Total</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">
-              {zones.filter(z => !z.active).length}
+            <div className="text-2xl font-bold">
+              {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(
+                zones.reduce((sum, zone) => sum + (zone.ca_total || 0), 0)
+              )}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Nécessitent attention
+              Chiffre d'affaires total
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Clients Total</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {zones.reduce((sum, zone) => sum + (zone.client_count || 0), 0)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Clients actifs
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Satisfaction Moyenne</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold flex items-center gap-1">
+              {zones.length > 0 ? (
+                <>
+                  {(zones.reduce((sum, zone) => sum + (zone.satisfaction_moyenne || 0), 0) / zones.length).toFixed(1)}
+                  <Star className="w-5 h-5 fill-yellow-500 text-yellow-500" />
+                </>
+              ) : '0'}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Note moyenne globale
             </p>
           </CardContent>
         </Card>
@@ -429,6 +660,8 @@ const Zones = () => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tous les types</SelectItem>
+            <SelectItem value="region">Régions</SelectItem>
+            <SelectItem value="metropole">Métropoles</SelectItem>
             <SelectItem value="departement">Départements</SelectItem>
             <SelectItem value="ville">Villes</SelectItem>
             <SelectItem value="secteur">Secteurs</SelectItem>
@@ -436,7 +669,7 @@ const Zones = () => {
         </Select>
       </div>
 
-      {/* Liste des zones */}
+      {/* Tableau des zones */}
       <Card>
         <CardHeader>
           <CardTitle>Zones Configurées ({filteredZones.length})</CardTitle>
@@ -445,80 +678,221 @@ const Zones = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {filteredZones.map((zone) => (
-              <div key={zone.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center space-x-4">
-                  {getTypeIcon(zone.type_zone)}
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <h3 className="font-medium">{zone.nom_zone}</h3>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Nom de la zone</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Villes couvertes</TableHead>
+                <TableHead className="text-center">Prestataires</TableHead>
+                <TableHead className="text-center">Clients</TableHead>
+                <TableHead>Statut</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredZones.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                    <MapPinOff className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    Aucune zone trouvée
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredZones.map((zone, index) => (
+                  <TableRow key={zone.id}>
+                    <TableCell className="font-mono text-xs">{index + 1}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {getTypeIcon(zone.type_zone)}
+                        <div>
+                          <div className="font-medium">{zone.nom_zone}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {zone.codes_postaux.length} code{zone.codes_postaux.length > 1 ? 's' : ''} postal{zone.codes_postaux.length > 1 ? 'aux' : ''}
+                            {zone.rayon_km && ` • ${zone.rayon_km}km`}
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
                       {getTypeBadge(zone.type_zone)}
-                      <Badge variant={zone.active ? "default" : "destructive"} className="text-xs">
-                        {zone.active ? (
-                          <>
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                            Active
-                          </>
-                        ) : (
-                          <>
-                            <AlertCircle className="w-3 h-3 mr-1" />
-                            Inactive
-                          </>
-                        )}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {zone.codes_postaux.length} codes postaux | {zone.provider_count || 0} prestataires | {zone.request_count || 0} demandes
-                    </p>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {zone.codes_postaux.slice(0, 5).map((code) => (
-                        <Badge key={code} variant="outline" className="text-xs">
-                          {code}
-                        </Badge>
-                      ))}
-                      {zone.codes_postaux.length > 5 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{zone.codes_postaux.length - 5} autres...
-                        </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {zone.villes_couvertes && zone.villes_couvertes.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {zone.villes_couvertes.slice(0, 3).map((ville, idx) => (
+                            <Badge key={idx} variant="outline" className="text-xs">
+                              {ville}
+                            </Badge>
+                          ))}
+                          {zone.villes_couvertes.length > 3 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{zone.villes_couvertes.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
                       )}
-                    </div>
-                    {zone.rayon_km && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Rayon: {zone.rayon_km} km
-                      </p>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => toggleZoneStatus(zone.id)}
-                  >
-                    {zone.active ? 'Désactiver' : 'Activer'}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(zone)}
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDeleteZone(zone.id, zone.nom_zone)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex flex-col items-center gap-1">
+                        <Badge variant="secondary" className="font-semibold">
+                          <Users className="w-3 h-3 mr-1" />
+                          {zone.provider_count || 0}
+                        </Badge>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 text-xs"
+                          onClick={() => handleAssignProviders(zone)}
+                        >
+                          <UserPlus className="w-3 h-3 mr-1" />
+                          Gérer
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant="outline">
+                        {zone.client_count || 0}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <Badge 
+                          variant={zone.statut === 'active' ? "default" : zone.statut === 'test' ? "secondary" : "destructive"}
+                          className="w-fit"
+                        >
+                          {zone.statut === 'active' && '✅ Active'}
+                          {zone.statut === 'test' && '🟡 Test'}
+                          {zone.statut === 'inactive' && '❌ Inactive'}
+                        </Badge>
+                        {zone.satisfaction_moyenne && zone.satisfaction_moyenne > 0 && (
+                          <div className="flex items-center gap-1 text-xs">
+                            <Star className="w-3 h-3 fill-yellow-500 text-yellow-500" />
+                            <span>{zone.satisfaction_moyenne.toFixed(1)}</span>
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <Filter className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleEdit(zone)}>
+                            <Edit2 className="w-4 h-4 mr-2" />
+                            Modifier
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleAssignProviders(zone)}>
+                            <UserPlus className="w-4 h-4 mr-2" />
+                            Assigner prestataires
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => toggleZoneStatus(zone.id)}>
+                            {zone.active ? (
+                              <>
+                                <MapPinOff className="w-4 h-4 mr-2" />
+                                Désactiver
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle className="w-4 h-4 mr-2" />
+                                Activer
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={() => handleDeleteZone(zone.id, zone.nom_zone)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Supprimer
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
+
+      {/* Dialog d'assignation des prestataires */}
+      <Dialog open={showProviderDialog} onOpenChange={setShowProviderDialog}>
+        <DialogContent className="sm:max-w-[700px]">
+          <DialogHeader>
+            <DialogTitle>
+              Assigner des prestataires à : {selectedZoneForProviders?.nom_zone}
+            </DialogTitle>
+            <DialogDescription>
+              Sélectionnez les prestataires à assigner à cette zone
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Input
+                placeholder="Rechercher un prestataire..."
+                value={providerSearch}
+                onChange={(e) => setProviderSearch(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            <div className="max-h-[400px] overflow-y-auto space-y-2">
+              {availableProviders
+                .filter(p => 
+                  providerSearch === '' ||
+                  p.business_name?.toLowerCase().includes(providerSearch.toLowerCase()) ||
+                  p.profiles?.first_name?.toLowerCase().includes(providerSearch.toLowerCase()) ||
+                  p.profiles?.last_name?.toLowerCase().includes(providerSearch.toLowerCase())
+                )
+                .map((provider) => (
+                  <Card key={provider.id} className="p-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Building2 className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <div className="font-medium">
+                            {provider.business_name || `${provider.profiles?.first_name} ${provider.profiles?.last_name}`}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {provider.postal_codes?.length || 0} zone{(provider.postal_codes?.length || 0) > 1 ? 's' : ''} configurée{(provider.postal_codes?.length || 0) > 1 ? 's' : ''}
+                          </div>
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleToggleProviderAssignment(provider.id)}
+                      >
+                        <UserPlus className="w-4 h-4 mr-2" />
+                        Assigner
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+            </div>
+            
+            <div className="flex justify-end pt-4">
+              <Button onClick={() => setShowProviderDialog(false)}>
+                Fermer
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

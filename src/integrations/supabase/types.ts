@@ -3867,36 +3867,140 @@ export type Database = {
         }
         Relationships: []
       }
+      zone_clients: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          updated_at: string
+          zone_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          zone_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zone_clients_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zone_statistics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "zone_clients_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones_geographiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      zone_prestataires: {
+        Row: {
+          created_at: string
+          id: string
+          prestataire_id: string
+          updated_at: string
+          zone_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          prestataire_id: string
+          updated_at?: string
+          zone_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          prestataire_id?: string
+          updated_at?: string
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zone_prestataires_prestataire_id_fkey"
+            columns: ["prestataire_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "zone_prestataires_prestataire_id_fkey"
+            columns: ["prestataire_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "zone_prestataires_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zone_statistics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "zone_prestataires_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones_geographiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       zones_geographiques: {
         Row: {
           active: boolean
           codes_postaux: string[]
           created_at: string
+          description: string | null
           id: string
           nom_zone: string
           rayon_km: number | null
+          responsable_id: string | null
+          statut: string | null
           type_zone: string
           updated_at: string
+          villes_couvertes: string[] | null
         }
         Insert: {
           active?: boolean
           codes_postaux?: string[]
           created_at?: string
+          description?: string | null
           id?: string
           nom_zone: string
           rayon_km?: number | null
+          responsable_id?: string | null
+          statut?: string | null
           type_zone?: string
           updated_at?: string
+          villes_couvertes?: string[] | null
         }
         Update: {
           active?: boolean
           codes_postaux?: string[]
           created_at?: string
+          description?: string | null
           id?: string
           nom_zone?: string
           rayon_km?: number | null
+          responsable_id?: string | null
+          statut?: string | null
           type_zone?: string
           updated_at?: string
+          villes_couvertes?: string[] | null
         }
         Relationships: []
       }
@@ -3975,6 +4079,28 @@ export type Database = {
           reviews_last_30_days: number | null
           reviews_last_7_days: number | null
           total_reviews: number | null
+        }
+        Relationships: []
+      }
+      zone_statistics: {
+        Row: {
+          active: boolean | null
+          ca_total: number | null
+          client_count: number | null
+          codes_postaux: string[] | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          missions_count: number | null
+          nom_zone: string | null
+          provider_count: number | null
+          rayon_km: number | null
+          responsable_id: string | null
+          satisfaction_moyenne: number | null
+          statut: string | null
+          type_zone: string | null
+          updated_at: string | null
+          villes_couvertes: string[] | null
         }
         Relationships: []
       }
