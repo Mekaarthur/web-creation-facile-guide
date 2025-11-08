@@ -160,6 +160,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
           amount: totalAmount,
           description: `Réservation Bikawo - ${services.length} service(s)`,
           serviceName: services.map(s => s.serviceName).join(', '),
+          guestEmail: clientInfo.email,
           metadata: {
             clientInfo: JSON.stringify(clientInfo),
             services: JSON.stringify(services),

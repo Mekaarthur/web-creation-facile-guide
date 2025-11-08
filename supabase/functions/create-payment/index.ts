@@ -21,8 +21,8 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { amount, bookingId, description, serviceName, metadata } = await req.json();
-    logStep("Request data received", { amount, bookingId, description, serviceName, hasMetadata: !!metadata });
+    const { amount, bookingId, description, serviceName, metadata, guestEmail } = await req.json();
+    logStep("Request data received", { amount, bookingId, description, serviceName, hasMetadata: !!metadata, hasGuestEmail: !!guestEmail });
     
     if (!amount || amount <= 0) {
       throw new Error("Valid amount is required");
@@ -34,40 +34,65 @@ serve(async (req) => {
     );
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
-    logStep("Authorization header found");
+    let user: any = null;
+    if (authHeader) {
+      try {
+        logStep("Authorization header found");
+        const token = authHeader.replace("Bearer ", "");
+        const { data, error: userError } = await supabaseClient.auth.getUser(token);
+        if (!userError) {
+          user = data.user;
+          logStep("User authenticated", { userId: user?.id, email: user?.email });
+        } else {
+          logStep("Anonymous or invalid session, proceeding as guest");
+        }
+      } catch (_e) {
+        logStep("Failed to resolve user from token, proceeding as guest");
+      }
+    } else {
+      logStep("No authorization header provided, proceeding as guest");
+    }
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
-    const user = data.user;
-    
-    if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    // Determine email: user email if logged in, else guestEmail or metadata.clientInfo.email
+    let resolvedEmail: string | undefined = user?.email || guestEmail;
+    if (!resolvedEmail && metadata?.clientInfo) {
+      try {
+        const ci = typeof metadata.clientInfo === 'string' ? JSON.parse(metadata.clientInfo) : metadata.clientInfo;
+        resolvedEmail = ci?.email;
+      } catch (_) {
+        // ignore JSON parse errors
+      }
+    }
+
+    if (!resolvedEmail) {
+      throw new Error("Email is required to create a payment session");
+    }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
     });
 
-    // Get or create Stripe customer
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId;
-    
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-      logStep("Found existing customer", { customerId });
+    // Get or create Stripe customer only for authenticated users
+    let customerId: string | undefined;
+    if (user?.email) {
+      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+      if (customers.data.length > 0) {
+        customerId = customers.data[0].id;
+        logStep("Found existing customer", { customerId });
+      } else {
+        const customer = await stripe.customers.create({
+          email: user.email,
+          metadata: { user_id: user.id }
+        });
+        customerId = customer.id;
+        logStep("Created new customer", { customerId });
+      }
     } else {
-      const customer = await stripe.customers.create({
-        email: user.email,
-        metadata: { user_id: user.id }
-      });
-      customerId = customer.id;
-      logStep("Created new customer", { customerId });
+      logStep("Guest checkout - using customer_email only");
     }
 
     // Create payment session
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
+    const baseParams: any = {
       line_items: [
         {
           price_data: {
@@ -86,7 +111,7 @@ serve(async (req) => {
       cancel_url: `${req.headers.get("origin")}/panier`,
       metadata: {
         booking_id: bookingId || "",
-        user_id: user.id,
+        user_id: user?.id || "guest",
         service_name: serviceName || "Service Bikawo",
         amount: amount.toString(),
         ...(metadata || {})
@@ -94,12 +119,18 @@ serve(async (req) => {
       payment_intent_data: {
         metadata: {
           booking_id: bookingId || "",
-          user_id: user.id,
+          user_id: user?.id || "guest",
           service_name: serviceName || "Service Bikawo",
           ...(metadata || {})
         }
       }
-    });
+    };
+
+    if (customerId) baseParams.customer = customerId;
+    else baseParams.customer_email = resolvedEmail;
+
+    const session = await stripe.checkout.sessions.create(baseParams);
+
 
     logStep("Payment session created", { sessionId: session.id, url: session.url });
 
