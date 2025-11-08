@@ -175,3 +175,15 @@ verify_jwt = false  # Email sending - no auth required
 
 [functions.verify-user-role]
 verify_jwt = true  # Requires authentication to verify roles
+
+[functions.export-conversation-history]
+verify_jwt = true  # Requires admin authentication to export conversation history
+
+[functions.monitor-conversation-keywords]
+verify_jwt = false  # Called automatically by message triggers - uses service role key
+
+[functions.send-invoice-email]
+verify_jwt = true  # Requires admin authentication to send invoice emails
+
+[functions.generate-invoice-pdf]
+verify_jwt = true  # Requires admin authentication to generate invoice PDFs
