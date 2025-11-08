@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { LiveRequestNotifications } from "@/components/LiveRequestNotifications";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "./hooks/useAuth";
 import Index from "./pages/Index";
@@ -48,7 +48,6 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import AdminLogin from "./pages/AdminLogin";
 
 // Admin Layout and Pages
-import { AdminLayout } from "./components/admin/layout/AdminLayout";
 import ModernAdminDashboard from "./pages/admin/ModernAdminDashboard";
 import AdminAlertes from "./pages/admin/Alertes";
 import AdminKanban from "./pages/admin/Kanban";
@@ -180,46 +179,8 @@ const App = () => (
              <Route path="/politique-cookies" element={<CookiePolicy />} />
              <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
              <Route path="/audit-qualite" element={<AdminRoute><AuditReport /></AdminRoute>} />
-             {/* Admin Routes with Layout */}
-              <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
-                <Route index element={<ModernAdminDashboard />} />
-                <Route path="dashboard" element={<ModernAdminDashboard />} />
-                <Route path="alertes" element={<AdminAlertes />} />
-                <Route path="kanban" element={<AdminKanban />} />
-                <Route path="utilisateurs" element={<AdminUtilisateurs />} />
-                <Route path="clients" element={<AdminClients />} />
-                <Route path="prestataires" element={<AdminPrestataires />} />
-              <Route path="binomes" element={<AdminBinomes />} />
-              <Route path="monitoring" element={<Monitoring />} />
-              <Route path="tests-emails" element={<TestsEmails />} />
-               <Route path="demandes" element={<AdminClientRequests />} />
-               <Route path="candidatures" element={<AdminJobApplications />} />
-               <Route path="messagerie" element={<AdminMessagerie />} />
-              <Route path="paniers" element={<AdminPaniers />} />
-              <Route path="paiements" element={<AdminPaiements />} />
-              <Route path="messages" element={<ConfigMessages />} />
-              <Route path="notifications" element={<AdminNotifications />} />
-               <Route path="zones" element={<AdminZones />} />
-               <Route path="parametres" element={<AdminParametres />} />
-               <Route path="marque" element={<AdminMarque />} />
-               <Route path="factures" element={<AdminFactures />} />
-               <Route path="remunerations" element={<AdminRemunerations />} />
-               <Route path="tests-systems" element={<TestsSystems />} />
-                <Route path="assignation" element={<AdminAssignment />} />
-                <Route path="assignations" element={<AdminAssignment />} />
-                <Route path="moderation" element={<AdminModeration />} />
-                <Route path="finance" element={<AdminFinance />} />
-                <Route path="finances" element={<AdminFinance />} />
-                <Route path="cooptation" element={<AdminCooptation />} />
-               <Route path="analytics" element={<AdminAnalytics />} />
-               <Route path="statistiques" element={<AdminAnalytics />} />
-               <Route path="communications" element={<AdminRoute><Communications /></AdminRoute>} />
-               <Route path="urgences" element={<AdminRoute><Urgences /></AdminRoute>} />
-               <Route path="rapports" element={<AdminReports />} />
-               <Route path="outils" element={<AdminTools />} />
-               <Route path="audit" element={<AuditReport />} />
-               <Route path="roles" element={<AdminRoles />} />
-            </Route>
+             {/* Redirect old /admin to /modern-admin */}
+              <Route path="/admin/*" element={<Navigate to="/modern-admin" replace />} />
             
             {/* Modern Admin Routes */}
             <Route path="/modern-admin" element={<AdminRoute><ModernAdminLayout /></AdminRoute>}>
