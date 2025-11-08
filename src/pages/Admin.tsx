@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAdminRole } from '@/hooks/useAdminRole';
-import AdminDashboard from '@/pages/admin/Dashboard';
+import EnhancedModernDashboard from '@/components/admin/enhanced/EnhancedModernDashboard';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertTriangle } from 'lucide-react';
 
@@ -40,7 +40,7 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <AdminDashboard />
+      <EnhancedModernDashboard />
     </div>
   );
 };
