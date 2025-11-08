@@ -34,6 +34,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [urssafEnabled, setUrssafEnabled] = useState(false);
   const [clientInfo, setClientInfo] = useState({
     firstName: "",
     lastName: "",
@@ -153,12 +154,37 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       const preferredDate = cartItems[0]?.timeSlot?.date ? new Date(cartItems[0].timeSlot.date).toISOString().split('T')[0] : undefined;
       const preferredTime = cartItems[0]?.timeSlot?.startTime;
       const totalAmount = getCartTotal();
+      
+      // Calculate amounts based on URSSAF immediate advance
+      const clientAmount = urssafEnabled ? totalAmount * 0.5 : totalAmount;
+      const stateAmount = urssafEnabled ? totalAmount * 0.5 : 0;
 
-      // Create Stripe payment session
+      // If URSSAF enabled, register with URSSAF first
+      if (urssafEnabled) {
+        const { data: urssafData, error: urssafError } = await supabase.functions.invoke('urssaf-register-service', {
+          body: {
+            clientInfo,
+            services,
+            totalAmount,
+            clientAmount,
+            stateAmount,
+            preferredDate,
+            preferredTime
+          }
+        });
+
+        if (urssafError) {
+          throw new Error(`Erreur URSSAF : ${urssafError.message}`);
+        }
+
+        console.log('URSSAF registration:', urssafData);
+      }
+
+      // Create Stripe payment session (only for client amount)
       const { data: paymentData, error: paymentError } = await supabase.functions.invoke('create-payment', {
         body: {
-          amount: totalAmount,
-          description: `Réservation Bikawo - ${services.length} service(s)`,
+          amount: clientAmount,
+          description: `Réservation Bikawo - ${services.length} service(s)${urssafEnabled ? ' (Avance immédiate 50%)' : ''}`,
           serviceName: services.map(s => s.serviceName).join(', '),
           guestEmail: clientInfo.email,
           metadata: {
@@ -166,7 +192,11 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
             services: JSON.stringify(services),
             preferredDate,
             preferredTime,
-            notes: cartItems.map(item => item.notes).filter(Boolean).join('; ')
+            notes: cartItems.map(item => item.notes).filter(Boolean).join('; '),
+            urssafEnabled: urssafEnabled.toString(),
+            totalAmount: totalAmount.toString(),
+            clientAmount: clientAmount.toString(),
+            stateAmount: stateAmount.toString()
           }
         }
       });
@@ -352,6 +382,43 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Avance immédiate URSSAF */}
+          <Card className="transition-all duration-200 hover:shadow-md border-green-200 bg-green-50/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <CreditCard className="w-5 h-5 text-green-600" />
+                Avance immédiate du crédit d'impôt
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-4 bg-white rounded-lg border border-green-200">
+                <p className="text-sm text-muted-foreground mb-3">
+                  En tant que particulier employeur, bénéficiez de <strong>50% de réduction immédiate</strong> grâce au dispositif URSSAF d'avance immédiate du crédit d'impôt.
+                </p>
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="urssaf-consent"
+                    checked={urssafEnabled}
+                    onChange={(e) => setUrssafEnabled(e.target.checked)}
+                    className="mt-1 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                  />
+                  <Label htmlFor="urssaf-consent" className="text-sm cursor-pointer">
+                    J'autorise Bikawo à activer le service <strong>Avance Immédiate de l'URSSAF</strong> pour mes prestations et à déclarer ces services auprès de l'URSSAF. Je bénéficierai ainsi de 50% de réduction immédiate sur le montant total.
+                  </Label>
+                </div>
+              </div>
+              
+              {urssafEnabled && (
+                <Alert className="border-green-200 bg-green-50">
+                  <AlertDescription className="text-sm">
+                    ✅ Vous ne paierez que <strong>{(getCartTotal() * 0.5).toFixed(2)}€</strong> au lieu de {getCartTotal()}€. L'État prendra en charge les {(getCartTotal() * 0.5).toFixed(2)}€ restants.
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Right Column - Order Summary - Desktop uniquement */}
@@ -406,9 +473,25 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                   <span>Sous-total</span>
                   <span>{getCartTotal()}€</span>
                 </div>
+                
+                {urssafEnabled && (
+                  <>
+                    <div className="flex justify-between items-center text-sm text-green-600">
+                      <span>Avance immédiate (-50%)</span>
+                      <span>-{(getCartTotal() * 0.5).toFixed(2)}€</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs text-muted-foreground">
+                      <span>Pris en charge par l'État</span>
+                      <span>{(getCartTotal() * 0.5).toFixed(2)}€</span>
+                    </div>
+                  </>
+                )}
+                
                 <div className="flex justify-between items-center text-lg font-bold border-t pt-2">
-                  <span>Total</span>
-                  <span className="text-primary">{getCartTotal()}€</span>
+                  <span>Montant à payer</span>
+                  <span className="text-primary">
+                    {urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€
+                  </span>
                 </div>
               </div>
 
@@ -426,7 +509,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                 ) : (
                   <>
                     <CreditCard className="w-4 h-4 mr-2" />
-                    Confirmer et payer {getCartTotal()}€
+                    Confirmer et payer {urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€
                   </>
                 )}
               </Button>
@@ -442,7 +525,16 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       {/* Bouton fixe mobile */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t shadow-elegant z-50 animate-slide-in-bottom">
         <div className="mb-2 text-center text-sm font-semibold">
-          Total: <span className="text-primary text-lg">{getCartTotal()}€</span>
+          {urssafEnabled ? (
+            <>
+              Total: <span className="text-muted-foreground line-through text-sm">{getCartTotal()}€</span>
+              {' '}
+              <span className="text-primary text-lg">{(getCartTotal() * 0.5).toFixed(2)}€</span>
+              <span className="text-xs text-green-600 block">(-50% avance immédiate)</span>
+            </>
+          ) : (
+            <>Total: <span className="text-primary text-lg">{getCartTotal()}€</span></>
+          )}
         </div>
         <Button 
           onClick={handleSubmitBooking}
@@ -458,7 +550,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
           ) : (
             <>
               <CreditCard className="w-4 h-4 mr-2" />
-              Confirmer et payer
+              Confirmer et payer {urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€
             </>
           )}
         </Button>
