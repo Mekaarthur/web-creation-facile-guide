@@ -14,9 +14,9 @@ interface AdminRouteProps {
 /**
  * Route protégée pour les administrateurs uniquement
  * Redirige les non-admins vers leur espace approprié
- * Sécurité maximale avec vérification des rôles
+ * Sécurité maximale avec vérification des rôles via RLS
  */
-const AdminRoute = ({ children, redirectTo = '/auth' }: AdminRouteProps) => {
+const AdminRoute = ({ children, redirectTo = '/admin/login' }: AdminRouteProps) => {
   const { user, loading, hasRole, primaryRole } = useAuth();
 
   if (loading) {

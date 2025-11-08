@@ -4264,6 +4264,7 @@ export type Database = {
         Args: { p_binome_id: string; p_priority?: string; p_reason: string }
         Returns: string
       }
+      is_current_user_admin: { Args: never; Returns: boolean }
       is_platform_admin: { Args: never; Returns: boolean }
       log_action: {
         Args: {

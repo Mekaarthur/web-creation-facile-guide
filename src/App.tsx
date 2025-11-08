@@ -44,6 +44,7 @@ import ReservationConfirmee from "./pages/ReservationConfirmee";
 import SubServicePage from "./pages/SubService";
 import CartPage from "./pages/Cart";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import AdminLogin from "./pages/AdminLogin";
 
 // Admin Layout and Pages
 import { AdminLayout } from "./components/admin/layout/AdminLayout";
@@ -133,6 +134,8 @@ const App = () => (
             <Route path="/email/verify/:token" element={<AuthComplete />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/update-password" element={<UpdatePassword />} />
+            {/* Route de connexion admin dédiée - sécurisée par RLS */}
+            <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/espace-personnel" element={<ProtectedRoute><EspacePersonnel /></ProtectedRoute>} />
             <Route path="/dashboard-client" element={<ProtectedRoute><EspacePersonnel /></ProtectedRoute>} />
             <Route path="/espace-prestataire" element={<ProtectedProviderRoute><EspacePrestataire /></ProtectedProviderRoute>} />
