@@ -73,6 +73,22 @@ serve(async (req) => {
           } else {
             console.log('Facture mise à jour:', invoice.invoice_number);
             
+            // Créer notification admin pour paiement réussi
+            await supabaseAdmin.functions.invoke('create-admin-notification', {
+              body: {
+                type: 'payment_success',
+                title: '💰 Paiement reçu',
+                message: `Paiement de ${(session.amount_total! / 100).toFixed(2)}€ reçu pour réservation #${bookingId}`,
+                data: {
+                  payment_id: paymentIntent.id,
+                  session_id: session.id,
+                  booking_id: bookingId,
+                  amount: session.amount_total! / 100
+                },
+                priority: 'normal'
+              }
+            });
+            
             // Envoyer email de confirmation au client
             await sendInvoiceEmail(invoice, supabaseAdmin);
           }
@@ -108,6 +124,21 @@ serve(async (req) => {
 
       if (error) {
         console.error('Erreur mise à jour remboursement:', error);
+      } else {
+        // Créer notification admin pour remboursement
+        await supabaseAdmin.functions.invoke('create-admin-notification', {
+          body: {
+            type: 'payment',
+            title: '💸 Remboursement effectué',
+            message: `Remboursement de ${(charge.amount_refunded / 100).toFixed(2)}€ pour paiement ${paymentIntentId}`,
+            data: {
+              charge_id: charge.id,
+              payment_intent_id: paymentIntentId,
+              amount_refunded: charge.amount_refunded / 100
+            },
+            priority: 'high'
+          }
+        });
       }
     }
 
@@ -148,20 +179,20 @@ async function sendInvoiceEmail(invoice: any, supabase: any) {
 }
 
 async function notifyAdminDispute(dispute: any, supabase: any) {
-  // Créer une notification pour l'admin
-  const { error } = await supabase
-    .from('notifications')
-    .insert({
-      user_id: 'admin', // ID de l'admin
-      type: 'dispute',
-      title: 'Litige Stripe détecté',
+  // Créer une notification admin pour le litige
+  await supabase.functions.invoke('create-admin-notification', {
+    body: {
+      type: 'system',
+      title: '⚠️ Litige Stripe détecté',
       message: `Un litige a été créé pour le paiement ${dispute.charge}. Montant: ${dispute.amount / 100}€`,
-      data: { dispute_id: dispute.id, charge_id: dispute.charge }
-    });
-
-  if (error) {
-    console.error('Erreur création notification:', error);
-  }
+      data: { 
+        dispute_id: dispute.id, 
+        charge_id: dispute.charge,
+        amount: dispute.amount / 100
+      },
+      priority: 'urgent'
+    }
+  });
   
   console.log(`Litige détecté: ${dispute.id}`);
 }

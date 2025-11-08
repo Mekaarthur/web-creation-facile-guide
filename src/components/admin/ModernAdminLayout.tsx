@@ -38,6 +38,7 @@ import {
   Gift
 } from "lucide-react";
 import { Mail } from "lucide-react";
+import { NotificationBell } from './NotificationBell';
 import { cn } from "@/lib/utils";
 
 const navigationGroups = [
@@ -286,12 +287,7 @@ export default function ModernAdminLayout() {
               </div>
               
               <div className="flex items-center gap-3">
-                <Button variant="ghost" size="sm" className="relative">
-                  <Bell className="w-4 h-4" />
-                  <Badge className="absolute -top-1 -right-1 w-5 h-5 rounded-full p-0 text-xs bg-destructive">
-                    3
-                  </Badge>
-                </Button>
+                <NotificationBell />
                 
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent">
                   <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
