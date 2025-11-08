@@ -281,8 +281,8 @@ export default function ModernAdminLayout() {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="text-xl font-semibold">Panel de Contrôle</h1>
-                  <p className="text-sm text-muted-foreground">Tableau de bord administrateur avec statistiques et alertes temps réel</p>
+                  <h1 className="text-xl font-semibold">Administration Bikawo</h1>
+                  <p className="text-sm text-muted-foreground">Gérez votre plateforme en temps réel</p>
                 </div>
               </div>
               

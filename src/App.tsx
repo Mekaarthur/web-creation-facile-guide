@@ -179,9 +179,9 @@ const App = () => (
              <Route path="/politique-cookies" element={<CookiePolicy />} />
              <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
              <Route path="/audit-qualite" element={<AdminRoute><AuditReport /></AdminRoute>} />
-              {/* Redirect old /admin to /modern-admin */}
+             {/* Redirect old /admin to /modern-admin */}
               <Route path="/admin/*" element={<Navigate to="/modern-admin" replace />} />
-              
+            
             {/* Modern Admin Routes */}
             <Route path="/modern-admin" element={<AdminRoute><ModernAdminLayout /></AdminRoute>}>
               <Route index element={<ModernAdminDashboard />} />
