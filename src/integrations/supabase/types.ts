@@ -300,6 +300,13 @@ export type Database = {
             referencedRelation: "bookings"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "booking_slots_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "missions_without_providers_in_zone"
+            referencedColumns: ["booking_id"]
+          },
         ]
       }
       bookings: {
@@ -601,6 +608,13 @@ export type Database = {
             referencedRelation: "bookings"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "chat_conversations_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "missions_without_providers_in_zone"
+            referencedColumns: ["booking_id"]
+          },
         ]
       }
       chat_messages: {
@@ -656,6 +670,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "bookings"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "missions_without_providers_in_zone"
+            referencedColumns: ["booking_id"]
           },
           {
             foreignKeyName: "chat_messages_conversation_id_fkey"
@@ -1048,6 +1069,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "complaints_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "missions_without_providers_in_zone"
+            referencedColumns: ["booking_id"]
+          },
+          {
             foreignKeyName: "complaints_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
@@ -1166,6 +1194,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "counter_proposals_original_booking_id_fkey"
+            columns: ["original_booking_id"]
+            isOneToOne: false
+            referencedRelation: "missions_without_providers_in_zone"
+            referencedColumns: ["booking_id"]
+          },
+          {
             foreignKeyName: "counter_proposals_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
@@ -1219,6 +1254,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "bookings"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_booking_preferences_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "missions_without_providers_in_zone"
+            referencedColumns: ["booking_id"]
           },
         ]
       }
@@ -1320,6 +1362,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "bookings"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "emergency_assignments_original_booking_id_fkey"
+            columns: ["original_booking_id"]
+            isOneToOne: false
+            referencedRelation: "missions_without_providers_in_zone"
+            referencedColumns: ["booking_id"]
           },
           {
             foreignKeyName: "emergency_assignments_replacement_provider_id_fkey"
@@ -1544,6 +1593,13 @@ export type Database = {
             referencedRelation: "bookings"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "incidents_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "missions_without_providers_in_zone"
+            referencedColumns: ["booking_id"]
+          },
         ]
       }
       internal_conversations: {
@@ -1599,6 +1655,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "bookings"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_conversations_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "missions_without_providers_in_zone"
+            referencedColumns: ["booking_id"]
           },
           {
             foreignKeyName: "internal_conversations_client_request_id_fkey"
@@ -1708,6 +1771,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "bookings"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "missions_without_providers_in_zone"
+            referencedColumns: ["booking_id"]
           },
         ]
       }
@@ -2125,6 +2195,13 @@ export type Database = {
             referencedRelation: "bookings"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "nps_surveys_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "missions_without_providers_in_zone"
+            referencedColumns: ["booking_id"]
+          },
         ]
       }
       payments: {
@@ -2192,6 +2269,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "bookings"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "missions_without_providers_in_zone"
+            referencedColumns: ["booking_id"]
           },
           {
             foreignKeyName: "payments_cart_id_fkey"
@@ -2406,6 +2490,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "prestations_realisees_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "missions_without_providers_in_zone"
+            referencedColumns: ["booking_id"]
+          },
+          {
             foreignKeyName: "prestations_realisees_client_request_id_fkey"
             columns: ["client_request_id"]
             isOneToOne: false
@@ -2569,6 +2660,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "bookings"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_compensations_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "missions_without_providers_in_zone"
+            referencedColumns: ["booking_id"]
           },
           {
             foreignKeyName: "provider_compensations_provider_id_fkey"
@@ -2749,6 +2847,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "provider_invoices_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "missions_without_providers_in_zone"
+            referencedColumns: ["booking_id"]
+          },
+          {
             foreignKeyName: "provider_invoices_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
@@ -2861,6 +2966,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "provider_notifications_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "missions_without_providers_in_zone"
+            referencedColumns: ["booking_id"]
+          },
+          {
             foreignKeyName: "provider_notifications_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
@@ -2917,6 +3029,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "bookings"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_penalties_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "missions_without_providers_in_zone"
+            referencedColumns: ["booking_id"]
           },
           {
             foreignKeyName: "provider_penalties_provider_id_fkey"
@@ -3589,6 +3708,13 @@ export type Database = {
             referencedRelation: "bookings"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "reviews_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "missions_without_providers_in_zone"
+            referencedColumns: ["booking_id"]
+          },
         ]
       }
       saved_filters: {
@@ -4203,6 +4329,33 @@ export type Database = {
         }
         Relationships: []
       }
+      missions_without_providers_in_zone: {
+        Row: {
+          address: string | null
+          booking_date: string | null
+          booking_id: string | null
+          created_at: string | null
+          provider_availability: string | null
+          status: string | null
+        }
+        Insert: {
+          address?: string | null
+          booking_date?: string | null
+          booking_id?: string | null
+          created_at?: string | null
+          provider_availability?: never
+          status?: string | null
+        }
+        Update: {
+          address?: string | null
+          booking_date?: string | null
+          booking_id?: string | null
+          created_at?: string | null
+          provider_availability?: never
+          status?: string | null
+        }
+        Relationships: []
+      }
       prestataire_zones_stats: {
         Row: {
           adresse_reference: string | null
@@ -4401,6 +4554,10 @@ export type Database = {
         Args: { lat1: number; lat2: number; lon1: number; lon2: number }
         Returns: number
       }
+      calculate_distance_km: {
+        Args: { lat1: number; lat2: number; lon1: number; lon2: number }
+        Returns: number
+      }
       calculate_financial_breakdown: {
         Args: { p_client_price: number; p_service_category: string }
         Returns: {
@@ -4518,9 +4675,34 @@ export type Database = {
           rotation_priority: number
         }[]
       }
+      find_providers_in_zone: {
+        Args: {
+          p_latitude: number
+          p_limit?: number
+          p_longitude: number
+          p_service_type?: string
+        }
+        Returns: {
+          adresse_reference: string
+          business_name: string
+          distance_km: number
+          prestataire_zone_id: string
+          provider_id: string
+          rating: number
+          rayon_km: number
+          zone_name: string
+        }[]
+      }
       generate_invoice_number: { Args: never; Returns: string }
       generate_provider_invoice_number: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
+      geocode_address: {
+        Args: { p_address: string }
+        Returns: {
+          latitude: number
+          longitude: number
+        }[]
+      }
       get_binome_history: {
         Args: { p_binome_id: string }
         Returns: {
@@ -4781,6 +4963,17 @@ export type Database = {
       reset_yearly_referral_counters: { Args: never; Returns: undefined }
       retry_failed_payment: { Args: { p_payment_id: string }; Returns: Json }
       run_system_diagnostics: { Args: never; Returns: Json }
+      suggest_best_provider: {
+        Args: { p_booking_id: string }
+        Returns: {
+          business_name: string
+          distance_km: number
+          missions_completed: number
+          provider_id: string
+          rating: number
+          recommendation_score: number
+        }[]
+      }
       user_has_permission: {
         Args: { permission_type: string }
         Returns: boolean
