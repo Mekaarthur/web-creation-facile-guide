@@ -196,3 +196,6 @@ verify_jwt = false  # Called automatically by system triggers - uses service rol
 
 [functions.send-review-request]
 verify_jwt = false  # Called automatically when mission completes - uses service role key
+
+[functions.check-zone-alerts]
+verify_jwt = false  # Called by cron job or manually - uses service role key

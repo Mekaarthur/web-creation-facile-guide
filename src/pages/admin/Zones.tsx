@@ -97,10 +97,13 @@ const Zones = () => {
   const [selectedZoneForProviders, setSelectedZoneForProviders] = useState<GeographicZone | null>(null);
   const [availableProviders, setAvailableProviders] = useState<any[]>([]);
   const [providerSearch, setProviderSearch] = useState('');
+  const [alerts, setAlerts] = useState<any[]>([]);
+  const [showAlerts, setShowAlerts] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     loadZones();
+    loadAlerts();
   }, []);
 
   const loadZones = async () => {
@@ -153,6 +156,97 @@ const Zones = () => {
       setAvailableProviders(data || []);
     } catch (error) {
       console.error('Erreur lors du chargement des prestataires:', error);
+    }
+  };
+
+  const loadAlerts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('zone_alerts_with_details')
+        .select('*')
+        .eq('is_resolved', false)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setAlerts(data || []);
+    } catch (error) {
+      console.error('Erreur lors du chargement des alertes:', error);
+    }
+  };
+
+  const handleResolveAlert = async (alertId: string) => {
+    try {
+      const { error } = await supabase
+        .from('zone_alerts')
+        .update({ 
+          is_resolved: true, 
+          resolved_at: new Date().toISOString(),
+          resolved_by: (await supabase.auth.getUser()).data.user?.id
+        })
+        .eq('id', alertId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Alerte résolue",
+        description: "L'alerte a été marquée comme résolue"
+      });
+
+      loadAlerts();
+      loadZones();
+    } catch (error) {
+      console.error('Erreur lors de la résolution:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de résoudre l'alerte",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleCheckAlerts = async () => {
+    try {
+      setLoading(true);
+      const { error } = await supabase.functions.invoke('check-zone-alerts');
+
+      if (error) throw error;
+
+      toast({
+        title: "Vérification terminée",
+        description: "Les alertes ont été mises à jour"
+      });
+
+      loadAlerts();
+      loadZones();
+    } catch (error) {
+      console.error('Erreur vérification alertes:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de vérifier les alertes",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'critical': return 'bg-red-100 text-red-800 border-red-200';
+      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'low': return 'bg-blue-100 text-blue-800 border-blue-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getSeverityIcon = (severity: string) => {
+    switch (severity) {
+      case 'critical': return '🚨';
+      case 'high': return '⚠️';
+      case 'medium': return '⚡';
+      case 'low': return 'ℹ️';
+      default: return '📌';
     }
   };
 
@@ -411,6 +505,83 @@ const Zones = () => {
 
   return (
     <div className="space-y-6">
+      {/* Alertes critiques */}
+      {alerts.length > 0 && showAlerts && (
+        <Card className="border-l-4 border-l-red-500 bg-red-50/50">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-red-500" />
+                <CardTitle className="text-lg">
+                  🚨 Alertes Zones ({alerts.length})
+                </CardTitle>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCheckAlerts}
+                  disabled={loading}
+                >
+                  <TrendingUp className="w-4 h-4 mr-2" />
+                  Vérifier maintenant
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAlerts(false)}
+                >
+                  Masquer
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {alerts.slice(0, 5).map((alert) => (
+                <div
+                  key={alert.id}
+                  className={`p-4 rounded-lg border-2 ${getSeverityColor(alert.severity)}`}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-lg">{getSeverityIcon(alert.severity)}</span>
+                        <span className="font-semibold">{alert.title}</span>
+                        <Badge variant="outline" className="text-xs">
+                          {alert.nom_zone}
+                        </Badge>
+                      </div>
+                      <p className="text-sm">{alert.message}</p>
+                      <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                        <span>Valeur actuelle: {alert.current_value}</span>
+                        <span>•</span>
+                        <span>Seuil: {alert.threshold_value}</span>
+                        <span>•</span>
+                        <span>{new Date(alert.created_at).toLocaleDateString('fr-FR')}</span>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleResolveAlert(alert.id)}
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Résoudre
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              {alerts.length > 5 && (
+                <p className="text-sm text-center text-muted-foreground pt-2">
+                  +{alerts.length - 5} autre{alerts.length - 5 > 1 ? 's' : ''} alerte{alerts.length - 5 > 1 ? 's' : ''}
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* En-tête */}
       <div className="flex items-center justify-between">
         <div>
@@ -552,7 +723,7 @@ const Zones = () => {
       </div>
 
       {/* Statistiques */}
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Total Zones</CardTitle>
@@ -562,6 +733,23 @@ const Zones = () => {
             <Badge variant="secondary" className="mt-1">
               {zones.filter(z => z.active).length} actives
             </Badge>
+          </CardContent>
+        </Card>
+        
+        <Card className={alerts.length > 0 ? "border-red-200 bg-red-50/30" : ""}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <AlertCircle className={alerts.length > 0 ? "w-4 h-4 text-red-500" : "w-4 h-4"} />
+              Alertes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-bold ${alerts.length > 0 ? 'text-red-600' : ''}`}>
+              {alerts.length}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {alerts.filter(a => a.severity === 'critical').length} critiques
+            </p>
           </CardContent>
         </Card>
         

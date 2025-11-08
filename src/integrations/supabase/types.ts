@@ -3867,6 +3867,69 @@ export type Database = {
         }
         Relationships: []
       }
+      zone_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          current_value: number | null
+          id: string
+          is_resolved: boolean
+          message: string
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          threshold_value: number | null
+          title: string
+          updated_at: string
+          zone_id: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          current_value?: number | null
+          id?: string
+          is_resolved?: boolean
+          message: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity: string
+          threshold_value?: number | null
+          title: string
+          updated_at?: string
+          zone_id: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          current_value?: number | null
+          id?: string
+          is_resolved?: boolean
+          message?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          threshold_value?: number | null
+          title?: string
+          updated_at?: string
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zone_alerts_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zone_statistics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "zone_alerts_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones_geographiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       zone_clients: {
         Row: {
           client_id: string
@@ -4082,6 +4145,45 @@ export type Database = {
         }
         Relationships: []
       }
+      zone_alerts_with_details: {
+        Row: {
+          alert_type: string | null
+          client_count: number | null
+          created_at: string | null
+          current_value: number | null
+          id: string | null
+          is_resolved: boolean | null
+          message: string | null
+          nom_zone: string | null
+          provider_count: number | null
+          resolved_at: string | null
+          resolved_by: string | null
+          satisfaction_moyenne: number | null
+          severity: string | null
+          statut: string | null
+          threshold_value: number | null
+          title: string | null
+          type_zone: string | null
+          updated_at: string | null
+          zone_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zone_alerts_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zone_statistics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "zone_alerts_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones_geographiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       zone_statistics: {
         Row: {
           active: boolean | null
@@ -4191,6 +4293,7 @@ export type Database = {
         Returns: boolean
       }
       check_admin_role: { Args: never; Returns: boolean }
+      check_and_create_zone_alerts: { Args: never; Returns: undefined }
       check_client_reward_eligibility: {
         Args: { p_client_id: string }
         Returns: boolean
@@ -4497,6 +4600,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      notify_admins_critical_zone_alerts: { Args: never; Returns: undefined }
       recalculate_referral_rewards: {
         Args: never
         Returns: {
