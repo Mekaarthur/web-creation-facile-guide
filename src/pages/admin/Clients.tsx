@@ -56,7 +56,16 @@ const AdminClients = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [serviceFilter, setServiceFilter] = useState("all");
-  const [stats, setStats] = useState<Stats | null>(null);
+  const [stats, setStats] = useState<Stats>({
+    total: 0,
+    new: 0,
+    active: 0,
+    blocked: 0,
+    activity_rate: 0,
+    retention_rate: 0,
+    total_revenue: 0,
+    average_revenue_per_client: 0
+  });
   const { toast } = useToast();
 
   useEffect(() => {
