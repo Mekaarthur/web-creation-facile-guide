@@ -18,6 +18,7 @@ interface Reservation {
   end_time: string;
   address: string | null;
   total_price: number;
+  hourly_rate: number | null;
   status: string;
   created_at: string;
   client_id: string;
@@ -28,6 +29,7 @@ interface Reservation {
   services: {
     name: string;
     category: string;
+    base_price?: number;
   } | null;
   client_profile?: {
     first_name: string | null;
