@@ -906,12 +906,12 @@ export default function EnhancedModernDashboard() {
   }, [searchTerm]);
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-8 p-6">
       {/* Header avec actions */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold">Dashboard Bikawo</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-4xl font-bold tracking-tight">Panel de Contrôle</h1>
+          <p className="text-muted-foreground text-lg">
             Vue d'ensemble complète • {format(new Date(), 'EEEE d MMMM yyyy', { locale: fr })}
           </p>
         </div>
@@ -941,212 +941,337 @@ export default function EnhancedModernDashboard() {
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard
-          title="Chiffre d'Affaires"
-          value={`${stats.revenue.value.toLocaleString()}€`}
-          change={stats.revenue.change}
-          changeType="positive"
-          icon={Euro}
-          subtitle="vs période précédente"
-          trend={stats.revenue.trend}
-          loading={loading}
-        />
-        
-        <MetricCard
-          title="Utilisateurs Actifs"
-          value={stats.users.value.toLocaleString()}
-          change={stats.users.change}
-          changeType="positive"
-          icon={Users}
-          subtitle="clients + prestataires"
-          trend={stats.users.trend}
-          loading={loading}
-        />
-        
-        <MetricCard
-          title="Missions Actives"
-          value={stats.missions.value}
-          change={stats.missions.change}
-          changeType="positive"
-          icon={Target}
-          subtitle="en cours + planifiées"
-          trend={stats.missions.trend}
-          loading={loading}
-        />
-        
-        <MetricCard
-          title="Satisfaction Globale"
-          value={`${stats.satisfaction.value}/5`}
-          change={stats.satisfaction.change}
-          changeType="positive"
-          icon={Star}
-          subtitle="moyenne pondérée"
-          trend={stats.satisfaction.trend}
-          loading={loading}
-        />
-      </div>
+      {/* SECTION 1: Statistiques Principales */}
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold flex items-center gap-2">
+          <BarChart3 className="w-6 h-6 text-primary" />
+          Statistiques Principales
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <MetricCard
+            title="Chiffre d'Affaires"
+            value={`${stats.revenue.value.toLocaleString()}€`}
+            change={stats.revenue.change}
+            changeType="positive"
+            icon={Euro}
+            subtitle="vs période précédente"
+            trend={stats.revenue.trend}
+            loading={loading}
+          />
+          
+          <MetricCard
+            title="Utilisateurs Actifs"
+            value={stats.users.value.toLocaleString()}
+            change={stats.users.change}
+            changeType="positive"
+            icon={Users}
+            subtitle="clients + prestataires"
+            trend={stats.users.trend}
+            loading={loading}
+          />
+          
+          <MetricCard
+            title="Missions Actives"
+            value={stats.missions.value}
+            change={stats.missions.change}
+            changeType="positive"
+            icon={Target}
+            subtitle="en cours + planifiées"
+            trend={stats.missions.trend}
+            loading={loading}
+          />
+          
+          <MetricCard
+            title="Satisfaction Globale"
+            value={`${stats.satisfaction.value}/5`}
+            change={stats.satisfaction.change}
+            changeType="positive"
+            icon={Star}
+            subtitle="moyenne pondérée"
+            trend={stats.satisfaction.trend}
+            loading={loading}
+          />
+        </div>
+      </section>
 
-      {/* Mission Assignment Trigger */}
-      <MissionAssignmentTrigger />
-      
-      {/* Contenu principal avec onglets */}
-      <Tabs defaultValue="overview" className="space-y-6">
-        {/* Panneau d'alertes visible sur tous les onglets */}
+      {/* SECTION 2: Alertes et Notifications */}
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold flex items-center gap-2">
+          <AlertTriangle className="w-6 h-6 text-amber-500" />
+          Alertes & Notifications
+        </h2>
         <AdminAlertsPanel onNavigate={() => {}} />
-        
-        <TabsList className="grid w-full grid-cols-6 lg:grid-cols-10">
-          <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
-          <TabsTrigger value="kanban">Kanban</TabsTrigger>
-          <TabsTrigger value="matching">🤖 Matching IA</TabsTrigger>
-          <TabsTrigger value="users">Utilisateurs</TabsTrigger>
-          <TabsTrigger value="providers">Prestataires</TabsTrigger>
-          <TabsTrigger value="applications">Candidatures</TabsTrigger>
-          <TabsTrigger value="requests">Demandes clients</TabsTrigger>
-          <TabsTrigger value="manual_assignment">Attribution manuelle</TabsTrigger>
-          <TabsTrigger value="enhanced_requests">Gestion avancée</TabsTrigger>
-          <TabsTrigger value="messaging">Messagerie</TabsTrigger>
-          <TabsTrigger value="reviews">
-            Modération
-            {(adminStats.pending_reviews + adminStats.flagged_reviews) > 0 && (
-              <Badge variant="destructive" className="ml-2">
-                {adminStats.pending_reviews + adminStats.flagged_reviews}
-              </Badge>
-            )}
-          </TabsTrigger>
-        </TabsList>
+      </section>
 
-        <TabsContent value="overview" className="space-y-6">
-          {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Revenue Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-green-500" />
-                  Évolution des Revenus
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={revenueData}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                      <XAxis dataKey="name" />
-                      <YAxis tickFormatter={(value) => `${value/1000}k€`} />
-                      <Tooltip 
-                        formatter={(value) => [`${value.toLocaleString()}€`, 'Revenue']}
-                        labelStyle={{ color: 'hsl(var(--foreground))' }}
-                        contentStyle={{ 
-                          backgroundColor: 'hsl(var(--popover))', 
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px'
-                        }}
-                      />
-                      <Area 
-                        type="monotone" 
-                        dataKey="revenue" 
-                        stroke="hsl(var(--primary))" 
-                        fill="hsl(var(--primary))" 
-                        fillOpacity={0.2}
-                        strokeWidth={3}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
+      {/* SECTION 3: Actions Rapides */}
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold flex items-center gap-2">
+          <Zap className="w-6 h-6 text-yellow-500" />
+          Actions Rapides
+        </h2>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Button 
+                variant="outline" 
+                className="h-auto p-6 flex flex-col items-center gap-3 hover:bg-accent"
+                onClick={handleValidateAllProviders}
+                disabled={loading}
+              >
+                {loading ? <Loader2 className="w-8 h-8 animate-spin" /> : <CheckCircle className="w-8 h-8 text-green-500" />}
+                <span className="text-sm font-medium">Valider Prestataires</span>
+                <Badge variant="destructive">3</Badge>
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="h-auto p-6 flex flex-col items-center gap-3 hover:bg-accent"
+                onClick={handleManageAlerts}
+                disabled={loading}
+              >
+                <AlertTriangle className="w-8 h-8 text-amber-500" />
+                <span className="text-sm font-medium">Gérer Alertes</span>
+                <Badge variant="default">5</Badge>
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="h-auto p-6 flex flex-col items-center gap-3 hover:bg-accent"
+                onClick={handleViewPayments}
+                disabled={loading}
+              >
+                <Euro className="w-8 h-8 text-blue-500" />
+                <span className="text-sm font-medium">Paiements</span>
+                <Badge variant="default">23k€</Badge>
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="h-auto p-6 flex flex-col items-center gap-3 hover:bg-accent"
+                onClick={handleViewMessages}
+                disabled={loading}
+              >
+                <MessageSquare className="w-8 h-8 text-purple-500" />
+                <span className="text-sm font-medium">Messages</span>
+                <Badge variant="secondary">23</Badge>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
 
-            {/* Service Performance */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-blue-500" />
-                  Performance par Service
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={servicePerformance.length > 0 ? servicePerformance : [
-                      { name: 'Bika Kids', missions: 156, revenue: 45200, satisfaction: 4.8, growth: 15 },
-                      { name: 'Bika Maison', missions: 234, revenue: 67800, satisfaction: 4.6, growth: 8 }
-                    ]}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                      <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
-                      <YAxis />
-                      <Tooltip 
-                        formatter={(value, name) => [
-                          name === 'missions' ? `${value} missions` : `${value}€`,
-                          name === 'missions' ? 'Missions' : 'Revenue'
-                        ]}
-                      />
-                      <Bar dataKey="missions" fill="hsl(var(--primary))" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Quick Actions */}
+      {/* SECTION 4: Graphiques de Performance */}
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold flex items-center gap-2">
+          <TrendingUp className="w-6 h-6 text-green-500" />
+          Graphiques de Performance
+        </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Revenue Chart */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Zap className="w-5 h-5 text-yellow-500" />
-                Actions Rapides
+                <TrendingUp className="w-5 h-5 text-green-500" />
+                Évolution des Revenus
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Button 
-                  variant="outline" 
-                  className="h-auto p-4 flex flex-col items-center gap-2"
-                  onClick={handleValidateAllProviders}
-                  disabled={loading}
-                >
-                  {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <CheckCircle className="w-6 h-6 text-green-500" />}
-                  <span className="text-sm">Valider Prestataires</span>
-                  <Badge variant="destructive">3</Badge>
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="h-auto p-4 flex flex-col items-center gap-2"
-                  onClick={handleManageAlerts}
-                  disabled={loading}
-                >
-                  <AlertTriangle className="w-6 h-6 text-amber-500" />
-                  <span className="text-sm">Gérer Alertes</span>
-                  <Badge variant="default">5</Badge>
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="h-auto p-4 flex flex-col items-center gap-2"
-                  onClick={handleViewPayments}
-                  disabled={loading}
-                >
-                  <Euro className="w-6 h-6 text-blue-500" />
-                  <span className="text-sm">Paiements</span>
-                  <Badge variant="default">23k€</Badge>
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="h-auto p-4 flex flex-col items-center gap-2"
-                  onClick={handleViewMessages}
-                  disabled={loading}
-                >
-                  <MessageSquare className="w-6 h-6 text-purple-500" />
-                  <span className="text-sm">Messages</span>
-                  <Badge variant="secondary">23</Badge>
-                </Button>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={revenueData}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                    <XAxis dataKey="name" />
+                    <YAxis tickFormatter={(value) => `${value/1000}k€`} />
+                    <Tooltip 
+                      formatter={(value) => [`${value.toLocaleString()}€`, 'Revenue']}
+                      labelStyle={{ color: 'hsl(var(--foreground))' }}
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--popover))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="revenue" 
+                      stroke="hsl(var(--primary))" 
+                      fill="hsl(var(--primary))" 
+                      fillOpacity={0.2}
+                      strokeWidth={3}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+
+          {/* Service Performance */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="w-5 h-5 text-blue-500" />
+                Performance par Service
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={servicePerformance.length > 0 ? servicePerformance : [
+                    { name: 'Bika Kids', missions: 156, revenue: 45200, satisfaction: 4.8, growth: 15 },
+                    { name: 'Bika Maison', missions: 234, revenue: 67800, satisfaction: 4.6, growth: 8 }
+                  ]}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                    <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
+                    <YAxis />
+                    <Tooltip 
+                      formatter={(value, name) => [
+                        name === 'missions' ? `${value} missions` : `${value}€`,
+                        name === 'missions' ? 'Missions' : 'Revenue'
+                      ]}
+                    />
+                    <Bar dataKey="missions" fill="hsl(var(--primary))" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* SECTION 5: Prestataires en Attente */}
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold flex items-center gap-2">
+          <UserCheck className="w-6 h-6 text-blue-500" />
+          Prestataires en Attente de Validation
+        </h2>
+        <Card>
+          <CardContent className="pt-6">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nom</TableHead>
+                  <TableHead>Service</TableHead>
+                  <TableHead>Téléphone</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {providers.filter(p => p.status === 'pending' || p.status === 'pending_validation').slice(0, 5).map((provider) => (
+                  <TableRow key={provider.id}>
+                    <TableCell className="font-medium">{provider.name}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{provider.service}</Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{provider.phone}</TableCell>
+                    <TableCell className="text-muted-foreground">{provider.email}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => handleValidateProvider(provider.id)}
+                        >
+                          <CheckCircle className="w-4 h-4 mr-1" />
+                          Valider
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const message = prompt('Message pour le prestataire:');
+                            if (message) handleContactProvider(provider.id, message);
+                          }}
+                        >
+                          <Phone className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* SECTION 6: Activités Récentes */}
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold flex items-center gap-2">
+          <Activity className="w-6 h-6 text-purple-500" />
+          Activités Récentes
+        </h2>
+        <Card>
+          <CardContent className="pt-6">
+            {activities.length > 0 ? (
+              <div className="space-y-4">
+                {activities.slice(0, 10).map((activity) => (
+                  <div key={activity.id} className="flex items-start gap-4 p-4 rounded-lg border border-border hover:bg-accent transition-colors">
+                    <div className="flex-shrink-0">
+                      {activity.type === 'booking' && <Calendar className="w-5 h-5 text-blue-500" />}
+                      {activity.type === 'provider' && <Users className="w-5 h-5 text-green-500" />}
+                      {activity.type === 'review' && <Star className="w-5 h-5 text-yellow-500" />}
+                      {activity.type === 'payment' && <Euro className="w-5 h-5 text-purple-500" />}
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <p className="text-sm font-medium">{activity.message}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">{activity.time}</span>
+                        <Badge variant={
+                          activity.status === 'completed' ? 'default' :
+                          activity.status === 'pending' ? 'secondary' :
+                          activity.status === 'cancelled' ? 'destructive' :
+                          'outline'
+                        }>
+                          {activity.status}
+                        </Badge>
+                        {activity.amount && <span className="text-xs font-medium">{activity.amount}</span>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Activity className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p>Aucune activité récente</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* SECTION 7: Outils Avancés - Onglets pour fonctionnalités spécifiques */}
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold flex items-center gap-2">
+          <Settings className="w-6 h-6 text-slate-500" />
+          Outils de Gestion Avancés
+        </h2>
+        <Tabs defaultValue="kanban" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-7">
+            <TabsTrigger value="kanban">Kanban</TabsTrigger>
+            <TabsTrigger value="matching">🤖 Matching IA</TabsTrigger>
+            <TabsTrigger value="users">Utilisateurs</TabsTrigger>
+            <TabsTrigger value="providers">Prestataires</TabsTrigger>
+            <TabsTrigger value="applications">Candidatures</TabsTrigger>
+            <TabsTrigger value="requests">Demandes clients</TabsTrigger>
+            <TabsTrigger value="reviews">
+              Modération
+              {(adminStats.pending_reviews + adminStats.flagged_reviews) > 0 && (
+                <Badge variant="destructive" className="ml-2">
+                  {adminStats.pending_reviews + adminStats.flagged_reviews}
+                </Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="kanban" className="space-y-4">
+            <AdminKanbanBoard />
+          </TabsContent>
+
+          <TabsContent value="matching" className="space-y-4">
+            <AdminMatchingPanel />
+          </TabsContent>
 
         <TabsContent value="providers" className="space-y-6">
           {/* Gestion détaillée des prestataires */}
@@ -1630,6 +1755,7 @@ export default function EnhancedModernDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
+      </section>
     </div>
   );
 }
