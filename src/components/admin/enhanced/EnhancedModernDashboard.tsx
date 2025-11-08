@@ -545,7 +545,7 @@ export default function EnhancedModernDashboard() {
           description: `En attente: ${summary.pending.amount}€ | Aujourd'hui: ${summary.today.amount}€`
         });
         // Redirection vers la page des paiements
-        window.location.href = '/admin/paiements';
+        window.location.href = '/modern-admin/payments';
       }
     } catch (error) {
       console.error('Erreur lors du résumé des paiements:', error);
@@ -572,7 +572,7 @@ export default function EnhancedModernDashboard() {
           description: `${summary.unread} non lu(s) | ${summary.activeConversations} conversations actives`
         });
         // Redirection vers la page des messages
-        window.location.href = '/admin/messagerie';
+        window.location.href = '/modern-admin/messages';
       }
     } catch (error) {
       console.error('Erreur lors du résumé des messages:', error);
