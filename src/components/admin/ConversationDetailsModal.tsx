@@ -13,7 +13,9 @@ import {
   Ban,
   X,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Bell,
+  ShieldAlert
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -190,13 +192,28 @@ export const ConversationDetailsModal = ({ conversation, onClose, onUpdate }: Co
       setNewMessage('');
       loadMessages();
 
-      // Monitorer les mots-clés d'alerte
       await supabase.functions.invoke('monitor-conversation-keywords', {
         body: {
           messageText: newMessage,
           conversationId: conversation.id
         }
       });
+
+      // Envoyer notification email au destinataire
+      const receiverId = conversation.participant1_email === (await supabase.auth.getUser()).data.user?.email
+        ? conversation.participant2_email
+        : conversation.participant1_email;
+
+      if (receiverId) {
+        await supabase.functions.invoke('send-message-notification', {
+          body: {
+            userId: receiverId,
+            conversationId: conversation.id,
+            senderName: 'Admin Bikawo',
+            messagePreview: newMessage.substring(0, 100)
+          }
+        });
+      }
 
       toast({
         title: "Message envoyé",
@@ -297,14 +314,91 @@ export const ConversationDetailsModal = ({ conversation, onClose, onUpdate }: Co
     }
   };
 
+  const handleSendNotification = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Non authentifié');
+
+      // Créer une notification système
+      const { error } = await supabase
+        .from('realtime_notifications')
+        .insert({
+          user_id: conversation.participant1_email === user.email 
+            ? conversation.participant2_email 
+            : conversation.participant1_email,
+          type: 'system',
+          title: '📢 Notification Bikawo',
+          message: 'Un administrateur souhaite attirer votre attention sur cette conversation',
+          data: {
+            conversation_id: conversation.id,
+            from_admin: true
+          },
+          priority: 'high'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Notification envoyée",
+        description: "L'utilisateur a été notifié"
+      });
+    } catch (error) {
+      console.error('Erreur notification:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'envoyer la notification",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleBlockUser = async () => {
+    try {
+      const userId = conversation.participant1_email; // ou participant2_email selon contexte
+      
+      // Créer un signalement
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Non authentifié');
+
+      const { error } = await supabase
+        .from('realtime_notifications')
+        .insert({
+          user_id: user.id,
+          type: 'moderation',
+          title: '🚫 Signalement utilisateur',
+          message: `Utilisateur ${conversation.participant1_name} signalé pour abus dans conversation ${conversation.id}`,
+          data: {
+            conversation_id: conversation.id,
+            reported_user: userId,
+            reporter_admin: user.id
+          },
+          priority: 'urgent'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Utilisateur signalé",
+        description: "Le signalement a été enregistré pour modération"
+      });
+    } catch (error) {
+      console.error('Erreur signalement:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de signaler l'utilisateur",
+        variant: "destructive"
+      });
+    }
+  };
+
   const getTypeBadge = () => {
     switch (conversation.type) {
       case 'client-provider':
-        return <Badge className="bg-blue-100 text-blue-800">Client ↔ Prestataire</Badge>;
+        return <Badge className="bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800">Client ↔ Prestataire</Badge>;
       case 'client-admin':
-        return <Badge className="bg-orange-100 text-orange-800">Client ↔ Support</Badge>;
+        return <Badge className="bg-orange-100 dark:bg-orange-950 text-orange-800 dark:text-orange-200 border-orange-200 dark:border-orange-800">Client ↔ Support</Badge>;
       case 'provider-admin':
-        return <Badge className="bg-green-100 text-green-800">Prestataire ↔ Admin</Badge>;
+        return <Badge className="bg-green-100 dark:bg-green-950 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800">Prestataire ↔ Admin</Badge>;
     }
   };
 
@@ -333,13 +427,44 @@ export const ConversationDetailsModal = ({ conversation, onClose, onUpdate }: Co
               </DialogDescription>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={handleDownloadHistory}>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleSendNotification}
+                title="Envoyer une notification système"
+              >
+                <Bell className="w-4 h-4" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleDownloadHistory}
+                title="Télécharger l'historique"
+              >
                 <Download className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleArchiveConversation}>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleBlockUser}
+                title="Signaler un abus"
+              >
+                <ShieldAlert className="w-4 h-4" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleArchiveConversation}
+                title="Archiver"
+              >
                 <Archive className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleCloseConversation}>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleCloseConversation}
+                title="Fermer"
+              >
                 <X className="w-4 h-4" />
               </Button>
             </div>

@@ -294,11 +294,11 @@ export default function AdminMessages() {
   const getTypeBadge = (type: string) => {
     switch (type) {
       case 'client-provider':
-        return <Badge className="bg-blue-100 text-blue-800">Client ↔ Prestataire</Badge>;
+        return <Badge className="bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800">Client ↔ Prestataire</Badge>;
       case 'client-admin':
-        return <Badge className="bg-orange-100 text-orange-800">Client ↔ Admin</Badge>;
+        return <Badge className="bg-orange-100 dark:bg-orange-950 text-orange-800 dark:text-orange-200 border-orange-200 dark:border-orange-800">Client ↔ Admin</Badge>;
       case 'provider-admin':
-        return <Badge className="bg-green-100 text-green-800">Prestataire ↔ Admin</Badge>;
+        return <Badge className="bg-green-100 dark:bg-green-950 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800">Prestataire ↔ Admin</Badge>;
       default:
         return <Badge variant="outline">{type}</Badge>;
     }

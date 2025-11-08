@@ -187,3 +187,6 @@ verify_jwt = true  # Requires admin authentication to send invoice emails
 
 [functions.generate-invoice-pdf]
 verify_jwt = true  # Requires admin authentication to generate invoice PDFs
+
+[functions.send-message-notification]
+verify_jwt = false  # Called automatically by message triggers - uses service role key
