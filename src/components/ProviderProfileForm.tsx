@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, Upload, User, Mail, Phone, MapPin, Briefcase, Award, Clock, Euro, CheckCircle, Shield, AlertCircle, XCircle } from 'lucide-react';
+import { Loader2, Upload, User, Mail, Phone, MapPin, Briefcase, Award, Clock, Euro, CheckCircle, Shield } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -22,9 +22,6 @@ interface ProviderData {
   user_id?: string;
   first_name?: string;
   last_name?: string;
-  date_of_birth?: string;
-  gender?: string;
-  personal_description?: string;
   business_name?: string;
   description?: string;
   email?: string;
@@ -35,13 +32,7 @@ interface ProviderData {
   avatar_url?: string;
   hourly_rate?: number;
   siret_number?: string;
-  professional_status?: string;
-  experience_years?: number;
-  languages?: string[];
-  universes?: string[];
   is_verified?: boolean;
-  verification_status?: string;
-  rejection_reason?: string;
 }
 
 const ProviderProfileForm = () => {
@@ -169,15 +160,7 @@ const ProviderProfileForm = () => {
   const validateStep = (step: number) => {
     switch (step) {
       case 1:
-        return !!(
-          profile.first_name && 
-          profile.last_name && 
-          profile.email && 
-          profile.phone &&
-          profile.date_of_birth &&
-          profile.professional_status &&
-          profile.universes && profile.universes.length > 0
-        );
+        return !!(profile.first_name && profile.last_name && profile.email && profile.phone);
       case 2:
         return !!(profile.description);
       default:
@@ -214,9 +197,6 @@ const ProviderProfileForm = () => {
           user_id: user?.id,
           first_name: profile.first_name,
           last_name: profile.last_name,
-          date_of_birth: profile.date_of_birth,
-          gender: profile.gender,
-          personal_description: profile.personal_description,
           email: profile.email,
           phone: profile.phone,
           address: profile.address,
@@ -239,10 +219,6 @@ const ProviderProfileForm = () => {
           location: validatedData.location,
           postal_codes: profile.postal_code ? [profile.postal_code] : [],
           siret_number: profile.siret_number,
-          professional_status: profile.professional_status,
-          experience_years: profile.experience_years,
-          languages: profile.languages || ['fr'],
-          universes: profile.universes || [],
           updated_at: new Date().toISOString(),
         }, {
           onConflict: 'user_id'
@@ -447,152 +423,6 @@ const ProviderProfileForm = () => {
                   placeholder="12345678901234"
                 />
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="date_of_birth">Date de naissance *</Label>
-                <Input
-                  id="date_of_birth"
-                  type="date"
-                  value={profile.date_of_birth || ''}
-                  onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="gender">Genre</Label>
-                <Select
-                  value={profile.gender || ''}
-                  onValueChange={(value) => handleInputChange('gender', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="male">Homme</SelectItem>
-                    <SelectItem value="female">Femme</SelectItem>
-                    <SelectItem value="other">Autre</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            {/* Description personnelle courte */}
-            <div className="space-y-2">
-              <Label htmlFor="personal_description">Description personnelle</Label>
-              <Textarea
-                id="personal_description"
-                value={profile.personal_description || ''}
-                onChange={(e) => handleInputChange('personal_description', e.target.value)}
-                placeholder="Une courte présentation personnelle..."
-                rows={3}
-                className="resize-none"
-                maxLength={500}
-              />
-              <p className="text-xs text-muted-foreground">
-                {profile.personal_description?.length || 0}/500 caractères
-              </p>
-            </div>
-
-            {/* Informations professionnelles */}
-            <Separator className="my-4" />
-            <h3 className="text-lg font-medium flex items-center space-x-2">
-              <Briefcase className="h-5 w-5" />
-              <span>Informations professionnelles</span>
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="professional_status">Statut professionnel *</Label>
-                <Select
-                  value={profile.professional_status || ''}
-                  onValueChange={(value) => handleInputChange('professional_status', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner votre statut" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="auto_entrepreneur">Auto-entrepreneur</SelectItem>
-                    <SelectItem value="company">Société</SelectItem>
-                    <SelectItem value="independent">Indépendant</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="experience_years">Expérience (années)</Label>
-                <Input
-                  id="experience_years"
-                  type="number"
-                  min="0"
-                  value={profile.experience_years || ''}
-                  onChange={(e) => handleInputChange('experience_years', parseInt(e.target.value) || 0)}
-                  placeholder="5"
-                />
-              </div>
-            </div>
-
-            {/* Langues parlées */}
-            <div className="space-y-2">
-              <Label>Langues parlées</Label>
-              <div className="flex flex-wrap gap-2">
-                {['Français', 'Anglais', 'Espagnol', 'Allemand', 'Italien', 'Arabe', 'Portugais'].map((lang) => {
-                  const langCode = lang.toLowerCase().slice(0, 2);
-                  const isSelected = profile.languages?.includes(langCode);
-                  return (
-                    <Badge
-                      key={lang}
-                      variant={isSelected ? "default" : "outline"}
-                      className="cursor-pointer"
-                      onClick={() => {
-                        const currentLangs = profile.languages || ['fr'];
-                        if (isSelected) {
-                          handleInputChange('languages', currentLangs.filter(l => l !== langCode));
-                        } else {
-                          handleInputChange('languages', [...currentLangs, langCode]);
-                        }
-                      }}
-                    >
-                      {lang}
-                      {isSelected && <CheckCircle className="ml-1 h-3 w-3" />}
-                    </Badge>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Univers d'activité */}
-            <div className="space-y-2">
-              <Label>Univers d'activité *</Label>
-              <p className="text-xs text-muted-foreground">Sélectionnez les domaines dans lesquels vous intervenez</p>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {['Kids', 'Maison', 'Vie', 'Animal', 'Seniors', 'Jardinage'].map((univers) => {
-                  const isSelected = profile.universes?.includes(univers);
-                  return (
-                    <div
-                      key={univers}
-                      onClick={() => {
-                        const currentUniverses = profile.universes || [];
-                        if (isSelected) {
-                          handleInputChange('universes', currentUniverses.filter(u => u !== univers));
-                        } else {
-                          handleInputChange('universes', [...currentUniverses, univers]);
-                        }
-                      }}
-                      className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                        isSelected 
-                          ? 'border-primary bg-primary/10' 
-                          : 'border-border hover:border-primary/50'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{univers}</span>
-                        {isSelected && <CheckCircle className="h-4 w-4 text-primary" />}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
             </div>
 
             {/* Adresse */}
@@ -718,92 +548,27 @@ const ProviderProfileForm = () => {
       </div>
 
       {/* Statut de vérification */}
-      <Card className="border-2">
-        <CardContent className="pt-6">
-          {profile.verification_status === 'approved' ? (
-            <div className="flex items-center space-x-3 text-green-600">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <CheckCircle className="h-6 w-6" />
-              </div>
-              <div>
-                <span className="font-semibold text-lg block">🟢 Profil actif</span>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Votre profil est vérifié et vous pouvez recevoir des missions.
-                </p>
-              </div>
+      {profile.is_verified !== undefined && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className={`flex items-center space-x-2 ${
+              profile.is_verified ? 'text-green-600' : 'text-amber-600'
+            }`}>
+              <CheckCircle className="h-5 w-5" />
+              <span className="font-medium">
+                {profile.is_verified 
+                  ? 'Profil vérifié et activé' 
+                  : 'En attente de vérification'}
+              </span>
             </div>
-          ) : profile.verification_status === 'in_review' ? (
-            <div className="flex items-center space-x-3 text-blue-600">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <Clock className="h-6 w-6" />
-              </div>
-              <div>
-                <span className="font-semibold text-lg block">🔵 En cours de vérification</span>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Votre profil est en cours d'examen. Vous recevrez une réponse sous 48h ouvrées.
-                </p>
-              </div>
-            </div>
-          ) : profile.verification_status === 'documents_received' ? (
-            <div className="flex items-center space-x-3 text-amber-600">
-              <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
-                <Clock className="h-6 w-6" />
-              </div>
-              <div>
-                <span className="font-semibold text-lg block">🟠 Documents reçus</span>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Nous avons bien reçu vos documents. Vérification en cours.
-                </p>
-              </div>
-            </div>
-          ) : profile.verification_status === 'rejected' ? (
-            <div className="flex flex-col space-y-3">
-              <div className="flex items-center space-x-3 text-red-600">
-                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                  <AlertCircle className="h-6 w-6" />
-                </div>
-                <div>
-                  <span className="font-semibold text-lg block">🔴 Profil refusé</span>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Votre profil nécessite des modifications.
-                  </p>
-                </div>
-              </div>
-              {profile.rejection_reason && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-800">
-                    <strong>Raison:</strong> {profile.rejection_reason}
-                  </p>
-                </div>
-              )}
-            </div>
-          ) : profile.verification_status === 'suspended' ? (
-            <div className="flex items-center space-x-3 text-red-600">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                <XCircle className="h-6 w-6" />
-              </div>
-              <div>
-                <span className="font-semibold text-lg block">⛔ Profil suspendu</span>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Votre profil a été suspendu. Contactez l'administration.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center space-x-3 text-amber-600">
-              <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
-                <Clock className="h-6 w-6" />
-              </div>
-              <div>
-                <span className="font-semibold text-lg block">⏳ En attente</span>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Complétez votre profil et vos documents pour commencer.
-                </p>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            <p className="text-sm text-muted-foreground mt-2">
+              {profile.is_verified
+                ? 'Votre profil est actif et visible par les clients.'
+                : 'Votre profil sera examiné par notre équipe sous 48h.'}
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

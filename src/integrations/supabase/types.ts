@@ -2510,13 +2510,10 @@ export type Database = {
           address: string | null
           avatar_url: string | null
           created_at: string
-          date_of_birth: string | null
           email: string | null
           first_name: string | null
-          gender: string | null
           id: string
           last_name: string | null
-          personal_description: string | null
           phone: string | null
           updated_at: string
           user_id: string
@@ -2525,13 +2522,10 @@ export type Database = {
           address?: string | null
           avatar_url?: string | null
           created_at?: string
-          date_of_birth?: string | null
           email?: string | null
           first_name?: string | null
-          gender?: string | null
           id?: string
           last_name?: string | null
-          personal_description?: string | null
           phone?: string | null
           updated_at?: string
           user_id: string
@@ -2540,13 +2534,10 @@ export type Database = {
           address?: string | null
           avatar_url?: string | null
           created_at?: string
-          date_of_birth?: string | null
           email?: string | null
           first_name?: string | null
-          gender?: string | null
           id?: string
           last_name?: string | null
-          personal_description?: string | null
           phone?: string | null
           updated_at?: string
           user_id?: string
@@ -3347,7 +3338,6 @@ export type Database = {
           diploma_document_url: string | null
           documents_submitted: boolean | null
           documents_submitted_at: string | null
-          experience_years: number | null
           forfait_rate: number | null
           formation_completed: boolean | null
           formation_completed_at: string | null
@@ -3363,10 +3353,8 @@ export type Database = {
           insurance_document_url: string | null
           is_super_ambassador: boolean | null
           is_verified: boolean
-          languages: string[] | null
           last_activity_at: string | null
           last_mission_date: string | null
-          last_status_change_at: string | null
           latitude: number | null
           location: string | null
           longitude: number | null
@@ -3380,23 +3368,19 @@ export type Database = {
           monthly_earnings: number | null
           performance_score: number | null
           postal_codes: string[] | null
-          professional_status: string | null
           profile_photo_url: string | null
           quality_agreement_date: string | null
           quality_agreement_signed: boolean | null
           rating: number | null
           rayon_intervention_km: number | null
-          rejection_reason: string | null
           response_time_avg: number | null
           rotation_priority: number | null
           service_zones: string[] | null
           siret_number: string | null
           status: string | null
           total_earnings: number | null
-          universes: string[] | null
           updated_at: string
           user_id: string
-          verification_status: string | null
           work_radius: number | null
           yearly_referrals_count: number | null
           zones_couvertes: string[] | null
@@ -3411,7 +3395,6 @@ export type Database = {
           diploma_document_url?: string | null
           documents_submitted?: boolean | null
           documents_submitted_at?: string | null
-          experience_years?: number | null
           forfait_rate?: number | null
           formation_completed?: boolean | null
           formation_completed_at?: string | null
@@ -3427,10 +3410,8 @@ export type Database = {
           insurance_document_url?: string | null
           is_super_ambassador?: boolean | null
           is_verified?: boolean
-          languages?: string[] | null
           last_activity_at?: string | null
           last_mission_date?: string | null
-          last_status_change_at?: string | null
           latitude?: number | null
           location?: string | null
           longitude?: number | null
@@ -3444,23 +3425,19 @@ export type Database = {
           monthly_earnings?: number | null
           performance_score?: number | null
           postal_codes?: string[] | null
-          professional_status?: string | null
           profile_photo_url?: string | null
           quality_agreement_date?: string | null
           quality_agreement_signed?: boolean | null
           rating?: number | null
           rayon_intervention_km?: number | null
-          rejection_reason?: string | null
           response_time_avg?: number | null
           rotation_priority?: number | null
           service_zones?: string[] | null
           siret_number?: string | null
           status?: string | null
           total_earnings?: number | null
-          universes?: string[] | null
           updated_at?: string
           user_id: string
-          verification_status?: string | null
           work_radius?: number | null
           yearly_referrals_count?: number | null
           zones_couvertes?: string[] | null
@@ -3475,7 +3452,6 @@ export type Database = {
           diploma_document_url?: string | null
           documents_submitted?: boolean | null
           documents_submitted_at?: string | null
-          experience_years?: number | null
           forfait_rate?: number | null
           formation_completed?: boolean | null
           formation_completed_at?: string | null
@@ -3491,10 +3467,8 @@ export type Database = {
           insurance_document_url?: string | null
           is_super_ambassador?: boolean | null
           is_verified?: boolean
-          languages?: string[] | null
           last_activity_at?: string | null
           last_mission_date?: string | null
-          last_status_change_at?: string | null
           latitude?: number | null
           location?: string | null
           longitude?: number | null
@@ -3508,23 +3482,19 @@ export type Database = {
           monthly_earnings?: number | null
           performance_score?: number | null
           postal_codes?: string[] | null
-          professional_status?: string | null
           profile_photo_url?: string | null
           quality_agreement_date?: string | null
           quality_agreement_signed?: boolean | null
           rating?: number | null
           rayon_intervention_km?: number | null
-          rejection_reason?: string | null
           response_time_avg?: number | null
           rotation_priority?: number | null
           service_zones?: string[] | null
           siret_number?: string | null
           status?: string | null
           total_earnings?: number | null
-          universes?: string[] | null
           updated_at?: string
           user_id?: string
-          verification_status?: string | null
           work_radius?: number | null
           yearly_referrals_count?: number | null
           zones_couvertes?: string[] | null
