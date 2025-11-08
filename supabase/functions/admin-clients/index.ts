@@ -56,14 +56,19 @@ serve(async (req) => {
       case 'get_stats':
         return await getClientStats(supabase, requestData);
       case 'get_client_details':
+      case 'get_details':
         return await getClientDetails(supabase, requestData);
       case 'update_client':
+      case 'update':
         return await updateClient(supabase, requestData, user.id);
       case 'block_client':
+      case 'block':
         return await blockClient(supabase, requestData, user.id);
       case 'unblock_client':
+      case 'unblock':
         return await unblockClient(supabase, requestData, user.id);
       case 'create_client':
+      case 'create':
         return await createClient(supabase, requestData, user.id);
       default:
         throw new Error(`Action non reconnue: ${action}`);
@@ -396,6 +401,24 @@ async function unblockClient(supabase: any, { clientId }: any, adminUserId: stri
 
 async function createClient(supabase: any, { email, firstName, lastName, phone, address }: any, adminUserId: string) {
   try {
+    console.log('Creating client with:', { email, firstName, lastName, phone, address });
+    
+    // Validation des données
+    if (!email || !firstName || !lastName) {
+      throw new Error('Email, prénom et nom sont obligatoires');
+    }
+    
+    // Vérifier si l'email existe déjà
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('user_id')
+      .eq('email', email)
+      .maybeSingle();
+    
+    if (existingProfile) {
+      throw new Error('Un utilisateur avec cet email existe déjà');
+    }
+    
     // Créer l'utilisateur dans Auth
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: email,
@@ -403,11 +426,16 @@ async function createClient(supabase: any, { email, firstName, lastName, phone, 
       user_metadata: {
         first_name: firstName,
         last_name: lastName,
-        phone: phone
+        phone: phone || null
       }
     });
 
-    if (authError) throw authError;
+    if (authError) {
+      console.error('Auth error:', authError);
+      throw authError;
+    }
+    
+    console.log('User created in auth:', authData.user.id);
 
     // Créer le profil
     const { error: profileError } = await supabase
@@ -417,12 +445,17 @@ async function createClient(supabase: any, { email, firstName, lastName, phone, 
         first_name: firstName,
         last_name: lastName,
         email: email,
-        phone: phone,
-        address: address,
+        phone: phone || null,
+        address: address || null,
         account_status: 'active'
       });
 
-    if (profileError) throw profileError;
+    if (profileError) {
+      console.error('Profile error:', profileError);
+      throw profileError;
+    }
+    
+    console.log('Profile created successfully');
 
     // Logger l'action
     await supabase

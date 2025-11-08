@@ -52,30 +52,35 @@ export const CreateClientDialog = ({ isOpen, onClose, onClientCreated }: CreateC
         }
       });
 
-      if (error) throw error;
-
-      if (data?.success) {
-        toast({
-          title: "Succès",
-          description: "Client créé avec succès",
-        });
-        
-        setFormData({
-          email: '',
-          firstName: '',
-          lastName: '',
-          phone: '',
-          address: ''
-        });
-        
-        onClientCreated();
-        onClose();
+      if (error) {
+        console.error('Function invocation error:', error);
+        throw new Error(error.message || 'Erreur lors de l\'appel de la fonction');
       }
-    } catch (error) {
+
+      if (!data?.success) {
+        throw new Error(data?.error || 'Échec de la création du client');
+      }
+
+      toast({
+        title: "Succès",
+        description: "Client créé avec succès",
+      });
+      
+      setFormData({
+        email: '',
+        firstName: '',
+        lastName: '',
+        phone: '',
+        address: ''
+      });
+      
+      onClientCreated();
+      onClose();
+    } catch (error: any) {
       console.error('Erreur lors de la création du client:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de créer le client",
+        description: error.message || "Impossible de créer le client",
         variant: "destructive",
       });
     } finally {
