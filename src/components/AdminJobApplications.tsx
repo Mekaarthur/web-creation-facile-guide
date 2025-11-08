@@ -116,6 +116,24 @@ export const AdminJobApplications = () => {
       const application = applications.find(app => app.id === applicationId);
       if (application) {
         await sendStatusNotification(application, newStatus);
+        
+        // Créer notification admin pour candidature validée/rejetée
+        if (newStatus === 'approved' || newStatus === 'rejected') {
+          await supabase.functions.invoke('create-admin-notification', {
+            body: {
+              type: 'provider_application',
+              title: newStatus === 'approved' ? '✅ Candidature approuvée' : '❌ Candidature rejetée',
+              message: `${application.first_name} ${application.last_name} - Candidature ${newStatus === 'approved' ? 'validée' : 'refusée'}`,
+              data: {
+                application_id: applicationId,
+                provider_name: `${application.first_name} ${application.last_name}`,
+                provider_email: application.email,
+                status: newStatus
+              },
+              priority: 'normal'
+            }
+          });
+        }
       }
 
       toast({

@@ -83,6 +83,28 @@ serve(async (req) => {
       }
 
       bookingResults.push(booking);
+      
+      // Créer notification admin pour nouvelle réservation
+      const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+      
+      await supabaseAdmin.functions.invoke('create-admin-notification', {
+        body: {
+          type: 'booking',
+          title: '📅 Nouvelle réservation',
+          message: `${clientInfo.firstName} ${clientInfo.lastName} a réservé ${service.serviceName} pour ${service.price * (service.customBooking?.hours || 2)}€`,
+          data: {
+            booking_id: booking.id,
+            client_name: `${clientInfo.firstName} ${clientInfo.lastName}`,
+            client_email: clientInfo.email,
+            service_name: service.serviceName,
+            amount: service.price * (service.customBooking?.hours || 2)
+          },
+          priority: 'normal'
+        }
+      });
     }
 
     // Store client info in a separate table for anonymous bookings

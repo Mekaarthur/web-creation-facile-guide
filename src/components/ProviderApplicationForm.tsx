@@ -231,6 +231,22 @@ export const ProviderApplicationForm = () => {
 
       if (error) throw error;
 
+      // Créer notification admin pour nouvelle candidature
+      await supabase.functions.invoke('create-admin-notification', {
+        body: {
+          type: 'provider_application',
+          title: '📋 Nouvelle candidature prestataire',
+          message: `${formData.first_name} ${formData.last_name} a postulé pour devenir prestataire (${formData.service_categories.join(', ')})`,
+          data: {
+            provider_name: `${formData.first_name} ${formData.last_name}`,
+            provider_email: formData.email,
+            provider_phone: formData.phone,
+            service_categories: formData.service_categories.join(', ')
+          },
+          priority: 'high'
+        }
+      });
+
       toast({
         title: "Candidature envoyée !",
         description: "Votre candidature a été soumise avec succès. Nous vous contacterons rapidement.",
