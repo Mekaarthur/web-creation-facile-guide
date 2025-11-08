@@ -69,7 +69,7 @@ serve(async (req) => {
         return await unblockClient(supabase, requestData, user.id);
       case 'create_client':
       case 'create':
-        return await createClient(supabase, requestData, user.id);
+        return await createClientAdmin(supabase, requestData, user.id);
       default:
         throw new Error(`Action non reconnue: ${action}`);
     }
@@ -399,7 +399,7 @@ async function unblockClient(supabase: any, { clientId }: any, adminUserId: stri
   }
 }
 
-async function createClient(supabase: any, { email, firstName, lastName, phone, address }: any, adminUserId: string) {
+async function createClientAdmin(supabase: any, { email, firstName, lastName, phone, address }: any, adminUserId: string) {
   try {
     console.log('Creating client with:', { email, firstName, lastName, phone, address });
     
