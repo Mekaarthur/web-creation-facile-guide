@@ -14,8 +14,12 @@ import {
   MapPin,
   ExternalLink,
   CheckCircle,
-  XCircle
+  XCircle,
+  Copy
 } from 'lucide-react';
+import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface InvoiceDetailsModalProps {
   invoice: any;
@@ -25,6 +29,95 @@ interface InvoiceDetailsModalProps {
 
 export const InvoiceDetailsModal = ({ invoice, onClose, onUpdate }: InvoiceDetailsModalProps) => {
   const isClientInvoice = invoice.type === 'client';
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+
+  const handleDownloadPDF = () => {
+    toast({
+      title: "Génération PDF",
+      description: "Le PDF de la facture est en cours de génération...",
+    });
+    // TODO: Implémenter la génération PDF réelle
+  };
+
+  const handleSendEmail = () => {
+    toast({
+      title: "Envoi en cours",
+      description: "L'email est en cours d'envoi...",
+    });
+    // TODO: Implémenter l'envoi d'email via edge function
+  };
+
+  const handleCancelInvoice = async () => {
+    if (!confirm('Êtes-vous sûr de vouloir annuler cette facture ?')) return;
+    
+    try {
+      setLoading(true);
+      const table = isClientInvoice ? 'invoices' : 'provider_invoices';
+      const { error } = await supabase
+        .from(table)
+        .update({ status: 'cancelled' })
+        .eq('id', invoice.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Facture annulée",
+        description: "La facture a été annulée avec succès",
+      });
+      
+      onUpdate();
+      onClose();
+    } catch (error) {
+      console.error('Erreur annulation:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'annuler la facture",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDuplicate = async () => {
+    try {
+      setLoading(true);
+      const table = isClientInvoice ? 'invoices' : 'provider_invoices';
+      
+      // Créer une copie avec un nouveau numéro
+      const newInvoiceNumber = `${invoice.invoice_number}-COPY-${Date.now()}`;
+      const invoiceData = { ...invoice };
+      delete invoiceData.id;
+      delete invoiceData.created_at;
+      
+      invoiceData.invoice_number = newInvoiceNumber;
+      invoiceData.status = 'draft';
+      invoiceData.payment_date = null;
+
+      const { error } = await supabase
+        .from(table)
+        .insert(invoiceData);
+
+      if (error) throw error;
+
+      toast({
+        title: "Facture dupliquée",
+        description: `Nouvelle facture créée: ${newInvoiceNumber}`,
+      });
+      
+      onUpdate();
+    } catch (error) {
+      console.error('Erreur duplication:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de dupliquer la facture",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     const badges = {
@@ -203,13 +296,25 @@ export const InvoiceDetailsModal = ({ invoice, onClose, onUpdate }: InvoiceDetai
             {isClientInvoice && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Paiement</CardTitle>
+                  <CardTitle>Paiement Stripe</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     <p className="text-sm text-muted-foreground">
                       Paiement via Stripe intégré à la transaction
                     </p>
+                    {invoice.stripe_payment_id && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => window.open(`https://dashboard.stripe.com/payments/${invoice.stripe_payment_id}`, '_blank')}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Voir dans Stripe Dashboard
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -222,16 +327,40 @@ export const InvoiceDetailsModal = ({ invoice, onClose, onUpdate }: InvoiceDetai
                 <CardTitle>Actions disponibles</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={handleDownloadPDF}
+                  disabled={loading}
+                >
                   <Download className="mr-2 h-4 w-4" />
                   Télécharger PDF
                 </Button>
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={handleSendEmail}
+                  disabled={loading}
+                >
                   <Send className="mr-2 h-4 w-4" />
                   Envoyer par email
                 </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={handleDuplicate}
+                  disabled={loading}
+                >
+                  <Copy className="mr-2 h-4 w-4" />
+                  Dupliquer la facture
+                </Button>
                 {invoice.status !== 'cancelled' && (
-                  <Button variant="destructive" className="w-full">
+                  <Button 
+                    variant="destructive" 
+                    className="w-full"
+                    onClick={handleCancelInvoice}
+                    disabled={loading}
+                  >
                     <XCircle className="mr-2 h-4 w-4" />
                     Annuler la facture
                   </Button>

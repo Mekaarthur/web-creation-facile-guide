@@ -292,7 +292,7 @@ export default function AdminFactures() {
       description: "Le PDF de la facture est en cours de génération...",
     });
     
-    // TODO: Implémenter la génération PDF
+    // TODO: Implémenter la génération PDF réelle avec une edge function
     setTimeout(() => {
       toast({
         title: "PDF généré",
@@ -314,6 +314,58 @@ export default function AdminFactures() {
         description: `Facture envoyée à ${type === 'client' ? invoice.client_profile?.email : invoice.provider_profile?.business_name}`,
       });
     }, 1500);
+  };
+
+  const handleExportCSV = () => {
+    try {
+      // Préparer les données pour l'export
+      const csvData = [
+        ['Type', 'N° Facture', 'Client/Prestataire', 'Montant', 'Statut', 'Date émission', 'Date paiement'],
+        ...clientInvoices.map(inv => [
+          'Client',
+          inv.invoice_number,
+          inv.client_profile ? `${inv.client_profile.first_name} ${inv.client_profile.last_name}` : 'N/A',
+          inv.amount.toFixed(2),
+          inv.status,
+          new Date(inv.created_at).toLocaleDateString('fr-FR'),
+          inv.payment_date ? new Date(inv.payment_date).toLocaleDateString('fr-FR') : '-'
+        ]),
+        ...providerInvoices.map(inv => [
+          'Prestataire',
+          inv.invoice_number,
+          inv.provider_profile?.business_name || 'N/A',
+          inv.amount_net.toFixed(2),
+          inv.status,
+          new Date(inv.created_at).toLocaleDateString('fr-FR'),
+          inv.payment_date ? new Date(inv.payment_date).toLocaleDateString('fr-FR') : '-'
+        ])
+      ];
+
+      // Créer le contenu CSV
+      const csvContent = csvData.map(row => row.join(',')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', `factures_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "Export réussi",
+        description: "Le fichier CSV a été téléchargé",
+      });
+    } catch (error) {
+      console.error('Erreur export:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'exporter les données",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleCancelInvoice = async (invoiceId: string, type: 'client' | 'provider') => {
@@ -589,7 +641,7 @@ export default function AdminFactures() {
               <RefreshCw className="w-4 h-4 mr-2" />
               Actualiser
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleExportCSV}>
               <Download className="w-4 h-4 mr-2" />
               Exporter CSV
             </Button>

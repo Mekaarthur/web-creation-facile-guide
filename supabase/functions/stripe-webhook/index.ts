@@ -1,155 +1,167 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@14.21.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import Stripe from "https://esm.sh/stripe@18.5.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
-const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-  apiVersion: "2023-10-16",
-});
-
-const cryptoProvider = Stripe.createSubtleCryptoProvider();
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, stripe-signature",
+};
 
 serve(async (req) => {
-  const signature = req.headers.get("Stripe-Signature");
-  const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
-
-  if (!signature || !webhookSecret) {
-    return new Response("Missing signature or webhook secret", { status: 400 });
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const body = await req.text();
-    const event = await stripe.webhooks.constructEventAsync(
-      body,
-      signature,
-      webhookSecret,
-      undefined,
-      cryptoProvider
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+      apiVersion: "2025-08-27.basil",
+    });
+
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    console.log(`Webhook received: ${event.type}`);
+    const signature = req.headers.get("stripe-signature");
+    if (!signature) {
+      throw new Error("No signature");
+    }
 
-    // Handle successful payment
+    const body = await req.text();
+    const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+    
+    const event = stripe.webhooks.constructEvent(
+      body,
+      signature,
+      webhookSecret!
+    );
+
+    console.log(`Webhook reçu: ${event.type}`);
+
+    // Gérer l'événement checkout.session.completed
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
       
-      console.log("Payment successful:", session.id);
-      
-      // Extract metadata from payment intent
-      const paymentIntentId = session.payment_intent as string;
-      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-      const metadata = paymentIntent.metadata;
-
-      if (!metadata.clientInfo || !metadata.services) {
-        console.error("Missing metadata in payment intent");
-        return new Response(JSON.stringify({ error: "Missing metadata" }), { status: 400 });
-      }
-
-      const clientInfo = JSON.parse(metadata.clientInfo);
-      const services = JSON.parse(metadata.services);
-      const preferredDate = metadata.preferredDate;
-      const preferredTime = metadata.preferredTime;
-      const notes = metadata.notes;
-
-      // Create Supabase client with service role
-      const supabaseClient = createClient(
-        Deno.env.get("SUPABASE_URL") ?? "",
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      // Récupérer les détails de la session
+      const paymentIntent = await stripe.paymentIntents.retrieve(
+        session.payment_intent as string
       );
 
-      // Create bookings
-      const bookingResults = [];
+      // Récupérer la réservation associée via metadata
+      const bookingId = session.metadata?.booking_id;
       
-      for (const service of services) {
-        // Get service details
-        const { data: serviceData, error: serviceError } = await supabaseClient
-          .from('services')
-          .select('id')
-          .eq('name', service.serviceName)
-          .eq('category', service.category)
+      if (bookingId) {
+        // Mettre à jour la facture client
+        const { data: invoice, error: invoiceError } = await supabaseAdmin
+          .from('invoices')
+          .select('*')
+          .eq('booking_id', bookingId)
           .single();
 
-        if (serviceError) {
-          console.error('Service not found:', serviceError);
-          continue;
-        }
+        if (invoice) {
+          const { error: updateError } = await supabaseAdmin
+            .from('invoices')
+            .update({
+              status: 'paid',
+              payment_date: new Date().toISOString(),
+              stripe_payment_id: paymentIntent.id
+            })
+            .eq('id', invoice.id);
 
-        // Create the booking with payment_status = completed
-        const { data: booking, error: bookingError } = await supabaseClient
-          .from('bookings')
-          .insert({
-            service_id: serviceData.id,
-            booking_date: service.customBooking?.date || preferredDate,
-            start_time: service.customBooking?.startTime || preferredTime || '09:00',
-            end_time: service.customBooking?.endTime || '17:00',
-            total_price: service.price * (service.customBooking?.hours || 2),
-            address: clientInfo.address,
-            notes: service.customBooking?.notes || notes,
-            status: 'confirmed',
-            payment_status: 'completed',
-            stripe_payment_intent_id: paymentIntentId,
-            custom_duration: service.customBooking?.hours || 2,
-          })
-          .select()
-          .single();
-
-        if (bookingError) {
-          console.error('Error creating booking:', bookingError);
-          continue;
-        }
-
-        bookingResults.push(booking);
-      }
-
-      // Store client request
-      if (bookingResults.length > 0) {
-        const bookingId = `BKW-${bookingResults[0].id}`;
-        
-        await supabaseClient
-          .from('client_requests')
-          .insert({
-            form_response_id: `booking-${bookingResults[0].id}`,
-            client_name: `${clientInfo.firstName} ${clientInfo.lastName}`,
-            client_email: clientInfo.email,
-            client_phone: clientInfo.phone,
-            service_type: services[0].packageTitle,
-            service_description: services.map((s: any) => s.serviceName).join(', '),
-            location: clientInfo.address,
-            preferred_date: preferredDate,
-            preferred_time: preferredTime,
-            additional_notes: notes,
-            status: 'confirmed',
-          });
-
-        // Send confirmation email
-        await supabaseClient.functions.invoke('send-booking-confirmation', {
-          body: {
-            to: clientInfo.email,
-            clientName: `${clientInfo.firstName} ${clientInfo.lastName}`,
-            services: services.map((s: any) => ({
-              serviceName: s.serviceName,
-              packageTitle: s.packageTitle,
-              price: s.price
-            })),
-            bookingId,
-            preferredDate,
-            totalAmount: session.amount_total ? session.amount_total / 100 : 0
+          if (updateError) {
+            console.error('Erreur mise à jour facture:', updateError);
+          } else {
+            console.log('Facture mise à jour:', invoice.invoice_number);
+            
+            // Envoyer email de confirmation au client
+            await sendInvoiceEmail(invoice, supabaseAdmin);
           }
-        });
-      }
+        }
 
-      console.log(`Created ${bookingResults.length} bookings for payment ${paymentIntentId}`);
+        // Mettre à jour la transaction financière
+        const { error: transactionError } = await supabaseAdmin
+          .from('financial_transactions')
+          .update({
+            payment_status: 'paid',
+            payment_date: new Date().toISOString()
+          })
+          .eq('booking_id', bookingId);
+
+        if (transactionError) {
+          console.error('Erreur mise à jour transaction:', transactionError);
+        }
+      }
+    }
+
+    // Gérer les remboursements
+    if (event.type === "charge.refunded") {
+      const charge = event.data.object as Stripe.Charge;
+      const paymentIntentId = charge.payment_intent as string;
+
+      // Mettre à jour la facture
+      const { error } = await supabaseAdmin
+        .from('invoices')
+        .update({
+          status: 'refunded'
+        })
+        .eq('stripe_payment_id', paymentIntentId);
+
+      if (error) {
+        console.error('Erreur mise à jour remboursement:', error);
+      }
+    }
+
+    // Gérer les litiges
+    if (event.type === "charge.dispute.created") {
+      const dispute = event.data.object as Stripe.Dispute;
+      
+      // Notifier l'admin
+      await notifyAdminDispute(dispute, supabaseAdmin);
     }
 
     return new Response(JSON.stringify({ received: true }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
-      headers: { "Content-Type": "application/json" },
     });
-    
   } catch (error) {
-    console.error("Webhook error:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 400, headers: { "Content-Type": "application/json" } }
-    );
+    console.error('Erreur webhook:', error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 400,
+    });
   }
 });
+
+async function sendInvoiceEmail(invoice: any, supabase: any) {
+  // TODO: Implémenter l'envoi d'email avec Resend ou autre service
+  // Pour l'instant, on enregistre dans les logs
+  console.log(`Email à envoyer pour facture ${invoice.invoice_number}`);
+  
+  // Exemple avec Resend (à configurer):
+  // const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+  // await resend.emails.send({
+  //   from: 'facturation@bikawo.com',
+  //   to: invoice.client_email,
+  //   subject: `Votre facture Bikawo ${invoice.invoice_number}`,
+  //   html: `...template HTML...`
+  // });
+}
+
+async function notifyAdminDispute(dispute: any, supabase: any) {
+  // Créer une notification pour l'admin
+  const { error } = await supabase
+    .from('notifications')
+    .insert({
+      user_id: 'admin', // ID de l'admin
+      type: 'dispute',
+      title: 'Litige Stripe détecté',
+      message: `Un litige a été créé pour le paiement ${dispute.charge}. Montant: ${dispute.amount / 100}€`,
+      data: { dispute_id: dispute.id, charge_id: dispute.charge }
+    });
+
+  if (error) {
+    console.error('Erreur création notification:', error);
+  }
+  
+  console.log(`Litige détecté: ${dispute.id}`);
+}
