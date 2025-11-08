@@ -8,6 +8,7 @@ interface AdminCounts {
   prestatairesPending: number;
   moderation: number;
   messages: number;
+  missionsPending: number;
 }
 
 export const useAdminCounts = () => {
@@ -28,7 +29,8 @@ export const useAdminCounts = () => {
         candidaturesPending,
         prestatairesPending,
         moderationPending,
-        messagesUnread
+        messagesUnread,
+        missionsPending
       ] = await Promise.all([
         supabase.from('client_requests').select('id', { count: 'exact', head: true }).in('status', ['new', 'unmatched']).lt('created_at', urgentCutoff),
         supabase.from('client_requests').select('id', { count: 'exact', head: true }).eq('status', 'assigned').lt('updated_at', waitingCutoff),
@@ -39,6 +41,7 @@ export const useAdminCounts = () => {
         supabase.from('providers').select('id', { count: 'exact', head: true }).in('status', ['pending', 'pending_validation']),
         supabase.from('reviews').select('id', { count: 'exact', head: true }).eq('is_approved', false),
         supabase.from('internal_messages').select('id', { count: 'exact', head: true }).eq('is_read', false),
+        supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
       ]);
 
       const alertsTotal = (urgentReq.count || 0) + (waitingClients.count || 0) + (blockedMissions.count || 0) + (inactiveProviders.count || 0);
@@ -50,6 +53,7 @@ export const useAdminCounts = () => {
         prestatairesPending: prestatairesPending.count || 0,
         moderation: moderationPending.count || 0,
         messages: messagesUnread.count || 0,
+        missionsPending: missionsPending.count || 0,
       } as AdminCounts;
     },
     staleTime: 2 * 60 * 1000, // 2 minutes

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useAdminCounts } from "@/hooks/useAdminCounts";
 import { 
   SidebarProvider, 
   Sidebar, 
@@ -79,7 +80,7 @@ const navigationGroups = [
     items: [
       { 
         title: "Missions", 
-        href: "/admin/kanban", 
+        href: "/modern-admin/missions", 
         icon: Target,
         badge: { text: "147", variant: "default" }
       },
@@ -190,6 +191,7 @@ function AdminSidebar() {
   const location = useLocation();
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
+  const { data: counts } = useAdminCounts();
 
   return (
     <Sidebar className="border-r border-border">
@@ -234,7 +236,14 @@ function AdminSidebar() {
                           {!collapsed && (
                             <>
                               <span className="flex-1">{item.title}</span>
-                              {item.badge && (
+                              {item.title === "Missions" && counts?.missionsPending ? (
+                                <Badge 
+                                  variant="destructive"
+                                  className="text-xs px-1.5 py-0.5"
+                                >
+                                  {counts.missionsPending}
+                                </Badge>
+                              ) : item.badge && (
                                 <Badge 
                                   variant={item.badge.variant as any}
                                   className="text-xs px-1.5 py-0.5"

@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, MapPin, Clock, User, Search, DollarSign, TrendingUp, Eye } from "lucide-react";
+import { Calendar, MapPin, Clock, User, Search, DollarSign, TrendingUp, Eye, PieChart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { MissionDetailsModal } from "@/components/admin/MissionDetailsModal";
+import { ProviderStatsModal } from "@/components/admin/ProviderStatsModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
 interface Mission {
   id: string;
@@ -46,11 +48,13 @@ const AdminMissions = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [universeFilter, setUniverseFilter] = useState("all");
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<{ id: string; name: string } | null>(null);
   const [stats, setStats] = useState({
     total: 0,
     revenue: 0,
     commission: 0,
-    providerPayment: 0
+    providerPayment: 0,
+    byStatus: [] as { name: string; value: number; color: string }[]
   });
 
   useEffect(() => {
@@ -117,11 +121,44 @@ const AdminMissions = () => {
       const commission = totalRevenue * 0.28;
       const providerPayment = totalRevenue * 0.72;
 
+      // Calcul des stats par statut
+      const statusColors: Record<string, string> = {
+        pending: 'hsl(var(--chart-1))',
+        assigned: 'hsl(var(--chart-2))',
+        accepted: 'hsl(var(--chart-3))',
+        in_progress: 'hsl(var(--chart-4))',
+        completed: 'hsl(var(--chart-5))',
+        cancelled: 'hsl(var(--destructive))',
+        paid: 'hsl(var(--primary))'
+      };
+
+      const statusLabels: Record<string, string> = {
+        pending: 'En attente',
+        assigned: 'Assignée',
+        accepted: 'Acceptée',
+        in_progress: 'En cours',
+        completed: 'Terminée',
+        cancelled: 'Annulée',
+        paid: 'Payée'
+      };
+
+      const statusCounts = missionsWithDetails.reduce((acc, m) => {
+        acc[m.status] = (acc[m.status] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      const byStatus = Object.entries(statusCounts).map(([status, count]) => ({
+        name: statusLabels[status] || status,
+        value: count,
+        color: statusColors[status] || 'hsl(var(--muted))'
+      }));
+
       setStats({
         total: missionsWithDetails.length,
         revenue: totalRevenue,
         commission,
-        providerPayment
+        providerPayment,
+        byStatus
       });
     } catch (error) {
       console.error('Error loading missions:', error);
@@ -201,8 +238,10 @@ const AdminMissions = () => {
         <p className="text-muted-foreground text-sm sm:text-base">Gestion complète des missions et paiements</p>
       </div>
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Statistics Cards & Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Stats cards */}
+        <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total missions</CardTitle>
@@ -252,6 +291,38 @@ const AdminMissions = () => {
             <p className="text-xs text-muted-foreground">
               72% des missions
             </p>
+          </CardContent>
+        </Card>
+        </div>
+
+        {/* Graphique répartition par statut */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <PieChart className="h-5 w-5" />
+              Répartition par statut
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={250}>
+              <RechartsPieChart>
+                <Pie
+                  data={stats.byStatus}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {stats.byStatus.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </RechartsPieChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
       </div>
@@ -358,10 +429,17 @@ const AdminMissions = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {mission.provider_profile ? (
-                          <div className="font-medium">
+                        {mission.provider_profile && mission.provider_id ? (
+                          <Button
+                            variant="link"
+                            className="font-medium p-0 h-auto"
+                            onClick={() => setSelectedProvider({
+                              id: mission.provider_id!,
+                              name: `${mission.provider_profile.first_name} ${mission.provider_profile.last_name}`
+                            })}
+                          >
                             {mission.provider_profile.first_name} {mission.provider_profile.last_name}
-                          </div>
+                          </Button>
                         ) : (
                           <span className="text-muted-foreground">Non assigné</span>
                         )}
@@ -422,6 +500,15 @@ const AdminMissions = () => {
           mission={selectedMission}
           onClose={() => setSelectedMission(null)}
           onUpdate={loadMissions}
+        />
+      )}
+
+      {/* Provider Stats Modal */}
+      {selectedProvider && (
+        <ProviderStatsModal
+          providerId={selectedProvider.id}
+          providerName={selectedProvider.name}
+          onClose={() => setSelectedProvider(null)}
         />
       )}
     </div>
