@@ -244,14 +244,18 @@ const AdminClients = () => {
 
             <Select value={serviceFilter} onValueChange={setServiceFilter}>
               <SelectTrigger className="w-full md:w-[180px]">
-                <SelectValue placeholder="Service" />
+                <SelectValue placeholder="Univers" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les services</SelectItem>
-                <SelectItem value="menage">Ménage</SelectItem>
-                <SelectItem value="repassage">Repassage</SelectItem>
-                <SelectItem value="cuisine">Cuisine</SelectItem>
-                <SelectItem value="garde_enfants">Garde d'enfants</SelectItem>
+                <SelectItem value="all">Tous les univers</SelectItem>
+                <SelectItem value="bika_kids">Bika Kids</SelectItem>
+                <SelectItem value="bika_maison">Bika Maison</SelectItem>
+                <SelectItem value="bika_vie">Bika Vie</SelectItem>
+                <SelectItem value="bika_travel">Bika Travel</SelectItem>
+                <SelectItem value="bika_animals">Bika Animal</SelectItem>
+                <SelectItem value="bika_seniors">Bika Seniors</SelectItem>
+                <SelectItem value="bika_pro">Bika Pro</SelectItem>
+                <SelectItem value="bika_plus">Bika Plus</SelectItem>
               </SelectContent>
             </Select>
 
