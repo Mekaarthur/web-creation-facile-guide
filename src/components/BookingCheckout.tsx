@@ -42,9 +42,10 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
     address: ""
   });
 
-  // Animation d'entrée
+  // Animation d'entrée + scroll en haut
   useEffect(() => {
     setIsVisible(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   const formatTimeSlot = (timeSlot: any) => {
@@ -202,7 +203,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
 
   return (
     <div className={cn(
-      "max-w-5xl mx-auto px-4 py-8 pb-32 space-y-6 transition-opacity duration-500",
+      "max-w-5xl mx-auto px-4 py-8 pb-32 space-y-6 transition-opacity duration-500 min-h-screen",
       isVisible ? "opacity-100" : "opacity-0"
     )}>
       <div className="flex items-center gap-4 mb-6 animate-fade-in">
@@ -290,6 +291,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                     onChange={(e) => setClientInfo({...clientInfo, firstName: e.target.value})}
                     placeholder="Jean"
                     required
+                    autoFocus
                   />
                 </div>
                 <div className="space-y-2">
