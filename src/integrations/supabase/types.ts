@@ -3442,42 +3442,57 @@ export type Database = {
       }
       reviews: {
         Row: {
+          admin_notes: string | null
           booking_id: string
           client_id: string
           comment: string | null
           created_at: string
           id: string
           is_approved: boolean
+          moderated_at: string | null
+          moderated_by: string | null
           provider_id: string
           punctuality_rating: number | null
           quality_rating: number | null
           rating: number
+          service_id: string | null
+          status: string | null
           updated_at: string
         }
         Insert: {
+          admin_notes?: string | null
           booking_id: string
           client_id: string
           comment?: string | null
           created_at?: string
           id?: string
           is_approved?: boolean
+          moderated_at?: string | null
+          moderated_by?: string | null
           provider_id: string
           punctuality_rating?: number | null
           quality_rating?: number | null
           rating: number
+          service_id?: string | null
+          status?: string | null
           updated_at?: string
         }
         Update: {
+          admin_notes?: string | null
           booking_id?: string
           client_id?: string
           comment?: string | null
           created_at?: string
           id?: string
           is_approved?: boolean
+          moderated_at?: string | null
+          moderated_by?: string | null
           provider_id?: string
           punctuality_rating?: number | null
           quality_rating?: number | null
           rating?: number
+          service_id?: string | null
+          status?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -3946,6 +3961,20 @@ export type Database = {
           last_name: string | null
           location: string | null
           rating: number | null
+        }
+        Relationships: []
+      }
+      review_statistics: {
+        Row: {
+          average_rating: number | null
+          negative_reviews: number | null
+          pending_reviews: number | null
+          positive_reviews: number | null
+          published_reviews: number | null
+          rejected_reviews: number | null
+          reviews_last_30_days: number | null
+          reviews_last_7_days: number | null
+          total_reviews: number | null
         }
         Relationships: []
       }
