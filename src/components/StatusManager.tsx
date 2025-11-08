@@ -250,7 +250,22 @@ const StatusManager: React.FC<StatusManagerProps> = ({
                   <AlertDialogHeader>
                     <AlertDialogTitle>Confirmer le changement de statut</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Êtes-vous sûr de vouloir passer ce{itemType === 'job_application' ? 'tte candidature' : 'tte demande'} au statut "{statusConfig.label}" ?
+                      {status === 'approved' && itemType === 'job_application' ? (
+                        <div className="space-y-2">
+                          <p>Êtes-vous sûr de vouloir <strong>approuver</strong> cette candidature ?</p>
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-2">
+                            <p className="text-sm text-green-800 font-medium">✅ Actions automatiques :</p>
+                            <ul className="text-sm text-green-700 mt-1 space-y-1 list-disc list-inside">
+                              <li>Création automatique du compte prestataire</li>
+                              <li>Attribution du rôle "Provider"</li>
+                              <li>Envoi d'email de confirmation au candidat</li>
+                              <li>Traçabilité complète dans l'historique admin</li>
+                            </ul>
+                          </div>
+                        </div>
+                      ) : (
+                        <p>Êtes-vous sûr de vouloir passer ce{itemType === 'job_application' ? 'tte candidature' : 'tte demande'} au statut "{statusConfig.label}" ?</p>
+                      )}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -260,8 +275,9 @@ const StatusManager: React.FC<StatusManagerProps> = ({
                         setSelectedStatus(status);
                         setTimeout(updateStatus, 100);
                       }}
+                      className={status === 'approved' ? 'bg-green-600 hover:bg-green-700' : ''}
                     >
-                      Confirmer
+                      {status === 'approved' ? 'Approuver et créer le prestataire' : 'Confirmer'}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
