@@ -14,12 +14,8 @@ const CartPage = () => {
 
       <Navbar />
       
-      <main className="flex-1 pt-24 pb-12">
+      <main className="flex-1 pt-24 pb-12 min-h-screen">
         <div className="container mx-auto px-4">
-          <div className="mb-6 text-center">
-            <h1 className="text-3xl font-bold mb-2">Mon Panier</h1>
-            <p className="text-muted-foreground">Finalisez votre réservation</p>
-          </div>
           <BikawoCart isOpen={true} />
         </div>
       </main>

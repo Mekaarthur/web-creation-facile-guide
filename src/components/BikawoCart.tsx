@@ -67,6 +67,9 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
       return;
     }
 
+    // Scroll vers le haut de la page pour voir le formulaire de paiement
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
     setIsPaymentMode(true);
   };
 
@@ -75,19 +78,32 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
   }
 
   if (isPaymentMode) {
-    return <BookingCheckout onBack={() => setIsPaymentMode(false)} />;
+    return (
+      <div className="animate-fade-in">
+        <BookingCheckout onBack={() => {
+          setIsPaymentMode(false);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }} />
+      </div>
+    );
   }
 
   return (
-    <Card className={cn(
-      "w-full max-w-md mx-auto transition-all duration-300",
-      isVisible ? "animate-fade-in" : "opacity-0"
-    )}>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-2">
-          <ShoppingCart className="w-5 h-5" />
-          Panier Session ({cartItems.length})
-        </CardTitle>
+    <div className="w-full">
+      <div className="mb-6 text-center">
+        <h1 className="text-3xl font-bold mb-2">Mon Panier</h1>
+        <p className="text-muted-foreground">Finalisez votre réservation</p>
+      </div>
+      
+      <Card className={cn(
+        "w-full max-w-4xl mx-auto transition-all duration-300",
+        isVisible ? "animate-fade-in" : "opacity-0"
+      )}>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <ShoppingCart className="w-5 h-5" />
+            Panier Session ({cartItems.length})
+          </CardTitle>
         {cartItems.length > 0 && (
           <Button variant="ghost" size="sm" onClick={clearCart} className="hover-scale">
             Vider
@@ -277,6 +293,7 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
         )}
       </CardContent>
     </Card>
+    </div>
   );
 };
 
