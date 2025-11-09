@@ -45,6 +45,7 @@ import ReservationConfirmee from "./pages/ReservationConfirmee";
 import SubServicePage from "./pages/SubService";
 import CartPage from "./pages/Cart";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentCanceled from "./pages/PaymentCanceled";
 import AdminLogin from "./pages/AdminLogin";
 
 // Admin Layout and Pages
@@ -149,6 +150,7 @@ const App = () => (
             <Route path="/panier" element={<CartPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/payment-canceled" element={<PaymentCanceled />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/aide" element={<Aide />} />
             <Route path="/panier-demo" element={<BikawoCartDemo />} />
