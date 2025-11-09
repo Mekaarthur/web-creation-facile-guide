@@ -63,44 +63,77 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
   };
 
   const validateForm = () => {
-    // Validation des champs requis
-    if (!clientInfo.firstName || !clientInfo.lastName || !clientInfo.email || 
-        !clientInfo.phone || !clientInfo.address) {
+    // Normaliser et vérifier les champs requis
+    const firstName = clientInfo.firstName.trim();
+    const lastName = clientInfo.lastName.trim();
+    const email = clientInfo.email.trim();
+    const address = clientInfo.address.trim();
+
+    // Nettoyage numéro (autoriser espaces, tirets, points, +33)
+    const rawPhone = clientInfo.phone;
+    const digits = rawPhone.replace(/\D/g, "");
+    const isFrWithPrefix = digits.startsWith("33") && digits.length === 11; // +33 puis 9 chiffres
+    const isFrTen = digits.length === 10; // 06XXXXXXXX
+
+    const missing: string[] = [];
+    if (!firstName) missing.push("Prénom");
+    if (!lastName) missing.push("Nom");
+    if (!email) missing.push("Email");
+    if (!rawPhone) missing.push("Téléphone");
+    if (!address) missing.push("Adresse");
+
+    if (missing.length > 0) {
+      console.log("[CHECKOUT] Champs manquants:", { clientInfo });
       toast({
         title: "Formulaire incomplet",
-        description: "Veuillez remplir tous les champs requis",
+        description: `Veuillez renseigner: ${missing.join(", ")}`,
         variant: "destructive",
       });
+      // Focus sur le premier champ manquant
+      const firstMissingId = [
+        { id: "firstName", ok: !!firstName },
+        { id: "lastName", ok: !!lastName },
+        { id: "email", ok: !!email },
+        { id: "phone", ok: !!rawPhone },
+        { id: "address", ok: !!address },
+      ].find((f) => !f.ok)?.id;
+      if (firstMissingId) {
+        document.getElementById(firstMissingId)?.scrollIntoView({ behavior: "smooth", block: "center" });
+        (document.getElementById(firstMissingId) as HTMLInputElement | null)?.focus();
+      }
       return false;
     }
 
-    // Validation email
+    // Validation email (simple)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(clientInfo.email)) {
+    if (!emailRegex.test(email)) {
       toast({
         title: "Email invalide",
         description: "Veuillez saisir une adresse email valide",
         variant: "destructive",
       });
+      document.getElementById("email")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      (document.getElementById("email") as HTMLInputElement | null)?.focus();
       return false;
     }
 
-    // Validation téléphone
-    const phoneRegex = /^[0-9]{10}$/;
-    if (!phoneRegex.test(clientInfo.phone.replace(/\s/g, ''))) {
+    // Validation téléphone FR (10 chiffres, ou +33 puis 9 chiffres)
+    if (!(isFrTen || isFrWithPrefix)) {
       toast({
         title: "Téléphone invalide",
-        description: "Veuillez saisir un numéro de téléphone valide (10 chiffres)",
+        description: "Format accepté: 06XXXXXXXX ou +33 X XX XX XX XX",
         variant: "destructive",
       });
+      document.getElementById("phone")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      (document.getElementById("phone") as HTMLInputElement | null)?.focus();
       return false;
     }
 
     // Validation des dates (toutes doivent être dans le futur)
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
-    const invalidDates = cartItems.filter(item => {
+
+    const invalidDates = cartItems.filter((item) => {
       const itemDate = new Date(item.timeSlot.date);
       itemDate.setHours(0, 0, 0, 0);
       return itemDate < today;
@@ -116,7 +149,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
     }
 
     // Validation des durées (toutes > 0)
-    const invalidDurations = cartItems.filter(item => item.quantity <= 0);
+    const invalidDurations = cartItems.filter((item) => item.quantity <= 0);
     if (invalidDurations.length > 0) {
       toast({
         title: "Durées invalides",
@@ -126,6 +159,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       return false;
     }
 
+    console.log("[CHECKOUT] Validation OK", { clientInfo, phoneDigits: digits });
     return true;
   };
 
