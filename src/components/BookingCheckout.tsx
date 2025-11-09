@@ -442,6 +442,23 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="address" className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  Adresse de prestation *
+                </Label>
+                <Input
+                  id="address"
+                  name="address"
+                  value={clientInfo.address}
+                  onChange={(e) => setClientInfo({...clientInfo, address: e.target.value})}
+                  placeholder="15 rue de la Paix, 75001 Paris"
+                  required
+                  className="w-full"
+                  disabled={isProcessing}
+                />
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="phone" className="flex items-center gap-2">
                   <Phone className="w-4 h-4" />
                   Téléphone *
@@ -453,23 +470,6 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                   value={clientInfo.phone}
                   onChange={(e) => setClientInfo({...clientInfo, phone: e.target.value})}
                   placeholder="06 12 34 56 78"
-                  required
-                  className="w-full"
-                  disabled={isProcessing}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="address" className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  Adresse principale *
-                </Label>
-                <Input
-                  id="address"
-                  name="address"
-                  value={clientInfo.address}
-                  onChange={(e) => setClientInfo({...clientInfo, address: e.target.value})}
-                  placeholder="15 rue de la Paix, 75001 Paris"
                   required
                   className="w-full"
                   disabled={isProcessing}
