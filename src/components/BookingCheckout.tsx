@@ -304,8 +304,8 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Client Information */}
-        <div className="lg:col-span-2 space-y-6 animate-fade-in relative z-10 pointer-events-auto" style={{ animationDelay: "100ms" }}>
-          <Card className="transition-all duration-200 hover:shadow-md">
+        <div className="lg:col-span-2 space-y-6 animate-fade-in" style={{ animationDelay: "100ms" }}>
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="w-5 h-5" />
@@ -318,21 +318,26 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                   <Label htmlFor="firstName">Prénom *</Label>
                   <Input
                     id="firstName"
+                    name="firstName"
                     value={clientInfo.firstName}
                     onChange={(e) => setClientInfo({...clientInfo, firstName: e.target.value})}
                     placeholder="Jean"
                     required
-                    autoFocus
+                    className="w-full"
+                    disabled={isProcessing}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Nom *</Label>
                   <Input
                     id="lastName"
+                    name="lastName"
                     value={clientInfo.lastName}
                     onChange={(e) => setClientInfo({...clientInfo, lastName: e.target.value})}
                     placeholder="Dupont"
                     required
+                    className="w-full"
+                    disabled={isProcessing}
                   />
                 </div>
               </div>
@@ -344,11 +349,14 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                 </Label>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
                   value={clientInfo.email}
                   onChange={(e) => setClientInfo({...clientInfo, email: e.target.value})}
                   placeholder="jean.dupont@example.com"
                   required
+                  className="w-full"
+                  disabled={isProcessing}
                 />
               </div>
 
@@ -359,11 +367,14 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                 </Label>
                 <Input
                   id="phone"
+                  name="phone"
                   type="tel"
                   value={clientInfo.phone}
                   onChange={(e) => setClientInfo({...clientInfo, phone: e.target.value})}
                   placeholder="06 12 34 56 78"
                   required
+                  className="w-full"
+                  disabled={isProcessing}
                 />
               </div>
 
@@ -374,17 +385,20 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                 </Label>
                 <Input
                   id="address"
+                  name="address"
                   value={clientInfo.address}
                   onChange={(e) => setClientInfo({...clientInfo, address: e.target.value})}
                   placeholder="15 rue de la Paix, 75001 Paris"
                   required
+                  className="w-full"
+                  disabled={isProcessing}
                 />
               </div>
             </CardContent>
           </Card>
 
           {/* Avance immédiate URSSAF */}
-          <Card className="transition-all duration-200 hover:shadow-md border-green-200 bg-green-50/30">
+          <Card className="border-green-200 bg-green-50/30">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <CreditCard className="w-5 h-5 text-green-600" />
@@ -402,9 +416,10 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                     id="urssaf-consent"
                     checked={urssafEnabled}
                     onChange={(e) => setUrssafEnabled(e.target.checked)}
-                    className="mt-1 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                    disabled={isProcessing}
+                    className="mt-1 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500 cursor-pointer"
                   />
-                  <Label htmlFor="urssaf-consent" className="text-sm cursor-pointer">
+                  <Label htmlFor="urssaf-consent" className="text-sm cursor-pointer leading-relaxed">
                     J'autorise Bikawo à activer le service <strong>Avance Immédiate de l'URSSAF</strong> pour mes prestations et à déclarer ces services auprès de l'URSSAF. Je bénéficierai ainsi de 50% de réduction immédiate sur le montant total.
                   </Label>
                 </div>
@@ -422,7 +437,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
         </div>
 
         {/* Right Column - Order Summary - Desktop uniquement */}
-        <div className="hidden lg:block space-y-6 animate-fade-in relative z-0" style={{ animationDelay: "200ms" }}>
+        <div className="hidden lg:block space-y-6 animate-fade-in" style={{ animationDelay: "200ms" }}>
           <Card className="sticky top-24 transition-all duration-200 hover:shadow-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
