@@ -57,6 +57,10 @@ export const GuestCheckout: React.FC<GuestCheckoutProps> = ({
   const handleGuestPayment = async (data: GuestCheckoutForm) => {
     setLoading(true);
     try {
+      if (!amount || amount <= 0) {
+        throw new Error("Le montant doit être supérieur à 0");
+      }
+
       const { data: paymentData, error } = await supabase.functions.invoke('create-payment', {
         body: {
           amount: amount,

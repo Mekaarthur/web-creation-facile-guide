@@ -126,6 +126,15 @@ export const StripePaymentIntegration: React.FC<PaymentIntegrationProps> = ({
       return;
     }
 
+    if (!amount || amount <= 0) {
+      toast({
+        variant: "destructive",
+        title: "Montant invalide",
+        description: "Le montant doit être supérieur à 0"
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('create-payment', {
