@@ -39,15 +39,20 @@ serve(async (req) => {
       try {
         logStep("Authorization header found");
         const token = authHeader.replace("Bearer ", "");
-        const { data, error: userError } = await supabaseClient.auth.getUser(token);
-        if (!userError) {
-          user = data.user;
-          logStep("User authenticated", { userId: user?.id, email: user?.email });
+        const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+        if (token && token !== anonKey) {
+          const { data, error: userError } = await supabaseClient.auth.getUser(token);
+          if (!userError) {
+            user = data.user;
+            logStep("User authenticated", { userId: user?.id, email: user?.email });
+          } else {
+            logStep("Invalid session token (not logged in), proceeding as guest", { userError: userError.message });
+          }
         } else {
-          logStep("Anonymous or invalid session, proceeding as guest");
+          logStep("Authorization token is anon key or empty, proceeding as guest");
         }
-      } catch (_e) {
-        logStep("Failed to resolve user from token, proceeding as guest");
+      } catch (e) {
+        logStep("Failed to resolve user from token, proceeding as guest", { error: String(e) });
       }
     } else {
       logStep("No authorization header provided, proceeding as guest");
@@ -108,7 +113,7 @@ serve(async (req) => {
       ],
       mode: "payment",
       success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get("origin")}/panier`,
+      cancel_url: `${req.headers.get("origin")}/payment-canceled`,
       metadata: {
         booking_id: bookingId || "",
         user_id: user?.id || "guest",
