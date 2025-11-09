@@ -153,11 +153,11 @@ export const StripePaymentIntegration: React.FC<PaymentIntegrationProps> = ({
       if (error) throw error;
 
       if (data?.url) {
-        // Open Stripe checkout in a new tab
-        window.open(data.url, '_blank');
+        // Rediriger dans le même onglet pour éviter les bloqueurs de pop-up
+        window.location.href = data.url;
         toast({
           title: "Redirection vers le paiement",
-          description: "Une nouvelle fenêtre s'est ouverte pour le paiement sécurisé"
+          description: "Vous allez être redirigé vers Stripe pour finaliser le paiement"
         });
         
         onPaymentSuccess?.(data);

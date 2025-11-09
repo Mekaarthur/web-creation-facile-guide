@@ -272,6 +272,8 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
         }
       });
 
+      console.log('[CHECKOUT] create-payment response', { paymentData, paymentError });
+
       if (paymentError) throw paymentError;
 
       // Store pending booking in localStorage for recovery after payment
