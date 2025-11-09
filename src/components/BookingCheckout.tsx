@@ -49,6 +49,27 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  // Préremplir avec le profil utilisateur si disponible
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        const u = data?.user;
+        if (u) {
+          setClientInfo((ci) => ({
+            ...ci,
+            email: u.email ?? ci.email,
+            firstName: (u.user_metadata as any)?.first_name || ci.firstName,
+            lastName: (u.user_metadata as any)?.last_name || ci.lastName,
+            phone: (u.user_metadata as any)?.phone || ci.phone,
+          }));
+        }
+      } catch (_) {
+        // ignore
+      }
+    })();
+  }, []);
+
   const formatTimeSlot = (timeSlot: any) => {
     const date = new Date(timeSlot.date);
     return {
@@ -164,6 +185,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
   };
 
   const handleSubmitBooking = async () => {
+    console.log('[CHECKOUT] Submit clicked with clientInfo:', clientInfo);
     if (!validateForm()) return;
 
     setIsProcessing(true);
