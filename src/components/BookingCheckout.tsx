@@ -298,6 +298,31 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                 <span className="text-primary">{getCartTotal()}€</span>
               </div>
             </div>
+
+            {/* CTA mobile (fallback si la barre fixe est masquée) */}
+            <div className="mt-4 lg:hidden">
+              <Button 
+                onClick={handleSubmitBooking}
+                className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-200 hover-scale"
+                size="lg"
+                disabled={isProcessing}
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Traitement en cours...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Confirmer et payer {urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€
+                  </>
+                )}
+              </Button>
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                Paiement sécurisé via Stripe
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
