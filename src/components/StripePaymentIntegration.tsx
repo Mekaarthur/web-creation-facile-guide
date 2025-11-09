@@ -136,7 +136,11 @@ export const StripePaymentIntegration: React.FC<PaymentIntegrationProps> = ({
     }
 
     setLoading(true);
+    let checkoutWindow: Window | null = null;
     try {
+      // Ouvre un onglet vide immédiatement pour éviter les bloqueurs
+      checkoutWindow = window.open('', '_blank');
+
       const { data, error } = await supabase.functions.invoke('create-payment', {
         body: {
           amount: amount, // Montant en euros
@@ -154,9 +158,17 @@ export const StripePaymentIntegration: React.FC<PaymentIntegrationProps> = ({
 
       if (data?.url) {
         const go = (u: string) => {
+          try {
+            // Utilise l'onglet pré-ouvert si possible
+            // @ts-ignore
+            if (checkoutWindow && !checkoutWindow.closed) {
+              // @ts-ignore
+              checkoutWindow.location.href = u; return;
+            }
+          } catch {}
           try { window.location.assign(u); return; } catch {}
           try { // @ts-ignore
-            if (window.top) window.top.location.href = u; return; } catch {}
+            if (window.top) { window.top.location.href = u; return; } } catch {}
           const a = document.createElement('a'); a.href = u; a.target = '_blank'; a.rel = 'noopener noreferrer';
           document.body.appendChild(a); a.click(); a.remove();
         };

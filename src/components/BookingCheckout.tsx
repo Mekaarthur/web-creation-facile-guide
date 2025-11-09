@@ -205,7 +205,11 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
 
     setIsProcessing(true);
 
+    let checkoutWindow: Window | null = null;
     try {
+      // Ouvre un onglet vide immédiatement (évite les bloqueurs de pop-up)
+      checkoutWindow = window.open('', '_blank');
+
       // Prepare booking data
       const services = cartItems.map(item => ({
         serviceName: item.serviceName,
@@ -298,6 +302,17 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       // Redirect to Stripe checkout with robust fallbacks (iframe-safe)
       const go = (u: string) => {
         try {
+          // Utilise l'onglet pré-ouvert si disponible (évite bloqueurs)
+          // @ts-ignore
+          if (checkoutWindow && !checkoutWindow.closed) {
+            // @ts-ignore
+            checkoutWindow.location.href = u;
+            return;
+          }
+        } catch (e) {
+          console.warn('[CHECKOUT] checkoutWindow navigation failed', e);
+        }
+        try {
           console.log('[CHECKOUT] Redirect via window.location.assign');
           window.location.assign(u);
           return;
@@ -329,6 +344,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
 
     } catch (error: any) {
       console.error('Error creating payment:', error);
+      try { if (checkoutWindow && !checkoutWindow.closed) checkoutWindow.close(); } catch {}
       toast({
         title: "Erreur",
         description: error.message || "Une erreur est survenue lors de la création du paiement",

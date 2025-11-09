@@ -56,7 +56,11 @@ export const GuestCheckout: React.FC<GuestCheckoutProps> = ({
 
   const handleGuestPayment = async (data: GuestCheckoutForm) => {
     setLoading(true);
+    let checkoutWindow: Window | null = null;
     try {
+      // Ouvre un onglet vide immédiatement pour contourner les bloqueurs
+      checkoutWindow = window.open('', '_blank');
+
       if (!amount || amount <= 0) {
         throw new Error("Le montant doit être supérieur à 0");
       }
@@ -87,16 +91,23 @@ export const GuestCheckout: React.FC<GuestCheckoutProps> = ({
       if (paymentData?.url) {
         const go = (u: string) => {
           try {
+            // Utilise l'onglet pré-ouvert si disponible (évite bloqueurs)
+            // @ts-ignore
+            if (checkoutWindow && !checkoutWindow.closed) {
+              // @ts-ignore
+              checkoutWindow.location.href = u;
+              return;
+            }
+          } catch {}
+          try {
             window.location.assign(u);
             return;
           } catch {}
           try {
             // @ts-ignore
-            if (window.top) window.top.location.href = u;
-            return;
+            if (window.top) { window.top.location.href = u; return; }
           } catch {}
-          const a = document.createElement('a');
-          a.href = u; a.target = '_blank'; a.rel = 'noopener noreferrer';
+          const a = document.createElement('a'); a.href = u; a.target = '_blank'; a.rel = 'noopener noreferrer';
           document.body.appendChild(a); a.click(); a.remove();
         };
 
@@ -111,6 +122,7 @@ export const GuestCheckout: React.FC<GuestCheckoutProps> = ({
 
     } catch (error) {
       console.error('Erreur lors du paiement invité:', error);
+      try { if (checkoutWindow && !checkoutWindow.closed) checkoutWindow.close(); } catch {}
       const errorMessage = error instanceof Error ? error.message : 'Erreur lors du paiement';
       
       toast({
