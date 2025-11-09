@@ -85,7 +85,22 @@ export const GuestCheckout: React.FC<GuestCheckoutProps> = ({
       if (error) throw error;
 
       if (paymentData?.url) {
-        window.location.href = paymentData.url;
+        const go = (u: string) => {
+          try {
+            window.location.assign(u);
+            return;
+          } catch {}
+          try {
+            // @ts-ignore
+            if (window.top) window.top.location.href = u;
+            return;
+          } catch {}
+          const a = document.createElement('a');
+          a.href = u; a.target = '_blank'; a.rel = 'noopener noreferrer';
+          document.body.appendChild(a); a.click(); a.remove();
+        };
+
+        go(paymentData.url);
         toast({
           title: "Redirection vers le paiement",
           description: "Vous allez être redirigé vers Stripe pour finaliser le paiement"

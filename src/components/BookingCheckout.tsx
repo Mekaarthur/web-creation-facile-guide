@@ -295,9 +295,37 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       };
       localStorage.setItem('bikawo-pending-booking', JSON.stringify(pendingBooking));
 
-      // Redirect to Stripe checkout
+      // Redirect to Stripe checkout with robust fallbacks (iframe-safe)
+      const go = (u: string) => {
+        try {
+          console.log('[CHECKOUT] Redirect via window.location.assign');
+          window.location.assign(u);
+          return;
+        } catch (e) {
+          console.warn('[CHECKOUT] assign failed', e);
+        }
+        try {
+          if (window.top) {
+            console.log('[CHECKOUT] Redirect via window.top.location');
+            // @ts-ignore
+            window.top.location.href = u;
+            return;
+          }
+        } catch (e) {
+          console.warn('[CHECKOUT] top.navigation failed', e);
+        }
+        console.log('[CHECKOUT] Redirect via anchor _blank fallback');
+        const a = document.createElement('a');
+        a.href = u;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      };
+
       console.log('[CHECKOUT] Redirecting to:', paymentData.url);
-      window.location.href = paymentData.url;
+      go(paymentData.url);
 
     } catch (error: any) {
       console.error('Error creating payment:', error);
