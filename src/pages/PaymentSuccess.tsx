@@ -221,50 +221,6 @@ const PaymentSuccess = () => {
             </CardContent>
           </Card>
 
-          {/* Prochaines étapes */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Prochaines étapes</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold flex-shrink-0">
-                  1
-                </div>
-                <div>
-                  <p className="font-medium">Confirmation par email</p>
-                  <p className="text-sm text-muted-foreground">
-                    Vous recevrez un email de confirmation sous quelques minutes
-                  </p>
-                </div>
-              </div>
-              <Separator />
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold flex-shrink-0">
-                  2
-                </div>
-                <div>
-                  <p className="font-medium">Attribution du prestataire</p>
-                  <p className="text-sm text-muted-foreground">
-                    Nous vous assignons le meilleur prestataire disponible sous 24h
-                  </p>
-                </div>
-              </div>
-              <Separator />
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold flex-shrink-0">
-                  3
-                </div>
-                <div>
-                  <p className="font-medium">Contact du prestataire</p>
-                  <p className="text-sm text-muted-foreground">
-                    Le prestataire vous contactera par téléphone
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Numéros de réservation */}
           {bookingIds && bookingIds.length > 0 && (
             <Card className="border-primary/20">
