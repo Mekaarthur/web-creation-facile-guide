@@ -274,7 +274,15 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
 
       console.log('[CHECKOUT] create-payment response', { paymentData, paymentError });
 
-      if (paymentError) throw paymentError;
+      if (paymentError) {
+        console.error('[CHECKOUT] Payment error:', paymentError);
+        throw paymentError;
+      }
+
+      if (!paymentData?.url) {
+        console.error('[CHECKOUT] No URL in response:', paymentData);
+        throw new Error('URL de paiement non reçue');
+      }
 
       // Store pending booking in localStorage for recovery after payment
       const pendingBooking = {
@@ -288,11 +296,8 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       localStorage.setItem('bikawo-pending-booking', JSON.stringify(pendingBooking));
 
       // Redirect to Stripe checkout
-      if (paymentData?.url) {
-        window.location.href = paymentData.url;
-      } else {
-        throw new Error('URL de paiement non reçue');
-      }
+      console.log('[CHECKOUT] Redirecting to:', paymentData.url);
+      window.location.href = paymentData.url;
 
     } catch (error: any) {
       console.error('Error creating payment:', error);
