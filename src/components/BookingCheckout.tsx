@@ -53,19 +53,27 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await supabase.auth.getUser();
-        const u = data?.user;
-        if (u) {
-          setClientInfo((ci) => ({
-            ...ci,
-            email: u.email ?? ci.email,
-            firstName: (u.user_metadata as any)?.first_name || ci.firstName,
-            lastName: (u.user_metadata as any)?.last_name || ci.lastName,
-            phone: (u.user_metadata as any)?.phone || ci.phone,
-          }));
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          console.log('[CHECKOUT] User profile loaded:', user.user_metadata);
+          
+          // Récupérer aussi depuis la table profiles si elle existe
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+          setClientInfo({
+            email: user.email || '',
+            firstName: profile?.first_name || user.user_metadata?.first_name || '',
+            lastName: profile?.last_name || user.user_metadata?.last_name || '',
+            phone: profile?.phone || user.user_metadata?.phone || '',
+            address: profile?.address || user.user_metadata?.address || '',
+          });
         }
-      } catch (_) {
-        // ignore
+      } catch (error) {
+        console.error('[CHECKOUT] Error loading profile:', error);
       }
     })();
   }, []);
@@ -186,7 +194,14 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
 
   const handleSubmitBooking = async () => {
     console.log('[CHECKOUT] Submit clicked with clientInfo:', clientInfo);
-    if (!validateForm()) return;
+    console.log('[CHECKOUT] Form validation starting...');
+    
+    if (!validateForm()) {
+      console.log('[CHECKOUT] Validation failed, stopping submission');
+      return;
+    }
+    
+    console.log('[CHECKOUT] Validation passed, proceeding with payment...');
 
     setIsProcessing(true);
 
@@ -443,24 +458,36 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
 
               <div className="space-y-2">
                 <Label htmlFor="address" className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
+                  <MapPin className="w-4 h-4 text-primary" />
                   Adresse de prestation *
                 </Label>
                 <Input
                   id="address"
                   name="address"
                   value={clientInfo.address}
-                  onChange={(e) => setClientInfo({...clientInfo, address: e.target.value})}
-                  placeholder="15 rue de la Paix, 75001 Paris"
+                  onChange={(e) => {
+                    setClientInfo({...clientInfo, address: e.target.value});
+                    console.log('[CHECKOUT] Address changed:', e.target.value);
+                  }}
+                  placeholder="Ex: 15 rue de la Paix, 75001 Paris"
                   required
-                  className="w-full"
+                  className={cn(
+                    "w-full transition-all",
+                    !clientInfo.address && "border-orange-300 bg-orange-50/50 focus:border-primary"
+                  )}
                   disabled={isProcessing}
+                  autoComplete="street-address"
                 />
+                {!clientInfo.address && (
+                  <p className="text-xs text-orange-600">
+                    ⚠️ Ce champ est obligatoire pour continuer
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="phone" className="flex items-center gap-2">
-                  <Phone className="w-4 h-4" />
+                  <Phone className="w-4 h-4 text-primary" />
                   Téléphone *
                 </Label>
                 <Input
@@ -468,12 +495,24 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                   name="phone"
                   type="tel"
                   value={clientInfo.phone}
-                  onChange={(e) => setClientInfo({...clientInfo, phone: e.target.value})}
-                  placeholder="06 12 34 56 78"
+                  onChange={(e) => {
+                    setClientInfo({...clientInfo, phone: e.target.value});
+                    console.log('[CHECKOUT] Phone changed:', e.target.value);
+                  }}
+                  placeholder="Ex: 06 12 34 56 78"
                   required
-                  className="w-full"
+                  className={cn(
+                    "w-full transition-all",
+                    !clientInfo.phone && "border-orange-300 bg-orange-50/50 focus:border-primary"
+                  )}
                   disabled={isProcessing}
+                  autoComplete="tel"
                 />
+                {!clientInfo.phone && (
+                  <p className="text-xs text-orange-600">
+                    ⚠️ Ce champ est obligatoire pour continuer
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
