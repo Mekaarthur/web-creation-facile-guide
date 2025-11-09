@@ -62,17 +62,18 @@ export const GuestCheckout: React.FC<GuestCheckoutProps> = ({
           amount: amount,
           description: serviceDescription,
           serviceName: serviceDescription,
-          guestInfo: {
-            email: data.email,
-            firstName: data.firstName,
-            lastName: data.lastName,
-            phone: data.phone,
-            address: `${data.address}, ${data.postalCode} ${data.city}`,
-          },
+          guestEmail: data.email,
           metadata: {
             is_guest: true,
             guest_name: `${data.firstName} ${data.lastName}`,
-            guest_email: data.email
+            guest_email: data.email,
+            clientInfo: JSON.stringify({
+              firstName: data.firstName,
+              lastName: data.lastName,
+              email: data.email,
+              phone: data.phone,
+              address: `${data.address}, ${data.postalCode} ${data.city}`,
+            })
           }
         }
       });
