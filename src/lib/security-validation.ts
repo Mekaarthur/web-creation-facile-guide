@@ -14,43 +14,50 @@ const disposableEmailDomains = [
 export const emailSchema = z
   .string()
   .trim()
-  .min(1, "L'email est requis")
-  .max(255, "L'email est trop long")
-  .email("Format d'email invalide")
+  .min(1, "L'adresse email est obligatoire")
+  .max(255, "L'email est trop long (maximum 255 caractères)")
+  .email("Format d'email invalide (exemple: nom@domaine.fr)")
+  .toLowerCase()
   .refine(
     (email) => {
       const domain = email.split('@')[1]?.toLowerCase();
       return !disposableEmailDomains.includes(domain);
     },
-    { message: "Les adresses email jetables ne sont pas autorisées" }
+    { message: "Les adresses email temporaires ne sont pas autorisées" }
   );
 
-// Téléphone international
+// Téléphone international (optionnel ou avec validation)
 export const phoneSchema = z
   .string()
   .trim()
-  .min(10, "Numéro de téléphone trop court")
-  .max(20, "Numéro de téléphone trop long")
-  .regex(/^[+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,}[)]?[-\s\.]?[0-9]{1,}[-\s\.]?[0-9]{1,}$/, 
-    "Format de téléphone invalide");
+  .optional()
+  .or(z.literal(''))
+  .or(
+    z.string()
+      .trim()
+      .min(10, "Le numéro doit contenir au moins 10 chiffres")
+      .max(20, "Le numéro ne peut pas dépasser 20 caractères")
+      .regex(/^[+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,}[)]?[-\s\.]?[0-9]{1,}[-\s\.]?[0-9]{1,}$/, 
+        "Format invalide (ex: +33612345678 ou 0612345678)")
+  );
 
 // Mot de passe fort
 export const passwordSchema = z
   .string()
-  .min(8, "Minimum 8 caractères")
-  .max(128, "Maximum 128 caractères")
-  .regex(/[a-z]/, "Doit contenir une minuscule")
-  .regex(/[A-Z]/, "Doit contenir une majuscule")
-  .regex(/[0-9]/, "Doit contenir un chiffre")
-  .regex(/[^A-Za-z0-9]/, "Doit contenir un caractère spécial");
+  .min(8, "Le mot de passe doit contenir au moins 8 caractères")
+  .max(128, "Le mot de passe ne peut pas dépasser 128 caractères")
+  .regex(/[a-z]/, "Le mot de passe doit contenir au moins une lettre minuscule (a-z)")
+  .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une lettre majuscule (A-Z)")
+  .regex(/[0-9]/, "Le mot de passe doit contenir au moins un chiffre (0-9)")
+  .regex(/[^A-Za-z0-9]/, "Le mot de passe doit contenir au moins un caractère spécial (!@#$%&*)");
 
 // Nom / Prénom
 export const nameSchema = z
   .string()
   .trim()
-  .min(2, "Minimum 2 caractères")
-  .max(100, "Maximum 100 caractères")
-  .regex(/^[a-zA-ZÀ-ÿ\s'-]+$/, "Caractères invalides détectés");
+  .min(2, "Ce champ doit contenir au moins 2 caractères")
+  .max(100, "Ce champ ne peut pas dépasser 100 caractères")
+  .regex(/^[a-zA-ZÀ-ÿ\s'-]+$/, "Seuls les lettres, espaces, tirets et apostrophes sont autorisés");
 
 // Adresse
 export const addressSchema = z
@@ -113,10 +120,10 @@ export const signupSchema = z.object({
   lastName: nameSchema,
   email: emailSchema,
   password: passwordSchema,
-  phone: phoneSchema.optional(),
-  address: addressSchema.optional(),
+  phone: z.string().trim().optional().or(z.literal('')),
+  address: addressSchema.optional().or(z.literal('')),
   acceptTerms: z.boolean().refine((val) => val === true, {
-    message: "Vous devez accepter les conditions d'utilisation"
+    message: "Vous devez accepter les conditions d'utilisation pour continuer"
   }),
 });
 

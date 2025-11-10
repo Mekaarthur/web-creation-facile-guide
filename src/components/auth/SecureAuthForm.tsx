@@ -86,10 +86,17 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
       });
 
       if (error) {
+        console.error('Signup error:', error);
         if (error.message.includes('already') || error.message.includes('exists')) {
-          throw new Error('Cet email est déjà utilisé');
+          throw new Error('Cet email est déjà utilisé. Veuillez vous connecter ou utiliser une autre adresse.');
         }
-        throw error;
+        if (error.message.includes('password')) {
+          throw new Error('Le mot de passe ne respecte pas les critères de sécurité requis.');
+        }
+        if (error.message.includes('email')) {
+          throw new Error('Format d\'email invalide. Veuillez vérifier votre adresse.');
+        }
+        throw new Error(error.message || 'Une erreur est survenue lors de l\'inscription. Veuillez réessayer.');
       }
 
       if (authData.user && Array.isArray((authData.user as any).identities) && (authData.user as any).identities.length === 0) {
@@ -173,20 +180,24 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
       });
 
       if (error) {
+        console.error('Login error:', error);
         if (error.message.includes('Invalid login credentials')) {
-          throw new Error('Email ou mot de passe incorrect');
+          throw new Error('Email ou mot de passe incorrect. Veuillez vérifier vos identifiants.');
         }
         if (error.message.includes('Email not confirmed')) {
           setUnconfirmedEmail(validatedData.email);
-          throw new Error('Votre email n\'est pas encore confirmé. Vérifiez votre boîte mail ou cliquez sur "Renvoyer l\'email de confirmation".');
+          throw new Error('Votre email n\'est pas encore confirmé. Vérifiez votre boîte mail (y compris les spams) ou cliquez sur "Renvoyer l\'email de confirmation".');
         }
-        throw error;
+        if (error.message.includes('User not found')) {
+          throw new Error('Aucun compte trouvé avec cet email. Veuillez créer un compte.');
+        }
+        throw new Error(error.message || 'Erreur de connexion. Veuillez réessayer.');
       }
 
       // Vérifier si l'email est confirmé
       if (!authData.user?.email_confirmed_at) {
         setUnconfirmedEmail(validatedData.email);
-        throw new Error('Votre email n\'est pas encore confirmé. Vérifiez votre boîte mail ou cliquez sur "Renvoyer l\'email de confirmation".');
+        throw new Error('Votre email n\'est pas encore confirmé. Vérifiez votre boîte mail (y compris les spams) ou cliquez sur "Renvoyer l\'email de confirmation" ci-dessous.');
       }
 
       // Déterminer le rôle et le statut prestataire en lecture directe (RLS)
@@ -398,14 +409,18 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Téléphone (optionnel)</FormLabel>
+                 <FormLabel>Téléphone (optionnel)</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     type="tel"
-                    placeholder="+33 6 12 34 56 78"
+                    placeholder="+33 6 12 34 56 78 ou 06 12 34 56 78"
+                    autoComplete="tel"
                   />
                 </FormControl>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Format accepté : +33612345678 ou 0612345678
+                </p>
                 <FormMessage />
               </FormItem>
             )}
@@ -416,19 +431,23 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
             control={signupForm.control}
             name="acceptTerms"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                 <FormControl>
                   <input
                     type="checkbox"
                     checked={field.value}
                     onChange={field.onChange}
-                    className="mt-1"
+                    className="mt-1 h-4 w-4"
+                    id="acceptTerms"
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>
-                    J'accepte les conditions d'utilisation *
+                  <FormLabel htmlFor="acceptTerms" className="cursor-pointer">
+                    J'accepte les conditions d'utilisation et la politique de confidentialité *
                   </FormLabel>
+                  <p className="text-xs text-muted-foreground">
+                    Ce champ est obligatoire pour créer votre compte
+                  </p>
                   <FormMessage />
                 </div>
               </FormItem>
@@ -436,6 +455,17 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
           />
 
           {/* Bouton de soumission */}
+          {/* Résumé des champs requis */}
+          <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-md">
+            <p className="font-semibold mb-1">Champs obligatoires (*) :</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>Prénom et Nom</li>
+              <li>Adresse email valide</li>
+              <li>Mot de passe sécurisé (8 caractères minimum)</li>
+              <li>Acceptation des conditions d'utilisation</li>
+            </ul>
+          </div>
+
           <Button
             type="submit"
             className="w-full"
@@ -444,12 +474,12 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
             {isSignupSubmitting ? (
               <>
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
-                Inscription en cours...
+                Création de votre compte...
               </>
             ) : (
               <>
                 <Shield className="h-5 w-5 mr-2" />
-                S'inscrire de manière sécurisée
+                Créer mon compte
               </>
             )}
           </Button>
@@ -543,6 +573,11 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
             </>
           )}
         </Button>
+
+        {/* Message informatif */}
+        <div className="text-xs text-muted-foreground text-center bg-muted/50 p-3 rounded-md">
+          💡 <strong>Important :</strong> Assurez-vous d'avoir confirmé votre email avant de vous connecter. Vérifiez votre boîte de réception et vos spams.
+        </div>
 
         {/* Bouton renvoyer email si non confirmé */}
         {unconfirmedEmail && (
