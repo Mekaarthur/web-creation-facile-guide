@@ -369,7 +369,9 @@ export default function ProvidersManagement() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Gestion complète des prestataires</h1>
-        <p className="text-muted-foreground">Gérez les candidatures et les prestataires validés</p>
+        <p className="text-muted-foreground">
+          Gérez les candidatures (personnes qui ont postulé) et les prestataires validés (ceux déjà convertis)
+        </p>
       </div>
 
       {/* Filtres et recherche */}
@@ -503,6 +505,13 @@ export default function ProvidersManagement() {
 
         {/* Section Candidatures */}
         <TabsContent value="applications" className="space-y-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <p className="text-sm text-blue-800">
+              ℹ️ <strong>Information :</strong> Cette section affiche les <strong>candidatures</strong> reçues. 
+              Pour qu'une candidature devienne un prestataire actif, elle doit être validée puis convertie. 
+              Les prestataires convertis apparaissent dans l'onglet "Prestataires".
+            </p>
+          </div>
           <Tabs value={statusFilter} onValueChange={setStatusFilter}>
             <TabsList className="grid grid-cols-6 w-full">
               <TabsTrigger value="all">Tous ({getApplicationStats().all})</TabsTrigger>
@@ -565,48 +574,88 @@ export default function ProvidersManagement() {
                                 <DialogHeader>
                                   <DialogTitle>Candidature de {application.first_name} {application.last_name}</DialogTitle>
                                 </DialogHeader>
-                                {selectedApplication && (
-                                  <div className="space-y-6">
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <div>
-                                        <label className="text-sm font-medium text-muted-foreground">Email</label>
-                                        <p>{selectedApplication.email}</p>
-                                      </div>
-                                      <div>
-                                        <label className="text-sm font-medium text-muted-foreground">Téléphone</label>
-                                        <p>{selectedApplication.phone}</p>
-                                      </div>
-                                      <div>
-                                        <label className="text-sm font-medium text-muted-foreground">Catégorie</label>
-                                        <p>{selectedApplication.category}</p>
-                                      </div>
-                                      <div>
-                                        <label className="text-sm font-medium text-muted-foreground">Expérience</label>
-                                        <p>{selectedApplication.experience_years || 'Non renseigné'} ans</p>
-                                      </div>
-                                    </div>
+                                 {selectedApplication && (
+                                   <div className="space-y-6">
+                                     {/* Informations personnelles */}
+                                     <div>
+                                       <h3 className="font-semibold text-lg mb-3">Informations personnelles</h3>
+                                       <div className="grid grid-cols-2 gap-4">
+                                         <div>
+                                           <label className="text-sm font-medium text-muted-foreground">Email</label>
+                                           <p>{selectedApplication.email}</p>
+                                         </div>
+                                         <div>
+                                           <label className="text-sm font-medium text-muted-foreground">Téléphone</label>
+                                           <p>{selectedApplication.phone}</p>
+                                         </div>
+                                         <div>
+                                           <label className="text-sm font-medium text-muted-foreground">Catégorie</label>
+                                           <p>{selectedApplication.category}</p>
+                                         </div>
+                                         <div>
+                                           <label className="text-sm font-medium text-muted-foreground">Expérience</label>
+                                           <p>{selectedApplication.experience_years || 'Non renseigné'} ans</p>
+                                         </div>
+                                         <div>
+                                           <label className="text-sm font-medium text-muted-foreground">Transport</label>
+                                           <p>{selectedApplication.has_transport ? '✅ Oui' : '❌ Non'}</p>
+                                         </div>
+                                         {selectedApplication.certifications && (
+                                           <div className="col-span-2">
+                                             <label className="text-sm font-medium text-muted-foreground">Certifications</label>
+                                             <p className="mt-1">{selectedApplication.certifications}</p>
+                                           </div>
+                                         )}
+                                       </div>
+                                     </div>
 
-                                    <div>
-                                      <label className="text-sm font-medium text-muted-foreground">Disponibilité</label>
-                                      <p className="mt-1 p-3 bg-muted rounded">{selectedApplication.availability}</p>
-                                    </div>
+                                     {/* Documents */}
+                                     {selectedApplication.cv_file_url && (
+                                       <div>
+                                         <h3 className="font-semibold text-lg mb-3">Documents</h3>
+                                         <div className="border rounded-lg p-4 bg-muted/50">
+                                           <div className="flex items-center justify-between">
+                                             <div className="flex items-center gap-2">
+                                               <FileText className="w-5 h-5 text-primary" />
+                                               <div>
+                                                 <p className="font-medium">CV / Curriculum Vitae</p>
+                                                 <p className="text-sm text-muted-foreground">Document téléchargé par le candidat</p>
+                                               </div>
+                                             </div>
+                                             <Button 
+                                               variant="outline" 
+                                               size="sm"
+                                               onClick={() => window.open(selectedApplication.cv_file_url!, '_blank')}
+                                             >
+                                               <Eye className="w-4 h-4 mr-2" />
+                                               Voir le CV
+                                             </Button>
+                                           </div>
+                                         </div>
+                                       </div>
+                                     )}
 
-                                    <div>
-                                      <label className="text-sm font-medium text-muted-foreground">Motivation</label>
-                                      <p className="mt-1 p-3 bg-muted rounded">{selectedApplication.motivation}</p>
-                                    </div>
+                                     <div>
+                                       <label className="text-sm font-medium text-muted-foreground">Disponibilité</label>
+                                       <p className="mt-1 p-3 bg-muted rounded">{selectedApplication.availability}</p>
+                                     </div>
 
-                                    <div>
-                                      <label className="text-sm font-medium text-muted-foreground">Commentaires admin</label>
-                                      <Textarea
-                                        value={adminComments}
-                                        onChange={(e) => setAdminComments(e.target.value)}
-                                        placeholder="Ajouter des commentaires..."
-                                        className="mt-1"
-                                      />
-                                    </div>
+                                     <div>
+                                       <label className="text-sm font-medium text-muted-foreground">Motivation</label>
+                                       <p className="mt-1 p-3 bg-muted rounded">{selectedApplication.motivation}</p>
+                                     </div>
 
-                                    <div className="flex gap-2 pt-4">
+                                     <div>
+                                       <label className="text-sm font-medium text-muted-foreground">Commentaires admin</label>
+                                       <Textarea
+                                         value={adminComments}
+                                         onChange={(e) => setAdminComments(e.target.value)}
+                                         placeholder="Ajouter des commentaires..."
+                                         className="mt-1"
+                                       />
+                                     </div>
+
+                                     <div className="flex gap-2 pt-4">
                                       {selectedApplication.status === 'pending' && (
                                         <>
                                           <Button 
