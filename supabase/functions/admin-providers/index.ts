@@ -67,6 +67,8 @@ serve(async (req) => {
         return await rejectProvider(supabase, requestData);
       case 'get_provider_details':
         return await getProviderDetails(supabase, requestData);
+      case 'create_provider_direct':
+        return await createProviderDirect(supabase, requestData);
       default:
         throw new Error(`Action non reconnue: ${action}`);
     }
@@ -483,6 +485,115 @@ async function getProviderDetails(supabase: any, { providerId }: any) {
     );
   } catch (error) {
     console.error('Erreur lors de la récupération des détails:', error);
+    throw error;
+  }
+}
+
+async function createProviderDirect(supabase: any, { providerData }: any) {
+  try {
+    const { email, first_name, last_name, phone, business_name, category, location } = providerData;
+    
+    console.log('Creating provider directly:', { email, first_name, last_name });
+
+    // Vérifier si l'email existe déjà
+    const { data: existingUser } = await supabase.auth.admin.listUsers();
+    const userExists = existingUser?.users?.find((u: any) => u.email === email);
+
+    let userId;
+    
+    if (userExists) {
+      userId = userExists.id;
+      console.log('User already exists:', userId);
+    } else {
+      // Créer un nouvel utilisateur avec un mot de passe temporaire
+      const tempPassword = `Temp${Math.random().toString(36).slice(2)}@Pass`;
+      const { data: newUser, error: userError } = await supabase.auth.admin.createUser({
+        email,
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: {
+          first_name,
+          last_name,
+          phone
+        }
+      });
+
+      if (userError) {
+        console.error('Error creating user:', userError);
+        throw new Error(`Erreur lors de la création de l'utilisateur: ${userError.message}`);
+      }
+
+      userId = newUser.user.id;
+      console.log('New user created:', userId);
+
+      // Créer le profil
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          user_id: userId,
+          first_name,
+          last_name,
+          email,
+          phone
+        });
+
+      if (profileError) {
+        console.error('Error creating profile:', profileError);
+        throw new Error(`Erreur lors de la création du profil: ${profileError.message}`);
+      }
+    }
+
+    // Créer le prestataire
+    const { data: provider, error: providerError } = await supabase
+      .from('providers')
+      .insert({
+        user_id: userId,
+        business_name: business_name || `${first_name} ${last_name}`,
+        location: location || '',
+        status: 'approved',
+        is_verified: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (providerError) {
+      console.error('Error creating provider:', providerError);
+      throw new Error(`Erreur lors de la création du prestataire: ${providerError.message}`);
+    }
+
+    // Assigner le rôle provider
+    const { error: roleError } = await supabase
+      .from('user_roles')
+      .insert({
+        user_id: userId,
+        role: 'provider'
+      });
+
+    if (roleError && !roleError.message?.includes('duplicate')) {
+      console.error('Error assigning role:', roleError);
+    }
+
+    // Log de l'action admin
+    await supabase
+      .from('admin_actions_log')
+      .insert({
+        action_type: 'create_provider_direct',
+        action_data: { provider_id: provider.id, email },
+        description: `Prestataire créé directement: ${first_name} ${last_name}`
+      });
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: 'Prestataire créé avec succès',
+        provider_id: provider.id
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Erreur lors de la création directe du prestataire:', error);
     throw error;
   }
 }

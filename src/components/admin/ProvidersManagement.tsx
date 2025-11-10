@@ -83,6 +83,16 @@ export default function ProvidersManagement() {
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [adminComments, setAdminComments] = useState('');
   const [activeTab, setActiveTab] = useState('providers');
+  const [isAddingProvider, setIsAddingProvider] = useState(false);
+  const [newProviderData, setNewProviderData] = useState({
+    email: '',
+    first_name: '',
+    last_name: '',
+    phone: '',
+    business_name: '',
+    category: '',
+    location: ''
+  });
   const { toast } = useToast();
 
   const loadProviders = async () => {
@@ -246,6 +256,54 @@ export default function ProvidersManagement() {
     }
   };
 
+  const handleCreateProvider = async () => {
+    try {
+      // Validation basique
+      if (!newProviderData.email || !newProviderData.first_name || !newProviderData.last_name) {
+        toast({
+          title: "Erreur",
+          description: "Veuillez remplir tous les champs obligatoires",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('admin-providers', {
+        body: { 
+          action: 'create_provider_direct',
+          providerData: newProviderData
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast({
+          title: "Prestataire créé",
+          description: "Le prestataire a été créé avec succès",
+        });
+        setIsAddingProvider(false);
+        setNewProviderData({
+          email: '',
+          first_name: '',
+          last_name: '',
+          phone: '',
+          business_name: '',
+          category: '',
+          location: ''
+        });
+        loadData();
+      }
+    } catch (error: any) {
+      console.error('Erreur création prestataire:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de créer le prestataire",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     loadData();
   }, [statusFilter, searchTerm]);
@@ -318,9 +376,102 @@ export default function ProvidersManagement() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">Filtres et recherche</CardTitle>
-          <Button variant="outline" size="sm" onClick={loadData}>
-            Actualiser
-          </Button>
+          <div className="flex gap-2">
+            <Dialog open={isAddingProvider} onOpenChange={setIsAddingProvider}>
+              <DialogTrigger asChild>
+                <Button variant="default" size="sm">
+                  <UserCheck className="w-4 h-4 mr-2" />
+                  Ajouter un prestataire
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Créer un nouveau prestataire</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium">Prénom *</label>
+                      <Input
+                        value={newProviderData.first_name}
+                        onChange={(e) => setNewProviderData({...newProviderData, first_name: e.target.value})}
+                        placeholder="Prénom"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Nom *</label>
+                      <Input
+                        value={newProviderData.last_name}
+                        onChange={(e) => setNewProviderData({...newProviderData, last_name: e.target.value})}
+                        placeholder="Nom"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Email *</label>
+                    <Input
+                      type="email"
+                      value={newProviderData.email}
+                      onChange={(e) => setNewProviderData({...newProviderData, email: e.target.value})}
+                      placeholder="email@exemple.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Téléphone</label>
+                    <Input
+                      value={newProviderData.phone}
+                      onChange={(e) => setNewProviderData({...newProviderData, phone: e.target.value})}
+                      placeholder="+33 6 12 34 56 78"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Nom de l'entreprise</label>
+                    <Input
+                      value={newProviderData.business_name}
+                      onChange={(e) => setNewProviderData({...newProviderData, business_name: e.target.value})}
+                      placeholder="Nom de l'entreprise"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Catégorie</label>
+                    <Select value={newProviderData.category} onValueChange={(value) => setNewProviderData({...newProviderData, category: value})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionnez une catégorie" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="bika_kids">Garde d'enfants</SelectItem>
+                        <SelectItem value="bika_maison">Services maison</SelectItem>
+                        <SelectItem value="bika_vie">Services quotidiens</SelectItem>
+                        <SelectItem value="bika_travel">Voyage</SelectItem>
+                        <SelectItem value="bika_animals">Animaux</SelectItem>
+                        <SelectItem value="bika_seniors">Services seniors</SelectItem>
+                        <SelectItem value="bika_pro">Services professionnels</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Localisation</label>
+                    <Input
+                      value={newProviderData.location}
+                      onChange={(e) => setNewProviderData({...newProviderData, location: e.target.value})}
+                      placeholder="Ville, code postal"
+                    />
+                  </div>
+                  <div className="flex gap-2 pt-4">
+                    <Button variant="outline" onClick={() => setIsAddingProvider(false)}>
+                      Annuler
+                    </Button>
+                    <Button onClick={handleCreateProvider}>
+                      Créer le prestataire
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <Button variant="outline" size="sm" onClick={loadData}>
+              Actualiser
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-4">
