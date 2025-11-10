@@ -47,102 +47,142 @@ const navigationGroups = [
     items: [
       { 
         title: "Dashboard", 
-        href: "/admin/dashboard", 
+        href: "/modern-admin/dashboard", 
         icon: BarChart3,
         badge: null
       },
       { 
-        title: "Alertes", 
-        href: "/admin/alertes", 
-        icon: AlertTriangle,
-        badge: { text: "3", variant: "destructive" }
+        title: "Analytics", 
+        href: "/modern-admin/analytics", 
+        icon: PieChart,
+        badge: null
+      },
+      { 
+        title: "Temps Réel", 
+        href: "/modern-admin/realtime", 
+        icon: TrendingUp,
+        badge: null
       }
     ]
   },
   {
-    label: "Gestion Utilisateurs",
+    label: "Vue Technique",
+    description: "Gestion des comptes et authentification",
+    items: [
+      { 
+        title: "Utilisateurs", 
+        href: "/modern-admin/clients", 
+        icon: Users,
+        badge: null
+      }
+    ]
+  },
+  {
+    label: "Gestion Business",
+    description: "Suivi clients, prestataires et relations commerciales",
     items: [
       { 
         title: "Clients", 
-        href: "/admin/utilisateurs", 
+        href: "/modern-admin/clients", 
         icon: Users,
-        badge: { text: "8.2k", variant: "secondary" }
+        badge: null
       },
       { 
         title: "Prestataires", 
-        href: "/admin/prestataires", 
+        href: "/modern-admin/providers", 
         icon: UserCheck,
-        badge: { text: "2.1k", variant: "secondary" }
+        badge: null
+      },
+      { 
+        title: "Candidatures", 
+        href: "/modern-admin/applications", 
+        icon: FileText,
+        badge: null
+      },
+      { 
+        title: "Binômes", 
+        href: "/modern-admin/binomes", 
+        icon: Gift,
+        badge: null
+      }
+    ]
+  },
+  {
+    label: "Automatisation",
+    description: "Outils intelligents et automatisation",
+    items: [
+      { 
+        title: "Onboarding", 
+        href: "/modern-admin/onboarding", 
+        icon: Target,
+        badge: null
+      },
+      { 
+        title: "Matching IA", 
+        href: "/modern-admin/matching", 
+        icon: TrendingUp,
+        badge: null
       }
     ]
   },
   {
     label: "Opérations",
+    description: "Missions, réservations et facturation",
     items: [
       { 
         title: "Missions", 
         href: "/modern-admin/missions", 
         icon: Target,
-        badge: { text: "147", variant: "default" }
+        badge: null
       },
       { 
-        title: "Assignations", 
-        href: "/admin/assignations", 
+        title: "Réservations", 
+        href: "/modern-admin/reservations", 
         icon: Calendar,
         badge: null
       },
       { 
-        title: "Modération", 
-        href: "/admin/moderation", 
-        icon: Shield,
-        badge: { text: "5", variant: "destructive" }
-      }
-    ]
-  },
-  {
-    label: "Finance & Analytics",
-    items: [
-      { 
-        title: "Finances", 
-        href: "/admin/finances", 
-        icon: Euro,
-        badge: null
-      },
-      { 
         title: "Paiements", 
-        href: "/admin/paiements", 
+        href: "/modern-admin/payments", 
         icon: CreditCard,
-        badge: { text: "23k€", variant: "default" }
-      },
-      { 
-        title: "Cooptation", 
-        href: "/admin/cooptation", 
-        icon: Gift,
-        badge: { text: "Nouveau", variant: "default" }
-      },
-      { 
-        title: "Analytics", 
-        href: "/admin/analytics", 
-        icon: PieChart,
         badge: null
       },
       { 
-        title: "Rapports", 
-        href: "/admin/rapports", 
+        title: "Factures", 
+        href: "/modern-admin/invoices", 
         icon: FileText,
         badge: null
       }
     ]
   },
   {
-    label: "Configuration",
+    label: "Modération",
+    description: "Alertes, signalements et qualité",
     items: [
       { 
-        title: "Paramètres", 
-        href: "/modern-admin/settings", 
-        icon: Settings,
+        title: "Alertes", 
+        href: "/modern-admin/alerts", 
+        icon: AlertTriangle,
         badge: null
       },
+      { 
+        title: "Signalements", 
+        href: "/modern-admin/reviews", 
+        icon: Shield,
+        badge: null
+      },
+      { 
+        title: "Qualité", 
+        href: "/modern-admin/quality", 
+        icon: Shield,
+        badge: null
+      }
+    ]
+  },
+  {
+    label: "Configuration",
+    description: "Paramètres et rapports",
+    items: [
       { 
         title: "Zones", 
         href: "/modern-admin/zones", 
@@ -150,37 +190,38 @@ const navigationGroups = [
         badge: null
       },
       { 
-        title: "Marque", 
-        href: "/modern-admin/marque", 
-        icon: Palette,
+        title: "Paramètres", 
+        href: "/modern-admin/settings", 
+        icon: Settings,
         badge: null
       },
       { 
-        title: "Messagerie", 
-        href: "/admin/messagerie", 
-        icon: MessageSquare,
-        badge: { text: "12", variant: "default" }
-      },
-      { 
-        title: "Outils", 
-        href: "/admin/outils", 
-        icon: Wrench,
+        title: "Rapports", 
+        href: "/modern-admin/reports", 
+        icon: FileText,
         badge: null
       }
     ]
   },
   {
     label: "Tests & Systèmes",
+    description: "Monitoring et tests techniques",
     items: [
       { 
         title: "Monitoring", 
-        href: "/admin/monitoring", 
+        href: "/modern-admin/monitoring", 
         icon: TrendingUp,
         badge: null
       },
       { 
+        title: "Tests Critiques", 
+        href: "/modern-admin/tests-critiques", 
+        icon: Shield,
+        badge: null
+      },
+      { 
         title: "Tests Emails", 
-        href: "/admin/tests-emails", 
+        href: "/modern-admin/tests-emails", 
         icon: Mail,
         badge: null
       }
@@ -214,9 +255,16 @@ function AdminSidebar() {
         {navigationGroups.map((group, groupIndex) => (
           <SidebarGroup key={groupIndex}>
             {!collapsed && (
-              <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                {group.label}
-              </SidebarGroupLabel>
+              <>
+                <SidebarGroupLabel className="text-xs font-semibold text-foreground uppercase tracking-wide mb-1 flex items-center gap-2">
+                  {group.label}
+                </SidebarGroupLabel>
+                {group.description && (
+                  <p className="text-[10px] text-muted-foreground px-2 mb-2">
+                    {group.description}
+                  </p>
+                )}
+              </>
             )}
             <SidebarGroupContent>
               <SidebarMenu className="space-y-1">
