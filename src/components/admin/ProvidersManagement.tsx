@@ -28,6 +28,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { ApplicationDocumentsValidator } from './ApplicationDocumentsValidator';
 
 interface Provider {
   id: string;
@@ -62,6 +63,13 @@ interface Application {
   certifications: string | null;
   has_transport: boolean;
   cv_file_url: string | null;
+  identity_document_url: string | null;
+  criminal_record_url: string | null;
+  criminal_record_date: string | null;
+  siren_number: string | null;
+  rib_iban_url: string | null;
+  certifications_url: string | null;
+  documents_complete: boolean | null;
   status: string;
   admin_comments: string | null;
   created_at: string;
@@ -609,31 +617,11 @@ export default function ProvidersManagement() {
                                        </div>
                                      </div>
 
-                                     {/* Documents */}
-                                     {selectedApplication.cv_file_url && (
-                                       <div>
-                                         <h3 className="font-semibold text-lg mb-3">Documents</h3>
-                                         <div className="border rounded-lg p-4 bg-muted/50">
-                                           <div className="flex items-center justify-between">
-                                             <div className="flex items-center gap-2">
-                                               <FileText className="w-5 h-5 text-primary" />
-                                               <div>
-                                                 <p className="font-medium">CV / Curriculum Vitae</p>
-                                                 <p className="text-sm text-muted-foreground">Document téléchargé par le candidat</p>
-                                               </div>
-                                             </div>
-                                             <Button 
-                                               variant="outline" 
-                                               size="sm"
-                                               onClick={() => window.open(selectedApplication.cv_file_url!, '_blank')}
-                                             >
-                                               <Eye className="w-4 h-4 mr-2" />
-                                               Voir le CV
-                                             </Button>
-                                           </div>
-                                         </div>
-                                       </div>
-                                     )}
+                                      {/* Documents - Nouveau validateur */}
+                                      <ApplicationDocumentsValidator 
+                                        application={selectedApplication}
+                                        onDocumentUpdated={loadApplications}
+                                      />
 
                                      <div>
                                        <label className="text-sm font-medium text-muted-foreground">Disponibilité</label>
