@@ -335,17 +335,18 @@ const MetricCard = ({
 
 export default function EnhancedModernDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
-    revenue: { value: 125847, change: '+12%', trend: [98000, 105000, 118000, 125000, 125847] },
-    users: { value: 8234, change: '+5%', trend: [7800, 7900, 8000, 8100, 8234] },
-    missions: { value: 147, change: '+8%', trend: [120, 125, 135, 140, 147] },
-    satisfaction: { value: 4.8, change: '+0.1', trend: [4.6, 4.7, 4.7, 4.8, 4.8] }
+    revenue: { value: 0, change: '+0%', trend: [] },
+    users: { value: 0, change: '+0%', trend: [] },
+    missions: { value: 0, change: '+0%', trend: [] },
+    satisfaction: { value: 0, change: '+0', trend: [] }
   });
 
   // États existants
   const [providers, setProviders] = useState<Provider[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [servicePerformance, setServicePerformance] = useState<ServicePerformance[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [revenueData, setRevenueData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('7d');
   const [searchTerm, setSearchTerm] = useState('');
 
