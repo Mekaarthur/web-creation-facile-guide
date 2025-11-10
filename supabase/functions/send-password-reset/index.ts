@@ -106,7 +106,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Envoyer l'email via Resend
     const emailResponse = await resend.emails.send({
-      from: "Bikawo <contact@bikawo.com>",
+      from: "Bikawo - Votre assistant personnel au quotidien <contact@bikawo.com>",
       to: [email],
       subject: "🔐 Réinitialisation de votre mot de passe Bikawo",
       html: emailHtml,

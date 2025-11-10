@@ -101,7 +101,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Envoyer l'email via Resend
     const emailResponse = await resend.emails.send({
-      from: "Bikawo <onboarding@resend.dev>", // À remplacer par votre domaine validé
+      from: "Bikawo - Votre assistant personnel au quotidien <contact@bikawo.com>",
       to: [application.email],
       subject: subject,
       html: htmlContent,

@@ -163,7 +163,7 @@ serve(async (req) => {
     const template = getEmailTemplate(notification_type, { ...booking_details, recipient_name });
 
     const emailResult = await resend.emails.send({
-      from: "Bikawo <contact@bikawo.com>",
+      from: "Bikawo - Votre assistant personnel au quotidien <contact@bikawo.com>",
       to: [recipient_email],
       subject: template.subject,
       html: template.html,

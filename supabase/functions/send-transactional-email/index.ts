@@ -144,7 +144,7 @@ serve(async (req) => {
 
     // Envoyer l'email via Resend
     const result = await resend.emails.send({
-      from: 'Bikawo <notifications@bikawo.com>',
+      from: 'Bikawo - Votre assistant personnel au quotidien <notifications@bikawo.com>',
       to: [recipientEmail],
       subject: subject,
       html: html,

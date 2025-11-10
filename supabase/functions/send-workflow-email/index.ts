@@ -208,7 +208,7 @@ serve(async (req) => {
     const template = getEmailTemplate(requestData.trigger, requestData);
 
     const emailResult = await resend.emails.send({
-      from: "Bikawo <contact@bikawo.com>",
+      from: "Bikawo - Votre assistant personnel au quotidien <contact@bikawo.com>",
       to: [template.to],
       subject: template.subject,
       html: template.html,

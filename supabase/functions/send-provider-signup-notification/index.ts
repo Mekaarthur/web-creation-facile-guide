@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-// import { Resend } from "npm:resend@2.0.0";
+import { Resend } from "npm:resend@2.0.0";
 
-// const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,7 +27,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (type === 'candidate') {
       // Email de confirmation au candidat
       const candidateEmailResponse = await resend.emails.send({
-        from: "Bikawo <contact@bikawo.com>",
+        from: "Bikawo - Votre assistant personnel au quotidien <contact@bikawo.com>",
         to: [email],
         subject: "Candidature reçue - Bikawo",
         html: `
@@ -81,7 +81,7 @@ const handler = async (req: Request): Promise<Response> => {
     } else if (type === 'admin') {
       // Email de notification à l'admin
       const adminEmailResponse = await resend.emails.send({
-        from: "Bikawo <contact@bikawo.com>",
+        from: "Bikawo - Votre assistant personnel au quotidien <contact@bikawo.com>",
         to: ["admin@bikawo.com"], // À remplacer par l'email admin réel
         subject: `Nouvelle candidature prestataire - ${first_name} ${last_name}`,
         html: `

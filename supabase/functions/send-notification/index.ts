@@ -222,7 +222,7 @@ const handler = async (req: Request): Promise<Response> => {
     const template = getEmailTemplate(type, bookingDetails);
 
     const emailResponse = await resend.emails.send({
-      from: "Bikawo <contact@bikawo.com>",
+      from: "Bikawo - Votre assistant personnel au quotidien <contact@bikawo.com>",
       to: [recipientEmail],
       subject: template.subject,
       html: template.html,

@@ -49,7 +49,7 @@ const handler = async (req: Request): Promise<Response> => {
     const clientInfo = reservationData.items[0]?.customBooking?.clientInfo;
     if (clientInfo?.email) {
       const clientEmailResponse = await resend.emails.send({
-        from: "Bikawo <contact@bikawo.com>",
+        from: "Bikawo - Votre assistant personnel au quotidien <contact@bikawo.com>",
         to: [clientInfo.email],
         subject: `Confirmation de votre demande de réservation - ${reservationId}`,
         html: `
@@ -116,7 +116,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Email pour l'équipe administrative
     const adminEmailResponse = await resend.emails.send({
-      from: "Bikawo <contact@bikawo.com>",
+      from: "Bikawo - Votre assistant personnel au quotidien <contact@bikawo.com>",
       to: ["admin@bikawo.com"], // Remplacer par l'email admin réel
       subject: `🔔 Nouvelle demande de réservation - ${reservationId}`,
       html: `

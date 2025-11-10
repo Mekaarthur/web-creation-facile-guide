@@ -113,7 +113,7 @@ const handler = async (req: Request): Promise<Response> => {
         // Email au client
         if (booking.profiles?.email) {
           const clientEmailResult = await resend.emails.send({
-            from: 'Bikawo <contact@bikawo.com>',
+            from: 'Bikawo - Votre assistant personnel au quotidien <contact@bikawo.com>',
             to: [booking.profiles.email],
             subject: 'Rappel : Votre service demain',
             html: `
@@ -153,7 +153,7 @@ const handler = async (req: Request): Promise<Response> => {
         // Email au prestataire
         if (booking.providers?.contact_email) {
           const providerEmailResult = await resend.emails.send({
-            from: 'Bikawo <contact@bikawo.com>',
+            from: 'Bikawo - Votre assistant personnel au quotidien <contact@bikawo.com>',
             to: [booking.providers.contact_email],
             subject: 'Rappel : Mission demain',
             html: `
