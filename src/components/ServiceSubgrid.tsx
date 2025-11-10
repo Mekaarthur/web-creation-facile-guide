@@ -37,13 +37,12 @@ const ServiceSubgrid = ({ categoryKey }: ServiceSubgridProps) => {
                   <img src={s.image} alt={`${s.title} ${category.packageTitle}`} className="w-full h-40 object-cover rounded-t-lg" loading="lazy" />
                 </CardHeader>
                 <CardContent className="pt-4">
-                  <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex items-start justify-between gap-2 mb-4">
                     <CardTitle className="text-base leading-tight">{s.title}</CardTitle>
                     <Badge variant="outline" className="font-semibold">
                       {s.priceDisplay ?? `${s.price}€/h`}
                     </Badge>
                   </div>
-                  <CardDescription className="text-sm mb-4 line-clamp-3">{s.description}</CardDescription>
                   <div className="flex gap-2">
                     <Button asChild variant="outline" size="sm" className="flex-1">
                       <Link to={`/services/${category.key}/${s.slug}`}>{t('serviceSubgrid.details')}</Link>
