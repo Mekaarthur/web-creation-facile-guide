@@ -61,6 +61,8 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: "setup",
+      currency: "eur",
+      payment_method_types: ["card"],
       success_url: `${req.headers.get("origin")}/espace-personnel?tab=factures&setup=success`,
       cancel_url: `${req.headers.get("origin")}/espace-personnel?tab=factures&setup=cancel`,
     });
