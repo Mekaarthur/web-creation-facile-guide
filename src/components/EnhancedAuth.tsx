@@ -10,6 +10,7 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { SecureAuthForm } from '@/components/auth/SecureAuthForm';
+import { ClientSignupForm } from '@/components/auth/ClientSignupForm';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -198,13 +199,17 @@ const EnhancedAuth = () => {
 
               <CardContent className="space-y-6">
                 {/* 🔒 Formulaire Sécurisé */}
-                <SecureAuthForm
-                  mode={step}
-                  userType={userType}
-                  onSuccess={() => {
-                    // Redirection gérée dans SecureAuthForm
-                  }}
-                />
+                {step === 'signup' && userType === 'client' ? (
+                  <ClientSignupForm />
+                ) : (
+                  <SecureAuthForm
+                    mode={step}
+                    userType={userType}
+                    onSuccess={() => {
+                      // Redirection gérée dans SecureAuthForm
+                    }}
+                  />
+                )}
 
                 {/* Bascule Login/Signup */}
                 <div className="text-center">
