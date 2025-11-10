@@ -1,11 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.3';
-// import { Resend } from "npm:resend@2.0.0";
-// import React from 'npm:react@18.3.1';
-// import { renderAsync } from 'npm:@react-email/components@0.0.22';
-// import { ConfirmationEmail } from './_templates/confirmation-email.tsx';
+import { Resend } from "npm:resend@2.0.0";
+import React from 'npm:react@18.3.1';
+import { renderAsync } from 'npm:@react-email/components@0.0.22';
+import { ConfirmationEmail } from './_templates/confirmation-email.tsx';
 
-// const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -68,25 +68,36 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('🔗 Confirmation URL generated:', confirmationUrl);
     console.log('🌍 Base URL used:', baseUrl);
 
-    // Render l'email avec React Email - temporarily disabled
-    const emailHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h1>Bienvenue sur Bikawo</h1>
-        <p>Cliquez sur le lien suivant pour confirmer votre email :</p>
-        <a href="${confirmationUrl}">Confirmer mon email</a>
-      </div>
-    `;
+    // Render l'email avec React Email
+    const emailHtml = await renderAsync(
+      React.createElement(ConfirmationEmail, {
+        confirmationUrl,
+        userEmail
+      })
+    );
 
-    console.log('📝 Email template generated (simplified version)');
+    console.log('📝 Email template generated successfully');
 
-    // Email service temporarily disabled
-    console.log('📧 Email sending temporarily disabled');
+    // Envoyer l'email via Resend
+    const { data: emailData, error: emailError } = await resend.emails.send({
+      from: "Bikawo <noreply@bikawo.com>",
+      to: [userEmail],
+      subject: "Confirmez votre compte Bikawo",
+      html: emailHtml,
+    });
+
+    if (emailError) {
+      console.error('❌ Error sending email via Resend:', emailError);
+      throw emailError;
+    }
+
+    console.log('✅ Email sent successfully via Resend:', emailData);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'Email service temporarily disabled',
-        emailId: 'temp-disabled'
+        message: 'Email de confirmation envoyé avec succès',
+        emailId: emailData?.id
       }), 
       {
         status: 200,
