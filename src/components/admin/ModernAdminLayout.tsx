@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { Mail } from "lucide-react";
 import { NotificationBell } from './NotificationBell';
+import { SecureLogout } from '@/components/SecureLogout';
 import { cn } from "@/lib/utils";
 
 const navigationGroups = [
@@ -343,6 +344,12 @@ export default function ModernAdminLayout() {
                   </div>
                   <span className="text-sm font-medium">Admin</span>
                 </div>
+                
+                <SecureLogout 
+                  variant="outline" 
+                  size="sm"
+                  showIcon={true}
+                />
               </div>
             </div>
           </header>
