@@ -80,18 +80,25 @@ const ProviderDocuments = () => {
       required: true
     },
     {
-      type: 'certification',
-      label: 'Certification ou accréditation',
-      description: 'Certification professionnelle ou accréditation officielle',
-      icon: Shield,
-      required: false
-    },
-    {
       type: 'rib_iban',
       label: 'RIB / IBAN',
       description: 'Relevé d\'identité bancaire pour recevoir vos paiements',
       icon: Building,
       required: true
+    },
+    {
+      type: 'cv',
+      label: 'Curriculum Vitae (CV)',
+      description: 'Votre CV détaillant votre parcours et vos compétences',
+      icon: FileText,
+      required: true
+    },
+    {
+      type: 'certification',
+      label: 'Certification ou accréditation',
+      description: 'Certification professionnelle ou accréditation officielle (optionnel)',
+      icon: Shield,
+      required: false
     }
   ];
 

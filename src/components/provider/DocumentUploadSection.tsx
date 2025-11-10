@@ -22,11 +22,14 @@ interface DocumentUploadSectionProps {
 }
 
 const DOCUMENT_TYPES = [
-  { value: 'identity_card', label: 'Pièce d\'identité', required: true },
-  { value: 'insurance', label: 'Attestation d\'assurance', required: true },
-  { value: 'diploma', label: 'Diplômes/Certifications', required: false },
-  { value: 'criminal_record', label: 'Extrait casier judiciaire', required: true },
-  { value: 'iban', label: 'RIB/IBAN', required: true },
+  { value: 'identity_document', label: 'Pièce d\'identité', required: true },
+  { value: 'criminal_record', label: 'Casier judiciaire (< 3 mois)', required: true },
+  { value: 'siret_document', label: 'Document SIRET / KBIS', required: true },
+  { value: 'rib_iban', label: 'RIB/IBAN', required: true },
+  { value: 'cv', label: 'Curriculum Vitae (CV)', required: true },
+  { value: 'certification', label: 'Certifications professionnelles', required: false },
+  { value: 'insurance', label: 'Assurance RC Pro', required: false },
+  { value: 'diploma', label: 'Diplômes', required: false },
 ];
 
 export const DocumentUploadSection = ({ providerId, onDocumentsUpdated }: DocumentUploadSectionProps) => {

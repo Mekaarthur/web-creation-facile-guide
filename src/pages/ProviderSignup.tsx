@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { User, MapPin, MessageSquare, CheckCircle, AlertCircle } from "lucide-react";
+import { User, MapPin, MessageSquare, CheckCircle, AlertCircle, FileText, Upload } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -69,7 +69,14 @@ const ProviderSignup = () => {
       services: [],
       coverage_zone: '',
       availability: '',
-      motivation: ''
+      motivation: '',
+      identity_document: null,
+      criminal_record: null,
+      criminal_record_date: undefined,
+      siren_number: '',
+      rib_iban: null,
+      cv_file: null,
+      certifications: null
     }
   });
 
@@ -84,7 +91,39 @@ const ProviderSignup = () => {
 
   const onSubmit = async (data: ProviderCandidateForm) => {
     try {
-      // Sauvegarder la candidature
+      // D'abord, télécharger tous les fichiers
+      const userId = crypto.randomUUID(); // Identifiant temporaire
+      const uploadedDocs: Record<string, string> = {};
+      
+      // Upload documents obligatoires
+      const documentsToUpload = [
+        { file: data.identity_document, key: 'identity_document_url', folder: 'identity' },
+        { file: data.criminal_record, key: 'criminal_record_url', folder: 'criminal_record' },
+        { file: data.rib_iban, key: 'rib_iban_url', folder: 'rib' },
+        { file: data.cv_file, key: 'cv_file_url', folder: 'cv' },
+      ];
+      
+      if (data.certifications) {
+        documentsToUpload.push({ file: data.certifications, key: 'certifications_url', folder: 'certifications' });
+      }
+      
+      for (const doc of documentsToUpload) {
+        if (doc.file) {
+          const fileName = `${userId}/${doc.folder}/${Date.now()}_${doc.file.name}`;
+          const { error: uploadError } = await supabase.storage
+            .from('provider-documents')
+            .upload(fileName, doc.file);
+          
+          if (uploadError) {
+            throw new Error(`Erreur upload ${doc.folder}: ${uploadError.message}`);
+          }
+          
+          // Stocker le chemin du fichier, pas l'URL publique (bucket privé)
+          uploadedDocs[doc.key] = fileName;
+        }
+      }
+      
+      // Sauvegarder la candidature avec les documents
       const { error } = await supabase
         .from('job_applications')
         .insert({
@@ -100,7 +139,15 @@ const ProviderSignup = () => {
           coverage_address: `${data.address}, ${data.city} ${data.postal_code}`,
           coverage_radius: 20,
           status: 'pending',
-          category: 'multi-services'
+          category: 'multi-services',
+          siren_number: data.siren_number,
+          identity_document_url: uploadedDocs.identity_document_url,
+          criminal_record_url: uploadedDocs.criminal_record_url,
+          criminal_record_date: data.criminal_record_date?.toISOString(),
+          rib_iban_url: uploadedDocs.rib_iban_url,
+          cv_file_url: uploadedDocs.cv_file_url,
+          certifications_url: uploadedDocs.certifications_url,
+          documents_complete: true
         });
 
       if (error) {
@@ -150,7 +197,7 @@ const ProviderSignup = () => {
       console.error('Erreur:', error);
       toast({
         title: "Erreur",
-        description: "Une erreur inattendue est survenue.",
+        description: error instanceof Error ? error.message : "Une erreur inattendue est survenue.",
         variant: "destructive"
       });
     }
@@ -429,6 +476,163 @@ const ProviderSignup = () => {
                     </FormItem>
                   )}
                 />
+              </CardContent>
+            </Card>
+
+            {/* Documents obligatoires */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Documents obligatoires
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Tous les documents suivants sont requis pour traiter votre candidature
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Pièce d'identité */}
+                <FormField
+                  control={form.control}
+                  name="identity_document"
+                  render={({ field: { onChange, value, ...field } }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <Upload className="h-4 w-4" />
+                        Pièce d'identité (CNI, passeport) *
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="file"
+                          accept="image/*,application/pdf"
+                          onChange={(e) => onChange(e.target.files?.[0])}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Casier judiciaire */}
+                <FormField
+                  control={form.control}
+                  name="criminal_record"
+                  render={({ field: { onChange, value, ...field } }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <Upload className="h-4 w-4" />
+                        Casier judiciaire (moins de 3 mois) *
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="file"
+                          accept="image/*,application/pdf"
+                          onChange={(e) => onChange(e.target.files?.[0])}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Numéro SIREN */}
+                <FormField
+                  control={form.control}
+                  name="siren_number"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Numéro SIREN *</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="123456789" maxLength={9} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* RIB/IBAN */}
+                <FormField
+                  control={form.control}
+                  name="rib_iban"
+                  render={({ field: { onChange, value, ...field } }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <Upload className="h-4 w-4" />
+                        RIB / IBAN *
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="file"
+                          accept="image/*,application/pdf"
+                          onChange={(e) => onChange(e.target.files?.[0])}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* CV */}
+                <FormField
+                  control={form.control}
+                  name="cv_file"
+                  render={({ field: { onChange, value, ...field } }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <Upload className="h-4 w-4" />
+                        CV *
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="file"
+                          accept="image/*,application/pdf"
+                          onChange={(e) => onChange(e.target.files?.[0])}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Certifications (optionnel) */}
+                <FormField
+                  control={form.control}
+                  name="certifications"
+                  render={({ field: { onChange, value, ...field } }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <Upload className="h-4 w-4" />
+                        Certifications (optionnel)
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="file"
+                          accept="image/*,application/pdf"
+                          onChange={(e) => onChange(e.target.files?.[0])}
+                        />
+                      </FormControl>
+                      <p className="text-xs text-muted-foreground">
+                        Diplômes, formations, certificats professionnels...
+                      </p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="bg-warning/10 border border-warning/20 rounded-md p-4">
+                  <p className="text-sm font-medium flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-warning" />
+                    Formats acceptés
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    JPG, PNG, PDF - Taille maximale: 10 MB par fichier
+                  </p>
+                </div>
               </CardContent>
             </Card>
 

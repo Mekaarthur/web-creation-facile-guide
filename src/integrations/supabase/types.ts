@@ -1792,13 +1792,18 @@ export type Database = {
           business_name: string | null
           category: string
           certifications: string | null
+          certifications_url: string | null
           city: string | null
           coverage_address: string | null
           coverage_radius: number | null
           created_at: string
+          criminal_record_date: string | null
+          criminal_record_url: string | null
           cv_file_url: string | null
           description: string | null
           diploma_urls: string[] | null
+          documents_complete: boolean | null
+          documents_validated_at: string | null
           email: string
           experience_years: number | null
           first_name: string
@@ -1813,7 +1818,9 @@ export type Database = {
           phone: string
           postal_code: string | null
           profile_photo_url: string | null
+          rib_iban_url: string | null
           service_categories: string[] | null
+          siren_number: string | null
           siret_number: string | null
           status: string
           updated_at: string
@@ -1828,13 +1835,18 @@ export type Database = {
           business_name?: string | null
           category: string
           certifications?: string | null
+          certifications_url?: string | null
           city?: string | null
           coverage_address?: string | null
           coverage_radius?: number | null
           created_at?: string
+          criminal_record_date?: string | null
+          criminal_record_url?: string | null
           cv_file_url?: string | null
           description?: string | null
           diploma_urls?: string[] | null
+          documents_complete?: boolean | null
+          documents_validated_at?: string | null
           email: string
           experience_years?: number | null
           first_name: string
@@ -1849,7 +1861,9 @@ export type Database = {
           phone: string
           postal_code?: string | null
           profile_photo_url?: string | null
+          rib_iban_url?: string | null
           service_categories?: string[] | null
+          siren_number?: string | null
           siret_number?: string | null
           status?: string
           updated_at?: string
@@ -1864,13 +1878,18 @@ export type Database = {
           business_name?: string | null
           category?: string
           certifications?: string | null
+          certifications_url?: string | null
           city?: string | null
           coverage_address?: string | null
           coverage_radius?: number | null
           created_at?: string
+          criminal_record_date?: string | null
+          criminal_record_url?: string | null
           cv_file_url?: string | null
           description?: string | null
           diploma_urls?: string[] | null
+          documents_complete?: boolean | null
+          documents_validated_at?: string | null
           email?: string
           experience_years?: number | null
           first_name?: string
@@ -1885,7 +1904,9 @@ export type Database = {
           phone?: string
           postal_code?: string | null
           profile_photo_url?: string | null
+          rib_iban_url?: string | null
           service_categories?: string[] | null
+          siren_number?: string | null
           siret_number?: string | null
           status?: string
           updated_at?: string

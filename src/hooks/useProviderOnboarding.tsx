@@ -72,7 +72,7 @@ export const useProviderOnboarding = () => {
           .eq('provider_id', providerData.id)
           .eq('status', 'approved');
 
-        const requiredDocs = ['identity_document', 'criminal_record', 'siret_document', 'rib_iban'];
+        const requiredDocs = ['identity_document', 'criminal_record', 'siret_document', 'rib_iban', 'cv'];
         const hasAllDocs = requiredDocs.every(type =>
           documentsData?.some(doc => doc.document_type === type)
         );

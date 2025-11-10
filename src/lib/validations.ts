@@ -89,6 +89,15 @@ export const providerCandidateSchema = z.object({
   coverage_zone: z.string().min(3, "Zone géographique requise"),
   availability: z.string().min(1, "Disponibilités requises"),
   motivation: z.string().optional(),
+  // Documents obligatoires
+  identity_document: z.any().refine((file) => file instanceof File || file === null, "Pièce d'identité requise"),
+  criminal_record: z.any().refine((file) => file instanceof File || file === null, "Casier judiciaire requis"),
+  criminal_record_date: z.date().optional(),
+  siren_number: z.string().regex(/^\d{9}$/, "Numéro SIREN invalide (9 chiffres)"),
+  rib_iban: z.any().refine((file) => file instanceof File || file === null, "RIB/IBAN requis"),
+  cv_file: z.any().refine((file) => file instanceof File || file === null, "CV requis"),
+  // Documents optionnels
+  certifications: z.any().optional(),
 });
 
 export const contactSchema = z.object({
