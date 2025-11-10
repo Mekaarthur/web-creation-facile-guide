@@ -68,7 +68,7 @@ const StatusManager: React.FC<StatusManagerProps> = ({
           label: 'En attente',
           color: 'bg-yellow-100 text-yellow-800',
           icon: Clock,
-          nextStates: ['under_review', 'rejected']
+          nextStates: ['under_review', 'approved', 'rejected']
         },
         'under_review': {
           label: 'En cours d\'examen',

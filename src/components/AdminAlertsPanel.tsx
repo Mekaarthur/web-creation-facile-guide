@@ -27,6 +27,14 @@ interface Alert {
 }
 
 export const AdminAlertsPanel = ({ onNavigate }: { onNavigate?: (tab: string) => void }) => {
+  const handleNavigate = (tab: string) => {
+    if (onNavigate) {
+      onNavigate(tab);
+    } else {
+      // Si onNavigate n'est pas défini, naviguer directement
+      window.location.href = `/modern-admin/${tab}`;
+    }
+  };
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -59,7 +67,7 @@ export const AdminAlertsPanel = ({ onNavigate }: { onNavigate?: (tab: string) =>
           description: `${urgentRequests.length} demande(s) non attribuée(s) depuis plus de 2h`,
           count: urgentRequests.length,
           urgency: 'high',
-          action: () => onNavigate?.('manual_assignment'),
+          action: () => handleNavigate('assignment'),
           data: urgentRequests
         });
       }
@@ -80,7 +88,7 @@ export const AdminAlertsPanel = ({ onNavigate }: { onNavigate?: (tab: string) =>
           description: `${inactiveProviders.length} prestataire(s) sans mission depuis 7+ jours`,
           count: inactiveProviders.length,
           urgency: 'medium',
-          action: () => onNavigate?.('providers'),
+          action: () => handleNavigate('prestataires'),
           data: inactiveProviders
         });
       }
@@ -101,7 +109,7 @@ export const AdminAlertsPanel = ({ onNavigate }: { onNavigate?: (tab: string) =>
           description: `${waitingClients.length} client(s) sans réponse depuis 24h+`,
           count: waitingClients.length,
           urgency: 'medium',
-          action: () => onNavigate?.('requests'),
+          action: () => handleNavigate('demandes'),
           data: waitingClients
         });
       }
@@ -122,7 +130,7 @@ export const AdminAlertsPanel = ({ onNavigate }: { onNavigate?: (tab: string) =>
           description: `${blockedMissions.length} mission(s) en cours depuis 48h+`,
           count: blockedMissions.length,
           urgency: 'high',
-          action: () => onNavigate?.('requests'),
+          action: () => handleNavigate('missions'),
           data: blockedMissions
         });
       }

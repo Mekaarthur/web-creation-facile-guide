@@ -104,7 +104,8 @@ export default function AdminPaiements() {
     let query = supabase
       .from('financial_transactions')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(100);
 
     if (statusFilter !== 'all') {
       query = query.eq('payment_status', statusFilter);
@@ -129,27 +130,32 @@ export default function AdminPaiements() {
 
     const { data, error } = await query;
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error loading transactions:', error);
+      throw error;
+    }
+
+    console.log('Raw financial transactions loaded:', data?.length || 0, 'transactions');
 
     // Charger les réservations, profils clients et prestataires
     const transactionsWithDetails = await Promise.all(
       (data || []).map(async (transaction) => {
         const [booking, clientProfile, providerData] = await Promise.all([
-          supabase
+          transaction.booking_id ? supabase
             .from('bookings')
             .select('booking_date, start_time, end_time, address, service_id')
             .eq('id', transaction.booking_id)
-            .single(),
-          supabase
+            .single() : Promise.resolve({ data: null, error: null }),
+          transaction.client_id ? supabase
             .from('profiles')
             .select('first_name, last_name, email')
             .eq('user_id', transaction.client_id)
-            .single(),
-          supabase
+            .single() : Promise.resolve({ data: null, error: null }),
+          transaction.provider_id ? supabase
             .from('providers')
             .select('user_id')
             .eq('id', transaction.provider_id)
-            .single()
+            .single() : Promise.resolve({ data: null, error: null })
         ]);
 
         let services = null;
@@ -187,6 +193,7 @@ export default function AdminPaiements() {
       })
     );
 
+    console.log('Transactions with details:', transactionsWithDetails.length);
     setTransactions(transactionsWithDetails as Transaction[]);
   };
 

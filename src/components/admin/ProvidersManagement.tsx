@@ -88,13 +88,19 @@ export default function ProvidersManagement() {
   const loadProviders = async () => {
     try {
       const { data, error } = await supabase.functions.invoke('admin-providers', {
-        body: { action: 'list', status: statusFilter, searchTerm, limit: 50 }
+        body: { 
+          action: 'list', 
+          status: statusFilter === 'all' ? undefined : statusFilter, 
+          searchTerm, 
+          limit: 100 
+        }
       });
 
       if (error) throw error;
 
       if (data?.success) {
-        setProviders(data.providers);
+        console.log('Providers loaded:', data.providers.length);
+        setProviders(data.providers || []);
       }
     } catch (error) {
       console.error('Erreur lors du chargement des prestataires:', error);
