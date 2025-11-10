@@ -166,11 +166,11 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         price: 30,
         priceDisplay: "30€/h",
         image: serviceHouseLogistics,
-        description: "Retrait des colis et livraisons, gestion des documents et courriers, préparation de repas.",
+        description: "Retrait des colis et livraisons, gestion des documents et courriers, batch cooking.",
         options: [
           "Retrait des colis et livraisons",
           "Gestion des documents et courriers",
-          "Préparation de repas"
+          "Batch cooking"
         ],
       },
       {

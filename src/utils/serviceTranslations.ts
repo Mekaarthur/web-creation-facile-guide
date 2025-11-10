@@ -89,11 +89,11 @@ export const serviceTranslations: ServiceTranslations = {
       'logistique-organisation': {
         title: 'Logistics & Organization',
         description:
-          'Parcel pickup and deliveries, document and mail management, meal preparation.',
+          'Parcel pickup and deliveries, document and mail management, batch cooking.',
         options: [
           'Parcel pickup and deliveries',
           'Document and mail management',
-          'Meal preparation',
+          'Batch cooking',
         ],
       },
       'aide-demenagement-amenagement': {
