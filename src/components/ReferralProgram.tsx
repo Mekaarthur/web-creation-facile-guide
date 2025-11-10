@@ -137,7 +137,7 @@ const ReferralProgram = () => {
             </span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Recommandez notre plateforme à vos contacts et recevez des récompenses pour chaque nouveau membre actif
+            Parrainez vos proches et offrez-leur des services de qualité tout en gagnant des avantages exclusifs
           </p>
         </div>
 
@@ -200,10 +200,8 @@ const ReferralProgram = () => {
               <Card>
                 <CardContent className="p-4 text-center">
                   <Gift className="w-6 h-6 text-blue-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-blue-600">
-                    {referrals.length > 0 ? `${referrals[0]?.reward_amount || 20}€` : '20-30€'}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Par parrainage</p>
+                  <p className="text-2xl font-bold text-blue-600">2h</p>
+                  <p className="text-sm text-muted-foreground">Service offert</p>
                 </CardContent>
               </Card>
             </div>
@@ -250,10 +248,9 @@ const ReferralProgram = () => {
                 <div className="w-16 h-16 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-2xl font-bold mx-auto">
                   3
                 </div>
-                <h3 className="text-xl font-semibold">Vous gagnez ensemble</h3>
+                <h3 className="text-xl font-semibold">Vous recevez votre récompense</h3>
                 <p className="text-muted-foreground">
-                  <strong>Clients :</strong> 20€ après la 1ère mission 2h+ du filleul<br/>
-                  <strong>Prestataires :</strong> 30€ après 5 missions avec note 4/5+ du filleul
+                  Gagnez <strong>2 heures d'un service de votre choix</strong> lorsque votre filleul a validé <strong>10 heures de service</strong> chez nous
                 </p>
               </div>
             </div>
