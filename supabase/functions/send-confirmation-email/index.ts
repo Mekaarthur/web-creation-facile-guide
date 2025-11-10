@@ -5,11 +5,11 @@ import React from 'npm:react@18.3.1';
 import { renderAsync } from 'npm:@react-email/components@0.0.22';
 import { ConfirmationEmail } from './_templates/confirmation-email.tsx';
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+// Initialize clients
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,13 +17,12 @@ const corsHeaders = {
 };
 
 interface EmailRequest {
-  userEmail: string;
-  userId: string;
-  confirmationToken?: string;
+  userEmail?: string; // legacy key support
+  email?: string;     // preferred key
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log('📧 Confirmation email function called');
+  console.log('📧 send-confirmation-email called');
 
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -31,98 +30,79 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { userEmail, userId, confirmationToken }: EmailRequest = await req.json();
-    
-    console.log(`📧 Processing confirmation email for: ${userEmail}`);
+    const body = (await req.json()) as EmailRequest;
+    const rawEmail = (body.email || body.userEmail || '').trim().toLowerCase();
 
-    // Obtenir l'URL de base dynamiquement selon l'environnement
-    const baseUrl = Deno.env.get("SUPABASE_URL")?.includes("sandbox") 
+    if (!rawEmail) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Email manquant' }),
+        { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
+    }
+
+    // Compute base URL for redirect
+    const baseUrl = supabaseUrl.includes("sandbox")
       ? `https://ed681ca2-74aa-4970-8c41-139ffb8c8152.sandbox.lovable.dev`
       : `https://bikawo.com`;
-    
-    // Vérifier d'abord si l'utilisateur existe déjà
-    const { data: existingUser } = await supabase.auth.admin.getUserById(userId);
-    
-    let confirmationUrl: string;
-    
-    if (existingUser && !existingUser.email_confirmed_at) {
-      // Utilisateur non confirmé - générer un nouveau lien
-      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-        type: 'signup',
-        email: userEmail,
-        options: { redirectTo: `${baseUrl}/auth/complete` }
-      });
 
-      if (linkError) {
-        console.error('❌ Error generating confirmation link:', linkError);
-        // Si erreur "email_exists", créer un lien manuel de confirmation
-        confirmationUrl = `${baseUrl}/auth/complete?type=signup&email=${encodeURIComponent(userEmail)}`;
-      } else {
-        confirmationUrl = linkData?.properties?.action_link || `${baseUrl}/auth/complete?type=signup`;
-      }
-    } else {
-      // Lien de fallback pour réactivation manuelle
-      confirmationUrl = `${baseUrl}/auth/complete?type=signup&email=${encodeURIComponent(userEmail)}`;
+    // Always (re)generate a fresh, single-use confirmation link
+    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+      type: 'signup',
+      email: rawEmail,
+      options: { redirectTo: `${baseUrl}/auth/complete` }
+    });
+
+    if (linkError) {
+      console.error('❌ Error generating confirmation link:', linkError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Impossible de générer le lien de confirmation.' }),
+        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
     }
+
+    const confirmationUrl = linkData?.properties?.action_link
+      || `${supabaseUrl}/auth/v1/verify?type=signup&redirect_to=${encodeURIComponent(`${baseUrl}/auth/complete`)}`;
 
     console.log('🔗 Confirmation URL generated:', confirmationUrl);
     console.log('🌍 Base URL used:', baseUrl);
 
-    // Render l'email avec React Email
+    // Render the React Email template
     const emailHtml = await renderAsync(
       React.createElement(ConfirmationEmail, {
         confirmationUrl,
-        userEmail
+        userEmail: rawEmail,
       })
     );
 
-    console.log('📝 Email template generated successfully');
+    console.log('📝 Email template rendered');
 
-    // Envoyer l'email via Resend
+    // Send email via Resend
     const { data: emailData, error: emailError } = await resend.emails.send({
       from: "Bikawo <noreply@bikawo.com>",
-      to: [userEmail],
+      to: [rawEmail],
       subject: "Confirmez votre compte Bikawo",
       html: emailHtml,
     });
 
     if (emailError) {
       console.error('❌ Error sending email via Resend:', emailError);
-      throw emailError;
+      return new Response(
+        JSON.stringify({ success: false, error: "Erreur d'envoi de l'email" }),
+        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
     }
 
-    console.log('✅ Email sent successfully via Resend:', emailData);
+    console.log('✅ Confirmation email sent:', emailData?.id);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'Email de confirmation envoyé avec succès',
-        emailId: emailData?.id
-      }), 
-      {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          ...corsHeaders,
-        },
-      }
+      JSON.stringify({ success: true, message: 'Email de confirmation envoyé', emailId: emailData?.id }),
+      { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
     );
-
   } catch (error: any) {
-    console.error("❌ Error in send-confirmation-email function:", error);
-    
+    console.error('❌ Error in send-confirmation-email:', error);
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message || "Erreur lors de l'envoi de l'email" 
-      }),
-      {
-        status: 500,
-        headers: { 
-          "Content-Type": "application/json", 
-          ...corsHeaders 
-        },
-      }
+      JSON.stringify({ success: false, error: error?.message || 'Erreur interne' }),
+      { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
     );
   }
 };
