@@ -105,8 +105,10 @@ serve(async (req) => {
       userId = userData.user?.id || null;
     }
 
-    // Si pas d'user_id, chercher ou créer un profil basé sur l'email
+    // Si pas d'user_id, chercher ou créer automatiquement un compte
     if (!userId && clientInfo.email) {
+      console.log('Guest checkout détecté, vérification compte existant...');
+      
       // Chercher un utilisateur existant avec cet email
       const { data: existingUser } = await supabaseClient
         .from('profiles')
@@ -116,6 +118,63 @@ serve(async (req) => {
 
       if (existingUser) {
         userId = existingUser.id;
+        console.log('Compte existant trouvé:', userId);
+      } else {
+        // Créer un compte automatiquement pour le guest
+        console.log('Création automatique de compte pour:', clientInfo.email);
+        
+        // Utiliser le service role key pour créer l'utilisateur
+        const supabaseAdmin = createClient(
+          Deno.env.get("SUPABASE_URL") ?? "",
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+        );
+
+        // Générer un mot de passe temporaire sécurisé
+        const tempPassword = crypto.randomUUID() + Math.random().toString(36);
+        
+        try {
+          // Créer l'utilisateur avec auto-confirmation
+          const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+            email: clientInfo.email,
+            password: tempPassword,
+            email_confirm: true, // Auto-confirmer l'email
+            user_metadata: {
+              first_name: clientInfo.firstName,
+              last_name: clientInfo.lastName,
+              phone: clientInfo.phone,
+              created_from_guest_checkout: true,
+            }
+          });
+
+          if (createError) {
+            console.error('Erreur création utilisateur:', createError);
+            throw createError;
+          }
+
+          if (newUser.user) {
+            userId = newUser.user.id;
+            console.log('Compte créé avec succès:', userId);
+
+            // Le profil sera créé automatiquement par le trigger handle_new_user
+            // Envoyer un email de bienvenue avec instructions de connexion
+            try {
+              await supabaseClient.functions.invoke('send-welcome-email', {
+                body: {
+                  email: clientInfo.email,
+                  firstName: clientInfo.firstName,
+                  tempPassword: tempPassword,
+                }
+              });
+              console.log('Email de bienvenue envoyé');
+            } catch (emailError) {
+              console.error('Erreur envoi email de bienvenue:', emailError);
+              // Ne pas bloquer le processus si l'email échoue
+            }
+          }
+        } catch (error) {
+          console.error('Erreur lors de la création du compte:', error);
+          // Ne pas bloquer la réservation si la création de compte échoue
+        }
       }
     }
 
