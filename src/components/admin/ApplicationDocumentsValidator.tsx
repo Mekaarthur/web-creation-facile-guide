@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -24,6 +24,15 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+
+interface DocumentValidation {
+  id: string;
+  document_type: string;
+  status: 'pending' | 'approved' | 'rejected';
+  rejection_reason: string | null;
+  validated_at: string | null;
+  validated_by: string | null;
+}
 
 interface DocumentInfo {
   type: string;
@@ -60,6 +69,28 @@ export const ApplicationDocumentsValidator = ({
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [currentDocType, setCurrentDocType] = useState('');
+  const [validations, setValidations] = useState<DocumentValidation[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadValidations();
+  }, [application.id]);
+
+  const loadValidations = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('application_document_validations')
+        .select('*')
+        .eq('application_id', application.id);
+
+      if (error) throw error;
+      setValidations((data || []) as DocumentValidation[]);
+    } catch (error) {
+      console.error('Erreur chargement validations:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const documents: DocumentInfo[] = [
     {
@@ -119,9 +150,19 @@ export const ApplicationDocumentsValidator = ({
     if (!doc.url) {
       return 'missing';
     }
-    // Pour l'instant, on considère tous les documents téléchargés comme "pending"
-    // Dans une future itération, on pourra stocker le statut dans provider_documents
+    
+    // Vérifier si le document a une validation en DB
+    const validation = validations.find(v => v.document_type === doc.type);
+    if (validation) {
+      return validation.status;
+    }
+    
     return 'pending';
+  };
+
+  const getDocumentRejectionReason = (docType: string): string | null => {
+    const validation = validations.find(v => v.document_type === docType);
+    return validation?.rejection_reason || null;
   };
 
   const getStatusBadge = (status: string) => {
@@ -142,15 +183,39 @@ export const ApplicationDocumentsValidator = ({
   const handleApproveDocument = async (docType: string) => {
     setValidatingDoc(docType);
     try {
-      // Mettre à jour le statut du document
-      // Pour l'instant, on met juste un toast de succès
-      // Dans une future itération, on stockera le statut dans provider_documents
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      // Upsert la validation dans la DB
+      const { error } = await supabase
+        .from('application_document_validations')
+        .upsert({
+          application_id: application.id,
+          document_type: docType,
+          status: 'approved',
+          validated_by: user?.id,
+          validated_at: new Date().toISOString(),
+          rejection_reason: null
+        }, {
+          onConflict: 'application_id,document_type'
+        });
+
+      if (error) throw error;
+
+      // Envoyer notification email au candidat
+      await supabase.functions.invoke('send-document-validation-email', {
+        body: {
+          applicationId: application.id,
+          documentType: docType,
+          status: 'approved'
+        }
+      });
       
       toast({
         title: "Document approuvé",
         description: `Le document "${documents.find(d => d.type === docType)?.label}" a été approuvé avec succès.`,
       });
 
+      await loadValidations();
       onDocumentUpdated?.();
     } catch (error) {
       console.error('Erreur approbation document:', error);
@@ -176,8 +241,33 @@ export const ApplicationDocumentsValidator = ({
 
     setValidatingDoc(currentDocType);
     try {
-      // Mettre à jour le statut du document avec la raison du rejet
-      // Pour l'instant, on met juste un toast
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      // Upsert la validation dans la DB
+      const { error } = await supabase
+        .from('application_document_validations')
+        .upsert({
+          application_id: application.id,
+          document_type: currentDocType,
+          status: 'rejected',
+          validated_by: user?.id,
+          validated_at: new Date().toISOString(),
+          rejection_reason: rejectionReason
+        }, {
+          onConflict: 'application_id,document_type'
+        });
+
+      if (error) throw error;
+
+      // Envoyer notification email au candidat
+      await supabase.functions.invoke('send-document-validation-email', {
+        body: {
+          applicationId: application.id,
+          documentType: currentDocType,
+          status: 'rejected',
+          rejectionReason
+        }
+      });
       
       toast({
         title: "Document rejeté",
@@ -187,6 +277,7 @@ export const ApplicationDocumentsValidator = ({
       setShowRejectDialog(false);
       setRejectionReason('');
       setCurrentDocType('');
+      await loadValidations();
       onDocumentUpdated?.();
     } catch (error) {
       console.error('Erreur rejet document:', error);
@@ -236,6 +327,19 @@ export const ApplicationDocumentsValidator = ({
     .filter(d => d.required)
     .every(d => getDocumentStatus(d) === 'approved');
 
+  // Vérifier si le casier judiciaire a plus de 3 mois
+  const isCriminalRecordExpired = () => {
+    if (!application.criminal_record_date) return false;
+    const recordDate = new Date(application.criminal_record_date);
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    return recordDate < threeMonthsAgo;
+  };
+
+  if (loading) {
+    return <div className="p-4 text-center text-muted-foreground">Chargement des documents...</div>;
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -283,9 +387,15 @@ export const ApplicationDocumentsValidator = ({
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">{doc.description}</p>
-                    {status === 'rejected' && doc.rejection_reason && (
+                    {status === 'rejected' && (
                       <div className="mt-2 p-2 bg-destructive/10 rounded text-sm text-destructive">
-                        <strong>Raison du rejet:</strong> {doc.rejection_reason}
+                        <strong>Raison du rejet:</strong> {getDocumentRejectionReason(doc.type) || 'Non spécifiée'}
+                      </div>
+                    )}
+                    {doc.type === 'criminal_record' && isCriminalRecordExpired() && (
+                      <div className="mt-2 p-2 bg-warning/10 rounded text-sm text-warning flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4" />
+                        <span><strong>Attention:</strong> Ce casier judiciaire a plus de 3 mois</span>
                       </div>
                     )}
                   </div>

@@ -104,6 +104,53 @@ export type Database = {
         }
         Relationships: []
       }
+      application_document_validations: {
+        Row: {
+          application_id: string
+          created_at: string | null
+          document_type: string
+          id: string
+          notes: string | null
+          rejection_reason: string | null
+          status: string
+          updated_at: string | null
+          validated_at: string | null
+          validated_by: string | null
+        }
+        Insert: {
+          application_id: string
+          created_at?: string | null
+          document_type: string
+          id?: string
+          notes?: string | null
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string | null
+          validated_at?: string | null
+          validated_by?: string | null
+        }
+        Update: {
+          application_id?: string
+          created_at?: string | null
+          document_type?: string
+          id?: string
+          notes?: string | null
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string | null
+          validated_at?: string | null
+          validated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_document_validations_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "job_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       attestations: {
         Row: {
           amount: number
