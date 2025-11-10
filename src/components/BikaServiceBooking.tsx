@@ -43,7 +43,6 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
   const [endTime, setEndTime] = useState("");
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
-  const [providerType, setProviderType] = useState<string>("any");
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [showSuccessOptions, setShowSuccessOptions] = useState(false);
   
@@ -178,7 +177,6 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
     setEndTime("");
     setAddress("");
     setNotes("");
-    setProviderType("any");
     setSelectedOption("");
     setShowSuccessOptions(false);
     toast({
@@ -286,24 +284,7 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
 
               {/* Formulaire simplifié - Un seul créneau */}
               <div className="space-y-4">
-                <Label className="text-base font-semibold">Configuration de votre service</Label>
-                
-                {/* Type de prestataire */}
-                <div className="space-y-2">
-                  <Label>Type de prestataire</Label>
-                  <Select value={providerType} onValueChange={setProviderType}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choisir une préférence" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="any">Peu importe</SelectItem>
-                      <SelectItem value="female">👩 Femme</SelectItem>
-                      <SelectItem value="male">👨 Homme</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Label className="text-base font-semibold mt-4">Date et horaires (minimum 2h)</Label>
+                <Label className="text-base font-semibold">Date et horaires (minimum 2h)</Label>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
