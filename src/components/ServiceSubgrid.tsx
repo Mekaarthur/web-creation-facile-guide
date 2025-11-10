@@ -67,6 +67,7 @@ const ServiceSubgrid = ({ categoryKey }: ServiceSubgridProps) => {
             description: selected.description,
             price: selected.price,
             category: category.key,
+            options: selected.options,
           }}
           packageTitle={category.packageTitle}
         />

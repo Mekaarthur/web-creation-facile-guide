@@ -32,6 +32,7 @@ interface BikaServiceBookingProps {
     description: string;
     price: number;
     category: string;
+    options?: string[];
   };
   packageTitle: string;
 }
@@ -43,6 +44,7 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
   const [providerType, setProviderType] = useState<string>("any");
+  const [selectedOption, setSelectedOption] = useState<string>("");
   const [showSuccessOptions, setShowSuccessOptions] = useState(false);
   
   const { addToCart } = useBikawoCart();
@@ -87,6 +89,15 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
       return;
     }
 
+    if (service.options && service.options.length > 0 && !selectedOption) {
+      toast({
+        title: "Prestation non sélectionnée",
+        description: "Veuillez sélectionner une prestation parmi les options disponibles",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (startTime >= endTime) {
       toast({
         title: "Erreur d'horaires",
@@ -119,6 +130,10 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
   const executeAddToCart = (validatedData: z.infer<typeof bookingSchema>) => {
     const duration = calculateDuration();
     
+    // Construire la description avec l'option sélectionnée
+    const optionText = selectedOption ? ` - ${selectedOption}` : '';
+    const description = `${format(date!, "dd/MM/yyyy", { locale: fr })} de ${startTime} à ${endTime} (${duration}h)${optionText}`;
+    
     // Adapter au format BikawoCartItem
     addToCart({
       serviceName: service.name,
@@ -132,7 +147,7 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
         endTime: endTime
       },
       address: validatedData.address,
-      description: `${format(date!, "dd/MM/yyyy", { locale: fr })} de ${startTime} à ${endTime} (${duration}h)`,
+      description: description,
       notes: validatedData.notes
     });
 
@@ -164,6 +179,7 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
     setAddress("");
     setNotes("");
     setProviderType("any");
+    setSelectedOption("");
     setShowSuccessOptions(false);
     toast({
       title: "Prêt pour un nouveau créneau",
@@ -232,6 +248,41 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
                   </Badge>
                 </div>
               </div>
+
+              {/* Sélection de la prestation (si options disponibles) */}
+              {service.options && service.options.length > 0 && (
+                <div className="space-y-3 p-4 border-2 border-primary/20 rounded-lg bg-primary/5">
+                  <Label className="text-base font-semibold text-primary">
+                    Prestation souhaitée * (1 seul choix)
+                  </Label>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Sélectionnez UNE prestation parmi les options disponibles :
+                  </p>
+                  <div className="space-y-2">
+                    {service.options.map((option) => (
+                      <label 
+                        key={option}
+                        className={cn(
+                          "flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all",
+                          selectedOption === option 
+                            ? "border-primary bg-primary/10" 
+                            : "border-border hover:border-primary/50 hover:bg-muted/50"
+                        )}
+                      >
+                        <input
+                          type="radio"
+                          name="service-option"
+                          value={option}
+                          checked={selectedOption === option}
+                          onChange={(e) => setSelectedOption(e.target.value)}
+                          className="mt-1"
+                        />
+                        <span className="text-sm flex-1">{option}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Formulaire simplifié - Un seul créneau */}
               <div className="space-y-4">
