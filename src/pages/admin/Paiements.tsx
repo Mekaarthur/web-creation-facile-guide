@@ -308,6 +308,71 @@ export default function AdminPaiements() {
     }
   };
 
+  const handleExportCSV = async () => {
+    try {
+      // Préparer les données des transactions
+      const transactionData = filteredTransactions.map(transaction => [
+        'Transaction',
+        transaction.id,
+        transaction.client_profile ? `${transaction.client_profile.first_name} ${transaction.client_profile.last_name}` : 'N/A',
+        transaction.provider_profile ? `${transaction.provider_profile.first_name} ${transaction.provider_profile.last_name}` : 'N/A',
+        transaction.bookings?.services?.name || 'N/A',
+        transaction.client_price.toFixed(2),
+        transaction.provider_payment.toFixed(2),
+        transaction.company_commission.toFixed(2),
+        transaction.payment_status,
+        transaction.client_paid_at ? new Date(transaction.client_paid_at).toLocaleDateString('fr-FR') : '-',
+        transaction.provider_paid_at ? new Date(transaction.provider_paid_at).toLocaleDateString('fr-FR') : '-',
+        new Date(transaction.created_at).toLocaleDateString('fr-FR')
+      ]);
+
+      // Préparer les données des versements prestataires
+      const payoutData = providerPayouts.map(payout => [
+        'Versement',
+        payout.provider_id,
+        payout.provider_name,
+        payout.missions_count.toString(),
+        payout.total_amount.toFixed(2),
+        payout.last_payout_date ? new Date(payout.last_payout_date).toLocaleDateString('fr-FR') : 'Jamais',
+        payout.pending_missions.toString()
+      ]);
+
+      // En-têtes et données combinées
+      const csvData = [
+        ['Type', 'ID', 'Client', 'Prestataire', 'Service', 'Prix Client', 'Paiement Prestataire', 'Commission', 'Statut', 'Payé Client', 'Payé Prestataire', 'Date Création'],
+        ...transactionData,
+        [], // Ligne vide pour séparer
+        ['Type', 'ID Prestataire', 'Nom', 'Missions', 'Montant Total', 'Dernier Versement', 'Missions En Attente'],
+        ...payoutData
+      ];
+
+      // Créer le contenu CSV
+      const csvContent = csvData.map(row => row.join(',')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', `paiements_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "Export réussi",
+        description: "Le fichier CSV a été téléchargé",
+      });
+    } catch (error) {
+      console.error('Erreur export:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'exporter les données",
+        variant: "destructive"
+      });
+    }
+  };
+
   const filteredTransactions = transactions.filter(transaction => {
     const clientName = transaction.client_profile 
       ? `${transaction.client_profile.first_name} ${transaction.client_profile.last_name}`
@@ -555,7 +620,7 @@ export default function AdminPaiements() {
               <RefreshCw className="w-4 h-4 mr-2" />
               Actualiser
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleExportCSV}>
               <Download className="w-4 h-4 mr-2" />
               Exporter CSV
             </Button>
