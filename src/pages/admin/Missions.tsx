@@ -124,16 +124,18 @@ const AdminMissions = () => {
       // Calcul des stats par statut
       const statusColors: Record<string, string> = {
         pending: 'hsl(var(--chart-1))',
-        assigned: 'hsl(var(--chart-2))',
-        accepted: 'hsl(var(--chart-3))',
-        in_progress: 'hsl(var(--chart-4))',
-        completed: 'hsl(var(--chart-5))',
+        confirmed: 'hsl(var(--chart-2))',
+        assigned: 'hsl(var(--chart-3))',
+        accepted: 'hsl(var(--chart-4))',
+        in_progress: 'hsl(var(--chart-5))',
+        completed: 'hsl(26.7 83.3% 63.5%)',
         cancelled: 'hsl(var(--destructive))',
         paid: 'hsl(var(--primary))'
       };
 
       const statusLabels: Record<string, string> = {
         pending: 'En attente',
+        confirmed: 'Confirmée',
         assigned: 'Assignée',
         accepted: 'Acceptée',
         in_progress: 'En cours',
@@ -185,6 +187,7 @@ const AdminMissions = () => {
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { variant: any, label: string }> = {
       pending: { variant: 'outline', label: 'En attente' },
+      confirmed: { variant: 'default', label: 'Confirmée' },
       assigned: { variant: 'secondary', label: 'Assignée' },
       accepted: { variant: 'default', label: 'Acceptée' },
       in_progress: { variant: 'default', label: 'En cours' },
@@ -348,6 +351,7 @@ const AdminMissions = () => {
               <SelectContent>
                 <SelectItem value="all">Tous les statuts</SelectItem>
                 <SelectItem value="pending">En attente</SelectItem>
+                <SelectItem value="confirmed">Confirmée</SelectItem>
                 <SelectItem value="assigned">Assignée</SelectItem>
                 <SelectItem value="accepted">Acceptée</SelectItem>
                 <SelectItem value="in_progress">En cours</SelectItem>

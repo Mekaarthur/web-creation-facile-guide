@@ -76,18 +76,17 @@ serve(async (req) => {
     });
 
     // Vérifier si une réservation existe déjà pour cette session
-    const { data: existingBooking } = await supabaseClient
+    const { data: existingBookings } = await supabaseClient
       .from('bookings')
       .select('id')
-      .eq('notes', `stripe_session:${sessionId}`)
-      .single();
+      .ilike('notes', `%stripe_session:${sessionId}%`);
 
-    if (existingBooking) {
-      console.log('Réservation déjà existante:', existingBooking.id);
+    if (existingBookings && existingBookings.length > 0) {
+      console.log('Réservations déjà existantes:', existingBookings.map(b => b.id));
       return new Response(
         JSON.stringify({
           success: true,
-          bookingId: existingBooking.id,
+          bookingIds: existingBookings.map(b => b.id),
           alreadyProcessed: true,
         }),
         {
