@@ -4,15 +4,40 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { CheckCircle, XCircle, Loader, Mail, ArrowRight } from 'lucide-react';
 
 const AuthComplete = () => {
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
+  const [resendEmail, setResendEmail] = useState('');
+  const [resending, setResending] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const handleResend = async () => {
+    try {
+      setResending(true);
+      const email = resendEmail.trim().toLowerCase();
+      if (!email) {
+        toast({ title: "Email requis", description: "Veuillez saisir votre adresse email.", variant: "destructive" });
+        return;
+      }
+      const { data, error } = await supabase.functions.invoke('resend-confirmation-email', {
+        body: { email }
+      });
+      if (error) throw error;
+      setResendSuccess(true);
+      toast({ title: "Email renvoyé ✅", description: "Vérifiez votre boîte mail pour le nouveau lien." });
+    } catch (e: any) {
+      console.error('Resend confirmation error:', e);
+      toast({ title: "Échec de l'envoi", description: e.message || "Impossible de renvoyer l'email.", variant: "destructive" });
+    } finally {
+      setResending(false);
+    }
+  };
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
@@ -187,12 +212,34 @@ const AuthComplete = () => {
                 </div>
               </div>
               
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Le lien peut expirer ou etre utilise une seule fois. Renvoyez un nouveau lien :
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    type="email"
+                    placeholder="Votre email"
+                    value={resendEmail}
+                    onChange={(e) => setResendEmail(e.target.value)}
+                  />
+                  <Button onClick={handleResend} disabled={resending}>
+                    {resending ? 'Envoi...' : 'Renvoyer le lien'}
+                  </Button>
+                </div>
+                {resendSuccess && (
+                  <div className="bg-green-50 p-3 rounded-md border border-green-200 text-green-700 text-sm">
+                    Nouveau lien envoye. Verifiez votre boite mail.
+                  </div>
+                )}
+              </div>
+              
               <div className="space-y-2">
                 <Button 
                   onClick={() => navigate('/auth')}
                   className="w-full"
                 >
-                  Retour à la connexion
+                  Retour a la connexion
                 </Button>
                 
                 <Button 
@@ -200,7 +247,7 @@ const AuthComplete = () => {
                   onClick={() => navigate('/')}
                   className="w-full"
                 >
-                  Retour à l'accueil
+                  Retour a l'accueil
                 </Button>
               </div>
             </div>
