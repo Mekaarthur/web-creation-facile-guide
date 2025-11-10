@@ -130,7 +130,7 @@ const EnhancedAuth = () => {
                   Choisissez votre type de compte pour continuer
                 </CardDescription>
               </CardHeader>
-              <CardContent className="grid md:grid-cols-3 gap-6">
+              <CardContent className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
                 {/* Client */}
                 <button
                   onClick={() => handleUserTypeSelection('client')}
@@ -162,24 +162,6 @@ const EnhancedAuth = () => {
                       <h3 className="text-2xl font-bold mb-2">Je suis Prestataire</h3>
                       <p className="text-muted-foreground">
                         Je propose mes services
-                      </p>
-                    </div>
-                  </div>
-                </button>
-
-                {/* Admin */}
-                <button
-                  onClick={() => handleUserTypeSelection('admin')}
-                  className="group relative p-8 border-2 border-border rounded-xl hover:border-destructive hover:bg-destructive/5 transition-all duration-300 text-left"
-                >
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    <div className="p-4 bg-destructive/10 rounded-full group-hover:scale-110 transition-transform">
-                      <Shield className="h-12 w-12 text-destructive" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-bold mb-2">Je suis Admin</h3>
-                      <p className="text-muted-foreground">
-                        Accès à l'espace d'administration
                       </p>
                     </div>
                   </div>
