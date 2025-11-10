@@ -166,10 +166,11 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         price: 30,
         priceDisplay: "30€/h",
         image: serviceHouseLogistics,
-        description: "Retrait des colis et livraisons, gestion des documents et courriers.",
+        description: "Retrait des colis et livraisons, gestion des documents et courriers, préparation de repas.",
         options: [
           "Retrait des colis et livraisons",
-          "Gestion des documents et courriers"
+          "Gestion des documents et courriers",
+          "Préparation de repas"
         ],
       },
       {
@@ -187,12 +188,14 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
       },
       {
         slug: "repassage-vetements",
-        title: "Repassage des vêtements",
+        title: "Ménage, vaisselle et repassage des vêtements",
         price: 30,
         priceDisplay: "30€/h",
         image: serviceMaisonFull,
-        description: "Repassage et pliage soigné de vos vêtements.",
+        description: "Ménage complet de votre domicile, vaisselle et repassage soigné de vos vêtements.",
         options: [
+          "Ménage et nettoyage",
+          "Vaisselle",
           "Repassage de tout type de vêtements",
           "Pliage et rangement",
           "Traitement des textiles délicats"
@@ -248,10 +251,11 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         price: 30,
         priceDisplay: "30€/h",
         image: serviceMaisonRepairs,
-        description: "Aide au montage des meubles, aide à la plomberie de base.",
+        description: "Aide au montage des meubles, aide à la plomberie de base, aide à l'installation des luminaires.",
         options: [
           "Aide au montage des meubles",
-          "Aide à la plomberie de base"
+          "Aide à la plomberie de base",
+          "Aide à l'installation des luminaires"
         ],
       },
     ],

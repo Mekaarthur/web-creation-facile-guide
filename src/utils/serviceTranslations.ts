@@ -89,12 +89,11 @@ export const serviceTranslations: ServiceTranslations = {
       'logistique-organisation': {
         title: 'Logistics & Organization',
         description:
-          'Parcel pickup and deliveries, wardrobe organization, ironing and clothes storage.',
+          'Parcel pickup and deliveries, document and mail management, meal preparation.',
         options: [
           'Parcel pickup and deliveries',
-          'Wardrobe organization',
-          'Ironing',
-          'Clothes storage',
+          'Document and mail management',
+          'Meal preparation',
         ],
       },
       'aide-demenagement-amenagement': {
@@ -105,6 +104,36 @@ export const serviceTranslations: ServiceTranslations = {
           'Packing boxes',
           'Helping carry boxes and furniture up/down',
           'Tidying and space organization',
+        ],
+      },
+      'rangement-armoire': {
+        title: 'Closet organization',
+        description: 'Organization and tidying of your closets and storage spaces.',
+        options: [
+          'Sorting and organizing clothes',
+          'Space optimization',
+          'Organization tips',
+        ],
+      },
+      'repassage-vetements': {
+        title: 'Cleaning, dishes and ironing',
+        description: 'Complete home cleaning, dishes and careful ironing of your clothes.',
+        options: [
+          'Cleaning and housekeeping',
+          'Dishes',
+          'Ironing all types of clothes',
+          'Folding and storage',
+          'Delicate fabric care',
+        ],
+      },
+      'batch-cooking': {
+        title: 'Batch cooking',
+        description: 'Preparing meals in large quantities for the week.',
+        options: [
+          'Weekly menu planning',
+          'Groceries and shopping',
+          'Meal preparation and packaging',
+          'Adaptations to specific diets',
         ],
       },
       'entretien-jardins-espaces-verts': {
@@ -123,8 +152,8 @@ export const serviceTranslations: ServiceTranslations = {
       },
       maintenance: {
         title: 'Maintenance',
-        description: 'Furniture assembly help, basic plumbing assistance.',
-        options: ['Furniture assembly help', 'Basic plumbing assistance'],
+        description: 'Furniture assembly help, basic plumbing assistance, light fixture installation help.',
+        options: ['Furniture assembly help', 'Basic plumbing assistance', 'Light fixture installation help'],
       },
     },
   },
