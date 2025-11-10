@@ -346,7 +346,6 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
             />
           </div>
 
-          {/* Email */}
           <FormField
             control={signupForm.control}
             name="email"
@@ -357,11 +356,19 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                     <Input
-                      {...field}
                       type="email"
                       placeholder="email@exemple.com"
                       autoComplete="email"
                       className="pl-10"
+                      value={field.value ?? ''}
+                      onChange={(e) => {
+                        // Normaliser pour éviter les faux positifs "email requis"
+                        const v = e.target.value.replace(/\s+/g, '').toLowerCase();
+                        field.onChange(v);
+                      }}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
                     />
                   </div>
                 </FormControl>
@@ -501,7 +508,6 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
         onSubmit={loginForm.handleSubmit((data) => handleLoginSubmit(data))}
         className="space-y-4"
       >
-        {/* Email */}
         <FormField
           control={loginForm.control}
           name="email"
@@ -512,11 +518,18 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                   <Input
-                    {...field}
                     type="email"
                     placeholder="email@exemple.com"
                     autoComplete="email"
                     className="pl-10"
+                    value={field.value ?? ''}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/\s+/g, '').toLowerCase();
+                      field.onChange(v);
+                    }}
+                    onBlur={field.onBlur}
+                    name={field.name}
+                    ref={field.ref}
                   />
                 </div>
               </FormControl>
