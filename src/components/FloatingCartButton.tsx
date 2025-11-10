@@ -3,10 +3,11 @@ import { ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useBikawoCart } from "@/hooks/useBikawoCart";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const FloatingCartButton = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { getCartItemsCount, getCartTotal } = useBikawoCart();
   const [show, setShow] = useState(false);
   const [pulse, setPulse] = useState(false);
@@ -25,7 +26,8 @@ const FloatingCartButton = () => {
     }
   }, [itemCount]);
 
-  if (!show) return null;
+  // Ne pas afficher le bouton si on est déjà sur la page panier
+  if (!show || location.pathname === '/panier') return null;
 
   return (
     <div className="fixed bottom-6 right-6 z-50 animate-fade-in">
