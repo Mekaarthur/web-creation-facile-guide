@@ -11,7 +11,8 @@ const disposableEmailDomains = [
   'trashmail.com', 'temp-mail.org', 'getnada.com'
 ];
 
-export const emailSchema = z
+// Base email schema (sans normalisation)
+const emailBase = z
   .string()
   .trim()
   .min(1, "L'adresse email est obligatoire")
@@ -25,6 +26,12 @@ export const emailSchema = z
     },
     { message: "Les adresses email temporaires ne sont pas autorisées" }
   );
+
+// Email avec normalisation robuste (suppression des espaces + lowercasing)
+export const emailSchema = z.preprocess(
+  (val) => (typeof val === 'string' ? val.replace(/\s+/g, '').toLowerCase() : val),
+  emailBase
+);
 
 // Téléphone international (optionnel ou avec validation)
 export const phoneSchema = z
