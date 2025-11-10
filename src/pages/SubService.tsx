@@ -88,6 +88,9 @@ const SubServicePage = () => {
               <p className="text-muted-foreground">{displayDescription}</p>
               {displayOptions && displayOptions.length > 0 && (
                 <Card className="p-4">
+                  <h3 className="font-semibold text-lg mb-3">
+                    {isEn ? 'Services available (your choice):' : 'Prestations au choix :'}
+                  </h3>
                   <ul className="list-disc pl-5 space-y-1">
                     {displayOptions.map((opt) => (
                       <li key={opt}>{opt}</li>
