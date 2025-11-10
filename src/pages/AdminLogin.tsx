@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Shield, Lock, Mail, Loader2 } from 'lucide-react';
+import { logAdminLogin } from '@/lib/adminLogger';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -51,7 +52,10 @@ export default function AdminLogin() {
         return;
       }
 
-      // 3. Rediriger vers le dashboard admin
+      // 3. Logger la connexion admin
+      await logAdminLogin(email);
+      
+      // 4. Rediriger vers le dashboard admin
       toast({
         title: "Connexion réussie",
         description: "Bienvenue dans l'espace administrateur",

@@ -1,6 +1,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { logAdminLogout } from '@/lib/adminLogger';
 
 /**
  * Hook de déconnexion sécurisé
@@ -13,6 +14,11 @@ export const useSecureLogout = () => {
   const handleLogout = async () => {
     try {
       console.log('[SecureLogout] Logging out user:', user?.email);
+      
+      // Logger la déconnexion admin avant de tout nettoyer
+      if (user?.email) {
+        await logAdminLogout(user.email);
+      }
       
       // Appeler la méthode signOut qui nettoie tout
       await signOut();
