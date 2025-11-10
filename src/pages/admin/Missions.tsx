@@ -8,6 +8,7 @@ import { Calendar, MapPin, Clock, User, Search, DollarSign, TrendingUp, Eye, Pie
 import { supabase } from "@/integrations/supabase/client";
 import { MissionDetailsModal } from "@/components/admin/MissionDetailsModal";
 import { ProviderStatsModal } from "@/components/admin/ProviderStatsModal";
+import CleanupDuplicatesButton from "@/components/admin/CleanupDuplicatesButton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
@@ -236,9 +237,12 @@ const AdminMissions = () => {
 
   return (
     <div className="space-y-6 p-4 sm:p-6">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold">Missions</h1>
-        <p className="text-muted-foreground text-sm sm:text-base">Gestion complète des missions et paiements</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold">Missions</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">Gestion complète des missions et paiements</p>
+        </div>
+        <CleanupDuplicatesButton />
       </div>
 
       {/* Statistics Cards & Charts */}

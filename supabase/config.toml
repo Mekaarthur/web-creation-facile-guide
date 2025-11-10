@@ -202,3 +202,9 @@ verify_jwt = false  # Called by cron job or manually - uses service role key
 
 [functions.provider-zones]
 verify_jwt = true  # Requires provider authentication
+
+[functions.admin-cleanup-duplicates]
+verify_jwt = true  # Requires admin authentication to cleanup duplicates
+
+[functions.verify-payment]
+verify_jwt = false  # Public endpoint - Stripe redirect needs to verify payment status
