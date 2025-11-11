@@ -97,7 +97,7 @@ const handler = async (req: Request): Promise<Response> => {
             <p>Pour toute question, n'hésitez pas à nous contacter :</p>
             <ul>
               <li>Email: contact@bikawo.com</li>
-              <li>Téléphone: 01 23 45 67 89</li>
+              <li>Téléphone: 06 09 08 53 90</li>
             </ul>
             
             <p>Merci de faire confiance à Bikawo !</p>

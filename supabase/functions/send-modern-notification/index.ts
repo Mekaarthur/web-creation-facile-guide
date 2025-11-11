@@ -118,7 +118,7 @@ const getModernEmailTemplate = (type: string, recipient: any, data: any) => {
               
               <p style="font-size: 14px; color: #6b7280; text-align: center; margin-top: 25px;">
                 Des questions ? Notre équipe est là pour vous accompagner !<br>
-                📧 <a href="mailto:contact@bikawo.com" style="color: #667eea;">contact@bikawo.com</a> | 📞 01 23 45 67 89
+                📧 <a href="mailto:contact@bikawo.com" style="color: #667eea;">contact@bikawo.com</a> | 📞 06 09 08 53 90
               </p>
             </div>
             ${bikawoSignature}
@@ -234,7 +234,7 @@ const getModernEmailTemplate = (type: string, recipient: any, data: any) => {
             
             <p style="font-size: 15px; color: #6b7280; text-align: center;">
               Questions de dernière minute ? Nous sommes là ! 🤝<br>
-              📧 contact@bikawo.com | 📞 01 23 45 67 89
+              📧 contact@bikawo.com | 📞 06 09 08 53 90
             </p>
           </div>
           ${bikawoSignature}
@@ -273,7 +273,7 @@ const getModernEmailTemplate = (type: string, recipient: any, data: any) => {
             
             <p style="font-size: 15px; color: #6b7280; text-align: center; margin-top: 25px;">
               Besoin d'aide urgente ?<br>
-              📞 <strong>01 23 45 67 89</strong> (support immédiat)
+              📞 <strong>06 09 08 53 90</strong> (support immédiat)
             </p>
           </div>
           ${bikawoSignature}

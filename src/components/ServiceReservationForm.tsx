@@ -223,7 +223,7 @@ const ServiceReservationForm = ({ service, packageTitle, onClose }: ServiceReser
               <Input
                 id="phone"
                 type="tel"
-                placeholder="01 23 45 67 89"
+                placeholder="06 09 08 53 90"
                 value={clientInfo.phone}
                 onChange={(e) => setClientInfo(prev => ({ ...prev, phone: e.target.value }))}
                 required

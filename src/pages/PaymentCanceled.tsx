@@ -41,8 +41,8 @@ const PaymentCanceled = () => {
             <p className="font-medium mb-2">💡 Besoin d'aide ?</p>
             <p className="text-muted-foreground">
               Si vous rencontrez des difficultés, contactez-nous au{" "}
-              <a href="tel:+33123456789" className="text-primary hover:underline">
-                01 23 45 67 89
+              <a href="tel:+33609085390" className="text-primary hover:underline">
+                06 09 08 53 90
               </a>
               {" "}ou par email à{" "}
               <a href="mailto:support@bikawo.com" className="text-primary hover:underline">

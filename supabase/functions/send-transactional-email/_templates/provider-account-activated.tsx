@@ -69,7 +69,7 @@ export const ProviderAccountActivatedEmail = ({
               Une question ? Notre équipe est disponible pour vous accompagner.
             </Text>
             <Text style={supportContact}>
-              📧 support@bikawo.com | 📞 01 23 45 67 89
+              📧 support@bikawo.com | 📞 06 09 08 53 90
             </Text>
           </Section>
 
