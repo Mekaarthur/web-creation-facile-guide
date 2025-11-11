@@ -123,36 +123,57 @@ async function listProviders(supabase: any, { status = 'all', limit = 50, offset
     // Enrichir avec les données utilisateur et services
     const enrichedProviders = await Promise.all(
       (providers || []).map(async (provider) => {
-        // User profile
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('first_name, last_name, email, phone')
-          .eq('user_id', provider.user_id)
-          .single();
+        try {
+          // User profile - use maybeSingle() to avoid errors if profile doesn't exist
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('first_name, last_name, email, phone')
+            .eq('user_id', provider.user_id)
+            .maybeSingle();
 
-        // Services proposés
-        const { data: services } = await supabase
-          .from('provider_services')
-          .select(`
-            services(name, category)
-          `)
-          .eq('provider_id', provider.id)
-          .eq('is_active', true);
+          // Services proposés
+          const { data: services } = await supabase
+            .from('provider_services')
+            .select(`
+              services(name, category)
+            `)
+            .eq('provider_id', provider.id)
+            .eq('is_active', true);
 
-        const uniqueUniverses = [...new Set(services?.map(s => s.services?.category) || [])];
+          // Filter out null/undefined services and extract unique categories
+          const validServices = (services || [])
+            .filter(s => s?.services?.category)
+            .map(s => s.services.category);
+          const uniqueUniverses = [...new Set(validServices)];
 
-        return {
-          ...provider,
-          first_name: profile?.first_name || '',
-          last_name: profile?.last_name || '',
-          email: profile?.email || '',
-          phone: profile?.phone || '',
-          services: services?.map(s => s.services) || [],
-          universes: uniqueUniverses,
-          average_rating: provider.rating,
-          total_missions: provider.missions_completed,
-          total_earned: provider.total_earnings
-        };
+          return {
+            ...provider,
+            first_name: profile?.first_name || '',
+            last_name: profile?.last_name || '',
+            email: profile?.email || '',
+            phone: profile?.phone || '',
+            services: (services || []).filter(s => s?.services).map(s => s.services) || [],
+            universes: uniqueUniverses,
+            average_rating: provider.rating || 0,
+            total_missions: provider.missions_completed || 0,
+            total_earned: provider.total_earnings || 0
+          };
+        } catch (error) {
+          console.error(`Error enriching provider ${provider.id}:`, error);
+          // Return basic provider data if enrichment fails
+          return {
+            ...provider,
+            first_name: '',
+            last_name: '',
+            email: '',
+            phone: '',
+            services: [],
+            universes: [],
+            average_rating: provider.rating || 0,
+            total_missions: provider.missions_completed || 0,
+            total_earned: provider.total_earnings || 0
+          };
+        }
       })
     );
 
