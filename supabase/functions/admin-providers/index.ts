@@ -328,7 +328,7 @@ async function getProviderStats(supabase: any, { timeRange = '30d' }: any) {
 
     const { data: providers } = await supabase
       .from('providers')
-      .select('status, is_verified, created_at, rating');
+      .select('status, is_verified, created_at, rating, mandat_facturation_accepte, formation_completed, identity_verified');
 
     const { data: newProviders } = await supabase
       .from('providers')
@@ -339,6 +339,13 @@ async function getProviderStats(supabase: any, { timeRange = '30d' }: any) {
     const activeProviders = providers?.filter(p => p.status === 'active')?.length || 0;
     const verifiedProviders = providers?.filter(p => p.is_verified)?.length || 0;
     const newProvidersCount = newProviders?.length || 0;
+    
+    // Compter les prestataires en onboarding (pending_onboarding OU qui n'ont pas complété tous les steps)
+    const onboardingProviders = providers?.filter(p => 
+      p.status === 'pending_onboarding' || 
+      (p.status !== 'active' && (!p.mandat_facturation_accepte || !p.formation_completed || !p.identity_verified))
+    )?.length || 0;
+    
     const averageRating = providers?.filter(p => p.rating > 0)?.length > 0 
       ? providers.filter(p => p.rating > 0).reduce((sum, p) => sum + p.rating, 0) / providers.filter(p => p.rating > 0).length
       : 0;
@@ -350,6 +357,7 @@ async function getProviderStats(supabase: any, { timeRange = '30d' }: any) {
           total: totalProviders,
           active: activeProviders,
           verified: verifiedProviders,
+          pending_onboarding: onboardingProviders,
           new: newProvidersCount,
           average_rating: Math.round(averageRating * 10) / 10,
           verification_rate: totalProviders > 0 ? Math.round((verifiedProviders / totalProviders) * 100) : 0

@@ -101,14 +101,14 @@ export const AdminJobApplications = () => {
 
   const handleStatusUpdate = async (applicationId: string, newStatus: string, comments?: string) => {
     try {
-      const { error } = await supabase
-        .from('job_applications')
-        .update({ 
-          status: newStatus,
-          admin_comments: comments || null,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', applicationId);
+      const { error } = await supabase.functions.invoke('admin-applications', {
+        body: {
+          action: 'update_status',
+          applicationId,
+          newStatus,
+          adminComments: comments || null
+        }
+      });
 
       if (error) throw error;
 
