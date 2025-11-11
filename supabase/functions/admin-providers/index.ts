@@ -338,29 +338,41 @@ async function getProviderStats(supabase: any, { timeRange = '30d' }: any) {
     const totalProviders = providers?.length || 0;
     const activeProviders = providers?.filter(p => p.status === 'active')?.length || 0;
     const verifiedProviders = providers?.filter(p => p.is_verified)?.length || 0;
+    const suspendedProviders = providers?.filter(p => p.status === 'inactive')?.length || 0;
     const newProvidersCount = newProviders?.length || 0;
     
     // Compter les prestataires en onboarding (pending_onboarding OU qui n'ont pas complété tous les steps)
-    const onboardingProviders = providers?.filter(p => 
+    const pendingProviders = providers?.filter(p => 
       p.status === 'pending_onboarding' || 
-      (p.status !== 'active' && (!p.mandat_facturation_accepte || !p.formation_completed || !p.identity_verified))
+      p.status === 'pending_validation' ||
+      p.status === 'documents_validated' ||
+      (p.status !== 'active' && p.status !== 'inactive' && (!p.mandat_facturation_accepte || !p.formation_completed || !p.identity_verified))
     )?.length || 0;
     
     const averageRating = providers?.filter(p => p.rating > 0)?.length > 0 
       ? providers.filter(p => p.rating > 0).reduce((sum, p) => sum + p.rating, 0) / providers.filter(p => p.rating > 0).length
       : 0;
 
+    // Calculer les missions et revenus totaux
+    const { data: missions } = await supabase
+      .from('bookings')
+      .select('total_price, status')
+      .in('status', ['completed', 'confirmed', 'in_progress']);
+
+    const totalMissions = missions?.length || 0;
+    const totalRevenue = missions?.reduce((sum, m) => sum + (m.total_price || 0), 0) || 0;
+
     return new Response(
       JSON.stringify({
         success: true,
         stats: {
           total: totalProviders,
+          pending: pendingProviders,
           active: activeProviders,
-          verified: verifiedProviders,
-          pending_onboarding: onboardingProviders,
-          new: newProvidersCount,
-          average_rating: Math.round(averageRating * 10) / 10,
-          verification_rate: totalProviders > 0 ? Math.round((verifiedProviders / totalProviders) * 100) : 0
+          suspended: suspendedProviders,
+          total_missions: totalMissions,
+          total_revenue: totalRevenue,
+          average_rating: Math.round(averageRating * 10) / 10
         }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
