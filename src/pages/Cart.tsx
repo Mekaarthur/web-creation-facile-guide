@@ -18,7 +18,7 @@ const CartPage = () => {
 
       <Navbar />
       
-      <main className="flex-1 pt-24 pb-12 min-h-screen">
+      <main className="flex-1 pt-24 pb-12 min-h-screen bg-background">
         <div className="container mx-auto px-4">
           <div className="mb-6">
             <Button
