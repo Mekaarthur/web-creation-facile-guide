@@ -71,72 +71,29 @@ const AdminProviders = () => {
     try {
       setLoading(true);
       
-      let query = supabase
-        .from('providers')
-        .select(`
-          id,
-          user_id,
-          business_name,
-          phone,
-          created_at,
-          status,
-          is_verified,
-          rating,
-          missions_completed,
-          total_earnings,
-          profiles!providers_user_id_fkey(email)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (searchTerm) {
-        query = query.or(`business_name.ilike.%${searchTerm}%`);
-      }
-
-      if (statusFilter && statusFilter !== 'all') {
-        if (statusFilter === 'active') {
-          query = query.eq('status', 'active').eq('is_verified', true);
-        } else if (statusFilter === 'pending') {
-          query = query.neq('status', 'active');
-        } else if (statusFilter === 'suspended') {
-          query = query.eq('status', 'inactive');
+      const { data, error } = await supabase.functions.invoke('admin-providers', {
+        body: { 
+          action: 'list',
+          status: statusFilter,
+          searchTerm: searchTerm,
+          limit: 100
         }
-      }
+      });
 
-      const { data, error } = await query;
       if (error) throw error;
 
-      const providersWithUniverses = await Promise.all(
-        (data || []).map(async (provider: any) => {
-          const { data: services } = await supabase
-            .from('provider_services')
-            .select(`
-              id,
-              services!inner(category)
-            `)
-            .eq('provider_id', provider.id)
-            .eq('is_active', true);
+      if (data?.success) {
+        let filteredProviders = data.providers;
+        
+        // Filter by universe on the client side if needed
+        if (universeFilter && universeFilter !== 'all') {
+          filteredProviders = data.providers.filter((p: Provider) =>
+            p.universes?.includes(universeFilter)
+          );
+        }
 
-          const uniqueUniverses = [...new Set(services?.map(s => s.services?.category) || [])];
-
-          return {
-            ...provider,
-            email: provider.profiles?.email,
-            universes: uniqueUniverses,
-            average_rating: provider.rating,
-            total_missions: provider.missions_completed,
-            total_earned: provider.total_earnings,
-          };
-        })
-      );
-
-      let filteredProviders = providersWithUniverses;
-      if (universeFilter && universeFilter !== 'all') {
-        filteredProviders = providersWithUniverses.filter(p =>
-          p.universes.includes(universeFilter)
-        );
+        setProviders(filteredProviders);
       }
-
-      setProviders(filteredProviders);
     } catch (error: any) {
       console.error('Erreur chargement prestataires:', error);
       toast({
@@ -151,29 +108,14 @@ const AdminProviders = () => {
 
   const loadStats = async () => {
     try {
-      const { data: allProviders } = await supabase
-        .from('providers')
-        .select('id, status, is_verified, rating, missions_completed, total_earnings');
+      const { data, error } = await supabase.functions.invoke('admin-providers', {
+        body: { action: 'get_stats', timeRange: '30d' }
+      });
 
-      if (allProviders) {
-        const total = allProviders.length;
-        const active = allProviders.filter(p => p.status === 'active' && p.is_verified).length;
-        const pending = allProviders.filter(p => p.status !== 'active' || !p.is_verified).length;
-        const suspended = allProviders.filter(p => p.status === 'inactive').length;
-        
-        const totalMissions = allProviders.reduce((sum, p) => sum + (p.missions_completed || 0), 0);
-        const totalRevenue = allProviders.reduce((sum, p) => sum + (p.total_earnings || 0), 0);
-        const avgRating = total > 0 ? allProviders.reduce((sum, p) => sum + (p.rating || 0), 0) / total : 0;
+      if (error) throw error;
 
-        setStats({
-          total,
-          pending,
-          active,
-          suspended,
-          total_missions: totalMissions,
-          total_revenue: totalRevenue,
-          average_rating: avgRating,
-        });
+      if (data?.success) {
+        setStats(data.stats);
       }
     } catch (error) {
       console.error('Erreur chargement stats:', error);

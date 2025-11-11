@@ -139,13 +139,19 @@ async function listProviders(supabase: any, { status = 'all', limit = 50, offset
           .eq('provider_id', provider.id)
           .eq('is_active', true);
 
+        const uniqueUniverses = [...new Set(services?.map(s => s.services?.category) || [])];
+
         return {
           ...provider,
           first_name: profile?.first_name || '',
           last_name: profile?.last_name || '',
           email: profile?.email || '',
           phone: profile?.phone || '',
-          services: services?.map(s => s.services) || []
+          services: services?.map(s => s.services) || [],
+          universes: uniqueUniverses,
+          average_rating: provider.rating,
+          total_missions: provider.missions_completed,
+          total_earned: provider.total_earnings
         };
       })
     );
