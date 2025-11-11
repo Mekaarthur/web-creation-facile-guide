@@ -317,7 +317,7 @@ const AdminProviders = () => {
               <Card
                 key={provider.id}
                 className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => setSelectedProviderId(provider.user_id)}
+                onClick={() => setSelectedProviderId(provider.id)}
               >
                 <CardHeader>
                   <div className="flex items-center space-x-3">

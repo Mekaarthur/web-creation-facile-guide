@@ -77,74 +77,54 @@ export const ProviderDetailsModal = ({
     try {
       setLoading(true);
 
-      // Load provider info
-      const { data: providerData, error: providerError } = await supabase
-        .from('providers')
-        .select('*')
-        .eq('user_id', providerId)
-        .single();
+      const { data, error } = await supabase.functions.invoke('admin-providers', {
+        body: {
+          action: 'get_provider_details',
+          providerId,
+        },
+      });
 
-      if (providerError) throw providerError;
+      if (error) throw error;
+      if (!data?.success || !data?.provider) {
+        throw new Error('Réponse invalide du serveur');
+      }
 
-      // Load profile separately
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('email, first_name, last_name, address')
-        .eq('user_id', providerId)
-        .single();
+      const p = data.provider;
+      const profile = p.profiles || {};
+      const bookings = p.bookings || [];
 
-      // Load services
-      const { data: services } = await supabase
-        .from('provider_services')
-        .select(`
-          *,
-          services(id, name, category)
-        `)
-        .eq('provider_id', providerData.id)
-        .eq('is_active', true);
-
-      // Load missions
-      const { data: missions } = await supabase
-        .from('bookings')
-        .select(`
-          id,
-          booking_date,
-          start_time,
-          end_time,
-          total_price,
-          status,
-          created_at,
-          services(name)
-        `)
-        .eq('provider_id', providerData.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      // Load payments
-      const { data: payments } = await supabase
-        .from('financial_transactions')
-        .select('*')
-        .eq('provider_id', providerData.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
+      const missions = bookings.map((b: any) => ({
+        id: b.id,
+        booking_date: b.booking_date,
+        start_time: b.start_time,
+        end_time: b.end_time,
+        total_price: b.total_price,
+        status: b.status,
+        services: b.services,
+      }));
 
       setProvider({
-        ...providerData,
-        email: profile?.email,
-        address: profile?.address,
-        services: services || [],
-        missions: missions || [],
-        payments: payments || [],
-        average_rating: providerData.rating,
-        total_missions: providerData.missions_completed,
-        total_earned: providerData.total_earnings,
+        id: p.id,
+        business_name: p.business_name,
+        email: profile.email,
+        phone: profile.phone,
+        address: profile.address,
+        status: p.status,
+        is_verified: p.is_verified,
+        created_at: p.created_at,
+        average_rating: p.rating || 0,
+        total_missions: p.missions_completed || 0,
+        total_earned: p.total_earnings || 0,
+        services: [],
+        missions,
+        payments: [],
       });
     } catch (error: any) {
       console.error('Erreur chargement détails:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de charger les détails",
-        variant: "destructive",
+        title: 'Erreur',
+        description: "Impossible d'afficher les détails",
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
