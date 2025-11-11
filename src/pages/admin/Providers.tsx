@@ -70,6 +70,7 @@ const AdminProviders = () => {
   const loadProviders = async () => {
     try {
       setLoading(true);
+      console.log('Loading providers with filters:', { statusFilter, searchTerm, universeFilter });
       
       const { data, error } = await supabase.functions.invoke('admin-providers', {
         body: { 
@@ -80,25 +81,36 @@ const AdminProviders = () => {
         }
       });
 
-      if (error) throw error;
+      console.log('Providers response:', { data, error });
+
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
+      }
 
       if (data?.success) {
-        let filteredProviders = data.providers;
+        console.log('Received providers:', data.providers?.length || 0);
+        let filteredProviders = data.providers || [];
         
         // Filter by universe on the client side if needed
         if (universeFilter && universeFilter !== 'all') {
-          filteredProviders = data.providers.filter((p: Provider) =>
+          filteredProviders = filteredProviders.filter((p: Provider) =>
             p.universes?.includes(universeFilter)
           );
         }
 
+        console.log('Filtered providers:', filteredProviders.length);
         setProviders(filteredProviders);
+      } else {
+        console.error('Unexpected response format:', data);
+        setProviders([]);
       }
     } catch (error: any) {
       console.error('Erreur chargement prestataires:', error);
+      setProviders([]);
       toast({
         title: "Erreur",
-        description: "Impossible de charger les prestataires",
+        description: error.message || "Impossible de charger les prestataires",
         variant: "destructive",
       });
     } finally {
@@ -108,17 +120,46 @@ const AdminProviders = () => {
 
   const loadStats = async () => {
     try {
+      console.log('Loading stats...');
       const { data, error } = await supabase.functions.invoke('admin-providers', {
         body: { action: 'get_stats', timeRange: '30d' }
       });
 
-      if (error) throw error;
+      console.log('Stats response:', { data, error });
 
-      if (data?.success) {
+      if (error) {
+        console.error('Stats error:', error);
+        throw error;
+      }
+
+      if (data?.success && data?.stats) {
+        console.log('Setting stats:', data.stats);
         setStats(data.stats);
+      } else {
+        console.error('Unexpected stats format:', data);
+        // Set default stats on error
+        setStats({
+          total: 0,
+          pending: 0,
+          active: 0,
+          suspended: 0,
+          total_missions: 0,
+          total_revenue: 0,
+          average_rating: 0,
+        });
       }
     } catch (error) {
       console.error('Erreur chargement stats:', error);
+      // Set default stats on error
+      setStats({
+        total: 0,
+        pending: 0,
+        active: 0,
+        suspended: 0,
+        total_missions: 0,
+        total_revenue: 0,
+        average_rating: 0,
+      });
     }
   };
 
@@ -270,62 +311,77 @@ const AdminProviders = () => {
 
       {/* Providers Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {providers.map((provider) => (
-          <Card
-            key={provider.id}
-            className="cursor-pointer hover:shadow-md transition-shadow"
-            onClick={() => setSelectedProviderId(provider.user_id)}
-          >
-            <CardHeader>
-              <div className="flex items-center space-x-3">
-                <Avatar>
-                  <AvatarFallback>
-                    {getInitials(provider.business_name)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold truncate">
-                    {provider.business_name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground truncate">{provider.email}</p>
-                </div>
-                {getStatusBadge(provider)}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Missions:</span>
-                  <span className="font-medium">{provider.total_missions || 0}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Note:</span>
-                  <span className="font-medium flex items-center gap-1">
-                    {(provider.average_rating || 0).toFixed(1)}
-                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Revenus:</span>
-                  <span className="font-medium">{(provider.total_earned || 0).toFixed(2)}€</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Univers:</span>
-                  <span className="font-medium">{provider.universes.length}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Inscription:</span>
-                  <span className="font-medium">
-                    {new Date(provider.created_at).toLocaleDateString('fr-FR', {
-                      year: 'numeric',
-                      month: 'short',
-                    })}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        {providers.map((provider) => {
+          try {
+            return (
+              <Card
+                key={provider.id}
+                className="cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => setSelectedProviderId(provider.id)}
+              >
+                <CardHeader>
+                  <div className="flex items-center space-x-3">
+                    <Avatar>
+                      <AvatarFallback>
+                        {getInitials(provider.business_name || 'N/A')}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold truncate">
+                        {provider.business_name || 'Sans nom'}
+                      </h3>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {provider.email || 'Pas d\'email'}
+                      </p>
+                    </div>
+                    {getStatusBadge(provider)}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Missions:</span>
+                      <span className="font-medium">{provider.total_missions || 0}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Note:</span>
+                      <span className="font-medium flex items-center gap-1">
+                        {(provider.average_rating || 0).toFixed(1)}
+                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Revenus:</span>
+                      <span className="font-medium">
+                        {(provider.total_earned || 0).toFixed(2)}€
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Univers:</span>
+                      <span className="font-medium">
+                        {provider.universes?.length || 0}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Inscription:</span>
+                      <span className="font-medium">
+                        {provider.created_at
+                          ? new Date(provider.created_at).toLocaleDateString('fr-FR', {
+                              year: 'numeric',
+                              month: 'short',
+                            })
+                          : 'N/A'}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          } catch (renderError) {
+            console.error('Error rendering provider card:', provider?.id, renderError);
+            return null;
+          }
+        })}
       </div>
 
       {providers.length === 0 && (
