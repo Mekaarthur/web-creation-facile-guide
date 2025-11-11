@@ -164,137 +164,140 @@ const EnhancedProviderDashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
       {/* Modern Header */}
       <div className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center shadow-lg">
-                <Briefcase className="w-6 h-6 text-white" />
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-2.5 sm:gap-3 lg:gap-4 w-full sm:w-auto">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 bg-gradient-to-br from-primary to-secondary rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                <Briefcase className="w-5 h-5 sm:w-5.5 sm:h-5.5 lg:w-6 lg:h-6 text-white" />
               </div>
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                  <h1 className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent truncate">
                     {t('providerDashboard.greeting')} {provider?.profiles?.first_name || 'Prestataire'} ! 👋
                   </h1>
                   {refreshing && (
-                    <RefreshCw className="w-4 h-4 animate-spin text-primary" />
+                    <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin text-primary flex-shrink-0" />
                   )}
                 </div>
-                <p className="text-muted-foreground">{t('providerDashboard.welcome')}</p>
+                <p className="text-muted-foreground text-xs sm:text-sm truncate">{t('providerDashboard.welcome')}</p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
               <Badge 
                 variant={provider?.is_verified ? "default" : "secondary"}
-                className={`text-sm ${provider?.is_verified 
+                className={`text-xs sm:text-sm whitespace-nowrap flex-shrink-0 ${provider?.is_verified 
                   ? 'bg-success/10 text-success border-success/20' 
                   : 'bg-warning/10 text-warning border-warning/20'
                 }`}
               >
                 <CheckCircle className="h-3 w-3 mr-1" />
-                {provider?.is_verified ? t('providerDashboard.verified') : t('providerDashboard.inVerification')}
+                <span className="hidden sm:inline">{provider?.is_verified ? t('providerDashboard.verified') : t('providerDashboard.inVerification')}</span>
               </Badge>
-              <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-3 py-2 rounded-lg">
-                <Phone className="h-4 w-4" />
-                <span>{t('providerDashboard.support')}: 0609085390</span>
+              <div className="hidden lg:flex items-center gap-2 text-xs lg:text-sm text-muted-foreground bg-muted/50 px-2.5 lg:px-3 py-1.5 lg:py-2 rounded-lg whitespace-nowrap">
+                <Phone className="h-3.5 w-3.5 lg:h-4 lg:w-4 flex-shrink-0" />
+                <span className="hidden xl:inline">{t('providerDashboard.support')}: </span>
+                <span>0609085390</span>
               </div>
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={refresh}
                 disabled={refreshing}
-                className="hover:bg-primary/10"
+                className="hover:bg-primary/10 h-8 sm:h-9 px-2 sm:px-3"
               >
-                <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-                {t('providerDashboard.refresh')}
+                <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline text-xs sm:text-sm">{t('providerDashboard.refresh')}</span>
               </Button>
-              <Button variant="outline" size="sm" className="hover:bg-primary/10">
-                <Settings className="h-4 w-4 mr-2" />
-                {t('providerDashboard.profile')}
+              <Button variant="outline" size="sm" className="hover:bg-primary/10 h-8 sm:h-9 px-2 sm:px-3">
+                <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2" />
+                <span className="hidden sm:inline text-xs sm:text-sm">{t('providerDashboard.profile')}</span>
               </Button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6 space-y-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 space-y-4 sm:space-y-6 lg:space-y-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-4 lg:grid-cols-10 bg-card/80 backdrop-blur-sm p-1 h-auto shadow-lg rounded-xl border-0">
+          <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0 pb-2">
+          <TabsList className="grid grid-cols-5 sm:grid-cols-6 lg:grid-cols-10 bg-card/80 backdrop-blur-sm p-0.5 sm:p-1 h-auto shadow-lg rounded-lg sm:rounded-xl border-0 min-w-max sm:min-w-0 w-full">
             <TabsTrigger 
               value="dashboard" 
-              className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+              className="flex flex-col items-center gap-1 sm:gap-1.5 lg:gap-2 py-2.5 sm:py-3 lg:py-4 px-2 sm:px-2.5 lg:px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md sm:rounded-lg transition-all duration-200"
             >
-              <LayoutDashboard className="h-5 w-5" />
-              <span className="text-xs font-medium">{t('personalSpace.dashboard')}</span>
+              <LayoutDashboard className="h-4 w-4 sm:h-4.5 sm:w-4.5 lg:h-5 lg:w-5" />
+              <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">{t('personalSpace.dashboard')}</span>
             </TabsTrigger>
             <TabsTrigger 
               value="appointments" 
-              className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+              className="flex flex-col items-center gap-1 sm:gap-1.5 lg:gap-2 py-2.5 sm:py-3 lg:py-4 px-2 sm:px-2.5 lg:px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md sm:rounded-lg transition-all duration-200"
             >
-              <Calendar className="h-5 w-5" />
-              <span className="text-xs font-medium">{t('personalSpace.appointments')}</span>
+              <Calendar className="h-4 w-4 sm:h-4.5 sm:w-4.5 lg:h-5 lg:w-5" />
+              <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">{t('personalSpace.appointments')}</span>
               {stats.activeMissions > 0 && (
-                <Badge variant="destructive" className="text-xs px-1.5 py-0.5 h-5 min-w-5">
+                <Badge variant="destructive" className="text-[9px] sm:text-xs px-1 sm:px-1.5 py-0.5 h-4 sm:h-5 min-w-4 sm:min-w-5">
                   {stats.activeMissions}
                 </Badge>
               )}
             </TabsTrigger>
             <TabsTrigger 
               value="planning" 
-              className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+              className="flex flex-col items-center gap-1 sm:gap-1.5 lg:gap-2 py-2.5 sm:py-3 lg:py-4 px-2 sm:px-2.5 lg:px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md sm:rounded-lg transition-all duration-200"
             >
-              <Clock className="h-5 w-5" />
-              <span className="text-xs font-medium">Planning</span>
+              <Clock className="h-4 w-4 sm:h-4.5 sm:w-4.5 lg:h-5 lg:w-5" />
+              <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">Planning</span>
             </TabsTrigger>
             <TabsTrigger 
               value="messaging" 
-              className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+              className="flex flex-col items-center gap-1 sm:gap-1.5 lg:gap-2 py-2.5 sm:py-3 lg:py-4 px-2 sm:px-2.5 lg:px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md sm:rounded-lg transition-all duration-200"
             >
-              <MessageSquare className="h-5 w-5" />
-              <span className="text-xs font-medium">Messages</span>
+              <MessageSquare className="h-4 w-4 sm:h-4.5 sm:w-4.5 lg:h-5 lg:w-5" />
+              <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">Messages</span>
             </TabsTrigger>
             <TabsTrigger 
               value="services" 
-              className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+              className="flex flex-col items-center gap-1 sm:gap-1.5 lg:gap-2 py-2.5 sm:py-3 lg:py-4 px-2 sm:px-2.5 lg:px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md sm:rounded-lg transition-all duration-200"
             >
-              <Briefcase className="h-5 w-5" />
-              <span className="text-xs font-medium">Services</span>
+              <Briefcase className="h-4 w-4 sm:h-4.5 sm:w-4.5 lg:h-5 lg:w-5" />
+              <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">Services</span>
             </TabsTrigger>
             <TabsTrigger 
               value="zones" 
-              className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+              className="flex flex-col items-center gap-1 sm:gap-1.5 lg:gap-2 py-2.5 sm:py-3 lg:py-4 px-2 sm:px-2.5 lg:px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md sm:rounded-lg transition-all duration-200"
             >
-              <MapPin className="h-5 w-5" />
-              <span className="text-xs font-medium">Zones</span>
+              <MapPin className="h-4 w-4 sm:h-4.5 sm:w-4.5 lg:h-5 lg:w-5" />
+              <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">Zones</span>
             </TabsTrigger>
             <TabsTrigger 
               value="revenus" 
-              className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+              className="flex flex-col items-center gap-1 sm:gap-1.5 lg:gap-2 py-2.5 sm:py-3 lg:py-4 px-2 sm:px-2.5 lg:px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md sm:rounded-lg transition-all duration-200"
             >
-              <TrendingUp className="h-5 w-5" />
-              <span className="text-xs font-medium">Revenus</span>
+              <TrendingUp className="h-4 w-4 sm:h-4.5 sm:w-4.5 lg:h-5 lg:w-5" />
+              <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">Revenus</span>
             </TabsTrigger>
             <TabsTrigger 
               value="cooptation" 
-              className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+              className="flex flex-col items-center gap-1 sm:gap-1.5 lg:gap-2 py-2.5 sm:py-3 lg:py-4 px-2 sm:px-2.5 lg:px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md sm:rounded-lg transition-all duration-200"
             >
-              <Users className="h-5 w-5" />
-              <span className="text-xs font-medium">Cooptation</span>
+              <Users className="h-4 w-4 sm:h-4.5 sm:w-4.5 lg:h-5 lg:w-5" />
+              <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">Cooptation</span>
             </TabsTrigger>
             <TabsTrigger 
               value="recompenses" 
-              className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+              className="flex flex-col items-center gap-1 sm:gap-1.5 lg:gap-2 py-2.5 sm:py-3 lg:py-4 px-2 sm:px-2.5 lg:px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md sm:rounded-lg transition-all duration-200"
             >
-              <Award className="h-5 w-5" />
-              <span className="text-xs font-medium">Récompenses</span>
+              <Award className="h-4 w-4 sm:h-4.5 sm:w-4.5 lg:h-5 lg:w-5" />
+              <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">Récompenses</span>
             </TabsTrigger>
             <TabsTrigger 
               value="profil" 
-              className="flex flex-col items-center gap-2 py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+              className="flex flex-col items-center gap-1 sm:gap-1.5 lg:gap-2 py-2.5 sm:py-3 lg:py-4 px-2 sm:px-2.5 lg:px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md sm:rounded-lg transition-all duration-200"
             >
-              <User className="h-5 w-5" />
-              <span className="text-xs font-medium">Profil</span>
+              <User className="h-4 w-4 sm:h-4.5 sm:w-4.5 lg:h-5 lg:w-5" />
+              <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">Profil</span>
             </TabsTrigger>
           </TabsList>
+          </div>
 
           {/* Dashboard Principal */}
           <TabsContent value="dashboard" className="space-y-8 mt-8">

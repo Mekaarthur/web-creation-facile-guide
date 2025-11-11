@@ -356,52 +356,52 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
 
   return (
     <div className={cn(
-      "max-w-5xl mx-auto px-4 py-8 pb-32 space-y-6 transition-opacity duration-500 min-h-screen",
+      "max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-24 sm:pb-32 space-y-4 sm:space-y-6 transition-opacity duration-500 min-h-screen",
       isVisible ? "opacity-100" : "opacity-0"
     )}>
-      <div className="flex items-center gap-4 mb-6 animate-fade-in">
-        <Button variant="ghost" onClick={onBack} disabled={isProcessing} className="hover-scale">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6 animate-fade-in">
+        <Button variant="ghost" onClick={onBack} disabled={isProcessing} className="hover-scale w-full sm:w-auto">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour au panier
         </Button>
-        <h1 className="text-2xl font-bold">Finalisation de la réservation</h1>
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Finalisation de la réservation</h1>
       </div>
 
       {/* Récapitulatif mobile - En haut */}
       <div className="lg:hidden animate-fade-in">
-        <Card className="border-primary/20 shadow-elegant transition-all duration-200 hover:shadow-lg">
-          <CardHeader className="bg-gradient-subtle">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <CreditCard className="w-5 h-5" />
+        <Card className="border-primary/20 shadow-soft transition-all duration-200">
+          <CardHeader className="bg-gradient-subtle p-4 sm:p-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <CreditCard className="w-4 h-4 sm:w-5 sm:h-5" />
               Récapitulatif de commande
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4 pt-4">
+          <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
             {hasIncompatibleServices() && (
               <Alert className="border-orange-200 bg-orange-50">
                 <AlertTriangle className="w-4 h-4" />
-                <AlertDescription className="text-xs">
+                <AlertDescription className="text-xs sm:text-sm">
                   Services séparés en <strong>{getSeparatedBookingsCount()} réservations</strong>
                 </AlertDescription>
               </Alert>
             )}
 
-            <div className="space-y-3 max-h-60 overflow-y-auto">
+            <div className="space-y-2 sm:space-y-3 max-h-60 sm:max-h-80 overflow-y-auto">
               {cartItems.map((item) => {
                 const slot = formatTimeSlot(item.timeSlot);
                 return (
-                  <div key={item.id} className="p-3 bg-muted/30 rounded-lg text-sm">
-                    <div className="font-medium">{item.serviceName}</div>
+                  <div key={item.id} className="p-2.5 sm:p-3 bg-muted/30 rounded-lg text-xs sm:text-sm">
+                    <div className="font-medium text-sm sm:text-base">{item.serviceName}</div>
                     <div className="text-xs text-muted-foreground">{item.packageTitle}</div>
-                    <div className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {slot.date}
+                    <div className="text-xs text-muted-foreground mt-1.5 sm:mt-2 flex items-center gap-1">
+                      <Clock className="w-3 h-3 flex-shrink-0" />
+                      <span className="line-clamp-1">{slot.date}</span>
                     </div>
-                    <div className="mt-2 flex justify-between items-center">
+                    <div className="mt-2 flex justify-between items-center gap-2">
                       <Badge variant="secondary" className="text-xs">
                         {item.price}€ × {item.quantity}h
                       </Badge>
-                      <span className="font-medium">{item.price * item.quantity}€</span>
+                      <span className="font-medium text-sm sm:text-base whitespace-nowrap">{item.price * item.quantity}€</span>
                     </div>
                   </div>
                 );
@@ -411,33 +411,32 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
             <Separator />
 
             <div className="space-y-2">
-              <div className="flex justify-between items-center text-sm">
+              <div className="flex justify-between items-center text-xs sm:text-sm">
                 <span>Sous-total</span>
-                <span>{getCartTotal()}€</span>
+                <span className="font-medium">{getCartTotal()}€</span>
               </div>
-              <div className="flex justify-between items-center text-xl font-bold border-t pt-2">
+              <div className="flex justify-between items-center text-lg sm:text-xl font-bold border-t pt-2">
                 <span>Total</span>
                 <span className="text-primary">{getCartTotal()}€</span>
               </div>
             </div>
 
             {/* CTA mobile (fallback si la barre fixe est masquée) */}
-            <div className="mt-4 lg:hidden">
+            <div className="mt-3 sm:mt-4 lg:hidden">
               <Button 
                 onClick={handleSubmitBooking}
-                className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-200 hover-scale"
-                size="lg"
+                className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-200 text-sm sm:text-base h-12 sm:h-14"
                 disabled={isProcessing}
               >
                 {isProcessing ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Traitement en cours...
+                    <span className="text-sm sm:text-base">Traitement...</span>
                   </>
                 ) : (
                   <>
                     <CreditCard className="w-4 h-4 mr-2" />
-                    Confirmer et payer {urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€
+                    <span>Confirmer {urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€</span>
                   </>
                 )}
               </Button>
@@ -449,18 +448,18 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Left Column - Client Information */}
-        <div className="lg:col-span-2 space-y-6 animate-fade-in" style={{ animationDelay: "100ms" }}>
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6 animate-fade-in" style={{ animationDelay: "100ms" }}>
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="w-5 h-5" />
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <User className="w-4 h-4 sm:w-5 sm:h-5" />
                 Vos informations
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">Prénom *</Label>
                   <Input

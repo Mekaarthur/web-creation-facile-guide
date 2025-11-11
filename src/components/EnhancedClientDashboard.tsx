@@ -86,50 +86,50 @@ const EnhancedClientDashboard = ({ onNavigateToTab }: EnhancedClientDashboardPro
   }
 
   return (
-    <div className="container mx-auto p-4 space-y-8 animate-fade-in">
+    <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 space-y-4 sm:space-y-6 lg:space-y-8 animate-fade-in">
       {/* Header avec recherche intelligente */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary-glow/10 to-secondary/10 p-1">
-        <div className="relative bg-background/95 backdrop-blur-sm rounded-[calc(1rem-1px)] p-6 md:p-8">
-          <div className="flex flex-col lg:flex-row items-start justify-between gap-6">
-            <div className="flex-1 max-w-2xl">
-              <div className="flex items-center gap-3 mb-4">
+      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary/10 via-primary-glow/10 to-secondary/10 p-0.5 sm:p-1">
+        <div className="relative bg-background/95 backdrop-blur-sm rounded-[calc(1rem-1px)] p-4 sm:p-6 lg:p-8">
+          <div className="flex flex-col lg:flex-row items-start justify-between gap-4 sm:gap-6">
+            <div className="flex-1 w-full max-w-2xl">
+              <div className="flex items-center gap-2.5 sm:gap-3 mb-3 sm:mb-4">
                 <div className="relative">
-                  <div className="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center shadow-lg">
-                    <User className="w-8 h-8 text-white" />
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-primary to-secondary rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg">
+                    <User className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-success rounded-full flex items-center justify-center border-2 border-background">
-                    <CheckCircle className="w-3 h-3 text-white" />
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-success rounded-full flex items-center justify-center border-2 border-background">
+                    <CheckCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />
                   </div>
                 </div>
-                <div>
-                  <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent flex items-center gap-2">
-                    {t('clientDashboard.greeting')} {firstName} ! 
-                    <Sparkles className="w-6 h-6 text-warning" />
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                    <span className="truncate">{t('clientDashboard.greeting')} {firstName} !</span>
+                    <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-warning flex-shrink-0" />
                   </h1>
-                  <p className="text-muted-foreground text-lg">
+                  <p className="text-muted-foreground text-xs sm:text-sm lg:text-base mt-0.5 sm:mt-1 truncate">
                     {t('clientDashboard.intelligentDashboard')} • {satisfactionLevel}
                   </p>
                 </div>
               </div>
 
               {/* Barre de recherche intelligente */}
-              <div className="relative mb-6">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+              <div className="relative mb-4 sm:mb-6">
+                <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 sm:w-5 sm:h-5" />
               <Input
                   placeholder={t('clientDashboard.searchPlaceholder')}
-                  className="pl-12 pr-12 h-12 text-base bg-background/80 backdrop-blur-sm border-2 border-transparent focus:border-primary/50 focus:bg-background transition-all"
+                  className="pl-10 sm:pl-12 pr-10 sm:pr-12 h-10 sm:h-12 text-sm sm:text-base bg-background/80 backdrop-blur-sm border-2 border-transparent focus:border-primary/50 focus:bg-background transition-all"
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
                     setQuery(e.target.value);
                   }}
                 />
-                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
-                  {searchLoading && <div className="w-4 h-4 animate-spin border-2 border-primary border-t-transparent rounded-full"></div>}
+                <div className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 flex items-center gap-1.5 sm:gap-2">
+                  {searchLoading && <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin border-2 border-primary border-t-transparent rounded-full"></div>}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <Filter className="w-4 h-4" />
+                      <Button variant="ghost" size="sm" className="h-7 w-7 sm:h-8 sm:w-8 p-0">
+                        <Filter className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -142,7 +142,7 @@ const EnhancedClientDashboard = ({ onNavigateToTab }: EnhancedClientDashboardPro
               </div>
 
               {/* Métriques avancées */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4">
                 <div className="text-center p-3 bg-card/80 rounded-xl border hover:shadow-md transition-all">
                   <div className="text-2xl font-bold text-primary flex items-center justify-center gap-1">
                     {stats?.upcomingBookings || 0}

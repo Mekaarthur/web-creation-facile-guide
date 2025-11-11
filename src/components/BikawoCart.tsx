@@ -89,34 +89,34 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
   }
 
   return (
-    <div className="w-full">
-      <div className="mb-6 text-center">
-        <h1 className="text-3xl font-bold mb-2">Mon Panier</h1>
-        <p className="text-muted-foreground">Finalisez votre réservation</p>
+    <div className="w-full px-3 sm:px-4 lg:px-6">
+      <div className="mb-4 sm:mb-6 text-center">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Mon Panier</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Finalisez votre réservation</p>
       </div>
       
       <Card className={cn(
         "w-full max-w-4xl mx-auto transition-all duration-300",
         isVisible ? "animate-fade-in" : "opacity-0"
       )}>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <ShoppingCart className="w-5 h-5" />
-            Panier Session ({cartItems.length})
+        <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="truncate">Panier ({cartItems.length})</span>
           </CardTitle>
         {cartItems.length > 0 && (
-          <Button variant="ghost" size="sm" onClick={clearCart} className="hover-scale">
+          <Button variant="ghost" size="sm" onClick={clearCart} className="hover-scale text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3">
             Vider
           </Button>
         )}
       </CardHeader>
       
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
         {cartItems.length === 0 ? (
-          <div className="text-center py-8">
-            <ShoppingCart className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">Votre panier est vide</p>
-            <p className="text-sm text-muted-foreground mt-1">
+          <div className="text-center py-6 sm:py-8">
+            <ShoppingCart className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-muted-foreground mb-3 sm:mb-4" />
+            <p className="text-sm sm:text-base text-muted-foreground">Votre panier est vide</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
               Le panier est conservé pendant 30 minutes
             </p>
           </div>
@@ -126,7 +126,7 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
             {hasIncompatibleServices() && (
               <Alert className="border-orange-200 bg-orange-50 animate-fade-in">
                 <AlertTriangle className="w-4 h-4 text-orange-600" />
-                <AlertDescription className="text-sm">
+                <AlertDescription className="text-xs sm:text-sm">
                   Services incompatibles détectés. Ils seront séparés en <strong>{getSeparatedBookingsCount()} réservations</strong> distinctes.
                 </AlertDescription>
               </Alert>
@@ -203,19 +203,19 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
             </div>
 
             {/* Vue mobile (cartes) */}
-            <div className="md:hidden space-y-3 max-h-96 overflow-y-auto">
+            <div className="md:hidden space-y-2.5 sm:space-y-3 max-h-80 sm:max-h-96 overflow-y-auto">
               {cartItems.map((item, index) => {
                 const slot = formatTimeSlot(item.timeSlot);
                 return (
                   <div 
                     key={item.id} 
-                    className="p-4 bg-muted/50 rounded-lg transition-all duration-200 hover:shadow-md animate-fade-in"
+                    className="p-3 sm:p-4 bg-muted/50 rounded-lg transition-all duration-200 hover:shadow-md animate-fade-in"
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-base mb-1">{item.serviceName}</h4>
-                        <p className="text-sm text-muted-foreground mb-3">{item.packageTitle}</p>
+                    <div className="flex justify-between items-start mb-2 sm:mb-3 gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-sm sm:text-base mb-0.5 sm:mb-1 truncate">{item.serviceName}</h4>
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3 line-clamp-1">{item.packageTitle}</p>
                         
                         <div className="space-y-2 text-sm">
                           <div className="flex items-center gap-2">
@@ -264,15 +264,15 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
 
             <Separator />
 
-            <div className="space-y-3 bg-gradient-subtle p-4 rounded-lg">
-              <div className="flex justify-between items-center text-sm text-muted-foreground">
+            <div className="space-y-2.5 sm:space-y-3 bg-gradient-subtle p-3 sm:p-4 rounded-lg">
+              <div className="flex justify-between items-center text-xs sm:text-sm text-muted-foreground">
                 <span>Sous-total</span>
-                <span>{getCartTotal()}€</span>
+                <span className="font-medium">{getCartTotal()}€</span>
               </div>
               <Separator />
-              <div className="flex justify-between items-center">
-                <span className="text-lg font-semibold">Total à payer</span>
-                <span className="text-2xl font-bold text-primary">{getCartTotal()}€</span>
+              <div className="flex justify-between items-center gap-2">
+                <span className="text-base sm:text-lg font-semibold">Total à payer</span>
+                <span className="text-xl sm:text-2xl font-bold text-primary whitespace-nowrap">{getCartTotal()}€</span>
               </div>
               {hasIncompatibleServices() && (
                 <p className="text-xs text-muted-foreground text-center pt-2 border-t">
@@ -283,8 +283,7 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
 
             <Button 
               onClick={proceedToCheckout} 
-              className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-200 hover-scale"
-              size="lg"
+              className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-200 text-sm sm:text-base h-12 sm:h-14"
             >
               <span>Procéder au paiement</span>
               <ArrowRight className="w-4 h-4 ml-2" />
