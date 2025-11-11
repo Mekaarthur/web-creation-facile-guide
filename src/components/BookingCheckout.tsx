@@ -356,7 +356,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
 
   return (
     <div className={cn(
-      "max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-24 sm:pb-32 space-y-4 sm:space-y-6 transition-opacity duration-500 min-h-screen",
+      "max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-40 sm:pb-32 space-y-4 sm:space-y-6 transition-opacity duration-500 min-h-screen",
       isVisible ? "opacity-100" : "opacity-0"
     )}>
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6 animate-fade-in">
@@ -415,34 +415,20 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                 <span>Sous-total</span>
                 <span className="font-medium">{getCartTotal()}€</span>
               </div>
+              
+              {urssafEnabled && (
+                <div className="flex justify-between items-center text-xs text-green-600">
+                  <span>Avance immédiate (-50%)</span>
+                  <span>-{(getCartTotal() * 0.5).toFixed(2)}€</span>
+                </div>
+              )}
+              
               <div className="flex justify-between items-center text-lg sm:text-xl font-bold border-t pt-2">
                 <span>Total</span>
-                <span className="text-primary">{getCartTotal()}€</span>
+                <span className="text-primary">
+                  {urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€
+                </span>
               </div>
-            </div>
-
-            {/* CTA mobile (fallback si la barre fixe est masquée) */}
-            <div className="mt-3 sm:mt-4 lg:hidden">
-              <Button 
-                onClick={handleSubmitBooking}
-                className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-200 text-sm sm:text-base h-12 sm:h-14"
-                disabled={isProcessing}
-              >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    <span className="text-sm sm:text-base">Traitement...</span>
-                  </>
-                ) : (
-                  <>
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    <span>Confirmer {urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€</span>
-                  </>
-                )}
-              </Button>
-              <p className="text-xs text-muted-foreground text-center mt-2">
-                Paiement sécurisé via Stripe
-              </p>
             </div>
           </CardContent>
         </Card>
@@ -708,40 +694,41 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       </div>
 
       {/* Bouton fixe mobile */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t shadow-elegant z-50 animate-slide-in-bottom">
-        <div className="mb-2 text-center text-sm font-semibold">
-          {urssafEnabled ? (
-            <>
-              Total: <span className="text-muted-foreground line-through text-sm">{getCartTotal()}€</span>
-              {' '}
-              <span className="text-primary text-lg">{(getCartTotal() * 0.5).toFixed(2)}€</span>
-              <span className="text-xs text-green-600 block">(-50% avance immédiate)</span>
-            </>
-          ) : (
-            <>Total: <span className="text-primary text-lg">{getCartTotal()}€</span></>
-          )}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-3 bg-background/98 backdrop-blur-md border-t shadow-elegant z-50 safe-area-bottom">
+        <div className="max-w-lg mx-auto space-y-2">
+          <div className="flex justify-between items-center text-sm">
+            <span className="font-medium">Total à payer</span>
+            <div className="text-right">
+              {urssafEnabled && (
+                <div className="text-xs text-muted-foreground line-through">{getCartTotal()}€</div>
+              )}
+              <div className={cn("font-bold", urssafEnabled ? "text-green-600 text-lg" : "text-primary text-lg")}>
+                {urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€
+              </div>
+            </div>
+          </div>
+          <Button 
+            onClick={handleSubmitBooking}
+            className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-200"
+            size="lg"
+            disabled={isProcessing}
+          >
+            {isProcessing ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Traitement...
+              </>
+            ) : (
+              <>
+                <CreditCard className="w-4 h-4 mr-2" />
+                Confirmer {urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€
+              </>
+            )}
+          </Button>
+          <p className="text-xs text-muted-foreground text-center">
+            🔒 Paiement sécurisé via Stripe
+          </p>
         </div>
-        <Button 
-          onClick={handleSubmitBooking}
-          className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-200 hover-scale"
-          size="lg"
-          disabled={isProcessing}
-        >
-          {isProcessing ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Traitement...
-            </>
-          ) : (
-            <>
-              <CreditCard className="w-4 h-4 mr-2" />
-              Confirmer et payer {urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€
-            </>
-          )}
-        </Button>
-        <p className="text-xs text-muted-foreground text-center mt-2">
-          Paiement sécurisé via Stripe
-        </p>
       </div>
     </div>
   );
