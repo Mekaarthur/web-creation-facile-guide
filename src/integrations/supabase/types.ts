@@ -2575,8 +2575,12 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_status: string | null
           address: string | null
           avatar_url: string | null
+          block_reason: string | null
+          blocked_at: string | null
+          blocked_by: string | null
           created_at: string
           date_of_birth: string | null
           email: string | null
@@ -2586,12 +2590,18 @@ export type Database = {
           last_name: string | null
           personal_description: string | null
           phone: string | null
+          total_bookings: number | null
+          total_spent: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          account_status?: string | null
           address?: string | null
           avatar_url?: string | null
+          block_reason?: string | null
+          blocked_at?: string | null
+          blocked_by?: string | null
           created_at?: string
           date_of_birth?: string | null
           email?: string | null
@@ -2601,12 +2611,18 @@ export type Database = {
           last_name?: string | null
           personal_description?: string | null
           phone?: string | null
+          total_bookings?: number | null
+          total_spent?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          account_status?: string | null
           address?: string | null
           avatar_url?: string | null
+          block_reason?: string | null
+          blocked_at?: string | null
+          blocked_by?: string | null
           created_at?: string
           date_of_birth?: string | null
           email?: string | null
@@ -2616,6 +2632,8 @@ export type Database = {
           last_name?: string | null
           personal_description?: string | null
           phone?: string | null
+          total_bookings?: number | null
+          total_spent?: number | null
           updated_at?: string
           user_id?: string
         }
