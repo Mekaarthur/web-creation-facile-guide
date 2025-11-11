@@ -95,7 +95,7 @@ export const providerCandidateSchema = z.object({
   criminal_record_date: z.date().optional(),
   siren_number: z.string().regex(/^\d{9}$/, "Numéro SIREN invalide (9 chiffres)"),
   rib_iban: z.any().refine((file) => file instanceof File || file === null, "RIB/IBAN requis"),
-  cv_file: z.any().refine((file) => file instanceof File || file === null, "CV requis"),
+  cv_file: z.any().optional(),
   // Documents optionnels
   certifications: z.any().optional(),
 });

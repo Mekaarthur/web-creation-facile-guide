@@ -26,7 +26,7 @@ const DOCUMENT_TYPES = [
   { value: 'criminal_record', label: 'Casier judiciaire (< 3 mois)', required: true },
   { value: 'siret_document', label: 'Document SIRET / KBIS', required: true },
   { value: 'rib_iban', label: 'RIB/IBAN', required: true },
-  { value: 'cv', label: 'Curriculum Vitae (CV)', required: true },
+  { value: 'cv', label: 'Curriculum Vitae (CV)', required: false },
   { value: 'certification', label: 'Certifications professionnelles', required: false },
   { value: 'insurance', label: 'Assurance RC Pro', required: false },
   { value: 'diploma', label: 'Diplômes', required: false },

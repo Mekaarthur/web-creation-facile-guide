@@ -487,7 +487,7 @@ const ProviderSignup = () => {
                   Documents obligatoires
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  Tous les documents suivants sont requis pour traiter votre candidature
+                  Documents obligatoires pour traiter votre candidature (CV facultatif)
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -583,7 +583,7 @@ const ProviderSignup = () => {
                     <FormItem>
                       <FormLabel className="flex items-center gap-2">
                         <Upload className="h-4 w-4" />
-                        CV *
+                        CV (facultatif)
                       </FormLabel>
                       <FormControl>
                         <Input
