@@ -120,9 +120,9 @@ const App = () => (
         <MobileStatusBar />
         <Toaster />
         <Sonner />
-        <LiveRequestNotifications />
         <CookieConsentBanner />
         <BrowserRouter>
+          <LiveRequestNotifications />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
