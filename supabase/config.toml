@@ -110,6 +110,9 @@ verify_jwt = true
 [functions.admin-clients]
 verify_jwt = true
 
+[functions.admin-applications]
+verify_jwt = true
+
 [functions.admin-zones]
 verify_jwt = true
 
