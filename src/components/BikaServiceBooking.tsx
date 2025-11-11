@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +39,7 @@ interface BikaServiceBookingProps {
 }
 
 const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServiceBookingProps) => {
+  const navigate = useNavigate();
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
@@ -187,7 +189,7 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
 
   const handleGoToCart = () => {
     onClose();
-    window.location.href = "/panier";
+    navigate("/panier");
   };
 
   return (

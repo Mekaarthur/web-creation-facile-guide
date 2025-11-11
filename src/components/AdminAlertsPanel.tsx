@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,9 +28,10 @@ interface Alert {
 }
 
 export const AdminAlertsPanel = ({ onNavigate }: { onNavigate?: (tab: string) => void }) => {
+  const navigate = useNavigate();
   const handleNavigate = (route: string) => {
-    // Navigation directe vers les routes du modern-admin
-    window.location.href = route;
+    // Navigation vers les routes du modern-admin
+    navigate(route);
   };
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);

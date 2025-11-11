@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import ModernClientDashboard from "@/components/ModernClientDashboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useClientDashboard } from "@/hooks/useClientDashboard";
@@ -23,6 +24,7 @@ interface EnhancedClientDashboardProps {
 const EnhancedClientDashboard = ({ onNavigateToTab }: EnhancedClientDashboardProps) => {
   const { user } = useAuth();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [showAllBookings, setShowAllBookings] = useState(false);
   
@@ -179,7 +181,7 @@ const EnhancedClientDashboard = ({ onNavigateToTab }: EnhancedClientDashboardPro
               <Button 
                 size="lg"
                 className="bg-gradient-to-r from-primary to-secondary hover:from-primary-glow hover:to-primary shadow-lg hover:shadow-xl transition-all animate-pulse-subtle" 
-                onClick={() => window.location.href = '/services'}
+                onClick={() => navigate('/services')}
               >
                 <Plus className="w-5 h-5 mr-2" />
                 {t('clientDashboard.newBooking')}
@@ -318,7 +320,7 @@ const EnhancedClientDashboard = ({ onNavigateToTab }: EnhancedClientDashboardPro
                   </p>
                   <Button 
                     size="lg"
-                    onClick={() => window.location.href = '/services'}
+                    onClick={() => navigate('/services')}
                     className="bg-gradient-to-r from-primary to-secondary hover:shadow-lg"
                   >
                     <Sparkles className="w-5 h-5 mr-2" />

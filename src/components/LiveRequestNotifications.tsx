@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +17,7 @@ interface LiveNotification {
 }
 
 export const LiveRequestNotifications = () => {
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState<LiveNotification[]>([]);
   const [isVisible, setIsVisible] = useState(false);
   const { toast } = useToast();
@@ -100,8 +102,8 @@ export const LiveRequestNotifications = () => {
   }, [toast]);
 
   const handleNotificationClick = (notification: LiveNotification) => {
-    // Rediriger vers la page de gestion des demandes via window.location
-    window.location.href = '/gestion-demandes';
+    // Rediriger vers la page de gestion des demandes
+    navigate('/gestion-demandes');
     removeNotification(notification.id);
   };
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +38,7 @@ interface BookingsListProps {
 }
 
 const BookingsList = ({ userType }: BookingsListProps) => {
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -273,10 +275,7 @@ const BookingsList = ({ userType }: BookingsListProps) => {
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => {
-                  // Navigation vers la page de messages
-                  window.location.href = `/messages?booking=${booking.id}`;
-                }}
+                onClick={() => navigate(`/messages?booking=${booking.id}`)}
               >
                 <MessageCircle className="w-4 h-4 mr-1" />
                 Chat

@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +29,7 @@ const ModernClientDashboard = ({
   isLoading 
 }: ModernClientDashboardProps) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Enhanced analytics calculations
   const enhancedMetrics = useMemo(() => {
@@ -144,7 +146,7 @@ const ModernClientDashboard = ({
               <Button 
                 size="lg"
                 className="bg-gradient-to-r from-primary to-secondary hover:shadow-xl transition-all" 
-                onClick={() => window.location.href = '/services'}
+                onClick={() => navigate('/services')}
               >
                 <Plus className="w-5 h-5 mr-2" />
                 Nouvelle réservation
@@ -256,7 +258,7 @@ const ModernClientDashboard = ({
                   </p>
                   <Button 
                     size="lg"
-                    onClick={() => window.location.href = '/services'}
+                    onClick={() => navigate('/services')}
                     className="bg-gradient-to-r from-primary to-secondary"
                   >
                     <Sparkles className="w-5 h-5 mr-2" />
