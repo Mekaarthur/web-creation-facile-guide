@@ -17,7 +17,6 @@ import UpdatePassword from "./pages/UpdatePassword";
 import EspacePersonnel from "./pages/EspacePersonnel";
 import EspacePrestataire from "./pages/EspacePrestataire";
 import MyZones from "./pages/provider/MyZones";
-import NousRecrutons from "./pages/NousRecrutons";
 import Admin from "./pages/Admin";
 import { GestionDemandes } from "./pages/GestionDemandes";
 import ContactPage from "./pages/Contact";
@@ -30,7 +29,6 @@ import AnalyticsSEO from "./pages/AnalyticsSEO";
 import ConfigMessages from "./pages/ConfigMessages";
 import CustomRequest from "./pages/CustomRequest";
 import ProviderSignup from "./pages/ProviderSignup";
-import AdminJobApplications from "./pages/AdminJobApplications";
 import AdminClientRequests from "./pages/AdminClientRequests";
 import BikaKids from "./pages/BikaKids";
 import BikaMaison from "./pages/BikaMaison";
@@ -142,7 +140,7 @@ const App = () => (
             <Route path="/dashboard-prestataire" element={<ProtectedProviderRoute><EspacePrestataire /></ProtectedProviderRoute>} />
             <Route path="/provider-onboarding" element={<ProtectedProviderRoute><ProviderOnboarding /></ProtectedProviderRoute>} />
             <Route path="/provider/zones" element={<ProtectedProviderRoute><MyZones /></ProtectedProviderRoute>} />
-            <Route path="/nous-recrutons" element={<NousRecrutons />} />
+            <Route path="/nous-recrutons" element={<ProviderSignup />} />
             <Route path="/gestion-demandes" element={<GestionDemandes />} />
             <Route path="/services" element={<ServicesPage />} />
             <Route path="/services/:category/:slug" element={<SubServicePage />} />

@@ -1,7 +1,7 @@
-import AdminJobApplications from "../AdminJobApplications";
+import ProviderManagement from "./ProviderManagement";
 
 const AdminApplications = () => {
-  return <AdminJobApplications />;
+  return <ProviderManagement />;
 };
 
 export default AdminApplications;
