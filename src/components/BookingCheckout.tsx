@@ -356,7 +356,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
 
   return (
     <div className={cn(
-      "max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-40 sm:pb-32 pb-bottom-bar space-y-4 sm:space-y-6 transition-opacity duration-500 min-h-dvh overflow-y-auto lg:overflow-visible max-h-[100dvh]",
+      "max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-40 sm:pb-32 pb-bottom-bar space-y-4 sm:space-y-6 transition-opacity duration-500 min-h-[100svh]",
       isVisible ? "opacity-100" : "opacity-0"
     )}>
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6 animate-fade-in">
@@ -416,18 +416,11 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                 <span className="font-medium">{getCartTotal()}€</span>
               </div>
               
-              {urssafEnabled && (
-                <div className="flex justify-between items-center text-xs text-green-600">
-                  <span>Avance immédiate (-50%)</span>
-                  <span>-{(getCartTotal() * 0.5).toFixed(2)}€</span>
-                </div>
-              )}
+              {/* Avance immédiate désactivée temporairement */}
               
               <div className="flex justify-between items-center text-lg sm:text-xl font-bold border-t pt-2">
                 <span>Total</span>
-                <span className="text-primary">
-                  {urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€
-                </span>
+                <span className="text-primary">{getCartTotal()}€</span>
               </div>
             </div>
           </CardContent>
@@ -557,43 +550,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
             </CardContent>
           </Card>
 
-          {/* Avance immédiate URSSAF */}
-          <Card className="border-green-200 bg-green-50/30">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <CreditCard className="w-5 h-5 text-green-600" />
-                Avance immédiate du crédit d'impôt
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-4 bg-white rounded-lg border border-green-200">
-                <p className="text-sm text-muted-foreground mb-3">
-                  En tant que particulier employeur, bénéficiez de <strong>50% de réduction immédiate</strong> grâce au dispositif URSSAF d'avance immédiate du crédit d'impôt.
-                </p>
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    id="urssaf-consent"
-                    checked={urssafEnabled}
-                    onChange={(e) => setUrssafEnabled(e.target.checked)}
-                    disabled={isProcessing}
-                    className="mt-1 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500 cursor-pointer"
-                  />
-                  <Label htmlFor="urssaf-consent" className="text-sm cursor-pointer leading-relaxed">
-                    J'autorise Bikawo à activer le service <strong>Avance Immédiate de l'URSSAF</strong> pour mes prestations et à déclarer ces services auprès de l'URSSAF. Je bénéficierai ainsi de 50% de réduction immédiate sur le montant total.
-                  </Label>
-                </div>
-              </div>
-              
-              {urssafEnabled && (
-                <Alert className="border-green-200 bg-green-50">
-                  <AlertDescription className="text-sm">
-                    ✅ Vous ne paierez que <strong>{(getCartTotal() * 0.5).toFixed(2)}€</strong> au lieu de {getCartTotal()}€. L'État prendra en charge les {(getCartTotal() * 0.5).toFixed(2)}€ restants.
-                  </AlertDescription>
-                </Alert>
-              )}
-            </CardContent>
-          </Card>
+          {/* Avance immédiate URSSAF — retirée temporairement */}
         </div>
 
         {/* Right Column - Order Summary - Desktop uniquement */}
@@ -649,24 +606,11 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                   <span>{getCartTotal()}€</span>
                 </div>
                 
-                {urssafEnabled && (
-                  <>
-                    <div className="flex justify-between items-center text-sm text-green-600">
-                      <span>Avance immédiate (-50%)</span>
-                      <span>-{(getCartTotal() * 0.5).toFixed(2)}€</span>
-                    </div>
-                    <div className="flex justify-between items-center text-xs text-muted-foreground">
-                      <span>Pris en charge par l'État</span>
-                      <span>{(getCartTotal() * 0.5).toFixed(2)}€</span>
-                    </div>
-                  </>
-                )}
+                {/* Avance immédiate désactivée temporairement */}
                 
                 <div className="flex justify-between items-center text-lg font-bold border-t pt-2">
                   <span>Montant à payer</span>
-                  <span className="text-primary">
-                    {urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€
-                  </span>
+                  <span className="text-primary">{getCartTotal()}€</span>
                 </div>
               </div>
 
@@ -684,7 +628,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                 ) : (
                   <>
                     <CreditCard className="w-4 h-4 mr-2" />
-                    Confirmer et payer {urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€
+                    Confirmer et payer {getCartTotal()}€
                   </>
                 )}
               </Button>
@@ -698,16 +642,13 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       </div>
 
       {/* Bouton fixe mobile */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-3 bg-background/98 backdrop-blur-md border-t shadow-elegant z-50 safe-area-bottom">
+      <div className="lg:hidden sticky bottom-0 left-0 right-0 p-3 bg-background/98 backdrop-blur-md border-t shadow-elegant z-50 safe-area-bottom">
         <div className="max-w-lg mx-auto space-y-2">
           <div className="flex justify-between items-center text-sm">
             <span className="font-medium">Total à payer</span>
             <div className="text-right">
-              {urssafEnabled && (
-                <div className="text-xs text-muted-foreground line-through">{getCartTotal()}€</div>
-              )}
-              <div className={cn("font-bold", urssafEnabled ? "text-green-600 text-lg" : "text-primary text-lg")}>
-                {urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€
+              <div className="font-bold text-primary text-lg">
+                {getCartTotal()}€
               </div>
             </div>
           </div>
@@ -725,7 +666,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
             ) : (
               <>
                 <CreditCard className="w-4 h-4 mr-2" />
-                Confirmer {urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€
+                Confirmer {getCartTotal()}€
               </>
             )}
           </Button>
