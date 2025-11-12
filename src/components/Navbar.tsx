@@ -133,12 +133,13 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className={cn(
-      "fixed top-0 w-full z-50 transition-smooth",
-      isScrolled 
-        ? "bg-white/90 backdrop-blur-lg border-b border-border/50 shadow-elegant" 
-        : "bg-white/95 backdrop-blur-md border-b border-border shadow-soft"
-    )}>
+    <>
+      <nav className={cn(
+        "fixed top-0 w-full z-50 transition-smooth",
+        isScrolled 
+          ? "bg-white/90 backdrop-blur-lg border-b border-border/50 shadow-elegant" 
+          : "bg-white/95 backdrop-blur-md border-b border-border shadow-soft"
+      )}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
@@ -283,9 +284,10 @@ const Navbar = () => {
         </div>
       </div>
       
-      {/* Panier Modal */}
-      <BikawoCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </nav>
+    {/* Panier Modal - rendu hors du nav pour conserver le scroll */}
+    <BikawoCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+    </>
   );
 };
 
