@@ -356,7 +356,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
 
   return (
     <div className={cn(
-      "max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-40 sm:pb-32 space-y-4 sm:space-y-6 transition-opacity duration-500 min-h-screen",
+      "max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-40 sm:pb-32 pb-bottom-bar space-y-4 sm:space-y-6 transition-opacity duration-500 min-h-dvh",
       isVisible ? "opacity-100" : "opacity-0"
     )}>
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6 animate-fade-in">
@@ -483,6 +483,8 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                   id="email"
                   name="email"
                   type="email"
+                  inputMode="email"
+                  autoComplete="email"
                   value={clientInfo.email}
                   onChange={(e) => setClientInfo({...clientInfo, email: e.target.value})}
                   placeholder="jean.dupont@example.com"
@@ -530,6 +532,8 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                   id="phone"
                   name="phone"
                   type="tel"
+                  inputMode="tel"
+                  pattern="^(\+?33\s?|0)[1-9](?:[ .-]?\d{2}){4}$"
                   value={clientInfo.phone}
                   onChange={(e) => {
                     setClientInfo({...clientInfo, phone: e.target.value});

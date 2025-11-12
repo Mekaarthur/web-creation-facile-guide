@@ -499,6 +499,19 @@
     margin: var(--spacing-sm);
   }
 
+  /* Safe-area and mobile viewport helpers */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pb-bottom-bar {
+    /* Reserve space for the fixed mobile checkout bar + iOS safe area */
+    padding-bottom: calc(env(safe-area-inset-bottom) + 96px);
+  }
+  .min-h-dvh {
+    /* Dynamic viewport height for mobile browsers (prevents cut-off under browser UI) */
+    min-height: 100dvh;
+  }
+
   @media (min-width: 768px) {
     .mobile-p-4 {
       padding: var(--spacing-lg);
