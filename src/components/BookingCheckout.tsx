@@ -356,7 +356,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
 
   return (
     <div className={cn(
-      "max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-40 sm:pb-32 pb-bottom-bar space-y-4 sm:space-y-6 transition-opacity duration-500 min-h-dvh",
+      "max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-40 sm:pb-32 pb-bottom-bar space-y-4 sm:space-y-6 transition-opacity duration-500 min-h-dvh overflow-y-auto lg:overflow-visible max-h-[100dvh]",
       isVisible ? "opacity-100" : "opacity-0"
     )}>
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6 animate-fade-in">
