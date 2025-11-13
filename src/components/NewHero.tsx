@@ -14,7 +14,7 @@ const NewHero = () => {
   }, []);
 
   return (
-    <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden pt-24 pb-12 sm:pt-28 sm:pb-16">
       {/* Animated Background */}
       <div className="absolute inset-0">
         {/* Primary Background Image */}
@@ -26,8 +26,8 @@ const NewHero = () => {
         {/* Animated Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent animate-pulse opacity-80" />
         
-        {/* Floating Elements */}
-        <div className="absolute inset-0">
+        {/* Floating Elements - Hidden on mobile */}
+        <div className="absolute inset-0 hidden sm:block">
           <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-primary/20 rounded-full blur-3xl animate-bounce" style={{ animationDelay: '0s', animationDuration: '3s' }} />
           <div className="absolute top-3/4 right-1/4 w-24 h-24 bg-secondary/20 rounded-full blur-2xl animate-bounce" style={{ animationDelay: '1s', animationDuration: '4s' }} />
           <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-accent/30 rounded-full blur-xl animate-bounce" style={{ animationDelay: '2s', animationDuration: '5s' }} />
@@ -35,26 +35,26 @@ const NewHero = () => {
       </div>
 
       {/* Content with Staggered Animations */}
-      <div className="relative z-10 container mx-auto px-4 text-center text-primary-foreground">
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className={`transition-all duration-1000 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-          <h1 className="text-4xl md:text-7xl font-bold mb-6 bg-gradient-hero bg-clip-text text-transparent leading-tight">
-            {t('newHero.title1')}
-            <span className="block text-primary animate-pulse">{t('newHero.title2')}</span>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 leading-tight">
+            <span className="block text-primary drop-shadow-lg">{t('newHero.title1')}</span>
+            <span className="block text-primary drop-shadow-lg">{t('newHero.title2')}</span>
           </h1>
         </div>
         
         <div className={`transition-all duration-1000 delay-300 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-          <p className="text-xl md:text-2xl mb-8 max-w-4xl mx-auto opacity-95 leading-relaxed text-primary-foreground/90">
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl mb-6 sm:mb-8 max-w-4xl mx-auto leading-relaxed text-primary-foreground drop-shadow-md px-2">
             {t('newHero.subtitle')}
           </p>
         </div>
 
         {/* Enhanced Double CTA */}
-        <div className={`flex flex-col sm:flex-row gap-6 justify-center items-center transition-all duration-1000 delay-500 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-          <Link to="/services">
+        <div className={`flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center transition-all duration-1000 delay-500 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+          <Link to="/services" className="w-full sm:w-auto">
             <Button 
               size="lg" 
-              className="group w-full sm:w-auto px-10 py-5 text-lg font-semibold bg-primary hover:bg-primary/90 transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-primary/50"
+              className="group w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-semibold bg-primary hover:bg-primary/90 transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-primary/50"
             >
               <span className="mr-2 group-hover:animate-bounce">🛒</span>
               {t('newHero.ctaReserve')}
@@ -62,11 +62,11 @@ const NewHero = () => {
             </Button>
           </Link>
           
-          <Link to="/nous-recrutons">
+          <Link to="/nous-recrutons" className="w-full sm:w-auto">
             <Button 
               variant="outline" 
               size="lg" 
-              className="group w-full sm:w-auto px-10 py-5 text-lg font-semibold bg-transparent border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-glow"
+              className="group w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-semibold bg-transparent border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-glow"
             >
               <span className="mr-2 group-hover:animate-bounce">💼</span>
               {t('newHero.ctaProvider')}
