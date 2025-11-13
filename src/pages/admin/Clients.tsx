@@ -147,11 +147,11 @@ const AdminClients = () => {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Clients</h1>
-          <p className="text-muted-foreground">Gestion des clients de la plateforme</p>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Clients</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm md:text-base">Gestion des clients de la plateforme</p>
         </div>
         <Button onClick={() => setCreateDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
@@ -164,11 +164,11 @@ const AdminClients = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total clients</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">Total clients</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
+              <div className="text-lg sm:text-xl md:text-2xl font-bold">{stats.total}</div>
               <p className="text-xs text-muted-foreground">
                 +{stats.new} ce mois
               </p>
@@ -177,11 +177,11 @@ const AdminClients = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Clients actifs</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">Clients actifs</CardTitle>
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.active || 0}</div>
+              <div className="text-lg sm:text-xl md:text-2xl font-bold">{stats.active || 0}</div>
               <p className="text-xs text-muted-foreground">
                 Taux: {(stats.activity_rate || 0)}%
               </p>
@@ -190,11 +190,11 @@ const AdminClients = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">CA total</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">CA total</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{(stats.total_revenue || 0).toFixed(0)}€</div>
+              <div className="text-lg sm:text-xl md:text-2xl font-bold">{(stats.total_revenue || 0).toFixed(0)}€</div>
               <p className="text-xs text-muted-foreground">
                 Moy: {(stats.average_revenue_per_client || 0).toFixed(0)}€/client
               </p>
@@ -203,11 +203,11 @@ const AdminClients = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Rétention</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">Rétention</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{(stats.retention_rate || 0)}%</div>
+              <div className="text-lg sm:text-xl md:text-2xl font-bold">{(stats.retention_rate || 0)}%</div>
               <p className="text-xs text-muted-foreground">
                 {stats.blocked || 0} bloqués
               </p>

@@ -180,8 +180,8 @@ export const AdminManualAssignment = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Attribution manuelle des missions</h2>
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">Attribution manuelle des missions</h2>
         <Badge variant="secondary">
           {clientRequests.length} demande{clientRequests.length !== 1 ? 's' : ''} à traiter
         </Badge>

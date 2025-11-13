@@ -199,21 +199,21 @@ const AdminProviders = () => {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <div>
-        <h1 className="text-3xl font-bold">Prestataires</h1>
-        <p className="text-muted-foreground">Gestion des prestataires de la plateforme</p>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Prestataires</h1>
+        <p className="text-muted-foreground text-xs sm:text-sm md:text-base">Gestion des prestataires de la plateforme</p>
       </div>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total prestataires</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Total prestataires</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold">{stats.total}</div>
             <p className="text-xs text-muted-foreground">
               {stats.pending} en attente
             </p>
@@ -222,11 +222,11 @@ const AdminProviders = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Prestataires actifs</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Prestataires actifs</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.active}</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold">{stats.active}</div>
             <p className="text-xs text-muted-foreground">
               Taux: {stats.total > 0 ? ((stats.active / stats.total) * 100).toFixed(1) : 0}%
             </p>
@@ -235,11 +235,11 @@ const AdminProviders = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Missions totales</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Missions totales</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total_missions}</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold">{stats.total_missions}</div>
             <p className="text-xs text-muted-foreground">
               Moy: {stats.active > 0 ? (stats.total_missions / stats.active).toFixed(1) : 0}/prestataire
             </p>
@@ -248,11 +248,11 @@ const AdminProviders = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Note moyenne</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Note moyenne</CardTitle>
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{(stats.average_rating || 0).toFixed(1)}/5</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold">{(stats.average_rating || 0).toFixed(1)}/5</div>
             <p className="text-xs text-muted-foreground">
               Revenus: {(stats.total_revenue || 0).toFixed(0)}€
             </p>

@@ -88,8 +88,8 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6 p-4 sm:p-6">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold">Tableau de bord</h1>
-        <p className="text-muted-foreground text-sm sm:text-base">Vue d'ensemble de votre plateforme</p>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Tableau de bord</h1>
+        <p className="text-muted-foreground text-xs sm:text-sm md:text-base">Vue d'ensemble de votre plateforme</p>
       </div>
 
       {/* Statistiques principales */}
@@ -100,7 +100,7 @@ export default function AdminDashboard() {
             <Users className="h-4 w-4 text-muted-foreground flex-shrink-0" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">{stats.total_users}</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold">{stats.total_users}</div>
             <p className="text-xs text-muted-foreground">
               +12% par rapport au mois dernier
             </p>
@@ -109,11 +109,11 @@ export default function AdminDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Prestataires</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Prestataires</CardTitle>
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total_providers}</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold">{stats.total_providers}</div>
             <p className="text-xs text-muted-foreground">
               Professionnels vérifiés
             </p>
@@ -122,11 +122,11 @@ export default function AdminDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Réservations</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Réservations</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total_bookings}</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold">{stats.total_bookings}</div>
             <p className="text-xs text-muted-foreground">
               Total effectuées
             </p>
@@ -135,11 +135,11 @@ export default function AdminDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenus</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Revenus</CardTitle>
             <Euro className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total_revenue}€</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold">{stats.total_revenue}€</div>
             <p className="text-xs text-muted-foreground">
               Chiffre d'affaires total
             </p>
@@ -148,11 +148,11 @@ export default function AdminDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Croissance</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Croissance</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+{stats.monthly_growth}%</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold">+{stats.monthly_growth}%</div>
             <p className="text-xs text-muted-foreground">
               Croissance mensuelle
             </p>
@@ -161,11 +161,11 @@ export default function AdminDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avis en attente</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Avis en attente</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.pending_reviews}</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold">{stats.pending_reviews}</div>
             <p className="text-xs text-muted-foreground">
               Nécessitent une modération
             </p>

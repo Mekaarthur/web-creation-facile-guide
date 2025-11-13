@@ -148,8 +148,8 @@ export const AdminRefundManager = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">Gestion des remboursements</h2>
-        <p className="text-muted-foreground">Gérez les remboursements des réservations annulées</p>
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">Gestion des remboursements</h2>
+        <p className="text-muted-foreground text-xs sm:text-sm md:text-base">Gérez les remboursements des réservations annulées</p>
       </div>
 
       {/* Statistiques */}
@@ -158,8 +158,8 @@ export const AdminRefundManager = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total annulations</p>
-                <p className="text-2xl font-bold">{bookings.length}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Total annulations</p>
+                <p className="text-lg sm:text-xl md:text-2xl font-bold">{bookings.length}</p>
               </div>
               <AlertCircle className="h-8 w-8 text-orange-500" />
             </div>
@@ -170,8 +170,8 @@ export const AdminRefundManager = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Remboursements traités</p>
-                <p className="text-2xl font-bold">
+                <p className="text-xs sm:text-sm text-muted-foreground">Remboursements traités</p>
+                <p className="text-lg sm:text-xl md:text-2xl font-bold">
                   {bookings.filter(b => getRefundStatus(b).status === 'refunded').length}
                 </p>
               </div>
@@ -184,8 +184,8 @@ export const AdminRefundManager = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">En attente</p>
-                <p className="text-2xl font-bold">
+                <p className="text-xs sm:text-sm text-muted-foreground">En attente</p>
+                <p className="text-lg sm:text-xl md:text-2xl font-bold">
                   {bookings.filter(b => getRefundStatus(b).status === 'pending').length}
                 </p>
               </div>

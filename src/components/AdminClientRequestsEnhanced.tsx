@@ -414,50 +414,50 @@ export const AdminClientRequestsEnhanced = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Total</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold">{stats.total}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Nouvelles</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Nouvelles</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.new}</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">{stats.new}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">En cours</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">En cours</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{stats.in_progress}</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold text-orange-600">{stats.in_progress}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Terminées</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Terminées</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.completed}</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold text-green-600">{stats.completed}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Paiements</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Paiements</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600">{stats.paid}</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold text-purple-600">{stats.paid}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Litiges</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Litiges</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.dispute}</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold text-red-600">{stats.dispute}</div>
           </CardContent>
         </Card>
       </div>

@@ -205,8 +205,8 @@ export const AdminMatchingPanel = () => {
             <div className="bg-blue-50 p-4 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-blue-600 font-medium">Demandes Total</p>
-                  <p className="text-2xl font-bold text-blue-900">{stats?.totalRequests || 0}</p>
+                  <p className="text-xs sm:text-sm text-blue-600 font-medium">Demandes Total</p>
+                  <p className="text-lg sm:text-xl md:text-2xl font-bold text-blue-900">{stats?.totalRequests || 0}</p>
                 </div>
                 <Activity className="w-8 h-8 text-blue-600" />
               </div>
@@ -215,8 +215,8 @@ export const AdminMatchingPanel = () => {
             <div className="bg-green-50 p-4 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-green-600 font-medium">Taux de Succès</p>
-                  <p className="text-2xl font-bold text-green-900">{stats?.successRate || "0%"}</p>
+                  <p className="text-xs sm:text-sm text-green-600 font-medium">Taux de Succès</p>
+                  <p className="text-lg sm:text-xl md:text-2xl font-bold text-green-900">{stats?.successRate || "0%"}</p>
                 </div>
                 <Target className="w-8 h-8 text-green-600" />
               </div>
@@ -225,8 +225,8 @@ export const AdminMatchingPanel = () => {
             <div className="bg-purple-50 p-4 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-purple-600 font-medium">Prestataires Actifs</p>
-                  <p className="text-2xl font-bold text-purple-900">{stats?.activeProviders || 0}</p>
+                  <p className="text-xs sm:text-sm text-purple-600 font-medium">Prestataires Actifs</p>
+                  <p className="text-lg sm:text-xl md:text-2xl font-bold text-purple-900">{stats?.activeProviders || 0}</p>
                 </div>
                 <Users className="w-8 h-8 text-purple-600" />
               </div>
@@ -235,8 +235,8 @@ export const AdminMatchingPanel = () => {
             <div className="bg-orange-50 p-4 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-orange-600 font-medium">Temps Moyen</p>
-                  <p className="text-2xl font-bold text-orange-900">{stats?.averageMatchTime || "N/A"}</p>
+                  <p className="text-xs sm:text-sm text-orange-600 font-medium">Temps Moyen</p>
+                  <p className="text-lg sm:text-xl md:text-2xl font-bold text-orange-900">{stats?.averageMatchTime || "N/A"}</p>
                 </div>
                 <Clock className="w-8 h-8 text-orange-600" />
               </div>
