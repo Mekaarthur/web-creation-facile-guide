@@ -257,58 +257,58 @@ export const AdminJobApplications = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Total</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold">{stats.total}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Nouvelles</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Nouvelles</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.pending}</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">{stats.pending}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Documents</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Documents</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{stats.documents_required}</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold text-orange-600">{stats.documents_required}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Entretiens</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Entretiens</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600">{stats.interview_scheduled}</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold text-purple-600">{stats.interview_scheduled}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Validés</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Validés</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold text-green-600">{stats.approved}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Actifs</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Actifs</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-800">{stats.active}</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold text-green-800">{stats.active}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Surveillance</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Surveillance</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.under_review}</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold text-red-600">{stats.under_review}</div>
           </CardContent>
         </Card>
       </div>
