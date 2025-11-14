@@ -61,11 +61,50 @@ serve(async (req) => {
         }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       
       case 'update_status':
-        const { error } = await supabase.from('bookings')
+        const { error: statusError } = await supabase.from('bookings')
           .update({ status: requestData.status })
           .eq('id', requestData.bookingId);
         
-        if (error) throw error;
+        if (statusError) throw statusError;
+        return new Response(JSON.stringify({ success: true }), 
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+
+      case 'send_email':
+        // Log the email request (implement actual email sending via a service)
+        console.log('Email request:', {
+          to: requestData.recipientEmail,
+          subject: requestData.subject,
+          message: requestData.message,
+          bookingId: requestData.bookingId
+        });
+        
+        // You can integrate with Resend, SendGrid, or another email service here
+        return new Response(JSON.stringify({ 
+          success: true,
+          message: 'Email logged for sending'
+        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+
+      case 'assign_provider':
+        const { error: assignError } = await supabase.from('bookings')
+          .update({ 
+            provider_id: requestData.providerId,
+            status: 'confirmed',
+            assigned_at: new Date().toISOString()
+          })
+          .eq('id', requestData.bookingId);
+        
+        if (assignError) throw assignError;
+        
+        // Create notification for provider
+        const { error: notifError } = await supabase.from('notifications').insert({
+          user_id: requestData.providerUserId,
+          title: 'Nouvelle mission assignée',
+          message: `Une nouvelle mission vous a été assignée`,
+          type: 'booking_request'
+        });
+        
+        if (notifError) console.error('Notification error:', notifError);
+        
         return new Response(JSON.stringify({ success: true }), 
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
