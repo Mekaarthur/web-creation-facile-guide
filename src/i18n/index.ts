@@ -575,7 +575,7 @@ const resources = {
       // Testimonials
       "testimonials.title": "Testimonials",
       "testimonials.client1.name": "Marie L.",
-      "testimonials.client1.role": "Bika Maison Client",
+      "testimonials.client1.role": "Bika Home Client",
       "testimonials.client1.content": "Exceptional service, very satisfied! Bikawo really simplified my life.",
       "testimonials.provider1.name": "Thomas R.",
       "testimonials.provider1.role": "Bika Kids Provider",
