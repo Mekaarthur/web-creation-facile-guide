@@ -68,7 +68,7 @@ export const serviceTranslations: ServiceTranslations = {
     },
   },
   maison: {
-    title: '🏠 BIKA MAISON - Home management',
+    title: '🏠 BIKA HOME - Home management',
     subservices: {
       'courses-approvisionnement': {
         title: 'Groceries & Supplies',
@@ -158,7 +158,7 @@ export const serviceTranslations: ServiceTranslations = {
     },
   },
   vie: {
-    title: '🔑 BIKA VIE - Full concierge',
+    title: '🎯 BIKA LIFE - Concierge services',
     subservices: {
       'services-administratifs-familiaux': {
         title: 'Family administrative services',

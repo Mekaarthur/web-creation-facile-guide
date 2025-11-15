@@ -19,28 +19,28 @@ const ServiceBreadcrumb = ({ serviceName }: ServiceBreadcrumbProps) => {
 
   return (
     <div className="bg-muted/30 border-b">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
         <Breadcrumb>
-          <BreadcrumbList>
+          <BreadcrumbList className="flex-wrap">
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/" className="flex items-center hover:text-primary transition-colors">
-                  <Home className="h-4 w-4 mr-1" />
-                  Accueil
+                <Link to="/" className="flex items-center hover:text-primary transition-colors text-xs sm:text-sm">
+                  <Home className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                  <span className="hidden xs:inline">Accueil</span>
                 </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator />
+            <BreadcrumbSeparator className="text-xs sm:text-sm" />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/services" className="hover:text-primary transition-colors">
+                <Link to="/services" className="hover:text-primary transition-colors text-xs sm:text-sm">
                   Services
                 </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator />
+            <BreadcrumbSeparator className="text-xs sm:text-sm" />
             <BreadcrumbItem>
-              <BreadcrumbPage className="text-primary font-medium">
+              <BreadcrumbPage className="text-primary font-medium text-xs sm:text-sm truncate max-w-[150px] sm:max-w-none">
                 {serviceName}
               </BreadcrumbPage>
             </BreadcrumbItem>
