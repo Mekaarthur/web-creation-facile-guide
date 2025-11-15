@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { MobileNavigation } from "@/components/MobileNavigation";
@@ -22,6 +22,7 @@ import BikawoCartIndicator from "@/components/BikawoCartIndicator";
 import UserProfileMenu from "@/components/UserProfileMenu";
 import { SecureLogout } from "@/components/SecureLogout";
 import { servicesData } from "@/utils/servicesData";
+import bikawoLogo from "@/assets/bikawo-logo.png";
 // Import service images
 import serviceKids from '@/assets/service-kids.jpg';
 import serviceMaison from '@/assets/service-maison.jpg';
@@ -37,6 +38,7 @@ const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const { user } = useAuth();
+  const location = useLocation();
 
   // Détection du scroll pour effet glassmorphism
   useEffect(() => {
@@ -52,9 +54,9 @@ const Navbar = () => {
   const { isAdmin } = useAdminRole();
 
   const navItems = [
-    { name: t('nav.about'), href: "/a-propos-de-nous" },
-    { name: t('nav.contact'), href: "/contact" },
-    { name: t('nav.blog'), href: "/blog" },
+    { name: t('nav.about'), href: "/a-propos-de-nous", label: "nav.about" },
+    { name: t('nav.contact'), href: "/contact", label: "nav.contact" },
+    { name: t('nav.blog'), href: "/blog", label: "nav.blog" },
   ];
 
   // Structure organisée des services avec images
@@ -146,9 +148,9 @@ const Navbar = () => {
           <div className="flex items-center space-x-3 group">
             <Link to="/" className="flex items-center">
               <img 
-                src="/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png" 
+                src={bikawoLogo} 
                 alt="Bikawô Logo" 
-                className="h-12 w-auto transition-smooth group-hover:scale-105"
+                className="h-10 sm:h-12 w-auto bg-transparent transition-smooth group-hover:scale-105"
               />
             </Link>
           </div>
@@ -225,12 +227,19 @@ const Navbar = () => {
                 key={item.name}
                 to={item.href}
                 className={cn(
-                  "relative px-3 py-2 text-sm font-medium transition-smooth rounded-lg group",
-                  "text-foreground hover:text-primary hover:bg-muted/50"
+                  "relative px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium transition-smooth rounded-lg group",
+                  location.pathname === item.href 
+                    ? "text-primary font-bold bg-muted/50" 
+                    : "text-foreground hover:text-primary hover:bg-muted/50"
                 )}
               >
                 {item.name}
-                <div className="absolute inset-x-1 -bottom-1 h-0.5 bg-gradient-primary rounded-full scale-x-0 transition-transform duration-200 group-hover:scale-x-100" />
+                {location.pathname === item.href && (
+                  <div className="absolute inset-x-1 -bottom-1 h-0.5 bg-gradient-primary rounded-full" />
+                )}
+                {location.pathname !== item.href && (
+                  <div className="absolute inset-x-1 -bottom-1 h-0.5 bg-gradient-primary rounded-full scale-x-0 transition-transform duration-200 group-hover:scale-x-100" />
+                )}
               </Link>
             ))}
           </div>

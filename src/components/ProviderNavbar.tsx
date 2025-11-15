@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { MobileNavigation } from "@/components/MobileNavigation";
@@ -19,6 +19,7 @@ import Cart from "@/components/Cart";
 import CartIndicator from "@/components/CartIndicator";
 import UserProfileMenu from "@/components/UserProfileMenu";
 import { SecureLogout } from "@/components/SecureLogout";
+import bikawoLogo from "@/assets/bikawo-logo.png";
 
 const ProviderNavbar = () => {
   const { t } = useTranslation();
@@ -82,9 +83,9 @@ const ProviderNavbar = () => {
           {/* Logo */}
           <div className="flex items-center space-x-3 group">
             <img 
-              src="/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png" 
+              src={bikawoLogo} 
               alt="Bikawô Logo" 
-              className="h-12 w-auto transition-all duration-300 group-hover:scale-105"
+              className="h-10 sm:h-12 w-auto bg-transparent transition-all duration-300 group-hover:scale-105"
             />
           </div>
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -7,12 +7,14 @@ import {
   Briefcase, 
   Shield,
   X,
-  ArrowLeft
+  ArrowLeft,
+  Home
 } from 'lucide-react';
 import { SecureAuthForm } from '@/components/auth/SecureAuthForm';
 import { ClientSignupForm } from '@/components/auth/ClientSignupForm';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import bikawoLogo from '@/assets/bikawo-logo.png';
 
 type UserType = 'client' | 'prestataire' | 'admin' | null;
 type AuthStep = 'userType' | 'login' | 'signup';
@@ -104,19 +106,42 @@ const EnhancedAuth = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary/5 to-secondary/5 p-4">
-      <div className="w-full max-w-5xl">
-        {/* En-tête avec retour */}
-        {step !== 'userType' && (
-          <Button
-            variant="ghost"
-            onClick={handleBack}
-            className="mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Retour
-          </Button>
-        )}
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-primary/5 to-secondary/5">
+      {/* Navbar */}
+      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-lg border-b border-border/50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16 sm:h-20">
+            <Link to="/" className="flex items-center">
+              <img 
+                src={bikawoLogo} 
+                alt="Bikawô Logo" 
+                className="h-8 sm:h-10 w-auto bg-transparent"
+              />
+            </Link>
+            <Link to="/">
+              <Button variant="ghost" size="sm">
+                <Home className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Accueil</span>
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* Content */}
+      <div className="flex-1 flex items-center justify-center p-4 pt-24">
+        <div className="w-full max-w-5xl">
+          {/* En-tête avec retour - Seulement si pas sur userType */}
+          {step !== 'userType' && (
+            <Button
+              variant="ghost"
+              onClick={handleBack}
+              className="mb-4"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Retour
+            </Button>
+          )}
 
         <Card className="border-2 shadow-2xl">
           {/* ÉTAPE 1: Sélection du type d'utilisateur */}
@@ -275,6 +300,7 @@ const EnhancedAuth = () => {
               Politique de confidentialité
             </button>
           </p>
+        </div>
         </div>
       </div>
     </div>
