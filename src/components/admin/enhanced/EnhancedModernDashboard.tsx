@@ -176,21 +176,7 @@ interface AdminStats {
   flagged_reviews: number;
 }
 
-// Mock data étendu
-const revenueData = [
-  { name: 'Sem 1', revenue: 98000, growth: 12, missions: 245, providers: 34 },
-  { name: 'Sem 2', revenue: 105000, growth: 15, missions: 267, providers: 36 },
-  { name: 'Sem 3', revenue: 118000, growth: 18, missions: 289, providers: 38 },
-  { name: 'Sem 4', revenue: 125000, growth: 22, missions: 312, providers: 41 },
-];
-
-const servicePerformanceData = [
-  { name: 'Bika Kids', missions: 156, revenue: 45200, satisfaction: 4.8, growth: 15 },
-  { name: 'Bika Maison', missions: 234, revenue: 67800, satisfaction: 4.6, growth: 8 },
-  { name: 'Bika Seniors', missions: 89, revenue: 28900, satisfaction: 4.9, growth: 22 },
-  { name: 'Bika Travel', missions: 67, revenue: 23400, satisfaction: 4.4, growth: -5 },
-  { name: 'Bika Vie', missions: 123, revenue: 41200, satisfaction: 4.7, growth: 12 },
-];
+// Les données revenue et service performance sont chargées via les hooks loadAdminStats et loadServicePerformance
 
 const recentActivities = [
   {

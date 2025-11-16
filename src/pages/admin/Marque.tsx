@@ -51,56 +51,54 @@ interface BrandSettings {
 }
 
 const AdminMarque = () => {
-  const [settings, setSettings] = useState<BrandSettings | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [settings, setSettings] = useState<BrandSettings>({
+    identity: {
+      brand_name: 'Bikawo',
+      tagline: 'Services à domicile de confiance',
+      description: 'Bikawo connecte les particuliers avec des prestataires de services qualifiés pour tous leurs besoins à domicile.',
+      brand_color_primary: '#e65100',
+      brand_color_secondary: '#f5f5f4',
+      brand_color_accent: '#f97316'
+    },
+    visual: {
+      font_primary: 'Poppins',
+      font_secondary: 'Inter',
+      border_radius: '0.75rem',
+      shadows: true,
+      animations: true
+    },
+    content: {
+      welcome_message: 'Bienvenue sur Bikawo, votre plateforme de services à domicile !',
+      about_text: 'Fondée en 2024, Bikawo révolutionne les services à domicile en connectant directement les particuliers avec des prestataires qualifiés.',
+      contact_info: 'Pour toute question, contactez-nous à contact@bikawo.com ou au 06 09 08 53 90',
+      terms_url: 'https://bikawo.com/terms',
+      privacy_url: 'https://bikawo.com/privacy'
+    }
+  });
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
   const { toast } = useToast();
 
-  useEffect(() => {
-    // Mock data
-    setTimeout(() => {
-      setSettings({
-        identity: {
-          brand_name: 'Bikawo',
-          tagline: 'Services à domicile de confiance',
-          description: 'Bikawo connecte les particuliers avec des prestataires de services qualifiés pour tous leurs besoins à domicile.',
-          logo_url: '/api/placeholder/200/80',
-          favicon_url: '/api/placeholder/32/32',
-          brand_color_primary: '#e65100',
-          brand_color_secondary: '#f5f5f4',
-          brand_color_accent: '#f97316'
-        },
-        visual: {
-          font_primary: 'Poppins',
-          font_secondary: 'Inter',
-          border_radius: '0.75rem',
-          shadows: true,
-          animations: true
-        },
-        content: {
-          welcome_message: 'Bienvenue sur Bikawo, votre plateforme de services à domicile !',
-          about_text: 'Fondée en 2024, Bikawo révolutionne les services à domicile en connectant directement les particuliers avec des prestataires qualifiés.',
-          contact_info: 'Pour toute question, contactez-nous à contact@bikawo.com ou au 06 09 08 53 90',
-          terms_url: 'https://bikawo.com/terms',
-          privacy_url: 'https://bikawo.com/privacy'
-        }
-      });
-      setLoading(false);
-    }, 1000);
-  }, []);
-
   const handleSave = async () => {
     setSaving(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // Note: Dans une vraie implémentation, sauvegarder dans une table brand_settings
+      // Pour l'instant, juste simuler la sauvegarde
       toast({
         title: "Identité de marque sauvegardée",
         description: "Les modifications ont été appliquées avec succès.",
       });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder les paramètres",
+        variant: "destructive"
+      });
+    } finally {
       setSaving(false);
-    }, 1500);
+    }
   };
 
   const updateSetting = (category: keyof BrandSettings, key: string, value: any) => {
