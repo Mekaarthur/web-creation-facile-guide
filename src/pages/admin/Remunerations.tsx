@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,9 +16,13 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  User
+  User,
+  Loader2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 interface FicheRemuneration {
   id: string;
@@ -32,24 +36,84 @@ interface FicheRemuneration {
   heures: number;
 }
 
-const fichesData: FicheRemuneration[] = [
-  {
-    id: '1',
-    numero: 'REM-2024-0001',
-    prestataire: 'Sophie Martin',
-    montantBrut: 875.00,
-    montantNet: 729.17,
-    periode: '2024-01',
-    statut: 'traite',
-    missions: 15,
-    heures: 35
-  }
-];
-
 const Remunerations: React.FC = () => {
-  const [fiches, setFiches] = useState<FicheRemuneration[]>(fichesData);
+  const [fiches, setFiches] = useState<FicheRemuneration[]>([]);
   const [recherche, setRecherche] = useState('');
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  useEffect(() => {
+    loadRemunerations();
+  }, []);
+
+  const loadRemunerations = async () => {
+    try {
+      setLoading(true);
+      
+      // Charger les transactions financières groupées par prestataire et mois
+      const { data: transactions, error } = await supabase
+        .from('financial_transactions')
+        .select(`
+          *,
+          provider:providers(
+            business_name,
+            profiles(first_name, last_name)
+          )
+        `)
+        .eq('payment_status', 'completed')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Grouper par prestataire et mois
+      const grouped: any = {};
+      transactions?.forEach(t => {
+        const monthKey = format(new Date(t.created_at), 'yyyy-MM');
+        const providerId = t.provider_id;
+        const key = `${providerId}-${monthKey}`;
+        
+        if (!grouped[key]) {
+          grouped[key] = {
+            provider_id: providerId,
+            provider_name: (t as any).provider?.business_name || 
+              `${(t as any).provider?.profiles?.first_name} ${(t as any).provider?.profiles?.last_name}`,
+            month: monthKey,
+            total_brut: 0,
+            missions: 0,
+            transactions: []
+          };
+        }
+        
+        grouped[key].total_brut += Number(t.provider_payment);
+        grouped[key].missions += 1;
+        grouped[key].transactions.push(t);
+      });
+
+      // Convertir en format FicheRemuneration
+      const fichesArr: FicheRemuneration[] = Object.entries(grouped).map(([key, data]: [string, any], index) => ({
+        id: key,
+        numero: `REM-${data.month}-${String(index + 1).padStart(4, '0')}`,
+        prestataire: data.provider_name,
+        montantBrut: data.total_brut,
+        montantNet: data.total_brut * 0.833, // 83.3% après charges
+        periode: data.month,
+        statut: 'traite' as const,
+        missions: data.missions,
+        heures: data.missions * 2.5 // Estimation moyenne
+      }));
+
+      setFiches(fichesArr);
+    } catch (error) {
+      console.error('Erreur chargement rémunérations:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les rémunérations",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatutBadge = (statut: FicheRemuneration['statut']) => {
     const variants = {
@@ -77,49 +141,66 @@ const Remunerations: React.FC = () => {
     });
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-foreground">Fiches de Rémunération</h1>
         <p className="text-muted-foreground mt-2">
-          Gestion des rémunérations prestataires
+          Gestion des rémunérations prestataires ({fiches.length} fiches)
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Fiches</CardTitle>
+          <CardTitle>Fiches de rémunération</CardTitle>
+          <CardDescription>
+            Basées sur les transactions financières complétées
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {fiches.map((fiche) => (
-              <div key={fiche.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center space-x-4">
-                  <User className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-medium">{fiche.numero}</p>
-                    <p className="text-sm text-muted-foreground">{fiche.prestataire}</p>
+          {fiches.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Aucune fiche de rémunération disponible
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {fiches.map((fiche) => (
+                <div key={fiche.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center space-x-4">
+                    <User className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="font-medium">{fiche.numero}</p>
+                      <p className="text-sm text-muted-foreground">{fiche.prestataire}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="font-medium">{fiche.montantBrut.toFixed(2)}€</p>
+                      <p className="text-xs text-muted-foreground">Net: {fiche.montantNet.toFixed(2)}€</p>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <p className="font-medium">{fiche.montantBrut.toFixed(2)}€</p>
-                    <p className="text-xs text-muted-foreground">Net: {fiche.montantNet.toFixed(2)}€</p>
-                  </div>
-                </div>
 
-                <div className="flex items-center space-x-4">
-                  {getStatutBadge(fiche.statut)}
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => handleTelechargerPDF(fiche)}>
-                      <Download className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Eye className="h-4 w-4" />
-                    </Button>
+                  <div className="flex items-center space-x-4">
+                    {getStatutBadge(fiche.statut)}
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => handleTelechargerPDF(fiche)}>
+                        <Download className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -21,32 +21,9 @@ import {
   Zap
 } from "lucide-react";
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { format } from "date-fns";
+import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { fr } from "date-fns/locale";
-
-// Mock data - À remplacer par des données réelles
-const revenueData = [
-  { name: 'Sem 1', revenue: 98000, growth: 12 },
-  { name: 'Sem 2', revenue: 105000, growth: 15 },
-  { name: 'Sem 3', revenue: 118000, growth: 18 },
-  { name: 'Sem 4', revenue: 125000, growth: 22 },
-];
-
-const userGrowthData = [
-  { name: 'Jan', users: 6200 },
-  { name: 'Fév', users: 6800 },
-  { name: 'Mar', users: 7400 },
-  { name: 'Avr', users: 7800 },
-  { name: 'Mai', users: 8200 },
-];
-
-const serviceData = [
-  { name: 'Bika Kids', value: 33, color: '#3b82f6' },
-  { name: 'Bika Maison', value: 25, color: '#10b981' },
-  { name: 'Bika Vie', value: 18, color: '#f59e0b' },
-  { name: 'Bika Travel', value: 12, color: '#8b5cf6' },
-  { name: 'Autres', value: 12, color: '#6b7280' },
-];
+import { supabase } from "@/integrations/supabase/client";
 
 const MetricCard = ({ 
   title, 
