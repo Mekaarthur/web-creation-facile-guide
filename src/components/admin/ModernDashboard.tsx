@@ -118,6 +118,10 @@ export default function ModernDashboard() {
     satisfaction: { value: 4.8, change: '+0.1', trend: [4.6, 4.7, 4.7, 4.8, 4.8] }
   });
 
+  const [revenueData, setRevenueData] = useState<any[]>([]);
+  const [userGrowthData, setUserGrowthData] = useState<any[]>([]);
+  const [serviceData, setServiceData] = useState<any[]>([]);
+
   const alerts = [
     {
       type: 'warning' as const,
@@ -144,6 +148,75 @@ export default function ModernDashboard() {
       priority: 'low' as const
     }
   ];
+
+  useEffect(() => {
+    const loadChartData = async () => {
+      try {
+        // Load revenue data from bookings
+        const { data: bookings } = await supabase
+          .from('bookings')
+          .select('total_price, booking_date, status')
+          .eq('status', 'completed')
+          .gte('booking_date', format(subMonths(new Date(), 1), 'yyyy-MM-dd'))
+          .order('booking_date');
+
+        // Aggregate revenue by week
+        const revenueByWeek = bookings?.reduce((acc: any, booking) => {
+          const weekStart = format(new Date(booking.booking_date), 'dd MMM', { locale: fr });
+          if (!acc[weekStart]) acc[weekStart] = 0;
+          acc[weekStart] += booking.total_price;
+          return acc;
+        }, {}) || {};
+
+        setRevenueData(Object.entries(revenueByWeek).map(([name, revenue]) => ({ name, revenue })));
+
+        // Load user growth data from profiles
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('created_at')
+          .gte('created_at', format(subMonths(new Date(), 5), 'yyyy-MM-dd'))
+          .order('created_at');
+
+        // Aggregate users by month
+        const usersByMonth = profiles?.reduce((acc: any, profile) => {
+          const month = format(startOfMonth(new Date(profile.created_at)), 'MMM yyyy', { locale: fr });
+          if (!acc[month]) acc[month] = 0;
+          acc[month] += 1;
+          return acc;
+        }, {}) || {};
+
+        let cumulative = 0;
+        setUserGrowthData(Object.entries(usersByMonth).map(([name, count]: [string, any]) => {
+          cumulative += count;
+          return { name, users: cumulative };
+        }));
+
+        // Load service distribution
+        const { data: serviceBookings } = await supabase
+          .from('bookings')
+          .select('service_id, services(name)')
+          .eq('status', 'completed');
+
+        const serviceCount = serviceBookings?.reduce((acc: any, booking: any) => {
+          const serviceName = booking.services?.name || 'Autre';
+          if (!acc[serviceName]) acc[serviceName] = 0;
+          acc[serviceName] += 1;
+          return acc;
+        }, {}) || {};
+
+        const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', '#8b5cf6', '#f59e0b'];
+        setServiceData(Object.entries(serviceCount).map(([name, value], index) => ({ 
+          name, 
+          value, 
+          color: COLORS[index % COLORS.length] 
+        })));
+      } catch (error) {
+        console.error('Error loading chart data:', error);
+      }
+    };
+
+    loadChartData();
+  }, []);
 
   return (
     <div className="space-y-6">
