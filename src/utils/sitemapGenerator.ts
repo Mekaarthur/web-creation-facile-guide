@@ -1,4 +1,4 @@
-import { seoStructuredData } from './seoData';
+import { blogPosts } from '@/data/blogPosts';
 
 export const generateSitemap = () => {
   const baseUrl = 'https://bikawo.fr';
@@ -16,21 +16,22 @@ export const generateSitemap = () => {
     { url: '/aide', priority: '0.4', changefreq: 'monthly' }
   ];
 
-  const blogPosts = [
-    { url: '/blog/10-signes-charge-mentale', priority: '0.8', changefreq: 'monthly' },
-    { url: '/blog/guide-deleguer-sans-culpabiliser', priority: '0.8', changefreq: 'monthly' },
-    { url: '/blog/cout-aide-menagere-vs-temps', priority: '0.8', changefreq: 'monthly' },
-    { url: '/blog/selectionner-meilleure-garde-enfants', priority: '0.8', changefreq: 'monthly' }
-  ];
+  // Generate blog posts dynamically from blogPosts data
+  const blogPostsUrls = blogPosts.map(post => ({
+    url: `/blog/${post.slug}`,
+    priority: '0.8',
+    changefreq: 'monthly',
+    lastmod: post.publishedAt
+  }));
 
-  const allPages = [...staticPages, ...blogPosts];
+  const allPages = [...staticPages, ...blogPostsUrls];
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 ${allPages.map(page => `  <url>
     <loc>${baseUrl}${page.url}</loc>
-    <lastmod>${currentDate}</lastmod>
+    <lastmod>${(page as any).lastmod || currentDate}</lastmod>
     <changefreq>${page.changefreq}</changefreq>
     <priority>${page.priority}</priority>
   </url>`).join('\n')}
@@ -41,35 +42,18 @@ ${allPages.map(page => `  <url>
 
 export const generateBlogSitemap = () => {
   const baseUrl = 'https://bikawo.fr';
-  const currentDate = new Date().toISOString();
   
-  const blogPosts = [
-    {
-      url: '/blog/10-signes-charge-mentale',
-      lastmod: '2024-01-15',
-      images: ['/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png']
-    },
-    {
-      url: '/blog/guide-deleguer-sans-culpabiliser', 
-      lastmod: '2024-01-10',
-      images: ['/lovable-uploads/7289c795-0ba4-4e3f-86dc-cd0e3310a306.png']
-    },
-    {
-      url: '/blog/cout-aide-menagere-vs-temps',
-      lastmod: '2024-01-05', 
-      images: ['/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png']
-    },
-    {
-      url: '/blog/selectionner-meilleure-garde-enfants',
-      lastmod: '2024-01-01',
-      images: ['/lovable-uploads/1ac09068-74a1-4d44-bdc6-d342fcb10cd4.png']
-    }
-  ];
+  // Generate blog posts dynamically from blogPosts data
+  const blogPostsWithImages = blogPosts.map(post => ({
+    url: `/blog/${post.slug}`,
+    lastmod: post.publishedAt,
+    images: [post.image]
+  }));
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-${blogPosts.map(post => `  <url>
+${blogPostsWithImages.map(post => `  <url>
     <loc>${baseUrl}${post.url}</loc>
     <lastmod>${post.lastmod}T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
