@@ -42,71 +42,23 @@ serve(async (req) => {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
       
-      // Récupérer les détails de la session
-      const paymentIntent = await stripe.paymentIntents.retrieve(
-        session.payment_intent as string
-      );
-
-      // Récupérer la réservation associée via metadata
-      const bookingId = session.metadata?.booking_id;
+      console.log(`Paiement complété pour session: ${session.id}`);
       
-      if (bookingId) {
-        // Mettre à jour la facture client
-        const { data: invoice, error: invoiceError } = await supabaseAdmin
-          .from('invoices')
-          .select('*')
-          .eq('booking_id', bookingId)
-          .single();
-
-        if (invoice) {
-          const { error: updateError } = await supabaseAdmin
-            .from('invoices')
-            .update({
-              status: 'paid',
-              payment_date: new Date().toISOString(),
-              stripe_payment_id: paymentIntent.id
-            })
-            .eq('id', invoice.id);
-
-          if (updateError) {
-            console.error('Erreur mise à jour facture:', updateError);
-          } else {
-            console.log('Facture mise à jour:', invoice.invoice_number);
-            
-            // Créer notification admin pour paiement réussi
-            await supabaseAdmin.functions.invoke('create-admin-notification', {
-              body: {
-                type: 'payment_success',
-                title: '💰 Paiement reçu',
-                message: `Paiement de ${(session.amount_total! / 100).toFixed(2)}€ reçu pour réservation #${bookingId}`,
-                data: {
-                  payment_id: paymentIntent.id,
-                  session_id: session.id,
-                  booking_id: bookingId,
-                  amount: session.amount_total! / 100
-                },
-                priority: 'normal'
-              }
-            });
-            
-            // Envoyer email de confirmation au client
-            await sendInvoiceEmail(invoice, supabaseAdmin);
-          }
+      // Créer une notification admin générique pour le paiement
+      // Note: Les bookings et factures sont créés par verify-payment, pas ici
+      await supabaseAdmin.functions.invoke('create-admin-notification', {
+        body: {
+          type: 'payment_success',
+          title: '💰 Paiement reçu',
+          message: `Nouveau paiement de ${(session.amount_total! / 100).toFixed(2)}€ reçu via Stripe`,
+          data: {
+            session_id: session.id,
+            amount: session.amount_total! / 100,
+            customer_email: session.customer_details?.email
+          },
+          priority: 'normal'
         }
-
-        // Mettre à jour la transaction financière
-        const { error: transactionError } = await supabaseAdmin
-          .from('financial_transactions')
-          .update({
-            payment_status: 'paid',
-            payment_date: new Date().toISOString()
-          })
-          .eq('booking_id', bookingId);
-
-        if (transactionError) {
-          console.error('Erreur mise à jour transaction:', transactionError);
-        }
-      }
+      });
     }
 
     // Gérer les remboursements
@@ -163,20 +115,6 @@ serve(async (req) => {
   }
 });
 
-async function sendInvoiceEmail(invoice: any, supabase: any) {
-  // TODO: Implémenter l'envoi d'email avec Resend ou autre service
-  // Pour l'instant, on enregistre dans les logs
-  console.log(`Email à envoyer pour facture ${invoice.invoice_number}`);
-  
-  // Exemple avec Resend (à configurer):
-  // const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-  // await resend.emails.send({
-  //   from: 'facturation@bikawo.com',
-  //   to: invoice.client_email,
-  //   subject: `Votre facture Bikawo ${invoice.invoice_number}`,
-  //   html: `...template HTML...`
-  // });
-}
 
 async function notifyAdminDispute(dispute: any, supabase: any) {
   // Créer une notification admin pour le litige
