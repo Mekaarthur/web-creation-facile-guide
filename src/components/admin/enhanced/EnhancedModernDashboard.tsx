@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AdminClientRequests } from '../../AdminClientRequests';
 import { AdminClientRequestsEnhanced } from '../../AdminClientRequestsEnhanced';
 import { AdminManualAssignment } from '../../AdminManualAssignment';
@@ -354,6 +355,7 @@ export default function EnhancedModernDashboard() {
   const [selectedApplication, setSelectedApplication] = useState<JobApplication | null>(null);
 
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   // Initialiser les communications automatiques
   useWorkflowEmails();
@@ -491,30 +493,8 @@ export default function EnhancedModernDashboard() {
     }
   };
 
-  const handleManageAlerts = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('admin-dashboard', {
-        body: { action: 'get_alerts' }
-      });
-
-      if (error) throw error;
-
-      if (data?.success) {
-        toast({
-          title: "Alertes",
-          description: `${data.totalCount} alerte(s) trouvée(s)`
-        });
-        // Ici vous pourriez ouvrir un modal avec la liste des alertes
-        console.log('Alertes:', data.alerts);
-      }
-    } catch (error) {
-      console.error('Erreur lors de la récupération des alertes:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les alertes",
-        variant: "destructive"
-      });
-    }
+  const handleManageAlerts = () => {
+    navigate('/admin/alerts');
   };
 
   const handleViewPayments = async () => {

@@ -110,6 +110,10 @@ export const useBikawoCart = () => {
         } catch (error) {
           console.error('Erreur lors du chargement du panier:', error);
         }
+      } else {
+        // Si le localStorage est vide, vider le panier
+        setCartItems([]);
+        setSeparatedBookings([]);
       }
     };
 
