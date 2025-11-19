@@ -233,7 +233,8 @@ serve(async (req) => {
       bookingIds.push(booking.id);
     }
 
-    // Nettoyer le localStorage côté client sera fait par la page de confirmation
+    // Nettoyer le localStorage côté client après confirmation du paiement
+    console.log('Nettoyage du localStorage pour le panier');
 
     return new Response(
       JSON.stringify({
@@ -247,6 +248,7 @@ serve(async (req) => {
         urssafEnabled,
         paymentStatus: session.payment_status,
         sessionId: session.id,
+        clearCart: true, // Signal pour vider le panier
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
