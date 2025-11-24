@@ -155,7 +155,24 @@ serve(async (req) => {
             userId = newUser.user.id;
             console.log('Compte créé avec succès:', userId);
 
-            // Le profil sera créé automatiquement par le trigger handle_new_user
+            // Attendre un peu pour que le trigger crée le profil
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Vérifier et mettre à jour le profil avec les informations complètes
+            const { error: profileError } = await supabaseAdmin
+              .from('profiles')
+              .update({
+                first_name: clientInfo.firstName,
+                last_name: clientInfo.lastName,
+                phone: clientInfo.phone,
+                email: clientInfo.email,
+              })
+              .eq('id', userId);
+
+            if (profileError) {
+              console.error('Erreur mise à jour profil:', profileError);
+            }
+            
             // Envoyer un email de bienvenue avec instructions de connexion
             try {
               await supabaseClient.functions.invoke('send-welcome-email', {
@@ -231,6 +248,21 @@ serve(async (req) => {
 
       console.log('Réservation créée:', booking.id);
       bookingIds.push(booking.id);
+      
+      // Mettre à jour la transaction financière avec le paiement
+      const { error: transactionError } = await supabaseClient
+        .from('financial_transactions')
+        .update({
+          payment_status: 'paid',
+          client_paid_at: new Date().toISOString(),
+        })
+        .eq('booking_id', booking.id);
+
+      if (transactionError) {
+        console.error('Erreur mise à jour transaction:', transactionError);
+      } else {
+        console.log('Transaction financière mise à jour pour le booking:', booking.id);
+      }
     }
 
     // Nettoyer le localStorage côté client après confirmation du paiement
