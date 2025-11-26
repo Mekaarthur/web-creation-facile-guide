@@ -221,11 +221,27 @@ serve(async (req) => {
         continue;
       }
 
+      // Trouver un prestataire vérifié disponible (premier disponible pour l'instant)
+      const { data: availableProvider } = await supabaseClient
+        .from('providers')
+        .select('id')
+        .eq('is_verified', true)
+        .limit(1)
+        .single();
+
+      if (!availableProvider) {
+        console.error('Aucun prestataire vérifié disponible');
+        throw new Error('Aucun prestataire disponible pour cette réservation');
+      }
+
+      console.log('Prestataire assigné:', availableProvider.id);
+
       // Créer la réservation
       const { data: booking, error: bookingError } = await supabaseClient
         .from('bookings')
         .insert({
           client_id: userId,
+          provider_id: availableProvider.id,
           service_id: serviceId,
           booking_date: bookingDate,
           start_time: startTime,
@@ -248,20 +264,39 @@ serve(async (req) => {
 
       console.log('Réservation créée:', booking.id);
       bookingIds.push(booking.id);
-      
-      // Mettre à jour la transaction financière avec le paiement
+    }
+
+    // Attendre que toutes les transactions financières soient créées par le trigger
+    console.log('Attente de la création des transactions financières...');
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Mettre à jour toutes les transactions financières pour les bookings créés
+    for (const bookingId of bookingIds) {
+      const { data: existingTransaction, error: checkError } = await supabaseClient
+        .from('financial_transactions')
+        .select('id, payment_status')
+        .eq('booking_id', bookingId)
+        .single();
+
+      if (checkError) {
+        console.error('Transaction non trouvée pour booking:', bookingId, checkError);
+        continue;
+      }
+
+      console.log('Transaction trouvée:', existingTransaction.id, 'status actuel:', existingTransaction.payment_status);
+
       const { error: transactionError } = await supabaseClient
         .from('financial_transactions')
         .update({
           payment_status: 'paid',
           client_paid_at: new Date().toISOString(),
         })
-        .eq('booking_id', booking.id);
+        .eq('booking_id', bookingId);
 
       if (transactionError) {
-        console.error('Erreur mise à jour transaction:', transactionError);
+        console.error('Erreur mise à jour transaction pour booking', bookingId, ':', transactionError);
       } else {
-        console.log('Transaction financière mise à jour pour le booking:', booking.id);
+        console.log('Transaction financière mise à jour avec succès pour booking:', bookingId);
       }
     }
 
