@@ -22,7 +22,8 @@ import BikawoCartIndicator from "@/components/BikawoCartIndicator";
 import UserProfileMenu from "@/components/UserProfileMenu";
 import { SecureLogout } from "@/components/SecureLogout";
 import { servicesData } from "@/utils/servicesData";
-import bikawoLogo from "@/assets/bikawo-logo.webp";
+// Use optimized logo from public folder (~15KB vs 766KB)
+const bikawoLogo = "/logo-small.webp";
 // Import service images
 import serviceKids from '@/assets/service-kids.jpg';
 import serviceMaison from '@/assets/service-maison.jpg';
