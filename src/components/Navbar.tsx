@@ -22,7 +22,7 @@ import BikawoCartIndicator from "@/components/BikawoCartIndicator";
 import UserProfileMenu from "@/components/UserProfileMenu";
 import { SecureLogout } from "@/components/SecureLogout";
 import { servicesData } from "@/utils/servicesData";
-import bikawoLogo from "@/assets/bikawo-logo.png";
+import bikawoLogo from "@/assets/bikawo-logo.webp";
 // Import service images
 import serviceKids from '@/assets/service-kids.jpg';
 import serviceMaison from '@/assets/service-maison.jpg';

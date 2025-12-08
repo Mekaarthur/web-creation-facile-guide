@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Gift, Clock, Phone } from "lucide-react";
-import heroImage from "@/assets/hero-bikawo-community.jpg";
+import heroImage from "@/assets/hero-bikawo-community.webp";
 import { useTranslation } from 'react-i18next';
 
 const NewHero = () => {
@@ -46,8 +46,8 @@ const NewHero = () => {
 
         <div className={`transition-all duration-1000 delay-100 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 leading-tight">
-            <span className="block text-primary drop-shadow-lg">{t('newHero.title1')}</span>
-            <span className="block text-primary drop-shadow-lg">{t('newHero.title2')}</span>
+            <span className="block text-white drop-shadow-lg">{t('newHero.title1')}</span>
+            <span className="block text-white drop-shadow-lg">{t('newHero.title2')}</span>
           </h1>
         </div>
         
