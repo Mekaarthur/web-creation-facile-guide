@@ -12,16 +12,41 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Platform settings request received:', req.method);
+    
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     // Verify admin authorization
-    const authHeader = req.headers.get('Authorization')!
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      console.error('No authorization header provided');
+      return new Response(
+        JSON.stringify({ error: 'Authorization header required' }),
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+    
     const token = authHeader.replace('Bearer ', '')
-    const { data: { user } } = await supabase.auth.getUser(token)
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+
+    if (authError) {
+      console.error('Auth error:', authError.message);
+      return new Response(
+        JSON.stringify({ error: 'Authentication failed: ' + authError.message }),
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
 
     if (!user) {
+      console.error('No user found for token');
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { 
@@ -31,14 +56,24 @@ serve(async (req) => {
       )
     }
 
+    console.log('User authenticated:', user.id);
+
     // Check if user is admin
-    const { data: userRole } = await supabase
+    const { data: userRole, error: roleError } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
-      .single()
+      .eq('role', 'admin')
+      .maybeSingle()
 
-    if (userRole?.role !== 'admin') {
+    console.log('User role check:', { userRole, roleError });
+
+    if (roleError) {
+      console.error('Role check error:', roleError.message);
+    }
+
+    if (!userRole || userRole.role !== 'admin') {
+      console.error('User is not admin:', user.id);
       return new Response(
         JSON.stringify({ error: 'Admin access required' }),
         { 
@@ -48,10 +83,15 @@ serve(async (req) => {
       )
     }
 
+    console.log('Admin access confirmed');
+
     if (req.method === 'GET') {
       return await getSettings(supabase)
     } else if (req.method === 'POST') {
-      const { action, settings, category } = await req.json()
+      const body = await req.json()
+      const { action, settings, category } = body
+      
+      console.log('Action requested:', action);
       
       switch (action) {
         case 'get':
@@ -61,6 +101,7 @@ serve(async (req) => {
         case 'reset':
           return await resetSettings(supabase, category, user.id)
         default:
+          console.error('Invalid action:', action);
           return new Response(
             JSON.stringify({ error: 'Invalid action' }),
             { 
@@ -70,6 +111,14 @@ serve(async (req) => {
           )
       }
     }
+    
+    return new Response(
+      JSON.stringify({ error: 'Method not allowed' }),
+      { 
+        status: 405, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    )
 
   } catch (error) {
     console.error('Error in platform-settings function:', error)
