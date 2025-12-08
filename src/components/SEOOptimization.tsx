@@ -208,8 +208,9 @@ const SEOOptimization = ({
       <meta name="apple-mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       
-      {/* Preload critical resources */}
-      <link rel="preload" href="/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png" as="image" />
+      {/* Preload critical resources - optimized WebP */}
+      <link rel="preload" href="/logo-optimized.webp" as="image" type="image/webp" />
+      <link rel="preload" href="/hero-optimized.webp" as="image" type="image/webp" />
       
       {/* DNS prefetch pour les domaines externes */}
       <link rel="dns-prefetch" href="//fonts.googleapis.com" />
