@@ -2,8 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Gift, Clock, Phone } from "lucide-react";
-import heroImage from "@/assets/hero-bikawo-community.webp";
 import { useTranslation } from 'react-i18next';
+
+// Use public folder images for responsive hero - smaller file sizes
+const heroMobile = "/hero-mobile.webp"; // ~50KB optimized for mobile
+const heroDesktop = "/hero-desktop.webp"; // Larger for desktop
 
 const NewHero = () => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -18,14 +21,19 @@ const NewHero = () => {
     <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden pt-24 pb-12 sm:pt-28 sm:pb-16">
       {/* Animated Background */}
       <div className="absolute inset-0">
-        {/* Primary Background Image - Optimized for LCP */}
-        <img 
-          src={heroImage}
-          alt="Bikawo - Votre assistant personnel au quotidien"
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 scale-105 hover:scale-110"
-          fetchPriority="high"
-          decoding="async"
-        />
+        {/* Responsive Hero Image - Mobile first for LCP */}
+        <picture>
+          <source media="(min-width: 768px)" srcSet={heroDesktop} type="image/webp" />
+          <img 
+            src={heroMobile}
+            alt="Bikawo - Votre assistant personnel au quotidien"
+            className="absolute inset-0 w-full h-full object-cover"
+            fetchPriority="high"
+            decoding="sync"
+            width={800}
+            height={600}
+          />
+        </picture>
         
         {/* Animated Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
