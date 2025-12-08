@@ -44,7 +44,7 @@ const FinalCTABiface = () => {
           </p>
           
           <p className="text-lg mb-8 opacity-80 animate-fade-in">
-            🎁 <strong>1ère heure offerte</strong> pour votre première réservation
+            💰 <strong>50% d'avance immédiate</strong> sur vos impôts
           </p>
 
           {/* CTA Button */}
