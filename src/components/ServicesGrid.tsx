@@ -67,17 +67,33 @@ const ServicesGrid = () => {
     };
   });
 
+  // Prix de départ par service
+  const startingPrices: Record<string, string> = {
+    kids: "25€/h",
+    maison: "25€/h",
+    vie: "25€/h",
+    travel: "30€/h",
+    animals: "20€/h",
+    seniors: "25€/h",
+    pro: "35€/h",
+    plus: "40€/h",
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {servicesList.map((service) => (
         <Link key={service.id} to={service.path} className="group">
-          <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
-            <div className="aspect-[4/3] overflow-hidden">
+          <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer relative">
+            <div className="aspect-[4/3] overflow-hidden relative">
               <img
                 src={service.image}
                 alt={`${service.title} - ${service.subtitle}`}
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
               />
+              {/* Badge prix */}
+              <div className="absolute top-3 right-3 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold shadow-lg">
+                À partir de {startingPrices[service.id]}
+              </div>
             </div>
             <CardContent className="p-4">
               <h3 className="font-semibold text-lg mb-1 group-hover:text-primary transition-colors">
