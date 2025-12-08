@@ -67,16 +67,16 @@ const ServicesGrid = () => {
     };
   });
 
-  // Prix de départ par service
-  const startingPrices: Record<string, string> = {
-    kids: "25€/h",
-    maison: "25€/h",
-    vie: "25€/h",
-    travel: "30€/h",
-    animals: "20€/h",
-    seniors: "25€/h",
-    pro: "35€/h",
-    plus: "40€/h",
+  // Prix de départ par service (avant et après crédit d'impôt)
+  const startingPrices: Record<string, { original: string; afterCredit: string }> = {
+    kids: { original: "25€/h", afterCredit: "12,50€/h" },
+    maison: { original: "25€/h", afterCredit: "12,50€/h" },
+    vie: { original: "25€/h", afterCredit: "12,50€/h" },
+    travel: { original: "30€/h", afterCredit: "15€/h" },
+    animals: { original: "20€/h", afterCredit: "10€/h" },
+    seniors: { original: "25€/h", afterCredit: "12,50€/h" },
+    pro: { original: "35€/h", afterCredit: "17,50€/h" },
+    plus: { original: "40€/h", afterCredit: "20€/h" },
   };
 
   return (
@@ -90,9 +90,11 @@ const ServicesGrid = () => {
                 alt={`${service.title} - ${service.subtitle}`}
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
               />
-              {/* Badge prix */}
-              <div className="absolute top-3 right-3 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold shadow-lg">
-                À partir de {startingPrices[service.id]}
+              {/* Badge prix avec crédit d'impôt */}
+              <div className="absolute top-3 right-3 bg-primary text-primary-foreground px-3 py-1.5 rounded-lg text-xs font-semibold shadow-lg">
+                <span className="line-through opacity-70">{startingPrices[service.id]?.original}</span>
+                <span className="mx-1">→</span>
+                <span className="text-white font-bold">{startingPrices[service.id]?.afterCredit}</span>
               </div>
             </div>
             <CardContent className="p-4">
