@@ -20,8 +20,8 @@ Allow: /
 Crawl-delay: 2
 
 # Sitemaps
-Sitemap: https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/sitemap.xml
-Sitemap: https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/sitemap-blog.xml
+Sitemap: https://bikawo.com/sitemap.xml
+Sitemap: https://bikawo.com/sitemap-blog.xml
 
 # Sections importantes
 Allow: /services
