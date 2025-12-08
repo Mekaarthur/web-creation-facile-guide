@@ -1,8 +1,10 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { servicesData, ServiceCategoryKey } from "@/utils/servicesData";
 import { useTranslation } from "react-i18next";
 import { serviceTranslations } from "@/utils/serviceTranslations";
+import { ServiceCardSkeleton } from "@/components/ui/skeleton";
 
 // Import existing service images
 import serviceKids from "@/assets/service-kids.jpg";
@@ -25,9 +27,73 @@ const imageMap: Record<ServiceCategoryKey, string> = {
   plus: servicePlus,
 };
 
+interface ServiceCardProps {
+  service: {
+    id: string;
+    title: string;
+    subtitle: string;
+    image: string;
+    path: string;
+  };
+  pricing: { original: string; afterCredit?: string };
+}
+
+// Composant ServiceCard optimisé avec lazy loading d'image
+const ServiceCard = ({ service, pricing }: ServiceCardProps) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const hasCredit = pricing?.afterCredit;
+
+  return (
+    <Link to={service.path} className="group">
+      <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.02] cursor-pointer relative bg-card">
+        <div className="aspect-[4/3] overflow-hidden relative bg-muted/30">
+          {/* Skeleton pendant le chargement */}
+          {!imageLoaded && (
+            <div className="absolute inset-0 bg-muted/60 animate-pulse" />
+          )}
+          <img
+            src={service.image}
+            alt={`${service.title} - ${service.subtitle}`}
+            className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-110 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            loading="lazy"
+            onLoad={() => setImageLoaded(true)}
+          />
+          {/* Badge prix */}
+          <div className="absolute top-3 right-3 bg-primary text-primary-foreground px-3 py-1.5 rounded-lg text-xs font-semibold shadow-lg">
+            {hasCredit ? (
+              <>
+                <span className="line-through opacity-70">{pricing.original}</span>
+                <span className="mx-1">→</span>
+                <span className="text-white font-bold">{pricing.afterCredit}</span>
+              </>
+            ) : (
+              <span className="text-white font-bold">À partir de {pricing?.original}</span>
+            )}
+          </div>
+        </div>
+        <CardContent className="p-4">
+          <h3 className="font-semibold text-lg mb-1 group-hover:text-primary transition-colors">
+            {service.title}
+          </h3>
+          <p className="text-sm text-muted-foreground">{service.subtitle}</p>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+};
+
 const ServicesGrid = () => {
   const { i18n } = useTranslation();
+  const [isLoading, setIsLoading] = useState(true);
   const isEn = i18n.language?.startsWith("en");
+
+  // Simuler un temps de chargement initial pour montrer le skeleton
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   const servicesList = Object.values(servicesData).map((service) => {
     const localizedCategoryTitle = isEn
@@ -68,56 +134,37 @@ const ServicesGrid = () => {
   });
 
   // Prix de départ par service (avant et après crédit d'impôt)
-  // Travel, Pro et Plus ne bénéficient pas du crédit d'impôt
   const startingPrices: Record<string, { original: string; afterCredit?: string }> = {
     kids: { original: "25€/h", afterCredit: "12,50€/h" },
     maison: { original: "25€/h", afterCredit: "12,50€/h" },
     vie: { original: "25€/h", afterCredit: "12,50€/h" },
-    travel: { original: "30€/h" }, // Pas de crédit d'impôt
+    travel: { original: "30€/h" },
     animals: { original: "20€/h", afterCredit: "10€/h" },
     seniors: { original: "25€/h", afterCredit: "12,50€/h" },
-    pro: { original: "35€/h" }, // Pas de crédit d'impôt
-    plus: { original: "40€/h" }, // Pas de crédit d'impôt
+    pro: { original: "35€/h" },
+    plus: { original: "40€/h" },
   };
+
+  // Afficher les skeletons pendant le chargement
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <ServiceCardSkeleton key={i} />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {servicesList.map((service) => {
-        const pricing = startingPrices[service.id];
-        const hasCredit = pricing?.afterCredit;
-        
-        return (
-          <Link key={service.id} to={service.path} className="group">
-            <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer relative">
-              <div className="aspect-[4/3] overflow-hidden relative">
-                <img
-                  src={service.image}
-                  alt={`${service.title} - ${service.subtitle}`}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                />
-                {/* Badge prix */}
-                <div className="absolute top-3 right-3 bg-primary text-primary-foreground px-3 py-1.5 rounded-lg text-xs font-semibold shadow-lg">
-                  {hasCredit ? (
-                    <>
-                      <span className="line-through opacity-70">{pricing.original}</span>
-                      <span className="mx-1">→</span>
-                      <span className="text-white font-bold">{pricing.afterCredit}</span>
-                    </>
-                  ) : (
-                    <span className="text-white font-bold">À partir de {pricing?.original}</span>
-                  )}
-                </div>
-              </div>
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-lg mb-1 group-hover:text-primary transition-colors">
-                  {service.title}
-                </h3>
-                <p className="text-sm text-muted-foreground">{service.subtitle}</p>
-              </CardContent>
-            </Card>
-          </Link>
-        );
-      })}
+      {servicesList.map((service) => (
+        <ServiceCard
+          key={service.id}
+          service={service}
+          pricing={startingPrices[service.id]}
+        />
+      ))}
     </div>
   );
 };
