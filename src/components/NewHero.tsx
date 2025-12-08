@@ -54,7 +54,9 @@ const NewHero = () => {
         <div className={`transition-all duration-1000 delay-300 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
           <p className="text-base sm:text-lg md:text-xl lg:text-2xl mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed text-white/90 drop-shadow-md px-2">
             Garde d'enfants, aide seniors, courses, ménage... <br className="hidden sm:block" />
-            <strong className="text-white">Des prestataires vérifiés à partir de 25€/h</strong>
+            <strong className="text-white">
+              Des prestataires vérifiés <span className="line-through opacity-70">25€/h</span> → <span className="text-accent">12,50€/h</span> après crédit d'impôt
+            </strong>
           </p>
         </div>
 
