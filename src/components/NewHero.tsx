@@ -40,14 +40,14 @@ const NewHero = () => {
         <div className={`transition-all duration-1000 ${isLoaded ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'}`}>
           <div className="inline-flex items-center gap-2 bg-accent/90 text-accent-foreground px-4 py-2 rounded-full mb-6 animate-pulse shadow-lg">
             <Gift className="w-4 h-4" />
-            <span className="text-sm font-semibold">🎁 1ère heure offerte pour toute nouvelle inscription</span>
+            <span className="text-sm font-semibold">💰 Profitez de 50% d'avance immédiate sur vos impôts</span>
           </div>
         </div>
 
         <div className={`transition-all duration-1000 delay-100 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 leading-tight">
-            <span className="block text-white drop-shadow-lg">Libérez 10h/semaine</span>
-            <span className="block text-primary drop-shadow-lg">de votre charge mentale</span>
+            <span className="block text-primary drop-shadow-lg">{t('newHero.title1')}</span>
+            <span className="block text-primary drop-shadow-lg">{t('newHero.title2')}</span>
           </h1>
         </div>
         
