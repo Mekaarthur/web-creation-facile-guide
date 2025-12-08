@@ -1,10 +1,36 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Clock, Calendar, User, ArrowRight, Search } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Composant pour image lazy load avec skeleton
+const LazyBlogImage = ({ src, alt, category }: { src: string; alt: string; category: string }) => {
+  const [loaded, setLoaded] = useState(false);
+  
+  return (
+    <div className="relative aspect-[4/3] overflow-hidden bg-muted/30">
+      {!loaded && (
+        <Skeleton className="absolute inset-0 w-full h-full" />
+      )}
+      <img 
+        src={src} 
+        alt={alt}
+        loading="lazy"
+        onLoad={() => setLoaded(true)}
+        className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+      />
+      <div className="absolute top-3 left-3">
+        <Badge variant="secondary" className="bg-white/90 text-foreground">
+          {category}
+        </Badge>
+      </div>
+    </div>
+  );
+};
 
 interface BlogPost {
   id: number;
@@ -216,18 +242,7 @@ const BlogPageLayout = ({
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {allPosts.map((post) => (
               <Card key={post.id} className="group overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-background">
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <img 
-                    src={post.image} 
-                    alt={post.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute top-3 left-3">
-                    <Badge variant="secondary" className="bg-white/90 text-foreground">
-                      {post.category}
-                    </Badge>
-                  </div>
-                </div>
+                <LazyBlogImage src={post.image} alt={post.title} category={post.category} />
                 
                 <CardContent className="p-6">
                   <div className="space-y-4">
