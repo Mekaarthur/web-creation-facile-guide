@@ -5,6 +5,7 @@ import SEOComponent from "@/components/SEOComponent";
 import SEOOptimization from "@/components/SEOOptimization";
 import { seoStructuredData } from "@/utils/seoData";
 import { useTranslation } from 'react-i18next';
+import { ServicesGridSkeleton, TestimonialSkeleton } from "@/components/ui/skeleton";
 
 // Lazy load components below the fold for better LCP/TBT
 const ServicesGrid = lazy(() => import("@/components/ServicesGrid"));
@@ -19,9 +20,23 @@ const TrackingManager = lazy(() => import("@/components/TrackingManager"));
 const RetargetingPixels = lazy(() => import("@/components/RetargetingPixels"));
 const GoogleSuggestOptimizer = lazy(() => import("@/components/GoogleSuggestOptimizer"));
 
-// Simple loading skeleton
+// Skeleton loaders style Shein
 const SectionSkeleton = ({ height = "h-96" }: { height?: string }) => (
-  <div className={`${height} bg-muted/30 animate-pulse rounded-lg`} />
+  <div className={`${height} bg-muted/20 animate-pulse rounded-lg`} />
+);
+
+const TestimonialsSkeleton = () => (
+  <div className="container mx-auto px-4">
+    <div className="text-center mb-8">
+      <div className="h-8 w-64 bg-muted/40 animate-pulse rounded mx-auto mb-4" />
+      <div className="h-4 w-96 bg-muted/30 animate-pulse rounded mx-auto" />
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <TestimonialSkeleton />
+      <TestimonialSkeleton />
+      <TestimonialSkeleton />
+    </div>
+  </div>
 );
 
 const Index = () => {
@@ -75,7 +90,7 @@ const Index = () => {
                 {t('services.subtitle')}
               </p>
             </div>
-            <Suspense fallback={<SectionSkeleton />}>
+            <Suspense fallback={<ServicesGridSkeleton count={8} />}>
               <ServicesGrid />
             </Suspense>
           </div>
@@ -88,9 +103,9 @@ const Index = () => {
           </Suspense>
         </section>
         
-        {/* Testimonials Section - Lazy loaded with content-visibility */}
+        {/* Testimonials Section - Lazy loaded with skeleton */}
         <section className="py-16 lg:py-24 bg-muted/20 content-visibility-auto">
-          <Suspense fallback={<SectionSkeleton />}>
+          <Suspense fallback={<TestimonialsSkeleton />}>
             <TestimonialsSection />
           </Suspense>
         </section>
