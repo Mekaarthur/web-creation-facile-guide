@@ -81,22 +81,22 @@ const Index = () => {
           </div>
         </section>
         
-        {/* Why Choose Us Section - Lazy loaded */}
-        <section className="py-16 lg:py-24 bg-background">
+        {/* Why Choose Us Section - Lazy loaded with content-visibility */}
+        <section className="py-16 lg:py-24 bg-background content-visibility-auto">
           <Suspense fallback={<SectionSkeleton />}>
             <WhyBikawo />
           </Suspense>
         </section>
         
-        {/* Testimonials Section - Lazy loaded */}
-        <section className="py-16 lg:py-24 bg-muted/20">
+        {/* Testimonials Section - Lazy loaded with content-visibility */}
+        <section className="py-16 lg:py-24 bg-muted/20 content-visibility-auto">
           <Suspense fallback={<SectionSkeleton />}>
             <TestimonialsSection />
           </Suspense>
         </section>
         
-        {/* Call to Action Section - Lazy loaded */}
-        <section className="py-16 lg:py-24 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+        {/* Call to Action Section - Lazy loaded with content-visibility */}
+        <section className="py-16 lg:py-24 bg-gradient-to-br from-primary/5 via-background to-secondary/5 content-visibility-auto">
           <Suspense fallback={<SectionSkeleton height="h-64" />}>
             <FinalCTABiface />
           </Suspense>
