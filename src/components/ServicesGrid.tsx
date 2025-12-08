@@ -68,44 +68,56 @@ const ServicesGrid = () => {
   });
 
   // Prix de départ par service (avant et après crédit d'impôt)
-  const startingPrices: Record<string, { original: string; afterCredit: string }> = {
+  // Travel, Pro et Plus ne bénéficient pas du crédit d'impôt
+  const startingPrices: Record<string, { original: string; afterCredit?: string }> = {
     kids: { original: "25€/h", afterCredit: "12,50€/h" },
     maison: { original: "25€/h", afterCredit: "12,50€/h" },
     vie: { original: "25€/h", afterCredit: "12,50€/h" },
-    travel: { original: "30€/h", afterCredit: "15€/h" },
+    travel: { original: "30€/h" }, // Pas de crédit d'impôt
     animals: { original: "20€/h", afterCredit: "10€/h" },
     seniors: { original: "25€/h", afterCredit: "12,50€/h" },
-    pro: { original: "35€/h", afterCredit: "17,50€/h" },
-    plus: { original: "40€/h", afterCredit: "20€/h" },
+    pro: { original: "35€/h" }, // Pas de crédit d'impôt
+    plus: { original: "40€/h" }, // Pas de crédit d'impôt
   };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {servicesList.map((service) => (
-        <Link key={service.id} to={service.path} className="group">
-          <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer relative">
-            <div className="aspect-[4/3] overflow-hidden relative">
-              <img
-                src={service.image}
-                alt={`${service.title} - ${service.subtitle}`}
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-              />
-              {/* Badge prix avec crédit d'impôt */}
-              <div className="absolute top-3 right-3 bg-primary text-primary-foreground px-3 py-1.5 rounded-lg text-xs font-semibold shadow-lg">
-                <span className="line-through opacity-70">{startingPrices[service.id]?.original}</span>
-                <span className="mx-1">→</span>
-                <span className="text-white font-bold">{startingPrices[service.id]?.afterCredit}</span>
+      {servicesList.map((service) => {
+        const pricing = startingPrices[service.id];
+        const hasCredit = pricing?.afterCredit;
+        
+        return (
+          <Link key={service.id} to={service.path} className="group">
+            <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer relative">
+              <div className="aspect-[4/3] overflow-hidden relative">
+                <img
+                  src={service.image}
+                  alt={`${service.title} - ${service.subtitle}`}
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                />
+                {/* Badge prix */}
+                <div className="absolute top-3 right-3 bg-primary text-primary-foreground px-3 py-1.5 rounded-lg text-xs font-semibold shadow-lg">
+                  {hasCredit ? (
+                    <>
+                      <span className="line-through opacity-70">{pricing.original}</span>
+                      <span className="mx-1">→</span>
+                      <span className="text-white font-bold">{pricing.afterCredit}</span>
+                    </>
+                  ) : (
+                    <span className="text-white font-bold">À partir de {pricing?.original}</span>
+                  )}
+                </div>
               </div>
-            </div>
-            <CardContent className="p-4">
-              <h3 className="font-semibold text-lg mb-1 group-hover:text-primary transition-colors">
-                {service.title}
-              </h3>
-              <p className="text-sm text-muted-foreground">{service.subtitle}</p>
-            </CardContent>
-          </Card>
-        </Link>
-      ))}
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-lg mb-1 group-hover:text-primary transition-colors">
+                  {service.title}
+                </h3>
+                <p className="text-sm text-muted-foreground">{service.subtitle}</p>
+              </CardContent>
+            </Card>
+          </Link>
+        );
+      })}
     </div>
   );
 };
