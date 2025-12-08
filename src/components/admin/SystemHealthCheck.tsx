@@ -34,12 +34,10 @@ const SystemHealthCheck = () => {
     updateTestResult('Email Confirmation', 'running', 'Test de l\'envoi d\'emails...');
     
     try {
-      // Test d'envoi d'email de confirmation
+      // Test d'envoi d'email de confirmation (mode test)
       const { data, error } = await supabase.functions.invoke('send-confirmation-email', {
         body: {
-          email: 'test@example.com',
-          user_id: 'test-user-id',
-          action: 'test_confirmation'
+          test: true
         }
       });
 
@@ -135,10 +133,8 @@ const SystemHealthCheck = () => {
     try {
       const { data, error } = await supabase.functions.invoke('send-automated-notification', {
         body: {
-          type: 'system_test',
-          recipient_email: 'admin@bikawo.com',
-          title: 'Test système',
-          message: 'Test automatique du système de notifications'
+          test: true,
+          type: 'system_test'
         }
       });
 

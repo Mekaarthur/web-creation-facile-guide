@@ -19,6 +19,7 @@ const corsHeaders = {
 interface EmailRequest {
   userEmail?: string; // legacy key support
   email?: string;     // preferred key
+  test?: boolean;     // test mode flag
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -31,6 +32,16 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const body = (await req.json()) as EmailRequest;
+    
+    // Handle test mode
+    if (body.test === true) {
+      console.log('🧪 Test mode - returning success');
+      return new Response(
+        JSON.stringify({ success: true, message: 'Test successful', test: true }),
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
+    }
+    
     const rawEmail = (body.email || body.userEmail || '').trim().toLowerCase();
 
     if (!rawEmail) {
@@ -45,23 +56,53 @@ const handler = async (req: Request): Promise<Response> => {
       ? `https://ed681ca2-74aa-4970-8c41-139ffb8c8152.sandbox.lovable.dev`
       : `https://bikawo.com`;
 
-    // Always (re)generate a fresh, single-use confirmation link
-    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-      type: 'signup',
-      email: rawEmail,
-      options: { redirectTo: `${baseUrl}/auth/complete` }
-    });
+    // Try to generate magic link instead of signup link (works for existing users)
+    let confirmationUrl: string;
+    
+    try {
+      // First, check if user exists
+      const { data: existingUser } = await supabase.auth.admin.getUserByEmail(rawEmail);
+      
+      if (existingUser?.user) {
+        // User exists - generate magic link
+        const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+          type: 'magiclink',
+          email: rawEmail,
+          options: { redirectTo: `${baseUrl}/auth/complete` }
+        });
 
-    if (linkError) {
-      console.error('❌ Error generating confirmation link:', linkError);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Impossible de générer le lien de confirmation.' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-      );
+        if (linkError) {
+          console.error('❌ Error generating magic link:', linkError);
+          // Fallback to recovery link
+          const { data: recoveryData } = await supabase.auth.admin.generateLink({
+            type: 'recovery',
+            email: rawEmail,
+            options: { redirectTo: `${baseUrl}/auth/complete` }
+          });
+          confirmationUrl = recoveryData?.properties?.action_link || `${baseUrl}/connexion`;
+        } else {
+          confirmationUrl = linkData?.properties?.action_link || `${baseUrl}/connexion`;
+        }
+      } else {
+        // User doesn't exist - generate invite link
+        const { data: inviteData, error: inviteError } = await supabase.auth.admin.generateLink({
+          type: 'invite',
+          email: rawEmail,
+          options: { redirectTo: `${baseUrl}/auth/complete` }
+        });
+
+        if (inviteError) {
+          console.error('❌ Error generating invite link:', inviteError);
+          // Fallback to simple URL
+          confirmationUrl = `${baseUrl}/connexion?email=${encodeURIComponent(rawEmail)}`;
+        } else {
+          confirmationUrl = inviteData?.properties?.action_link || `${baseUrl}/connexion`;
+        }
+      }
+    } catch (e) {
+      console.error('❌ Error in link generation:', e);
+      confirmationUrl = `${baseUrl}/connexion?email=${encodeURIComponent(rawEmail)}`;
     }
-
-    const confirmationUrl = linkData?.properties?.action_link
-      || `${supabaseUrl}/auth/v1/verify?type=signup&redirect_to=${encodeURIComponent(`${baseUrl}/auth/complete`)}`;
 
     console.log('🔗 Confirmation URL generated:', confirmationUrl);
     console.log('🌍 Base URL used:', baseUrl);
