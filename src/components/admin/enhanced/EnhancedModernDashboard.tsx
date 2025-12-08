@@ -179,81 +179,7 @@ interface AdminStats {
 
 // Les données revenue et service performance sont chargées via les hooks loadAdminStats et loadServicePerformance
 
-const recentActivities = [
-  {
-    id: 1,
-    type: 'booking',
-    message: 'Nouvelle réservation Bika Kids par Marie Dubois',
-    time: 'Il y a 2 min',
-    status: 'success',
-    amount: '89€'
-  },
-  {
-    id: 2,
-    type: 'provider',
-    message: 'Nouvelle candidature prestataire - Sophie Martin',
-    time: 'Il y a 5 min',
-    status: 'pending'
-  },
-  {
-    id: 3,
-    type: 'payment',
-    message: 'Paiement reçu - Mission #1247',
-    time: 'Il y a 8 min',
-    status: 'success',
-    amount: '125€'
-  },
-  {
-    id: 4,
-    type: 'alert',
-    message: 'Satisfaction Bika Travel sous le seuil (4.4/5)',
-    time: 'Il y a 15 min',
-    status: 'warning'
-  },
-  {
-    id: 5,
-    type: 'review',
-    message: 'Nouveau commentaire 5⭐ - Mission #1245',
-    time: 'Il y a 18 min',
-    status: 'success'
-  }
-];
-
-const topProviders = [
-  {
-    id: 1,
-    name: 'Sophie Martin',
-    service: 'Bika Kids',
-    missions: 45,
-    rating: 4.9,
-    revenue: '4,580€',
-    status: 'active',
-    phone: '+33 6 12 34 56 78',
-    location: 'Paris 15e'
-  },
-  {
-    id: 2,
-    name: 'Julie Bernard',
-    service: 'Bika Maison',
-    missions: 38,
-    rating: 4.8,
-    revenue: '3,920€',
-    status: 'active',
-    phone: '+33 6 23 45 67 89',
-    location: 'Boulogne'
-  },
-  {
-    id: 3,
-    name: 'Claire Rousseau',
-    service: 'Bika Seniors',
-    missions: 52,
-    rating: 4.9,
-    revenue: '5,240€',
-    status: 'active',
-    phone: '+33 6 34 56 78 90',
-    location: 'Neuilly'
-  }
-];
+// Les données d'activités récentes sont maintenant chargées dynamiquement via loadActivities
 
 const MetricCard = ({ 
   title, 
@@ -349,6 +275,12 @@ export default function EnhancedModernDashboard() {
     total_revenue: 0,
     pending_reviews: 0,
     flagged_reviews: 0
+  });
+  const [quickActionCounts, setQuickActionCounts] = useState({
+    pendingProviders: 0,
+    pendingAlerts: 0,
+    totalRevenue: 0,
+    unreadMessages: 0
   });
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedProvider, setSelectedProvider] = useState<ProviderDetailed | null>(null);
@@ -678,23 +610,47 @@ export default function EnhancedModernDashboard() {
 
   const loadAdminStats = async () => {
     try {
-      const [usersCount, providersCount, bookingsCount, reviewsData] = await Promise.all([
+      const [
+        usersCount, 
+        providersCount, 
+        bookingsCount, 
+        reviewsData,
+        pendingProvidersCount,
+        unreadMessagesCount,
+        completedBookings,
+        pendingBookingsCount
+      ] = await Promise.all([
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
         supabase.from('providers').select('id', { count: 'exact', head: true }),
         supabase.from('bookings').select('id', { count: 'exact', head: true }),
-        supabase.from('reviews').select('*')
+        supabase.from('reviews').select('*'),
+        supabase.from('providers').select('id', { count: 'exact', head: true }).in('status', ['pending', 'pending_validation']),
+        supabase.from('internal_messages').select('id', { count: 'exact', head: true }).eq('is_read', false),
+        supabase.from('bookings').select('total_price').eq('status', 'completed'),
+        supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('status', 'pending')
       ]);
 
       const pendingReviews = reviewsData.data?.filter(r => !r.is_approved) || [];
       const flaggedReviews = reviewsData.data?.filter(r => r.is_approved === false) || [];
+      const totalRevenue = completedBookings.data?.reduce((sum, b) => sum + (b.total_price || 0), 0) || 0;
+
+      // Calculer les alertes (prestataires en attente + réservations en attente + avis non approuvés)
+      const alertsCount = (pendingProvidersCount.count || 0) + (pendingBookingsCount.count || 0) + pendingReviews.length;
 
       setAdminStats({
         total_users: usersCount.count || 0,
         total_providers: providersCount.count || 0,
         total_bookings: bookingsCount.count || 0,
-        total_revenue: 0,
+        total_revenue: totalRevenue,
         pending_reviews: pendingReviews.length,
         flagged_reviews: flaggedReviews.length
+      });
+
+      setQuickActionCounts({
+        pendingProviders: pendingProvidersCount.count || 0,
+        pendingAlerts: alertsCount,
+        totalRevenue: totalRevenue,
+        unreadMessages: unreadMessagesCount.count || 0
       });
     } catch (error) {
       console.error('Erreur lors du chargement des statistiques:', error);
@@ -1070,45 +1026,45 @@ export default function EnhancedModernDashboard() {
                 <Button 
                   variant="outline" 
                   className="h-auto p-4 flex flex-col items-center gap-2"
-                  onClick={handleValidateAllProviders}
+                  onClick={() => navigate('/admin/providers?status=pending')}
                   disabled={loading}
                 >
                   {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <CheckCircle className="w-6 h-6 text-green-500" />}
                   <span className="text-sm">Valider Prestataires</span>
-                  <Badge variant="destructive">3</Badge>
+                  <Badge variant="destructive">{quickActionCounts.pendingProviders}</Badge>
                 </Button>
                 
                 <Button 
                   variant="outline" 
                   className="h-auto p-4 flex flex-col items-center gap-2"
-                  onClick={handleManageAlerts}
+                  onClick={() => navigate('/admin/alerts')}
                   disabled={loading}
                 >
                   <AlertTriangle className="w-6 h-6 text-amber-500" />
                   <span className="text-sm">Gérer Alertes</span>
-                  <Badge variant="default">5</Badge>
+                  <Badge variant="default">{quickActionCounts.pendingAlerts}</Badge>
                 </Button>
                 
                 <Button 
                   variant="outline" 
                   className="h-auto p-4 flex flex-col items-center gap-2"
-                  onClick={handleViewPayments}
+                  onClick={() => navigate('/admin/payments')}
                   disabled={loading}
                 >
                   <Euro className="w-6 h-6 text-blue-500" />
                   <span className="text-sm">Paiements</span>
-                  <Badge variant="default">23k€</Badge>
+                  <Badge variant="default">{quickActionCounts.totalRevenue > 0 ? `${Math.round(quickActionCounts.totalRevenue / 1000)}k€` : '0€'}</Badge>
                 </Button>
                 
                 <Button 
                   variant="outline" 
                   className="h-auto p-4 flex flex-col items-center gap-2"
-                  onClick={handleViewMessages}
+                  onClick={() => navigate('/admin/messages')}
                   disabled={loading}
                 >
                   <MessageSquare className="w-6 h-6 text-purple-500" />
                   <span className="text-sm">Messages</span>
-                  <Badge variant="secondary">23</Badge>
+                  <Badge variant="secondary">{quickActionCounts.unreadMessages}</Badge>
                 </Button>
               </div>
             </CardContent>
