@@ -1,260 +1,250 @@
+import { lazy, Suspense } from "react";
 import { MobileStatusBar } from "@/components/MobileStatusBar";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { LiveRequestNotifications } from "@/components/LiveRequestNotifications";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "./hooks/useAuth";
+
+// Critical - loaded immediately
 import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import ProviderAuth from "./pages/ProviderAuth";
-import AuthComplete from "./pages/AuthComplete";
-import ResetPassword from "./pages/ResetPassword";
-import UpdatePassword from "./pages/UpdatePassword";
-import EspacePersonnel from "./pages/EspacePersonnel";
-import EspacePrestataire from "./pages/EspacePrestataire";
-import MyZones from "./pages/provider/MyZones";
-import Admin from "./pages/Admin";
-import { GestionDemandes } from "./pages/GestionDemandes";
-import ContactPage from "./pages/Contact";
-import ServicesPage from "./pages/Services";
-import Aide from "./pages/Aide";
-import AProposDeNous from "./pages/AProposDeNous";
-import Blog from "./pages/Blog";
-import BlogPost from "./pages/BlogPost";
-import AnalyticsSEO from "./pages/AnalyticsSEO";
-import ConfigMessages from "./pages/ConfigMessages";
-import CustomRequest from "./pages/CustomRequest";
-import ProviderSignup from "./pages/ProviderSignup";
-import AdminClientRequests from "./pages/AdminClientRequests";
-import BikaKids from "./pages/BikaKids";
-import BikaMaison from "./pages/BikaMaison";
-import BikaVie from "./pages/BikaVie";
-import BikaTravel from "./pages/BikaTravel";
-import BikaPlus from "./pages/BikaPlus";
-import BikaAnimals from "./pages/BikaAnimals";
-import BikaSeniors from "./pages/BikaSeniors";
-import BikaPro from "./pages/BikaPro";
-import Reservation from "./pages/Reservation";
-import ReservationConfirmee from "./pages/ReservationConfirmee";
-import SubServicePage from "./pages/SubService";
-import CartPage from "./pages/Cart";
-import PaymentSuccess from "./pages/PaymentSuccess";
-import PaymentCanceled from "./pages/PaymentCanceled";
-import AdminLogin from "./pages/AdminLogin";
 
-// Admin Layout and Pages
-import ModernAdminDashboard from "./pages/admin/ModernAdminDashboard";
-import AdminAlertes from "./pages/admin/Alertes";
-import AdminKanban from "./pages/admin/Kanban";
-import AdminUtilisateurs from "./pages/admin/Utilisateurs";
-import AdminPrestataires from "./pages/admin/Prestataires";
-import AdminAssignment from "./pages/admin/Assignment";
-import AdminFinance from "./pages/admin/Finance";
-import AdminBrand from "./pages/admin/Brand";
-import AdminTools from "./pages/admin/Tools";
-import AdminModeration from "./pages/admin/Moderation";
-import AdminBinomes from "./pages/admin/Binomes";
-import TestsEmails from "./pages/admin/TestsEmails";
-import Monitoring from "./pages/admin/Monitoring";
-import AdminMessagerie from "./pages/admin/Messagerie";
-import AdminRemunerations from "./pages/admin/Remunerations";
-import AdminPaiements from "./pages/admin/Paiements";
-import AdminFactures from "./pages/admin/Factures";
-import AdminPaniers from "./pages/admin/Paniers";
-import BikawoCartDemo from "./components/BikawoCartDemo";
-import AdminNotifications from "./pages/admin/Notifications";
-import Payment from "./pages/Payment";
+// Lazy load non-critical components
+const LiveRequestNotifications = lazy(() => import("@/components/LiveRequestNotifications").then(m => ({ default: m.LiveRequestNotifications })));
 
-import AdminZones from "./pages/admin/Zones";
-import AdminParametres from "./pages/admin/Parametres";
-import AdminMarque from "./pages/admin/Marque";
-import TestsSystems from "./pages/admin/TestsSystems";
+// Auth pages - lazy loaded
+const Auth = lazy(() => import("./pages/Auth"));
+const ProviderAuth = lazy(() => import("./pages/ProviderAuth"));
+const AuthComplete = lazy(() => import("./pages/AuthComplete"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const UpdatePassword = lazy(() => import("./pages/UpdatePassword"));
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 
-// Modern Admin Components
-import ModernAdminLayout from "./components/admin/ModernAdminLayout";
+// User pages - lazy loaded
+const EspacePersonnel = lazy(() => import("./pages/EspacePersonnel"));
+const EspacePrestataire = lazy(() => import("./pages/EspacePrestataire"));
+const MyZones = lazy(() => import("./pages/provider/MyZones"));
+const ProviderOnboarding = lazy(() => import("./pages/provider/Onboarding"));
+const ProviderSignup = lazy(() => import("./pages/ProviderSignup"));
 
-// Modern Admin Pages
-import AdminAnalytics from "./pages/admin/Analytics";
-import AdminRealtime from "./pages/admin/Realtime";
-import AdminClients from "./pages/admin/Clients";
-import AdminProviders from "./pages/admin/Providers";
-import AdminApplications from "./pages/admin/Applications";
-import AdminMissions from "./pages/admin/Missions";
-import AdminReservations from "./pages/admin/Reservations";
-import AdminPayments from "./pages/admin/Payments";
-import AdminInvoices from "./pages/admin/Invoices";
-import AdminMessages from "./pages/admin/Messages";
-import AdminReviews from "./pages/admin/Reviews";
-import AdminAlerts from "./pages/admin/Alerts";
-import AdminReports from "./pages/admin/Reports";
-import AdminQuality from "./pages/admin/Quality";
-import AdminSettings from "./pages/admin/Settings";
-import AdminReportsData from "./pages/admin/ReportsData";
-import AdminOnboarding from "./pages/admin/Onboarding";
-import AdminMatching from "./pages/admin/Matching";
-import TestsCritiques from "./pages/admin/TestsCritiques";
-import ProviderOnboarding from "./pages/provider/Onboarding";
-import AdminCooptation from "./pages/admin/Cooptation";
-import AdminRoles from "./pages/admin/AdminRoles";
-import NotFound from "./pages/NotFound";
-import AuditReport from "./components/AuditReport";
+// Service pages - lazy loaded
+const ServicesPage = lazy(() => import("./pages/Services"));
+const BikaKids = lazy(() => import("./pages/BikaKids"));
+const BikaMaison = lazy(() => import("./pages/BikaMaison"));
+const BikaVie = lazy(() => import("./pages/BikaVie"));
+const BikaTravel = lazy(() => import("./pages/BikaTravel"));
+const BikaPlus = lazy(() => import("./pages/BikaPlus"));
+const BikaAnimals = lazy(() => import("./pages/BikaAnimals"));
+const BikaSeniors = lazy(() => import("./pages/BikaSeniors"));
+const BikaPro = lazy(() => import("./pages/BikaPro"));
+const SubServicePage = lazy(() => import("./pages/SubService"));
 
-import ProtectedRoute from "./components/ProtectedRoute";
-import ProtectedProviderRoute from "./components/ProtectedProviderRoute";
-import AdminRoute from "./components/AdminRoute";
-import Communications from "./pages/admin/Communications";
-import Urgences from "./pages/admin/Urgences";
-import CookiePolicy from "./pages/CookiePolicy";
+// Booking & Payment - lazy loaded
+const CartPage = lazy(() => import("./pages/Cart"));
+const Payment = lazy(() => import("./pages/Payment"));
+const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
+const PaymentCanceled = lazy(() => import("./pages/PaymentCanceled"));
+const Reservation = lazy(() => import("./pages/Reservation"));
+const ReservationConfirmee = lazy(() => import("./pages/ReservationConfirmee"));
+const CustomRequest = lazy(() => import("./pages/CustomRequest"));
+
+// Content pages - lazy loaded
+const ContactPage = lazy(() => import("./pages/Contact"));
+const Aide = lazy(() => import("./pages/Aide"));
+const AProposDeNous = lazy(() => import("./pages/AProposDeNous"));
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
+const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+// Admin pages - lazy loaded (heavy)
+const Admin = lazy(() => import("./pages/Admin"));
+const GestionDemandes = lazy(() => import("./pages/GestionDemandes").then(m => ({ default: m.GestionDemandes })));
+const AdminClientRequests = lazy(() => import("./pages/AdminClientRequests"));
+const ModernAdminDashboard = lazy(() => import("./pages/admin/ModernAdminDashboard"));
+const ModernAdminLayout = lazy(() => import("./components/admin/ModernAdminLayout"));
+const AdminAnalytics = lazy(() => import("./pages/admin/Analytics"));
+const AdminRealtime = lazy(() => import("./pages/admin/Realtime"));
+const AdminClients = lazy(() => import("./pages/admin/Clients"));
+const AdminProviders = lazy(() => import("./pages/admin/Providers"));
+const AdminApplications = lazy(() => import("./pages/admin/Applications"));
+const AdminMissions = lazy(() => import("./pages/admin/Missions"));
+const AdminReservations = lazy(() => import("./pages/admin/Reservations"));
+const AdminPayments = lazy(() => import("./pages/admin/Payments"));
+const AdminInvoices = lazy(() => import("./pages/admin/Invoices"));
+const AdminMessages = lazy(() => import("./pages/admin/Messages"));
+const AdminReviews = lazy(() => import("./pages/admin/Reviews"));
+const AdminAlerts = lazy(() => import("./pages/admin/Alerts"));
+const AdminReports = lazy(() => import("./pages/admin/Reports"));
+const AdminQuality = lazy(() => import("./pages/admin/Quality"));
+const AdminSettings = lazy(() => import("./pages/admin/Settings"));
+const AdminReportsData = lazy(() => import("./pages/admin/ReportsData"));
+const AdminOnboarding = lazy(() => import("./pages/admin/Onboarding"));
+const AdminMatching = lazy(() => import("./pages/admin/Matching"));
+const AdminBinomes = lazy(() => import("./pages/admin/Binomes"));
+const AdminZones = lazy(() => import("./pages/admin/Zones"));
+const AdminMarque = lazy(() => import("./pages/admin/Marque"));
+const AdminCooptation = lazy(() => import("./pages/admin/Cooptation"));
+const AdminNotifications = lazy(() => import("./pages/admin/Notifications"));
+const AdminUtilisateurs = lazy(() => import("./pages/admin/Utilisateurs"));
+const TestsCritiques = lazy(() => import("./pages/admin/TestsCritiques"));
+const TestsEmails = lazy(() => import("./pages/admin/TestsEmails"));
+const Monitoring = lazy(() => import("./pages/admin/Monitoring"));
+const AuditReport = lazy(() => import("./components/AuditReport"));
+const BikawoCartDemo = lazy(() => import("./components/BikawoCartDemo"));
+const AnalyticsSEO = lazy(() => import("./pages/AnalyticsSEO"));
+const ConfigMessages = lazy(() => import("./pages/ConfigMessages"));
+
+// Protected routes
+const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
+const ProtectedProviderRoute = lazy(() => import("./components/ProtectedProviderRoute"));
+const AdminRoute = lazy(() => import("./components/AdminRoute"));
 
 const queryClient = new QueryClient();
+
+// Loading fallback
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <HelmetProvider>
       <AuthProvider>
         <TooltipProvider>
-        <MobileStatusBar />
-        <Toaster />
-        <Sonner />
-        <CookieConsentBanner />
-        <BrowserRouter>
-          <LiveRequestNotifications />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/auth/provider" element={<ProviderAuth />} />
-            <Route path="/auth/complete" element={<AuthComplete />} />
-            <Route path="/email/verify" element={<AuthComplete />} />
-            <Route path="/email/verify/:token" element={<AuthComplete />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/update-password" element={<UpdatePassword />} />
-            {/* Route de connexion admin dédiée - sécurisée par RLS */}
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/espace-personnel" element={<ProtectedRoute><EspacePersonnel /></ProtectedRoute>} />
-            <Route path="/dashboard-client" element={<ProtectedRoute><EspacePersonnel /></ProtectedRoute>} />
-            <Route path="/espace-prestataire" element={<ProtectedProviderRoute><EspacePrestataire /></ProtectedProviderRoute>} />
-            <Route path="/dashboard-prestataire" element={<ProtectedProviderRoute><EspacePrestataire /></ProtectedProviderRoute>} />
-            <Route path="/provider-onboarding" element={<ProtectedProviderRoute><ProviderOnboarding /></ProtectedProviderRoute>} />
-            <Route path="/provider/zones" element={<ProtectedProviderRoute><MyZones /></ProtectedProviderRoute>} />
-            <Route path="/nous-recrutons" element={<ProviderSignup />} />
-            <Route path="/gestion-demandes" element={<GestionDemandes />} />
-            <Route path="/services" element={<ServicesPage />} />
-            <Route path="/services/:category/:slug" element={<SubServicePage />} />
-            <Route path="/panier" element={<CartPage />} />
-            <Route path="/cart" element={<CartPage />} />
-            <Route path="/payment-success" element={<PaymentSuccess />} />
-            <Route path="/payment-canceled" element={<PaymentCanceled />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/aide" element={<Aide />} />
-            <Route path="/panier-demo" element={<BikawoCartDemo />} />
-            <Route path="/a-propos-de-nous" element={<AProposDeNous />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/blog/:slug" element={<BlogPost />} />
-            <Route path="/analytics-seo" element={<AnalyticsSEO />} />
-            <Route path="/config-messages" element={<ConfigMessages />} />
-            <Route path="/demande-personnalisee" element={<CustomRequest />} />
-            <Route path="/custom-request" element={<CustomRequest />} />
-            <Route path="/candidature-prestataire" element={<ProviderSignup />} />
-            <Route path="/bika-kids" element={<BikaKids />} />
-            <Route path="/bika-maison" element={<BikaMaison />} />
-            <Route path="/bika-vie" element={<BikaVie />} />
-            <Route path="/bika-travel" element={<BikaTravel />} />
-            <Route path="/bika-plus" element={<BikaPlus />} />
-            <Route path="/bika-animals" element={<BikaAnimals />} />
-            <Route path="/bika-seniors" element={<BikaSeniors />} />
-            <Route path="/bika-pro" element={<BikaPro />} />
-            <Route path="/bika-kids-ile-de-france" element={<BikaKids />} />
-            <Route path="/bika-maison-ile-de-france" element={<BikaMaison />} />
-            <Route path="/bika-vie-ile-de-france" element={<BikaVie />} />
-            <Route path="/bika-travel-ile-de-france" element={<BikaTravel />} />
-            <Route path="/bika-plus-ile-de-france" element={<BikaPlus />} />
-            <Route path="/bika-animals-ile-de-france" element={<BikaAnimals />} />
-            <Route path="/bika-seniors-ile-de-france" element={<BikaSeniors />} />
-            <Route path="/bika-pro-ile-de-france" element={<BikaPro />} />
-             <Route path="/reservation" element={<Reservation />} />
-             <Route path="/reservation-confirmee" element={<ReservationConfirmee />} />
-             <Route path="/politique-cookies" element={<CookiePolicy />} />
-             <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
-             <Route path="/audit-qualite" element={<AdminRoute><AuditReport /></AdminRoute>} />
-             
-             {/* Redirect old /admin routes to /modern-admin */}
-             <Route path="/admin" element={<Navigate to="/modern-admin" replace />} />
-             <Route path="/admin/*" element={<Navigate to="/modern-admin" replace />} />
-            
-            {/* Modern Admin Routes - Unified Admin Interface */}
-            <Route path="/modern-admin" element={<AdminRoute><ModernAdminLayout /></AdminRoute>}>
-              <Route index element={<ModernAdminDashboard />} />
-              <Route path="dashboard" element={<ModernAdminDashboard />} />
-              <Route path="analytics" element={<AdminAnalytics />} />
-              <Route path="realtime" element={<AdminRealtime />} />
-              <Route path="utilisateurs" element={<AdminUtilisateurs />} />
-              <Route path="clients" element={<AdminClients />} />
-              <Route path="providers" element={<AdminProviders />} />
-              <Route path="applications" element={<AdminApplications />} />
-              <Route path="binomes" element={<AdminBinomes />} />
-              <Route path="onboarding" element={<AdminOnboarding />} />
-              <Route path="matching" element={<AdminMatching />} />
-              <Route path="missions" element={<AdminMissions />} />
-              <Route path="reservations" element={<AdminReservations />} />
-              <Route path="payments" element={<AdminPayments />} />
-              <Route path="invoices" element={<AdminInvoices />} />
-              <Route path="alerts" element={<AdminAlerts />} />
-              <Route path="reviews" element={<AdminReviews />} />
-              <Route path="quality" element={<AdminQuality />} />
-              <Route path="zones" element={<AdminZones />} />
-              <Route path="settings" element={<AdminSettings />} />
-              <Route path="reports" element={<AdminReports />} />
-              <Route path="monitoring" element={<Monitoring />} />
-              <Route path="tests-critiques" element={<TestsCritiques />} />
-              <Route path="tests-emails" element={<TestsEmails />} />
-              
-              {/* Legacy route aliases for backward compatibility */}
-              <Route path="prestataires" element={<AdminProviders />} />
-              <Route path="candidatures" element={<AdminApplications />} />
-              <Route path="paiements" element={<AdminPayments />} />
-              <Route path="factures" element={<AdminInvoices />} />
-              <Route path="alertes" element={<AdminAlerts />} />
-              <Route path="parametres" element={<AdminSettings />} />
-              <Route path="rapports" element={<AdminReports />} />
-              <Route path="marque" element={<AdminMarque />} />
-              <Route path="analytics" element={<AdminAnalytics />} />
-              <Route path="realtime" element={<AdminRealtime />} />
-              <Route path="clients" element={<AdminClients />} />
-              <Route path="providers" element={<AdminProviders />} />
-              <Route path="onboarding" element={<AdminOnboarding />} />
-              <Route path="matching" element={<AdminMatching />} />
-              <Route path="tests-critiques" element={<TestsCritiques />} />
-              <Route path="applications" element={<AdminApplications />} />
-              <Route path="binomes" element={<AdminBinomes />} />
-              <Route path="missions" element={<AdminMissions />} />
-              <Route path="reservations" element={<AdminReservations />} />
-              <Route path="payments" element={<AdminPayments />} />
-              <Route path="cooptation" element={<AdminCooptation />} />
-              <Route path="invoices" element={<AdminInvoices />} />
-              <Route path="messages" element={<AdminMessages />} />
-              <Route path="notifications" element={<AdminNotifications />} />
-              <Route path="reviews" element={<AdminReviews />} />
-              <Route path="alerts" element={<AdminAlerts />} />
-              <Route path="reports" element={<AdminReports />} />
-              <Route path="quality" element={<AdminQuality />} />
-              <Route path="zones" element={<AdminZones />} />
-              <Route path="marque" element={<AdminMarque />} />
-              <Route path="settings" element={<AdminSettings />} />
-              <Route path="parametres" element={<AdminSettings />} />
-              <Route path="reports-data" element={<AdminReportsData />} />
-              <Route path="audit" element={<AuditReport />} />
-            </Route>
-            
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+          <MobileStatusBar />
+          <Toaster />
+          <Sonner />
+          <CookieConsentBanner />
+          <BrowserRouter>
+            <Suspense fallback={null}>
+              <LiveRequestNotifications />
+            </Suspense>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                {/* Critical - no lazy load */}
+                <Route path="/" element={<Index />} />
+                
+                {/* Auth routes */}
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/auth/provider" element={<ProviderAuth />} />
+                <Route path="/auth/complete" element={<AuthComplete />} />
+                <Route path="/email/verify" element={<AuthComplete />} />
+                <Route path="/email/verify/:token" element={<AuthComplete />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/update-password" element={<UpdatePassword />} />
+                <Route path="/admin/login" element={<AdminLogin />} />
+                
+                {/* User spaces */}
+                <Route path="/espace-personnel" element={<ProtectedRoute><EspacePersonnel /></ProtectedRoute>} />
+                <Route path="/dashboard-client" element={<ProtectedRoute><EspacePersonnel /></ProtectedRoute>} />
+                <Route path="/espace-prestataire" element={<ProtectedProviderRoute><EspacePrestataire /></ProtectedProviderRoute>} />
+                <Route path="/dashboard-prestataire" element={<ProtectedProviderRoute><EspacePrestataire /></ProtectedProviderRoute>} />
+                <Route path="/provider-onboarding" element={<ProtectedProviderRoute><ProviderOnboarding /></ProtectedProviderRoute>} />
+                <Route path="/provider/zones" element={<ProtectedProviderRoute><MyZones /></ProtectedProviderRoute>} />
+                <Route path="/nous-recrutons" element={<ProviderSignup />} />
+                <Route path="/candidature-prestataire" element={<ProviderSignup />} />
+                <Route path="/gestion-demandes" element={<GestionDemandes />} />
+                
+                {/* Services */}
+                <Route path="/services" element={<ServicesPage />} />
+                <Route path="/services/:category/:slug" element={<SubServicePage />} />
+                <Route path="/bika-kids" element={<BikaKids />} />
+                <Route path="/bika-maison" element={<BikaMaison />} />
+                <Route path="/bika-vie" element={<BikaVie />} />
+                <Route path="/bika-travel" element={<BikaTravel />} />
+                <Route path="/bika-plus" element={<BikaPlus />} />
+                <Route path="/bika-animals" element={<BikaAnimals />} />
+                <Route path="/bika-seniors" element={<BikaSeniors />} />
+                <Route path="/bika-pro" element={<BikaPro />} />
+                <Route path="/bika-kids-ile-de-france" element={<BikaKids />} />
+                <Route path="/bika-maison-ile-de-france" element={<BikaMaison />} />
+                <Route path="/bika-vie-ile-de-france" element={<BikaVie />} />
+                <Route path="/bika-travel-ile-de-france" element={<BikaTravel />} />
+                <Route path="/bika-plus-ile-de-france" element={<BikaPlus />} />
+                <Route path="/bika-animals-ile-de-france" element={<BikaAnimals />} />
+                <Route path="/bika-seniors-ile-de-france" element={<BikaSeniors />} />
+                <Route path="/bika-pro-ile-de-france" element={<BikaPro />} />
+                
+                {/* Booking & Payment */}
+                <Route path="/panier" element={<CartPage />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/reservation" element={<Reservation />} />
+                <Route path="/reservation-confirmee" element={<ReservationConfirmee />} />
+                <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
+                <Route path="/payment-success" element={<PaymentSuccess />} />
+                <Route path="/payment-canceled" element={<PaymentCanceled />} />
+                <Route path="/demande-personnalisee" element={<CustomRequest />} />
+                <Route path="/custom-request" element={<CustomRequest />} />
+                
+                {/* Content pages */}
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/aide" element={<Aide />} />
+                <Route path="/a-propos-de-nous" element={<AProposDeNous />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/blog/:slug" element={<BlogPost />} />
+                <Route path="/politique-cookies" element={<CookiePolicy />} />
+                <Route path="/panier-demo" element={<BikawoCartDemo />} />
+                <Route path="/analytics-seo" element={<AnalyticsSEO />} />
+                <Route path="/config-messages" element={<ConfigMessages />} />
+                <Route path="/audit-qualite" element={<AdminRoute><AuditReport /></AdminRoute>} />
+                
+                {/* Admin redirects */}
+                <Route path="/admin" element={<Navigate to="/modern-admin" replace />} />
+                <Route path="/admin/*" element={<Navigate to="/modern-admin" replace />} />
+                
+                {/* Modern Admin Routes */}
+                <Route path="/modern-admin" element={<AdminRoute><ModernAdminLayout /></AdminRoute>}>
+                  <Route index element={<ModernAdminDashboard />} />
+                  <Route path="dashboard" element={<ModernAdminDashboard />} />
+                  <Route path="analytics" element={<AdminAnalytics />} />
+                  <Route path="realtime" element={<AdminRealtime />} />
+                  <Route path="utilisateurs" element={<AdminUtilisateurs />} />
+                  <Route path="clients" element={<AdminClients />} />
+                  <Route path="providers" element={<AdminProviders />} />
+                  <Route path="prestataires" element={<AdminProviders />} />
+                  <Route path="applications" element={<AdminApplications />} />
+                  <Route path="candidatures" element={<AdminApplications />} />
+                  <Route path="binomes" element={<AdminBinomes />} />
+                  <Route path="onboarding" element={<AdminOnboarding />} />
+                  <Route path="matching" element={<AdminMatching />} />
+                  <Route path="missions" element={<AdminMissions />} />
+                  <Route path="reservations" element={<AdminReservations />} />
+                  <Route path="payments" element={<AdminPayments />} />
+                  <Route path="paiements" element={<AdminPayments />} />
+                  <Route path="invoices" element={<AdminInvoices />} />
+                  <Route path="factures" element={<AdminInvoices />} />
+                  <Route path="messages" element={<AdminMessages />} />
+                  <Route path="notifications" element={<AdminNotifications />} />
+                  <Route path="reviews" element={<AdminReviews />} />
+                  <Route path="alerts" element={<AdminAlerts />} />
+                  <Route path="alertes" element={<AdminAlerts />} />
+                  <Route path="reports" element={<AdminReports />} />
+                  <Route path="rapports" element={<AdminReports />} />
+                  <Route path="reports-data" element={<AdminReportsData />} />
+                  <Route path="quality" element={<AdminQuality />} />
+                  <Route path="zones" element={<AdminZones />} />
+                  <Route path="marque" element={<AdminMarque />} />
+                  <Route path="cooptation" element={<AdminCooptation />} />
+                  <Route path="settings" element={<AdminSettings />} />
+                  <Route path="parametres" element={<AdminSettings />} />
+                  <Route path="monitoring" element={<Monitoring />} />
+                  <Route path="tests-critiques" element={<TestsCritiques />} />
+                  <Route path="tests-emails" element={<TestsEmails />} />
+                  <Route path="audit" element={<AuditReport />} />
+                </Route>
+                
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
     </HelmetProvider>
   </QueryClientProvider>
 );

@@ -752,3 +752,51 @@
     box-shadow: var(--shadow-glow);
   }
 }
+
+/* Performance optimizations */
+@layer utilities {
+  /* Reduce motion for users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Reduce animations on mobile for performance */
+  @media (max-width: 768px) {
+    .animate-bounce,
+    .animate-pulse {
+      animation: none !important;
+    }
+    
+    .hover-scale:hover {
+      transform: none;
+    }
+    
+    .transition-all {
+      transition-duration: 0.15s !important;
+    }
+  }
+
+  /* Content visibility for below-fold sections */
+  .content-visibility-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 500px;
+  }
+
+  /* GPU acceleration for smooth animations */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+
+  /* Optimize images */
+  img {
+    content-visibility: auto;
+  }
+}
