@@ -209,8 +209,8 @@ const SEOOptimization = ({
       <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       
       {/* Preload critical resources - optimized WebP */}
-      <link rel="preload" href="/logo-optimized.webp" as="image" type="image/webp" />
-      <link rel="preload" href="/hero-optimized.webp" as="image" type="image/webp" />
+      <link rel="preload" href="/hero-mobile.webp" as="image" type="image/webp" media="(max-width: 767px)" />
+      <link rel="preload" href="/hero-desktop.webp" as="image" type="image/webp" media="(min-width: 768px)" />
       
       {/* DNS prefetch pour les domaines externes */}
       <link rel="dns-prefetch" href="//fonts.googleapis.com" />

@@ -14,7 +14,8 @@ import { SecureAuthForm } from '@/components/auth/SecureAuthForm';
 import { ClientSignupForm } from '@/components/auth/ClientSignupForm';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import bikawoLogo from '@/assets/bikawo-logo.png';
+// Use optimized logo from public folder (~15KB vs 766KB)
+const bikawoLogo = "/logo-small.webp";
 
 type UserType = 'client' | 'prestataire' | 'admin' | null;
 type AuthStep = 'userType' | 'login' | 'signup';
