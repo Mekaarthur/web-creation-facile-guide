@@ -18,19 +18,22 @@ const NewHero = () => {
     <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden pt-24 pb-12 sm:pt-28 sm:pb-16">
       {/* Animated Background */}
       <div className="absolute inset-0">
-        {/* Primary Background Image */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000 transform scale-105 hover:scale-110"
-          style={{ backgroundImage: `url(${heroImage})` }}
+        {/* Primary Background Image - Optimized for LCP */}
+        <img 
+          src={heroImage}
+          alt="Bikawo - Votre assistant personnel au quotidien"
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 scale-105 hover:scale-110"
+          fetchPriority="high"
+          decoding="async"
         />
         
         {/* Animated Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
         
-        {/* Floating Elements - Hidden on mobile */}
-        <div className="absolute inset-0 hidden sm:block">
-          <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-primary/20 rounded-full blur-3xl animate-bounce" style={{ animationDelay: '0s', animationDuration: '3s' }} />
-          <div className="absolute top-3/4 right-1/4 w-24 h-24 bg-secondary/20 rounded-full blur-2xl animate-bounce" style={{ animationDelay: '1s', animationDuration: '4s' }} />
+        {/* Floating Elements - Hidden on mobile for performance */}
+        <div className="absolute inset-0 hidden lg:block">
+          <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-primary/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
+          <div className="absolute top-3/4 right-1/4 w-24 h-24 bg-secondary/20 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '2s', animationDuration: '5s' }} />
         </div>
       </div>
 
