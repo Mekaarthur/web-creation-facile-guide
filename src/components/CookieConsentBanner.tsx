@@ -163,42 +163,36 @@ const CookieConsentBanner = () => {
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-card border-t border-border shadow-elegant animate-in slide-in-from-bottom">
-        <div className="container mx-auto max-w-6xl">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div className="flex-1">
-              <p className="text-sm text-foreground">
-                <strong>Bikawo</strong> utilise des cookies pour améliorer votre expérience et mesurer l'audience. 
-                Vous pouvez accepter ou refuser.
-              </p>
-            </div>
-            
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowCustomize(true)}
-                className="text-xs"
-              >
-                Personnaliser mes choix
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={rejectAll}
-                className="text-xs"
-              >
-                Refuser tout
-              </Button>
-              <Button
-                size="sm"
-                onClick={acceptAll}
-                className="text-xs"
-              >
-                Accepter tout
-              </Button>
-            </div>
-          </div>
+      {/* Cookie banner compact - moins intrusif */}
+      <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-md z-50 p-4 bg-card/95 backdrop-blur-sm border border-border rounded-xl shadow-elegant animate-in slide-in-from-bottom">
+        <p className="text-xs text-muted-foreground mb-3">
+          🍪 Nous utilisons des cookies pour améliorer votre expérience.
+        </p>
+        
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowCustomize(true)}
+            className="text-xs text-muted-foreground hover:text-foreground px-2"
+          >
+            Personnaliser
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={rejectAll}
+            className="text-xs text-muted-foreground hover:text-foreground px-2"
+          >
+            Refuser
+          </Button>
+          <Button
+            size="sm"
+            onClick={acceptAll}
+            className="text-xs ml-auto"
+          >
+            Accepter
+          </Button>
         </div>
       </div>
 

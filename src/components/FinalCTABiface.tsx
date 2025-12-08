@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Users } from "lucide-react";
+import { Shield, Clock, Star, ArrowRight } from "lucide-react";
 import communityBg from "@/assets/community-cta-background.jpg";
 import { useTranslation } from 'react-i18next';
 
@@ -13,51 +13,57 @@ const FinalCTABiface = () => {
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${communityBg})` }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-secondary/70"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-secondary/80"></div>
       </div>
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 text-center text-primary-foreground">
         <div className="max-w-4xl mx-auto">
-          {/* Community Icon */}
-          <div className="mb-6">
-            <Users className="h-16 w-16 mx-auto text-primary-foreground/90" />
+          {/* Guarantee badges */}
+          <div className="flex flex-wrap justify-center gap-4 mb-8">
+            <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full backdrop-blur-sm">
+              <Shield className="w-4 h-4" />
+              <span className="text-sm font-medium">Prestataires vérifiés</span>
+            </div>
+            <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full backdrop-blur-sm">
+              <Clock className="w-4 h-4" />
+              <span className="text-sm font-medium">Réponse sous 24h</span>
+            </div>
+            <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full backdrop-blur-sm">
+              <Star className="w-4 h-4" />
+              <span className="text-sm font-medium">Satisfait ou remboursé</span>
+            </div>
           </div>
 
           <h2 className="text-3xl md:text-5xl font-bold mb-6 animate-fade-in">
-            {t('finalCta.title')}
+            Prêt à retrouver du temps pour vous ?
           </h2>
           
-          <p className="text-xl md:text-2xl mb-8 opacity-90 animate-fade-in">
-            {t('finalCta.subtitle')}
+          <p className="text-xl md:text-2xl mb-4 opacity-90 animate-fade-in">
+            Rejoignez les 2500+ familles qui nous font confiance
+          </p>
+          
+          <p className="text-lg mb-8 opacity-80 animate-fade-in">
+            🎁 <strong>1ère heure offerte</strong> pour votre première réservation
           </p>
 
-          {/* Double CTA Buttons */}
+          {/* CTA Button */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8 animate-fade-in">
-            <Link to="/espace-personnel">
+            <Link to="/services">
               <Button 
                 size="lg" 
-                className="w-full sm:w-auto px-8 py-4 text-lg font-semibold bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+                className="group w-full sm:w-auto px-10 py-5 text-lg font-bold bg-white text-primary hover:bg-white/95 shadow-2xl"
               >
-                {t('finalCta.client')}
-              </Button>
-            </Link>
-            
-            <Link to="/nous-recrutons">
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="w-full sm:w-auto px-8 py-4 text-lg font-semibold bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary"
-              >
-                {t('finalCta.provider')}
+                Réserver ma première prestation
+                <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>
           </div>
 
-          {/* Credibility Element */}
-          <div className="text-lg opacity-80 animate-fade-in">
-            <p>{t('finalCta.members')}</p>
-          </div>
+          {/* Secondary CTA */}
+          <p className="text-sm opacity-70 animate-fade-in">
+            Vous êtes professionnel ? <Link to="/nous-recrutons" className="underline hover:no-underline font-medium">Rejoignez notre équipe →</Link>
+          </p>
         </div>
       </div>
     </section>
