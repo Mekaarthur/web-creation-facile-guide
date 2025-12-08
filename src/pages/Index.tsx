@@ -1,34 +1,39 @@
+import { lazy, Suspense } from 'react';
 import Navbar from "@/components/Navbar";
 import NewHero from "@/components/NewHero";
-import ServicesGrid from "@/components/ServicesGrid";
-import WhyBikawo from "@/components/WhyBikawo";
-import TestimonialsSection from "@/components/TestimonialsSection";
-import FinalCTABiface from "@/components/FinalCTABiface";
-import Footer from "@/components/Footer";
-import ChatBot from "@/components/ChatBot";
 import SEOComponent from "@/components/SEOComponent";
 import SEOOptimization from "@/components/SEOOptimization";
-import TrackingManager from "@/components/TrackingManager";
-import RetargetingPixels from "@/components/RetargetingPixels";
-import GoogleSuggestOptimizer from "@/components/GoogleSuggestOptimizer";
 import { seoStructuredData } from "@/utils/seoData";
 import { useTranslation } from 'react-i18next';
 
+// Lazy load components below the fold for better LCP/TBT
+const ServicesGrid = lazy(() => import("@/components/ServicesGrid"));
+const WhyBikawo = lazy(() => import("@/components/WhyBikawo"));
+const TestimonialsSection = lazy(() => import("@/components/TestimonialsSection"));
+const FinalCTABiface = lazy(() => import("@/components/FinalCTABiface"));
+const Footer = lazy(() => import("@/components/Footer"));
+const ChatBot = lazy(() => import("@/components/ChatBot"));
+
+// Defer non-critical SEO/tracking components
+const TrackingManager = lazy(() => import("@/components/TrackingManager"));
+const RetargetingPixels = lazy(() => import("@/components/RetargetingPixels"));
+const GoogleSuggestOptimizer = lazy(() => import("@/components/GoogleSuggestOptimizer"));
+
+// Simple loading skeleton
+const SectionSkeleton = ({ height = "h-96" }: { height?: string }) => (
+  <div className={`${height} bg-muted/30 animate-pulse rounded-lg`} />
+);
+
 const Index = () => {
   const { t } = useTranslation();
+  
   return (
     <div className="min-h-screen bg-background">
-      {/* SEO and Analytics */}
+      {/* Critical SEO - loaded immediately */}
       <SEOOptimization 
         title="Bikawo - Débordé(e) par le quotidien ? | Assistant Personnel Paris"
         description="★ Déléguer vos missions quotidiennes n'a jamais été aussi simple ! Garde enfants, aide seniors, courses, démarches admin. La charge mentale en moins, la sérénité en plus."
         keywords="débordé quotidien, déléguer missions, charge mentale, assistant personnel Paris, services domicile, garde enfants, aide seniors, sérénité famille"
-      />
-      <GoogleSuggestOptimizer />
-      <TrackingManager />
-      <RetargetingPixels 
-        userType="visitor"
-        serviceInterest={["delegation-taches", "charge-mentale", "aide-quotidienne"]}
       />
       <SEOComponent 
         title="Bikawo - La charge mentale en moins, la sérénité en plus"
@@ -37,19 +42,29 @@ const Index = () => {
         structuredData={seoStructuredData.organization}
       />
       
-      {/* Navigation */}
+      {/* Deferred tracking/SEO components */}
+      <Suspense fallback={null}>
+        <GoogleSuggestOptimizer />
+        <TrackingManager />
+        <RetargetingPixels 
+          userType="visitor"
+          serviceInterest={["delegation-taches", "charge-mentale", "aide-quotidienne"]}
+        />
+      </Suspense>
+      
+      {/* Navigation - Critical */}
       <header className="sticky top-0 z-50 w-full backdrop-blur-sm bg-background/80 border-b border-border/40">
         <Navbar />
       </header>
       
       {/* Main Content */}
       <main className="w-full">
-        {/* Hero Section */}
+        {/* Hero Section - Critical, loaded immediately */}
         <section className="relative overflow-hidden">
           <NewHero />
         </section>
         
-        {/* Services Section */}
+        {/* Services Section - Lazy loaded */}
         <section className="py-16 lg:py-24 bg-muted/30">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
@@ -60,33 +75,45 @@ const Index = () => {
                 {t('services.subtitle')}
               </p>
             </div>
-            <ServicesGrid />
+            <Suspense fallback={<SectionSkeleton />}>
+              <ServicesGrid />
+            </Suspense>
           </div>
         </section>
         
-        {/* Why Choose Us Section */}
+        {/* Why Choose Us Section - Lazy loaded */}
         <section className="py-16 lg:py-24 bg-background">
-          <WhyBikawo />
+          <Suspense fallback={<SectionSkeleton />}>
+            <WhyBikawo />
+          </Suspense>
         </section>
         
-        {/* Testimonials Section */}
+        {/* Testimonials Section - Lazy loaded */}
         <section className="py-16 lg:py-24 bg-muted/20">
-          <TestimonialsSection />
+          <Suspense fallback={<SectionSkeleton />}>
+            <TestimonialsSection />
+          </Suspense>
         </section>
         
-        {/* Call to Action Section */}
+        {/* Call to Action Section - Lazy loaded */}
         <section className="py-16 lg:py-24 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
-          <FinalCTABiface />
+          <Suspense fallback={<SectionSkeleton height="h-64" />}>
+            <FinalCTABiface />
+          </Suspense>
         </section>
       </main>
       
-      {/* Footer */}
+      {/* Footer - Lazy loaded */}
       <footer className="bg-muted/50">
-        <Footer />
+        <Suspense fallback={<SectionSkeleton height="h-48" />}>
+          <Footer />
+        </Suspense>
       </footer>
       
-      {/* Chat Bot */}
-      <ChatBot />
+      {/* Chat Bot - Lazy loaded with delay */}
+      <Suspense fallback={null}>
+        <ChatBot />
+      </Suspense>
     </div>
   );
 };

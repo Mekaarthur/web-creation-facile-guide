@@ -46,8 +46,8 @@ const NewHero = () => {
 
         <div className={`transition-all duration-1000 delay-100 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 leading-tight">
-            <span className="block text-white drop-shadow-lg">{t('newHero.title1')}</span>
-            <span className="block text-white drop-shadow-lg">{t('newHero.title2')}</span>
+            <span className="block text-white drop-shadow-lg">{t('newHero.title1', 'Bikawo, votre assistant')}</span>
+            <span className="block text-white drop-shadow-lg">{t('newHero.title2', 'personnel au quotidien')}</span>
           </h1>
         </div>
         
