@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,12 +19,14 @@ import {
   Eye,
   Activity,
   Calendar,
-  Zap
+  Zap,
+  MessageSquare
 } from "lucide-react";
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
+import { useAdminCounts } from "@/hooks/useAdminCounts";
 
 const MetricCard = ({ 
   title, 
@@ -111,46 +114,33 @@ const AlertItem = ({
 );
 
 export default function ModernDashboard() {
+  const navigate = useNavigate();
+  const { data: adminCounts } = useAdminCounts();
   const [stats, setStats] = useState({
-    revenue: { value: 125847, change: '+12%', trend: [98000, 105000, 118000, 125000, 125847] },
-    users: { value: 8234, change: '+5%', trend: [7800, 7900, 8000, 8100, 8234] },
-    missions: { value: 147, change: '+8%', trend: [120, 125, 135, 140, 147] },
-    satisfaction: { value: 4.8, change: '+0.1', trend: [4.6, 4.7, 4.7, 4.8, 4.8] }
+    revenue: { value: 0, change: '', trend: [] as number[] },
+    users: { value: 0, change: '', trend: [] as number[] },
+    missions: { value: 0, change: '', trend: [] as number[] },
+    satisfaction: { value: 0, change: '', trend: [] as number[] }
   });
 
   const [revenueData, setRevenueData] = useState<any[]>([]);
   const [userGrowthData, setUserGrowthData] = useState<any[]>([]);
   const [serviceData, setServiceData] = useState<any[]>([]);
-
-  const alerts = [
-    {
-      type: 'warning' as const,
-      message: '3 prestataires en attente de validation depuis plus de 48h',
-      time: 'Il y a 2 heures',
-      priority: 'high' as const
-    },
-    {
-      type: 'error' as const,
-      message: 'Taux de satisfaction Bika Maison: 4.2/5 (seuil: 4.5)',
-      time: 'Il y a 30 min',
-      priority: 'high' as const
-    },
-    {
-      type: 'warning' as const,
-      message: 'Commission impayée: 2 347€ (5 prestataires)',
-      time: 'Il y a 1 heure',
-      priority: 'medium' as const
-    },
-    {
-      type: 'info' as const,
-      message: 'Nouveau client inscrit: Thomas Martin (Bika Maison)',
-      time: 'Il y a 10 min',
-      priority: 'low' as const
-    }
-  ];
+  const [alerts, setAlerts] = useState<Array<{
+    type: 'warning' | 'error' | 'info';
+    message: string;
+    time: string;
+    priority: 'high' | 'medium' | 'low';
+  }>>([]);
+  const [quickStats, setQuickStats] = useState({
+    pendingProviders: 0,
+    pendingAlerts: 0,
+    totalRevenue: 0,
+    unreadMessages: 0
+  });
 
   useEffect(() => {
-    const loadChartData = async () => {
+    const loadAllData = async () => {
       try {
         // Load revenue data from bookings
         const { data: bookings } = await supabase
@@ -169,6 +159,14 @@ export default function ModernDashboard() {
         }, {}) || {};
 
         setRevenueData(Object.entries(revenueByWeek).map(([name, revenue]) => ({ name, revenue })));
+
+        // Calculate total revenue
+        const totalRevenue = bookings?.reduce((sum, b) => sum + (b.total_price || 0), 0) || 0;
+
+        // Load user count
+        const { count: usersCount } = await supabase
+          .from('profiles')
+          .select('id', { count: 'exact', head: true });
 
         // Load user growth data from profiles
         const { data: profiles } = await supabase
@@ -191,6 +189,23 @@ export default function ModernDashboard() {
           return { name, users: cumulative };
         }));
 
+        // Load missions count for today
+        const today = new Date().toISOString().split('T')[0];
+        const { count: todayMissions } = await supabase
+          .from('bookings')
+          .select('id', { count: 'exact', head: true })
+          .eq('booking_date', today);
+
+        // Load average rating
+        const { data: reviews } = await supabase
+          .from('reviews')
+          .select('rating')
+          .eq('is_approved', true);
+        
+        const avgRating = reviews && reviews.length > 0
+          ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+          : 0;
+
         // Load service distribution
         const { data: serviceBookings } = await supabase
           .from('bookings')
@@ -210,13 +225,78 @@ export default function ModernDashboard() {
           value, 
           color: COLORS[index % COLORS.length] 
         })));
+
+        // Load pending providers
+        const { count: pendingProviders } = await supabase
+          .from('providers')
+          .select('id', { count: 'exact', head: true })
+          .in('status', ['pending', 'pending_validation']);
+
+        // Load unread messages
+        const { count: unreadMessages } = await supabase
+          .from('internal_messages')
+          .select('id', { count: 'exact', head: true })
+          .eq('is_read', false);
+
+        // Update stats
+        setStats({
+          revenue: { value: totalRevenue, change: '', trend: Object.values(revenueByWeek) as number[] },
+          users: { value: usersCount || 0, change: '', trend: [] },
+          missions: { value: todayMissions || 0, change: '', trend: [] },
+          satisfaction: { value: parseFloat(avgRating.toFixed(1)), change: '', trend: [] }
+        });
+
+        setQuickStats({
+          pendingProviders: pendingProviders || 0,
+          pendingAlerts: adminCounts?.alerts || 0,
+          totalRevenue,
+          unreadMessages: unreadMessages || 0
+        });
+
+        // Build real alerts
+        const realAlerts: typeof alerts = [];
+        
+        if ((pendingProviders || 0) > 0) {
+          realAlerts.push({
+            type: 'warning',
+            message: `${pendingProviders} prestataire(s) en attente de validation`,
+            time: 'Maintenant',
+            priority: 'high'
+          });
+        }
+
+        if ((unreadMessages || 0) > 0) {
+          realAlerts.push({
+            type: 'info',
+            message: `${unreadMessages} message(s) non lu(s)`,
+            time: 'Maintenant',
+            priority: 'medium'
+          });
+        }
+
+        const { count: pendingBookings } = await supabase
+          .from('bookings')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'pending');
+
+        if ((pendingBookings || 0) > 0) {
+          realAlerts.push({
+            type: 'warning',
+            message: `${pendingBookings} réservation(s) en attente`,
+            time: 'Maintenant',
+            priority: 'medium'
+          });
+        }
+
+        setAlerts(realAlerts);
+
       } catch (error) {
         console.error('Error loading chart data:', error);
       }
     };
 
-    loadChartData();
-  }, []);
+    loadAllData();
+  }, [adminCounts]);
 
   return (
     <div className="space-y-6">
@@ -429,28 +509,44 @@ export default function ModernDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
+            <Button 
+              variant="outline" 
+              className="h-auto p-4 flex flex-col items-center gap-2"
+              onClick={() => navigate('/admin/providers?status=pending')}
+            >
               <CheckCircle className="w-6 h-6 text-green-500" />
               <span className="text-sm">Valider Prestataires</span>
-              <Badge variant="destructive">3</Badge>
+              <Badge variant="destructive">{quickStats.pendingProviders}</Badge>
             </Button>
             
-            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
+            <Button 
+              variant="outline" 
+              className="h-auto p-4 flex flex-col items-center gap-2"
+              onClick={() => navigate('/admin/alerts')}
+            >
               <AlertTriangle className="w-6 h-6 text-amber-500" />
-              <span className="text-sm">Gérer Litiges</span>
-              <Badge variant="default">5</Badge>
+              <span className="text-sm">Gérer Alertes</span>
+              <Badge variant="default">{quickStats.pendingAlerts}</Badge>
             </Button>
             
-            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
+            <Button 
+              variant="outline" 
+              className="h-auto p-4 flex flex-col items-center gap-2"
+              onClick={() => navigate('/admin/payments')}
+            >
               <Euro className="w-6 h-6 text-blue-500" />
               <span className="text-sm">Paiements</span>
-              <Badge variant="default">23k€</Badge>
+              <Badge variant="default">{quickStats.totalRevenue > 0 ? `${Math.round(quickStats.totalRevenue / 1000)}k€` : '0€'}</Badge>
             </Button>
             
-            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
-              <Calendar className="w-6 h-6 text-purple-500" />
-              <span className="text-sm">Planning</span>
-              <Badge variant="secondary">147</Badge>
+            <Button 
+              variant="outline" 
+              className="h-auto p-4 flex flex-col items-center gap-2"
+              onClick={() => navigate('/admin/messages')}
+            >
+              <MessageSquare className="w-6 h-6 text-purple-500" />
+              <span className="text-sm">Messages</span>
+              <Badge variant="secondary">{quickStats.unreadMessages}</Badge>
             </Button>
           </div>
         </CardContent>
