@@ -52,6 +52,7 @@ import ProviderServices from '@/components/ProviderServices';
 import MyZones from '@/pages/provider/MyZones';
 import ProviderReferralProgram from '@/components/ProviderReferralProgram';
 import ProviderPerformanceRewards from '@/components/provider/ProviderPerformanceRewards';
+import { getStatusColor, getStatusLabel } from '@/utils/statusUtils';
 
 const EnhancedProviderDashboard = () => {
   const { t } = useTranslation();
@@ -98,28 +99,6 @@ const EnhancedProviderDashboard = () => {
   const getProgressPercentage = () => {
     const monthlyGoal = 3000;
     return Math.min((stats.monthlyEarnings / monthlyGoal) * 100, 100);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'confirmed': return 'bg-success/10 text-success border-success/20';
-      case 'pending': return 'bg-warning/10 text-warning border-warning/20';
-      case 'in_progress': return 'bg-info/10 text-info border-info/20';
-      case 'completed': return 'bg-muted text-muted-foreground border-border';
-      case 'cancelled': return 'bg-destructive/10 text-destructive border-destructive/20';
-      default: return 'bg-muted text-muted-foreground border-border';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'confirmed': return t('providerDashboard.status.confirmed');
-      case 'pending': return t('providerDashboard.status.pending');
-      case 'in_progress': return t('providerDashboard.status.inProgress');
-      case 'completed': return t('providerDashboard.status.completed');
-      case 'cancelled': return t('providerDashboard.status.cancelled');
-      default: return status;
-    }
   };
 
   if (loading && !provider) {
@@ -225,7 +204,7 @@ const EnhancedProviderDashboard = () => {
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 space-y-4 sm:space-y-6 lg:space-y-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0 pb-2">
-          <TabsList className="grid grid-cols-5 sm:grid-cols-6 lg:grid-cols-11 bg-card/80 backdrop-blur-sm p-0.5 sm:p-1 h-auto shadow-lg rounded-lg sm:rounded-xl border-0 min-w-max sm:min-w-0 w-full">
+          <TabsList className="grid grid-cols-6 sm:grid-cols-6 lg:grid-cols-12 bg-card/80 backdrop-blur-sm p-0.5 sm:p-1 h-auto shadow-lg rounded-lg sm:rounded-xl border-0 min-w-max sm:min-w-0 w-full">
             <TabsTrigger 
               value="dashboard" 
               className="flex flex-col items-center gap-1 sm:gap-1.5 lg:gap-2 py-2.5 sm:py-3 lg:py-4 px-2 sm:px-2.5 lg:px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md sm:rounded-lg transition-all duration-200"
@@ -246,6 +225,13 @@ const EnhancedProviderDashboard = () => {
               )}
             </TabsTrigger>
             <TabsTrigger 
+              value="missions" 
+              className="flex flex-col items-center gap-1 sm:gap-1.5 lg:gap-2 py-2.5 sm:py-3 lg:py-4 px-2 sm:px-2.5 lg:px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md sm:rounded-lg transition-all duration-200"
+            >
+              <Briefcase className="h-4 w-4 sm:h-4.5 sm:w-4.5 lg:h-5 lg:w-5" />
+              <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">Missions</span>
+            </TabsTrigger>
+            <TabsTrigger
               value="planning" 
               className="flex flex-col items-center gap-1 sm:gap-1.5 lg:gap-2 py-2.5 sm:py-3 lg:py-4 px-2 sm:px-2.5 lg:px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md sm:rounded-lg transition-all duration-200"
             >
