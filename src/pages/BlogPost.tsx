@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock, Calendar, User, ArrowLeft, Share2, BookOpen } from "lucide-react";
 import { generateArticleStructuredData } from "@/utils/seoData";
+import { ReadingProgress } from "@/components/blog/ReadingProgress";
 
 const blogContent = {
   "10-signes-charge-mentale": {
@@ -577,6 +578,7 @@ const BlogPost = () => {
 
   return (
     <div className="min-h-screen">
+      <ReadingProgress />
       <SEOComponent 
         title={`${post.title} | Blog Bikawo`}
         description={`${post.title} - Découvrez nos conseils pour réduire la charge mentale et organiser votre quotidien familial.`}
