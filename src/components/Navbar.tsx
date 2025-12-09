@@ -22,6 +22,7 @@ import BikawoCartIndicator from "@/components/BikawoCartIndicator";
 import UserProfileMenu from "@/components/UserProfileMenu";
 import { SecureLogout } from "@/components/SecureLogout";
 import { servicesData } from "@/utils/servicesData";
+import { GlobalSearch } from "@/components/search/GlobalSearch";
 // Use optimized logo from public folder (~15KB vs 766KB)
 const bikawoLogo = "/logo-small.webp";
 // Import service images
@@ -247,6 +248,7 @@ const Navbar = () => {
 
           {/* Actions Desktop */}
           <div className="hidden lg:flex items-center space-x-3">
+            <GlobalSearch />
             <BikawoCartIndicator onOpenCart={() => setIsCartOpen(true)} showTotal />
             <LanguageSwitcher />
             <NotificationCenter />
