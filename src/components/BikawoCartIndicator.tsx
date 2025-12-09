@@ -34,6 +34,7 @@ const BikawoCartIndicator = ({
       className={`relative ${className} border-primary/30 hover:bg-primary/10 transition-all duration-300`}
       onClick={onOpenCart}
       data-cart-indicator
+      data-tutorial="cart"
     >
       <ShoppingCart className="h-5 w-5 text-primary" />
     </Button>
@@ -47,6 +48,7 @@ const BikawoCartIndicator = ({
       className={`relative ${className} border-primary/30 hover:bg-primary/10 transition-all duration-300`}
       onClick={onOpenCart}
       data-cart-indicator
+      data-tutorial="cart"
     >
       <div className="flex items-center gap-2">
         <div className="relative">

@@ -11,6 +11,7 @@ import { AuthProvider } from "./hooks/useAuth";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { OfflineBanner } from "@/components/pwa/OfflineBanner";
 import { UpdatePrompt } from "@/components/pwa/UpdatePrompt";
+import { HomeTutorial, TutorialHelpButton } from "@/components/tutorial/HomeTutorial";
 
 // Critical - loaded immediately
 import Index from "./pages/Index";
@@ -131,6 +132,8 @@ const App = () => (
           <CookieConsentBanner />
           <InstallPrompt />
           <UpdatePrompt />
+          <HomeTutorial />
+          <TutorialHelpButton />
           <BrowserRouter>
             <Suspense fallback={null}>
               <LiveRequestNotifications />

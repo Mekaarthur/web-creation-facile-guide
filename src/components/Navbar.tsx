@@ -172,7 +172,7 @@ const Navbar = () => {
             </Link>
 
             {/* Services Navigation Menu */}
-            <NavigationMenu>
+            <NavigationMenu data-tutorial="services">
               <NavigationMenuList>
                 <NavigationMenuItem>
               <NavigationMenuTrigger className="bg-transparent hover:bg-muted/50 hover:text-primary data-[state=open]:bg-muted/50 data-[state=open]:text-primary">
