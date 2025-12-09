@@ -1,26 +1,22 @@
 import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   Briefcase, 
   Calendar, 
   Clock, 
   MapPin, 
   User, 
-  DollarSign, 
   Phone, 
   MessageCircle,
   CheckCircle,
   Play,
-  Square,
   AlertCircle,
-  Star,
   Search,
-  Filter,
   ChevronDown,
   ChevronUp,
   FileText,
@@ -29,6 +25,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { getStatusColor, getStatusLabel, formatCurrency } from '@/utils/statusUtils';
 
 interface Mission {
   id: string;
@@ -103,49 +100,20 @@ const ProviderMissionManager: React.FC<ProviderMissionManagerProps> = ({
     return filtered;
   }, [missions, searchTerm, statusFilter, sortBy, sortOrder]);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(amount);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'confirmed': return 'bg-success/10 text-success border-success/20';
-      case 'pending': return 'bg-warning/10 text-warning border-warning/20';
-      case 'in_progress': return 'bg-info/10 text-info border-info/20';
-      case 'completed': return 'bg-muted text-muted-foreground border-border';
-      case 'cancelled': return 'bg-destructive/10 text-destructive border-destructive/20';
-      default: return 'bg-muted text-muted-foreground border-border';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'confirmed': return 'Confirmé';
-      case 'pending': return 'En attente';
-      case 'in_progress': return 'En cours';
-      case 'completed': return 'Terminé';
-      case 'cancelled': return 'Annulé';
-      default: return status;
-    }
-  };
-
   const getNextStatusOptions = (currentStatus: string) => {
     switch (currentStatus) {
       case 'pending':
         return [
-          { value: 'confirmed', label: 'Confirmer', icon: CheckCircle, color: 'text-green-600' },
-          { value: 'cancelled', label: 'Annuler', icon: AlertCircle, color: 'text-red-600' }
+          { value: 'confirmed', label: 'Confirmer', icon: CheckCircle, color: 'text-success' },
+          { value: 'cancelled', label: 'Annuler', icon: AlertCircle, color: 'text-destructive' }
         ];
       case 'confirmed':
         return [
-          { value: 'in_progress', label: 'Commencer', icon: Play, color: 'text-blue-600' }
+          { value: 'in_progress', label: 'Commencer', icon: Play, color: 'text-info' }
         ];
       case 'in_progress':
         return [
-          { value: 'completed', label: 'Terminer', icon: CheckCircle, color: 'text-green-600' }
+          { value: 'completed', label: 'Terminer', icon: CheckCircle, color: 'text-success' }
         ];
       default:
         return [];
