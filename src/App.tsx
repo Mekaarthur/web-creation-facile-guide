@@ -137,11 +137,11 @@ const App = () => (
           <CookieConsentBanner />
           <InstallPrompt />
           <UpdatePrompt />
-          <HomeTutorial />
-          <TutorialHelpButton />
           <FeedbackWidget />
           <ConnectionIndicator />
           <BrowserRouter>
+            <HomeTutorial />
+            <TutorialHelpButton />
             <PageLoadingBar />
             <NavigationBehaviors />
             <KeyboardShortcuts />
