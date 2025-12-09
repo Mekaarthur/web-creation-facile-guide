@@ -61,7 +61,7 @@ export function AdminSidebar() {
       items: [
         { 
           title: "Utilisateurs", 
-          url: "/admin/utilisateurs", 
+          url: "/modern-admin/utilisateurs", 
           icon: UserCog,
           description: "Gestion AUTH globale • Activation/Suspension rapide"
         },
@@ -73,7 +73,7 @@ export function AdminSidebar() {
       items: [
         { 
           title: "Clients", 
-          url: "/admin/clients", 
+          url: "/modern-admin/clients", 
           icon: Users,
           description: "Profils détaillés • Stats CA • Rétention"
         },
@@ -96,6 +96,12 @@ export function AdminSidebar() {
           url: "/modern-admin/binomes", 
           icon: Star,
           description: "Gestion des binômes client-prestataire"
+        },
+        { 
+          title: "Cooptation", 
+          url: "/modern-admin/cooptation", 
+          icon: Users,
+          description: "Programme parrainage prestataires"
         },
       ]
     },
@@ -200,13 +206,19 @@ export function AdminSidebar() {
     },
     {
       title: "⚙️ Configuration",
-      description: "Paramètres et rapports",
+      description: "Paramètres, zones et marque",
       items: [
         { 
           title: "Zones", 
           url: "/modern-admin/zones", 
           icon: MapPin,
           description: "Gestion des zones géographiques"
+        },
+        { 
+          title: "Marque", 
+          url: "/modern-admin/marque", 
+          icon: Building2,
+          description: "Gestion de la marque"
         },
         { 
           title: "Paramètres", 
@@ -228,7 +240,7 @@ export function AdminSidebar() {
       items: [
         { 
           title: "Monitoring", 
-          url: "/admin/monitoring", 
+          url: "/modern-admin/monitoring", 
           icon: Activity,
           description: "Surveillance système"
         },
@@ -240,7 +252,7 @@ export function AdminSidebar() {
         },
         { 
           title: "Tests Emails", 
-          url: "/admin/tests-emails", 
+          url: "/modern-admin/tests-emails", 
           icon: Mail,
           description: "Tests envoi emails"
         },
