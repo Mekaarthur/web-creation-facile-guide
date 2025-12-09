@@ -4,7 +4,7 @@ import { Resend } from "npm:resend@4.0.0";
 import React from 'npm:react@18.3.1';
 import { renderAsync } from 'npm:@react-email/components@0.0.22';
 
-// Import templates
+// Import templates - Client
 import { BookingConfirmationEmail } from './_templates/booking-confirmation.tsx';
 import { ProviderAssignedEmail } from './_templates/provider-assigned.tsx';
 import { BookingReminderEmail } from './_templates/booking-reminder.tsx';
@@ -16,15 +16,21 @@ import { AccountCreatedEmail } from './_templates/account-created.tsx';
 import { PasswordSetupEmail } from './_templates/password-setup.tsx';
 import { AccountDeletedEmail } from './_templates/account-deleted.tsx';
 import { ReviewRequestEmail } from './_templates/review-request.tsx';
+import { InvoiceAvailableEmail } from './_templates/invoice-available.tsx';
+import { BookingModificationEmail } from './_templates/booking-modification.tsx';
+import { PaymentFailedEmail } from './_templates/payment-failed.tsx';
+import { ReferralSuccessEmail } from './_templates/referral-success.tsx';
+
+// Import templates - Provider
 import { ProviderNewMissionEmail } from './_templates/provider-new-mission.tsx';
 import { ProviderMissionConfirmedEmail } from './_templates/provider-mission-confirmed.tsx';
 import { ProviderReminderEmail } from './_templates/provider-reminder.tsx';
 import { ProviderPaymentEmail } from './_templates/provider-payment.tsx';
-import { InvoiceAvailableEmail } from './_templates/invoice-available.tsx';
 import { ProviderDocumentValidatedEmail } from './_templates/provider-document-validated.tsx';
 import { ProviderDocumentRejectedEmail } from './_templates/provider-document-rejected.tsx';
 import { ProviderTrainingReminderEmail } from './_templates/provider-training-reminder.tsx';
 import { ProviderAccountActivatedEmail } from './_templates/provider-account-activated.tsx';
+import { ProviderRatingReceivedEmail } from './_templates/provider-rating-received.tsx';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const supabase = createClient(
@@ -39,6 +45,7 @@ const corsHeaders = {
 
 interface EmailRequest {
   type: 
+    // Client emails
     | 'booking_confirmation'
     | 'provider_assigned'
     | 'booking_reminder'
@@ -47,18 +54,23 @@ interface EmailRequest {
     | 'review_request'
     | 'cancellation'
     | 'refund_processed'
+    | 'invoice_available'
+    | 'account_created'
+    | 'password_setup'
+    | 'account_deleted'
+    | 'booking_modification'
+    | 'payment_failed'
+    | 'referral_success'
+    // Provider emails
     | 'provider_new_mission'
     | 'provider_mission_confirmed'
     | 'provider_reminder'
     | 'provider_payment'
-    | 'invoice_available'
     | 'provider_document_validated'
     | 'provider_document_rejected'
     | 'provider_training_reminder'
     | 'provider_account_activated'
-    | 'account_created'
-    | 'password_setup'
-    | 'account_deleted';
+    | 'provider_rating_received';
   data: any;
   recipientEmail: string;
   recipientName?: string;
@@ -66,6 +78,7 @@ interface EmailRequest {
 
 const getEmailTemplate = async (type: string, data: any) => {
   const templates: Record<string, any> = {
+    // Client templates
     'booking_confirmation': BookingConfirmationEmail,
     'provider_assigned': ProviderAssignedEmail,
     'booking_reminder': BookingReminderEmail,
@@ -77,15 +90,20 @@ const getEmailTemplate = async (type: string, data: any) => {
     'password_setup': PasswordSetupEmail,
     'account_deleted': AccountDeletedEmail,
     'review_request': ReviewRequestEmail,
+    'invoice_available': InvoiceAvailableEmail,
+    'booking_modification': BookingModificationEmail,
+    'payment_failed': PaymentFailedEmail,
+    'referral_success': ReferralSuccessEmail,
+    // Provider templates
     'provider_new_mission': ProviderNewMissionEmail,
     'provider_mission_confirmed': ProviderMissionConfirmedEmail,
     'provider_reminder': ProviderReminderEmail,
     'provider_payment': ProviderPaymentEmail,
-    'invoice_available': InvoiceAvailableEmail,
     'provider_document_validated': ProviderDocumentValidatedEmail,
     'provider_document_rejected': ProviderDocumentRejectedEmail,
     'provider_training_reminder': ProviderTrainingReminderEmail,
     'provider_account_activated': ProviderAccountActivatedEmail,
+    'provider_rating_received': ProviderRatingReceivedEmail,
   };
 
   const TemplateComponent = templates[type];
@@ -98,6 +116,7 @@ const getEmailTemplate = async (type: string, data: any) => {
 
 const getEmailSubject = (type: string): string => {
   const subjects: Record<string, string> = {
+    // Client subjects
     'booking_confirmation': '✅ Réservation confirmée - Bikawo',
     'provider_assigned': '👤 Prestataire assigné à votre réservation',
     'booking_reminder': '⏰ Rappel : Votre prestation demain',
@@ -106,18 +125,23 @@ const getEmailSubject = (type: string): string => {
     'review_request': '⭐ Donnez votre avis sur votre prestation',
     'cancellation': '❌ Réservation annulée',
     'refund_processed': '💰 Remboursement effectué',
+    'invoice_available': '📄 Facture disponible',
+    'account_created': '🎉 Bienvenue chez Bikawo',
+    'password_setup': '🔐 Créez votre mot de passe',
+    'account_deleted': '🗑️ Confirmation de suppression de compte',
+    'booking_modification': '📅 Réservation modifiée',
+    'payment_failed': '⚠️ Échec de paiement - Action requise',
+    'referral_success': '🎊 Parrainage réussi - Votre récompense',
+    // Provider subjects
     'provider_new_mission': '🎯 Nouvelle mission disponible',
     'provider_mission_confirmed': '✅ Mission confirmée par le client',
     'provider_reminder': '⏰ Rappel : Mission demain',
     'provider_payment': '💵 Paiement effectué',
-    'invoice_available': '📄 Facture disponible',
     'provider_document_validated': '✅ Documents validés',
     'provider_document_rejected': '⚠️ Action requise : Document à renvoyer',
     'provider_training_reminder': '📚 Complétez votre formation',
     'provider_account_activated': '🎉 Votre compte est activé',
-    'account_created': '🎉 Bienvenue chez Bikawo',
-    'password_setup': '🔐 Créez votre mot de passe',
-    'account_deleted': '🗑️ Confirmation de suppression de compte',
+    'provider_rating_received': '⭐ Nouvel avis reçu',
   };
 
   return subjects[type] || 'Notification Bikawo';
