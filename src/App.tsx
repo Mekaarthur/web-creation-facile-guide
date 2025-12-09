@@ -16,6 +16,7 @@ import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
 import { ConnectionIndicator } from "@/components/feedback/ConnectionIndicator";
 import { NavigationBehaviors } from "@/components/NavigationBehaviors";
 import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
+import { PageLoadingBar } from "@/components/ui/PageLoadingBar";
 
 // Critical - loaded immediately
 import Index from "./pages/Index";
@@ -141,6 +142,7 @@ const App = () => (
           <FeedbackWidget />
           <ConnectionIndicator />
           <BrowserRouter>
+            <PageLoadingBar />
             <NavigationBehaviors />
             <KeyboardShortcuts />
             <Suspense fallback={null}>
