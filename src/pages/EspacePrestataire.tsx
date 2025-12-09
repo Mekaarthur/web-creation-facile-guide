@@ -1,39 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import {
-  User, 
-  Calendar, 
-  FileText, 
-  Star, 
-  MapPin, 
-  Clock,
-  Briefcase,
-  Settings,
-  DollarSign,
-  TrendingUp,
-  Lock,
-  CheckCircle,
-  XCircle,
-  AlertCircle
-} from 'lucide-react';
 import EnhancedProviderDashboard from '@/components/EnhancedProviderDashboard';
-import ProviderProfileForm from '@/components/ProviderProfileForm';
 
 import { useTranslation } from 'react-i18next';
+import { useToast } from '@/hooks/use-toast';
 
 const EspacePrestataire = () => {
-  const { user, loading, hasRole, primaryRole } = useAuth();
-  const { toast } = useToast();
   const { t } = useTranslation();
+  const { user, loading, hasRole, primaryRole } = useAuth();
   const navigate = useNavigate();
 
   // Rediriger les non-prestataires vers leur espace approprié
