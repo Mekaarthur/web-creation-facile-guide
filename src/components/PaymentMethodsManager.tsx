@@ -151,7 +151,16 @@ const fetchPaymentMethods = async () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="outline">Principale</Badge>
-                    <Button variant="ghost" size="sm">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => {
+                        toast({
+                          title: "Suppression",
+                          description: "Pour supprimer cette carte, utilisez le portail Stripe ci-dessous",
+                        });
+                      }}
+                    >
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
