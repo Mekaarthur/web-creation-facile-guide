@@ -67,13 +67,25 @@ const navigationGroups = [
     ]
   },
   {
-    label: "Vue Technique",
-    description: "Gestion des comptes et authentification",
+    label: "Sécurité & Finance",
+    description: "Gestion des accès et finances",
     items: [
       { 
-        title: "Utilisateurs", 
-        href: "/modern-admin/clients", 
-        icon: Users,
+        title: "Sécurité", 
+        href: "/modern-admin/security", 
+        icon: Shield,
+        badge: null
+      },
+      { 
+        title: "Finance", 
+        href: "/modern-admin/finance", 
+        icon: Euro,
+        badge: null
+      },
+      { 
+        title: "Urgences", 
+        href: "/modern-admin/urgences", 
+        icon: AlertTriangle,
         badge: null
       }
     ]
@@ -188,6 +200,24 @@ const navigationGroups = [
         title: "Zones", 
         href: "/modern-admin/zones", 
         icon: MapPin,
+        badge: null
+      },
+      { 
+        title: "Marque", 
+        href: "/modern-admin/brand", 
+        icon: Palette,
+        badge: null
+      },
+      { 
+        title: "Cooptation", 
+        href: "/modern-admin/cooptation", 
+        icon: Gift,
+        badge: null
+      },
+      { 
+        title: "Notifications", 
+        href: "/modern-admin/notifications", 
+        icon: Bell,
         badge: null
       },
       { 
