@@ -151,6 +151,7 @@ export const GlobalSearch = () => {
         variant="outline"
         onClick={() => setIsOpen(true)}
         className="hidden md:flex items-center gap-2 px-3 text-muted-foreground hover:text-foreground w-64"
+        data-tutorial="search"
       >
         <Search className="w-4 h-4" />
         <span className="flex-1 text-left text-sm">Rechercher...</span>
