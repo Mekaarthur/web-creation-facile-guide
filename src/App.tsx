@@ -12,6 +12,8 @@ import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { OfflineBanner } from "@/components/pwa/OfflineBanner";
 import { UpdatePrompt } from "@/components/pwa/UpdatePrompt";
 import { HomeTutorial, TutorialHelpButton } from "@/components/tutorial/HomeTutorial";
+import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
+import { ConnectionIndicator } from "@/components/feedback/ConnectionIndicator";
 
 // Critical - loaded immediately
 import Index from "./pages/Index";
@@ -134,6 +136,8 @@ const App = () => (
           <UpdatePrompt />
           <HomeTutorial />
           <TutorialHelpButton />
+          <FeedbackWidget />
+          <ConnectionIndicator />
           <BrowserRouter>
             <Suspense fallback={null}>
               <LiveRequestNotifications />
