@@ -15,6 +15,7 @@ import { HomeTutorial, TutorialHelpButton } from "@/components/tutorial/HomeTuto
 import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
 import { ConnectionIndicator } from "@/components/feedback/ConnectionIndicator";
 import { NavigationBehaviors } from "@/components/NavigationBehaviors";
+import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
 
 // Critical - loaded immediately
 import Index from "./pages/Index";
@@ -141,6 +142,7 @@ const App = () => (
           <ConnectionIndicator />
           <BrowserRouter>
             <NavigationBehaviors />
+            <KeyboardShortcuts />
             <Suspense fallback={null}>
               <LiveRequestNotifications />
             </Suspense>
