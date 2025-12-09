@@ -55,9 +55,11 @@ const EspacePersonnel = () => {
     }
   }, [user, loading, primaryRole, navigate]);
 
+  // Liste unifiée des onglets protégés (nécessitant une authentification)
+  const protectedTabs = ["dashboard", "rendez-vous", "factures", "parrainage", "profil", "paiement", "attestations", "panier"];
+
   // Rediriger vers connexion si pas authentifié et tentative d'accès à un onglet protégé
   useEffect(() => {
-    const protectedTabs = ["dashboard", "rendez-vous", "factures", "parrainage", "profil", "paiement", "attestations", "panier"];
     const urlParams = new URLSearchParams(window.location.search);
     const tabFromUrl = urlParams.get('tab') || selectedTab;
     
@@ -105,8 +107,7 @@ const EspacePersonnel = () => {
 
           {/* Tabs Navigation modernisées */}
           <Tabs value={selectedTab} onValueChange={(tab) => {
-            // Vérifier l'authentification pour les onglets protégés
-            const protectedTabs = ["dashboard", "reservations", "panier", "factures", "profil", "recompenses", "calendrier", "parrainage"];
+            // Vérifier l'authentification pour les onglets protégés (utilise la liste unifiée)
             if (!user && protectedTabs.includes(tab)) {
               setSelectedTab("connexion");
               return;

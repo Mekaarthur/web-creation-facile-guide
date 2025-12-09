@@ -12,7 +12,6 @@ import { useNavigate } from "react-router-dom";
 import { servicesData } from "@/utils/servicesData";
 import { useState } from "react";
 import CallToActionButtons from "@/components/CallToActionButtons";
-import ClientSpace from "@/components/ClientSpace";
 import { useAuth } from "@/hooks/useAuth";
 import servicePremiumImage from "@/assets/service-premium.jpg";
 
