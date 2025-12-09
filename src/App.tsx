@@ -93,6 +93,10 @@ const AdminUtilisateurs = lazy(() => import("./pages/admin/Utilisateurs"));
 const TestsCritiques = lazy(() => import("./pages/admin/TestsCritiques"));
 const TestsEmails = lazy(() => import("./pages/admin/TestsEmails"));
 const Monitoring = lazy(() => import("./pages/admin/Monitoring"));
+const AdminSecurity = lazy(() => import("./pages/admin/Security"));
+const AdminFinance = lazy(() => import("./pages/admin/Finance"));
+const AdminUrgences = lazy(() => import("./pages/admin/Urgences"));
+const AdminBrand = lazy(() => import("./pages/admin/Brand"));
 const AuditReport = lazy(() => import("./components/AuditReport"));
 const BikawoCartDemo = lazy(() => import("./components/BikawoCartDemo"));
 const AnalyticsSEO = lazy(() => import("./pages/AnalyticsSEO"));
@@ -237,6 +241,11 @@ const App = () => (
                   <Route path="tests-critiques" element={<TestsCritiques />} />
                   <Route path="tests-emails" element={<TestsEmails />} />
                   <Route path="audit" element={<AuditReport />} />
+                  <Route path="security" element={<AdminSecurity />} />
+                  <Route path="securite" element={<AdminSecurity />} />
+                  <Route path="finance" element={<AdminFinance />} />
+                  <Route path="urgences" element={<AdminUrgences />} />
+                  <Route path="brand" element={<AdminBrand />} />
                 </Route>
                 
                 <Route path="*" element={<NotFound />} />
