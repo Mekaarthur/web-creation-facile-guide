@@ -8,6 +8,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "./hooks/useAuth";
+import { InstallPrompt } from "@/components/pwa/InstallPrompt";
+import { OfflineBanner } from "@/components/pwa/OfflineBanner";
+import { UpdatePrompt } from "@/components/pwa/UpdatePrompt";
 
 // Critical - loaded immediately
 import Index from "./pages/Index";
@@ -122,9 +125,12 @@ const App = () => (
       <AuthProvider>
         <TooltipProvider>
           <MobileStatusBar />
+          <OfflineBanner />
           <Toaster />
           <Sonner />
           <CookieConsentBanner />
+          <InstallPrompt />
+          <UpdatePrompt />
           <BrowserRouter>
             <Suspense fallback={null}>
               <LiveRequestNotifications />
