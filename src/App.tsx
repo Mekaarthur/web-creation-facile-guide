@@ -14,6 +14,7 @@ import { UpdatePrompt } from "@/components/pwa/UpdatePrompt";
 import { HomeTutorial, TutorialHelpButton } from "@/components/tutorial/HomeTutorial";
 import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
 import { ConnectionIndicator } from "@/components/feedback/ConnectionIndicator";
+import { NavigationBehaviors } from "@/components/NavigationBehaviors";
 
 // Critical - loaded immediately
 import Index from "./pages/Index";
@@ -139,6 +140,7 @@ const App = () => (
           <FeedbackWidget />
           <ConnectionIndicator />
           <BrowserRouter>
+            <NavigationBehaviors />
             <Suspense fallback={null}>
               <LiveRequestNotifications />
             </Suspense>
