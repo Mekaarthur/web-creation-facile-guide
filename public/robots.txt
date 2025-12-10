@@ -20,7 +20,9 @@ Allow: /
 Crawl-delay: 2
 
 # Sitemaps
+Sitemap: https://bikawo.com/sitemap-index.xml
 Sitemap: https://bikawo.com/sitemap.xml
+Sitemap: https://bikawo.com/sitemap-local.xml
 Sitemap: https://bikawo.com/sitemap-blog.xml
 
 # Sections importantes
