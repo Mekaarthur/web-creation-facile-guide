@@ -79,10 +79,12 @@ export const HomeTutorial = () => {
         <Card className="w-80 shadow-xl border-primary/20">
           <CardContent className="p-4">
             <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-white" />
-                </div>
+              <div className="flex items-center gap-3">
+                <img 
+                  src="/pwa-icon-192.png" 
+                  alt="Bikawo Logo" 
+                  className="w-12 h-12 rounded-xl shadow-sm"
+                />
                 <div>
                   <h3 className="font-semibold text-foreground">
                     Première visite ?
