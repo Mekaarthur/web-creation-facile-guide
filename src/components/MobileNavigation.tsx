@@ -302,17 +302,25 @@ export const MobileNavigation = () => {
         
         <SheetContent side="left" className="w-80 p-0 bg-background/95 backdrop-blur-sm">
           <div className="flex flex-col h-full">
-            {/* Header */}
-            <div className="p-6 border-b border-border/50">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">B</span>
+            {/* Header avec Logo */}
+            <div className="p-5 border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent">
+              <Link 
+                to="/" 
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 group"
+              >
+                <img 
+                  src="/pwa-icon-192.png" 
+                  alt="Bikawo Logo" 
+                  className="h-12 w-12 rounded-xl shadow-sm transition-transform group-hover:scale-105"
+                />
+                <div className="flex flex-col">
+                  <h2 className="font-bold text-xl text-foreground tracking-tight">Bikawo</h2>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    La sérénité au quotidien
+                  </p>
                 </div>
-                <div>
-                  <h2 className="font-semibold text-lg">Bikawo</h2>
-                  <p className="text-xs text-muted-foreground">Services à domicile</p>
-                </div>
-              </div>
+              </Link>
             </div>
 
             {/* Navigation */}
