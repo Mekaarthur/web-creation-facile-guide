@@ -28,17 +28,17 @@ export default defineConfig(({ mode }) => ({
         start_url: '/',
         icons: [
           {
-            src: '/pwa-192x192.png',
+            src: '/pwa-icon-192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: '/pwa-512x512.png',
+            src: '/pwa-icon-512.png',
             sizes: '512x512',
             type: 'image/png'
           },
           {
-            src: '/pwa-512x512.png',
+            src: '/pwa-icon-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
@@ -50,13 +50,13 @@ export default defineConfig(({ mode }) => ({
             name: 'Réserver un service',
             short_name: 'Réserver',
             url: '/services',
-            icons: [{ src: '/pwa-192x192.png', sizes: '192x192' }]
+            icons: [{ src: '/pwa-icon-192.png', sizes: '192x192' }]
           },
           {
             name: 'Mon espace',
             short_name: 'Espace',
             url: '/espace-client',
-            icons: [{ src: '/pwa-192x192.png', sizes: '192x192' }]
+            icons: [{ src: '/pwa-icon-192.png', sizes: '192x192' }]
           }
         ]
       },
