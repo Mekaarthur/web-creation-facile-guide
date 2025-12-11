@@ -20,7 +20,8 @@ import {
   LayoutDashboard,
   Receipt,
   UserCheck,
-  ShoppingCart
+  ShoppingCart,
+  PiggyBank
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -35,6 +36,7 @@ import ProfileUpdateForm from '@/components/ProfileUpdateForm';
 import AttestationsManager from '@/components/AttestationsManager';
 import BikawoCart from '@/components/BikawoCart';
 import { ChatWidget } from '@/components/chat';
+import { TaxCreditSavings } from '@/components/client/TaxCreditSavings';
 import { useTranslation } from 'react-i18next';
 
 const EspacePersonnel = () => {
@@ -57,7 +59,7 @@ const EspacePersonnel = () => {
   }, [user, loading, primaryRole, navigate]);
 
   // Liste unifiée des onglets protégés (nécessitant une authentification)
-  const protectedTabs = ["dashboard", "rendez-vous", "factures", "parrainage", "profil", "paiement", "attestations", "panier"];
+  const protectedTabs = ["dashboard", "rendez-vous", "factures", "economies", "parrainage", "profil", "paiement", "attestations", "panier"];
 
   // Rediriger vers connexion si pas authentifié et tentative d'accès à un onglet protégé
   useEffect(() => {
@@ -123,7 +125,7 @@ const EspacePersonnel = () => {
             }
             window.history.replaceState({}, '', newUrl);
           }} className="w-full">
-            <TabsList className={`w-full mb-12 grid gap-2 bg-white/80 backdrop-blur-sm p-2 shadow-lg rounded-xl border-0 ${user ? 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-8' : 'grid-cols-1'}`}>
+            <TabsList className={`w-full mb-12 grid gap-2 bg-white/80 backdrop-blur-sm p-2 shadow-lg rounded-xl border-0 ${user ? 'grid-cols-2 sm:grid-cols-5 lg:grid-cols-9' : 'grid-cols-1'}`}>
               {!user && (
                 <TabsTrigger 
                   value="connexion" 
@@ -155,6 +157,13 @@ const EspacePersonnel = () => {
                   >
                     <FileText className="w-4 h-4 flex-shrink-0" />
                     <span className="truncate font-medium">{t('personalSpace.invoices')}</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="economies" 
+                    className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm py-3 px-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+                  >
+                    <PiggyBank className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate font-medium">Économies</span>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="parrainage" 
@@ -266,6 +275,11 @@ const EspacePersonnel = () => {
             {/* Historique et Mes Factures */}
             <TabsContent value="factures" className="space-y-6">
               <ModernInvoiceManagement />
+            </TabsContent>
+
+            {/* Économies et Crédit d'impôt */}
+            <TabsContent value="economies" className="space-y-6">
+              <TaxCreditSavings />
             </TabsContent>
 
             {/* Parrainage */}
