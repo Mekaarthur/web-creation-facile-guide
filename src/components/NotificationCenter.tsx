@@ -6,19 +6,27 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Bell, 
+  BellRing,
+  BellOff,
   Check, 
   CheckCheck, 
   Calendar,
   MessageSquare,
   Euro,
-  X
+  X,
+  Settings
 } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 export const NotificationCenter = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [permissionStatus, setPermissionStatus] = useState<NotificationPermission>('default');
+  const [hasNewNotification, setHasNewNotification] = useState(false);
+  const { toast } = useToast();
   const { 
     notifications, 
     unreadCount, 
@@ -28,10 +36,49 @@ export const NotificationCenter = () => {
     requestNotificationPermission 
   } = useNotifications();
 
-  // Demander la permission pour les notifications navigateur au montage
+  // Vérifier le statut des permissions et demander si nécessaire
   useEffect(() => {
+    if ('Notification' in window) {
+      setPermissionStatus(Notification.permission);
+    }
     requestNotificationPermission();
   }, []);
+
+  // Animation quand nouvelle notification
+  useEffect(() => {
+    if (unreadCount > 0) {
+      setHasNewNotification(true);
+      const timer = setTimeout(() => setHasNewNotification(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [unreadCount]);
+
+  const handleRequestPermission = async () => {
+    if (!('Notification' in window)) {
+      toast({
+        title: "Non supporté",
+        description: "Les notifications ne sont pas supportées sur ce navigateur",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const permission = await Notification.requestPermission();
+    setPermissionStatus(permission);
+
+    if (permission === 'granted') {
+      toast({
+        title: "Notifications activées ! 🔔",
+        description: "Vous recevrez des alertes en temps réel"
+      });
+      
+      new Notification('Bikawo - Notifications activées', {
+        body: 'Vous recevrez maintenant des rappels pour vos missions',
+        icon: '/pwa-icon-192.png',
+        tag: 'welcome'
+      });
+    }
+  };
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -74,8 +121,19 @@ export const NotificationCenter = () => {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="sm" className="relative">
-          <Bell className="w-5 h-5" />
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className={cn(
+            "relative",
+            hasNewNotification && "animate-bounce"
+          )}
+        >
+          {hasNewNotification ? (
+            <BellRing className="w-5 h-5 text-primary" />
+          ) : (
+            <Bell className="w-5 h-5" />
+          )}
           {unreadCount > 0 && (
             <Badge 
               variant="destructive" 
@@ -88,6 +146,31 @@ export const NotificationCenter = () => {
       </PopoverTrigger>
       
       <PopoverContent className="w-80 p-0" align="end">
+        {/* Banner pour activer les notifications push */}
+        {permissionStatus !== 'granted' && (
+          <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-800">
+            <div className="flex items-center gap-2">
+              <BellOff className="w-4 h-4 text-amber-600 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-amber-800 dark:text-amber-200">
+                  Notifications désactivées
+                </p>
+                <p className="text-[10px] text-amber-600 dark:text-amber-400">
+                  Activez pour ne rien manquer
+                </p>
+              </div>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="h-7 text-xs border-amber-300 hover:bg-amber-100"
+                onClick={handleRequestPermission}
+              >
+                Activer
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="p-4 border-b">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold">Notifications</h3>
