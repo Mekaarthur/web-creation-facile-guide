@@ -27,8 +27,12 @@ export const InstallPrompt = () => {
       const dismissedTime = new Date(dismissedAt).getTime();
       const now = new Date().getTime();
       const daysSinceDismissed = (now - dismissedTime) / (1000 * 60 * 60 * 24);
-      if (daysSinceDismissed < 7) return; // Don't show for 7 days after dismiss
+      if (daysSinceDismissed < 7) return;
     }
+
+    // Track visit count
+    const visitCount = parseInt(localStorage.getItem('pwa-visit-count') || '0', 10) + 1;
+    localStorage.setItem('pwa-visit-count', visitCount.toString());
 
     // Detect iOS
     const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
@@ -39,19 +43,21 @@ export const InstallPrompt = () => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       
-      // Show prompt after 30 seconds on site
-      setTimeout(() => {
-        setShowPrompt(true);
-      }, 30000);
+      // Show prompt on 2nd visit or later
+      if (visitCount >= 2) {
+        setTimeout(() => {
+          setShowPrompt(true);
+        }, 2000); // Small delay for better UX
+      }
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
 
-    // For iOS, show after delay
-    if (isIOSDevice) {
+    // For iOS, show on 2nd visit
+    if (isIOSDevice && visitCount >= 2) {
       setTimeout(() => {
         setShowPrompt(true);
-      }, 30000);
+      }, 2000);
     }
 
     return () => {
