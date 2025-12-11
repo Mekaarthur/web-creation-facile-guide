@@ -54,7 +54,7 @@ export const ProviderStatsModal = ({ providerId, providerName, onClose }: Provid
         .from('providers')
         .select('rating, missions_completed, total_earnings')
         .eq('id', providerId)
-        .single();
+        .maybeSingle();
 
       const total = missions?.length || 0;
       const completed = missions?.filter(m => m.status === 'completed' || m.status === 'paid').length || 0;

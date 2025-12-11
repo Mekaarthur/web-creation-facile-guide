@@ -42,7 +42,7 @@ export async function logAdminAction(
       .from('profiles')
       .select('email')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     // Logger dans admin_actions_log
     const { error } = await supabase
