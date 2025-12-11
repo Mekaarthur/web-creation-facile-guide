@@ -170,12 +170,41 @@ export const useNotifications = () => {
     };
   }, []);
 
-  // Demander la permission pour les notifications browser
-  const requestNotificationPermission = async () => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      await Notification.requestPermission();
+// Demander la permission pour les notifications browser
+  const requestNotificationPermission = async (): Promise<boolean> => {
+    if (!('Notification' in window)) {
+      return false;
+    }
+    
+    if (Notification.permission === 'granted') {
+      return true;
+    }
+    
+    if (Notification.permission === 'default') {
+      const result = await Notification.requestPermission();
+      return result === 'granted';
+    }
+    
+    return false;
+  };
+
+  // Afficher une notification push
+  const showPushNotification = (title: string, options?: NotificationOptions) => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      try {
+        new Notification(title, {
+          icon: '/pwa-192x192.png',
+          badge: '/pwa-192x192.png',
+          ...options
+        });
+      } catch (error) {
+        console.error('Error showing notification:', error);
+      }
     }
   };
+
+  const isPushSupported = 'Notification' in window;
+  const pushPermission = isPushSupported ? Notification.permission : 'denied';
 
   return {
     notifications,
@@ -185,6 +214,9 @@ export const useNotifications = () => {
     markAllAsRead,
     createNotification,
     requestNotificationPermission,
-    loadNotifications
+    loadNotifications,
+    showPushNotification,
+    isPushSupported,
+    pushPermission
   };
 };
