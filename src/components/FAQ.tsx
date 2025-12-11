@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { ChevronDown, ChevronUp, HelpCircle, Heart } from "lucide-react";
 import { useTranslation } from 'react-i18next';
+import { Link } from "react-router-dom";
 
 const FAQ = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
@@ -261,12 +262,16 @@ const FAQ = () => {
               {t('faq.ctaSubtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="px-6 py-3 bg-gradient-primary text-white rounded-lg font-medium hover:shadow-glow transition-all">
-                {t('faq.ctaContact')}
-              </button>
-              <button className="px-6 py-3 border border-primary text-primary rounded-lg font-medium hover:bg-primary/5 transition-all">
-                {t('faq.ctaAppointment')}
-              </button>
+              <Link to="/contact">
+                <button className="px-6 py-3 bg-gradient-primary text-white rounded-lg font-medium hover:shadow-glow transition-all">
+                  {t('faq.ctaContact')}
+                </button>
+              </Link>
+              <a href="tel:+33609085390">
+                <button className="px-6 py-3 border border-primary text-primary rounded-lg font-medium hover:bg-primary/5 transition-all">
+                  {t('faq.ctaAppointment')}
+                </button>
+              </a>
             </div>
           </Card>
         </div>
