@@ -4,6 +4,7 @@ import {
   Head,
   Heading,
   Html,
+  Img,
   Preview,
   Section,
   Text,
@@ -17,6 +18,8 @@ interface MissionStartedEmailProps {
   startedAt: string;
 }
 
+const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+
 export const MissionStartedEmail = ({
   clientName,
   serviceName,
@@ -28,6 +31,10 @@ export const MissionStartedEmail = ({
     <Preview>Votre prestation a commencé</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Section style={logoContainer}>
+          <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
+        </Section>
+
         <Heading style={h1}>🚀 Prestation en cours</Heading>
         
         <Text style={text}>
@@ -59,7 +66,8 @@ export const MissionStartedEmail = ({
         </Text>
 
         <Text style={footer}>
-          L'équipe Bikawo
+          Bikawo - Votre assistant personnel au quotidien<br />
+          📧 contact@bikawo.com | 📞 06 09 08 53 90
         </Text>
       </Container>
     </Body>
@@ -77,13 +85,24 @@ const container = {
   padding: '20px 0 48px',
   marginBottom: '64px',
   maxWidth: '600px',
+  borderRadius: '8px',
+};
+
+const logoContainer = {
+  textAlign: 'center' as const,
+  padding: '20px 0',
+};
+
+const logo = {
+  margin: '0 auto',
 };
 
 const h1 = {
   color: '#333',
   fontSize: '24px',
   fontWeight: 'bold',
-  margin: '40px 20px 20px',
+  margin: '20px 20px 20px',
+  textAlign: 'center' as const,
 };
 
 const text = {
@@ -117,7 +136,7 @@ const timeText = {
 
 const infoBox = {
   backgroundColor: '#eff6ff',
-  borderLeft: '4px solid #3b82f6',
+  borderLeft: '4px solid #f59e0b',
   margin: '20px',
   padding: '16px 20px',
 };
@@ -141,6 +160,7 @@ const footer = {
   fontSize: '12px',
   lineHeight: '20px',
   margin: '32px 20px',
+  textAlign: 'center' as const,
 };
 
 export default MissionStartedEmail;

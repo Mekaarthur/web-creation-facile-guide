@@ -4,6 +4,7 @@ import {
   Head,
   Heading,
   Html,
+  Img,
   Link,
   Preview,
   Section,
@@ -22,6 +23,8 @@ interface BookingRescheduledEmailProps {
   reason?: string;
 }
 
+const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+
 export const BookingRescheduledEmail = ({
   clientName = 'Client',
   serviceName = 'Service',
@@ -37,6 +40,10 @@ export const BookingRescheduledEmail = ({
     <Preview>Votre réservation a été reportée 📅</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Section style={logoContainer}>
+          <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
+        </Section>
+
         <Heading style={h1}>Nouvelle date pour votre mission</Heading>
         
         <Text style={text}>Bonjour {clientName},</Text>
@@ -91,7 +98,8 @@ export const BookingRescheduledEmail = ({
 
         <Text style={signature}>
           Avec toute notre compréhension,<br />
-          L'équipe Bikawo 💛
+          L'équipe Bikawo 💛<br />
+          📧 contact@bikawo.com | 📞 06 09 08 53 90
         </Text>
       </Container>
     </Body>
@@ -114,12 +122,22 @@ const container = {
   borderRadius: '8px',
 };
 
+const logoContainer = {
+  textAlign: 'center' as const,
+  padding: '0 0 20px',
+};
+
+const logo = {
+  margin: '0 auto',
+};
+
 const h1 = {
   color: '#1f2937',
   fontSize: '28px',
   fontWeight: '700',
   margin: '0 0 30px',
   lineHeight: '1.3',
+  textAlign: 'center' as const,
 };
 
 const text = {
@@ -186,7 +204,7 @@ const dateValueNew = {
 };
 
 const arrow = {
-  color: '#667eea',
+  color: '#f59e0b',
   fontSize: '24px',
   fontWeight: '700',
   margin: '0',
@@ -198,7 +216,7 @@ const ctaSection = {
 };
 
 const button = {
-  backgroundColor: '#667eea',
+  backgroundColor: '#f59e0b',
   borderRadius: '6px',
   color: '#fff',
   fontSize: '16px',

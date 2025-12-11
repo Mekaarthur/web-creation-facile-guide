@@ -4,6 +4,7 @@ import {
   Head,
   Heading,
   Html,
+  Img,
   Preview,
   Section,
   Text,
@@ -22,6 +23,8 @@ interface CancellationEmailProps {
   refundPercentage: number;
 }
 
+const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+
 export const CancellationEmail = ({
   clientName,
   serviceName,
@@ -36,6 +39,10 @@ export const CancellationEmail = ({
     <Preview>Votre réservation a été annulée</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Section style={logoContainer}>
+          <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
+        </Section>
+
         <Heading style={h1}>❌ Réservation annulée</Heading>
         
         <Text style={text}>
@@ -108,9 +115,8 @@ export const CancellationEmail = ({
         )}
 
         <Text style={footer}>
-          Pour toute question, n'hésitez pas à nous contacter à support@bikawo.com<br />
-          <br />
-          L'équipe Bikawo
+          Bikawo - Votre assistant personnel au quotidien<br />
+          📧 contact@bikawo.com | 📞 06 09 08 53 90
         </Text>
       </Container>
     </Body>
@@ -128,13 +134,24 @@ const container = {
   padding: '20px 0 48px',
   marginBottom: '64px',
   maxWidth: '600px',
+  borderRadius: '8px',
+};
+
+const logoContainer = {
+  textAlign: 'center' as const,
+  padding: '20px 0',
+};
+
+const logo = {
+  margin: '0 auto',
 };
 
 const h1 = {
   color: '#333',
   fontSize: '24px',
   fontWeight: 'bold',
-  margin: '40px 20px 20px',
+  margin: '20px 20px 20px',
+  textAlign: 'center' as const,
 };
 
 const h2 = {
@@ -237,6 +254,7 @@ const footer = {
   fontSize: '12px',
   lineHeight: '20px',
   margin: '32px 20px',
+  textAlign: 'center' as const,
 };
 
 export default CancellationEmail;

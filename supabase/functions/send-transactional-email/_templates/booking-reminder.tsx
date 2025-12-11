@@ -4,6 +4,7 @@ import {
   Head,
   Heading,
   Html,
+  Img,
   Preview,
   Section,
   Text,
@@ -21,6 +22,8 @@ interface BookingReminderEmailProps {
   providerName: string;
 }
 
+const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+
 export const BookingReminderEmail = ({
   clientName,
   serviceName,
@@ -34,6 +37,10 @@ export const BookingReminderEmail = ({
     <Preview>Rappel : Votre prestation est demain</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Section style={logoContainer}>
+          <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
+        </Section>
+
         <Heading style={h1}>⏰ Rappel de prestation</Heading>
         
         <Text style={text}>
@@ -92,7 +99,8 @@ export const BookingReminderEmail = ({
 
         <Text style={footer}>
           À demain !<br />
-          L'équipe Bikawo
+          Bikawo - Votre assistant personnel au quotidien<br />
+          📧 contact@bikawo.com | 📞 06 09 08 53 90
         </Text>
       </Container>
     </Body>
@@ -110,13 +118,24 @@ const container = {
   padding: '20px 0 48px',
   marginBottom: '64px',
   maxWidth: '600px',
+  borderRadius: '8px',
+};
+
+const logoContainer = {
+  textAlign: 'center' as const,
+  padding: '20px 0',
+};
+
+const logo = {
+  margin: '0 auto',
 };
 
 const h1 = {
   color: '#333',
   fontSize: '24px',
   fontWeight: 'bold',
-  margin: '40px 20px 20px',
+  margin: '20px 20px 20px',
+  textAlign: 'center' as const,
 };
 
 const text = {
@@ -137,7 +156,7 @@ const highlightText = {
 
 const detailsBox = {
   backgroundColor: '#eff6ff',
-  border: '2px solid #3b82f6',
+  border: '2px solid #f59e0b',
   borderRadius: '8px',
   margin: '20px',
   padding: '20px',
@@ -160,7 +179,7 @@ const detailValue = {
 
 const infoBox = {
   backgroundColor: '#f9fafb',
-  borderLeft: '4px solid #3b82f6',
+  borderLeft: '4px solid #f59e0b',
   margin: '20px',
   padding: '16px 20px',
 };
@@ -205,6 +224,7 @@ const footer = {
   fontSize: '12px',
   lineHeight: '20px',
   margin: '32px 20px',
+  textAlign: 'center' as const,
 };
 
 export default BookingReminderEmail;

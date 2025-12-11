@@ -11,8 +11,8 @@ import {
   Text,
   Button,
   Hr,
-} from '@react-email/components';
-import * as React from 'react';
+} from 'npm:@react-email/components@0.0.22';
+import * as React from 'npm:react@18.3.1';
 
 interface PaymentFailedEmailProps {
   clientName: string;
@@ -22,6 +22,8 @@ interface PaymentFailedEmailProps {
   errorReason: string;
   retryUrl: string;
 }
+
+const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
 
 export const PaymentFailedEmail = ({
   clientName = 'Client',
@@ -37,13 +39,9 @@ export const PaymentFailedEmail = ({
       <Preview>⚠️ Action requise : Échec de paiement</Preview>
       <Body style={main}>
         <Container style={container}>
-          <Img
-            src="https://bikawo.com/logo.png"
-            width="150"
-            height="50"
-            alt="Bikawo"
-            style={logo}
-          />
+          <Section style={logoContainer}>
+            <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
+          </Section>
           
           <Section style={heroSection}>
             <Text style={heroEmoji}>⚠️</Text>
@@ -142,9 +140,13 @@ const container = {
   maxWidth: '600px',
 };
 
+const logoContainer = {
+  textAlign: 'center' as const,
+  padding: '20px 0',
+};
+
 const logo = {
-  margin: '0 auto 20px',
-  display: 'block',
+  margin: '0 auto',
 };
 
 const heroSection = {
@@ -299,6 +301,6 @@ const footer = {
 };
 
 const link = {
-  color: '#dc2626',
+  color: '#f59e0b',
   textDecoration: 'underline',
 };
