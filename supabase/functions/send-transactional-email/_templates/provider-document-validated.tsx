@@ -1,22 +1,25 @@
-import * as React from 'react';
+import * as React from 'npm:react@18.3.1';
 import {
   Body,
   Container,
   Head,
   Heading,
   Html,
+  Img,
   Preview,
   Section,
   Text,
   Button,
   Hr,
-} from '@react-email/components';
+} from 'npm:@react-email/components@0.0.22';
 
 interface ProviderDocumentValidatedEmailProps {
   providerName: string;
   documentType: string;
   nextStep: string;
 }
+
+const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
 
 export const ProviderDocumentValidatedEmail = ({
   providerName = 'Prestataire',
@@ -29,6 +32,9 @@ export const ProviderDocumentValidatedEmail = ({
       <Preview>Vos documents ont été validés ✓</Preview>
       <Body style={main}>
         <Container style={container}>
+          <Section style={logoContainer}>
+            <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
+          </Section>
           <Heading style={h1}>Documents validés ✓</Heading>
           
           <Text style={text}>Bonjour {providerName},</Text>
@@ -78,6 +84,15 @@ const container = {
   padding: '40px 20px',
   borderRadius: '8px',
   maxWidth: '600px',
+};
+
+const logoContainer = {
+  textAlign: 'center' as const,
+  padding: '0 0 20px',
+};
+
+const logo = {
+  margin: '0 auto',
 };
 
 const h1 = {

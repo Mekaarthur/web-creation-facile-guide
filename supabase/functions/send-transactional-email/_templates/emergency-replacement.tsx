@@ -4,6 +4,7 @@ import {
   Head,
   Heading,
   Html,
+  Img,
   Link,
   Preview,
   Section,
@@ -22,6 +23,8 @@ interface EmergencyReplacementEmailProps {
   reason: string;
 }
 
+const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+
 export const EmergencyReplacementEmail = ({
   clientName = 'Client',
   serviceName = 'Service',
@@ -37,6 +40,10 @@ export const EmergencyReplacementEmail = ({
     <Preview>🚨 Changement de prestataire urgent - Nous gérons tout</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Section style={logoContainer}>
+          <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
+        </Section>
+
         <Section style={alertHeader}>
           <Heading style={h1}>🚨 Changement urgent de prestataire</Heading>
         </Section>
@@ -97,13 +104,14 @@ export const EmergencyReplacementEmail = ({
         <Section style={contactBox}>
           <Text style={contactText}>
             🆘 <strong>Besoin d'aide ?</strong><br />
-            Notre équipe est disponible au <strong>01 XX XX XX XX</strong>
+            Notre équipe est disponible au <strong>06 09 08 53 90</strong>
           </Text>
         </Section>
 
         <Text style={signature}>
           Nous sommes désolés pour ce contretemps,<br />
-          L'équipe Bikawo 💛
+          L'équipe Bikawo 💛<br />
+          📧 contact@bikawo.com
         </Text>
       </Container>
     </Body>
@@ -126,12 +134,19 @@ const container = {
   borderRadius: '8px',
 };
 
+const logoContainer = {
+  textAlign: 'center' as const,
+  padding: '0 0 20px',
+};
+
+const logo = {
+  margin: '0 auto',
+};
+
 const alertHeader = {
   backgroundColor: '#fef2f2',
   padding: '20px',
-  margin: '-40px -20px 30px',
-  borderTopLeftRadius: '8px',
-  borderTopRightRadius: '8px',
+  margin: '0 -20px 30px',
   borderBottom: '3px solid #dc2626',
 };
 
@@ -236,7 +251,7 @@ const ctaSection = {
 };
 
 const button = {
-  backgroundColor: '#667eea',
+  backgroundColor: '#f59e0b',
   borderRadius: '6px',
   color: '#fff',
   fontSize: '16px',

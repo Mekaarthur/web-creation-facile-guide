@@ -4,6 +4,7 @@ import {
   Head,
   Heading,
   Html,
+  Img,
   Preview,
   Section,
   Text,
@@ -20,19 +21,25 @@ interface InvoiceAvailableEmailProps {
   invoiceLink?: string;
 }
 
+const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+
 export const InvoiceAvailableEmail = ({
   clientName = 'Client',
   invoiceNumber = 'INV-2025-001',
   serviceName = 'Service',
   totalAmount = 0,
   invoiceDate = new Date().toLocaleDateString('fr-FR'),
-  invoiceLink = 'https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/espace-personnel'
+  invoiceLink = 'https://bikawo.com/espace-personnel'
 }: InvoiceAvailableEmailProps) => (
   <Html>
     <Head />
     <Preview>Votre facture est disponible</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Section style={logoContainer}>
+          <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
+        </Section>
+
         <Heading style={h1}>📄 Facture disponible</Heading>
 
         <Text style={text}>Bonjour {clientName},</Text>
@@ -42,8 +49,8 @@ export const InvoiceAvailableEmail = ({
 
         <Section style={invoiceBox}>
           <Text style={invoiceIcon}>🧾</Text>
-          <Text style={invoiceNumber}>Facture N° {invoiceNumber}</Text>
-          <Text style={invoiceDate}>Date : {invoiceDate}</Text>
+          <Text style={invoiceNumberStyle}>Facture N° {invoiceNumber}</Text>
+          <Text style={invoiceDateStyle}>Date : {invoiceDate}</Text>
           <Text style={invoiceAmount}>{totalAmount.toFixed(2)}€ TTC</Text>
         </Section>
 
@@ -67,9 +74,8 @@ export const InvoiceAvailableEmail = ({
         </Section>
 
         <Text style={footer}>
-          Cordialement,<br />
-          L'équipe Bikawo<br />
-          support@bikawo.com
+          Bikawo - Votre assistant personnel au quotidien<br />
+          📧 contact@bikawo.com | 📞 06 09 08 53 90
         </Text>
       </Container>
     </Body>
@@ -78,19 +84,21 @@ export const InvoiceAvailableEmail = ({
 
 // Styles
 const main = { backgroundColor: '#f6f9fc', fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif' };
-const container = { backgroundColor: '#ffffff', margin: '0 auto', padding: '20px 0 48px', marginBottom: '64px', maxWidth: '600px' };
-const h1 = { color: '#333', fontSize: '24px', fontWeight: 'bold', margin: '40px 20px 20px' };
+const container = { backgroundColor: '#ffffff', margin: '0 auto', padding: '20px 0 48px', marginBottom: '64px', maxWidth: '600px', borderRadius: '8px' };
+const logoContainer = { textAlign: 'center' as const, padding: '20px 0' };
+const logo = { margin: '0 auto' };
+const h1 = { color: '#333', fontSize: '24px', fontWeight: 'bold', margin: '20px 20px 20px', textAlign: 'center' as const };
 const text = { color: '#333', fontSize: '16px', lineHeight: '26px', margin: '16px 20px' };
 const invoiceBox = { backgroundColor: '#f9fafb', border: '2px solid #e5e7eb', borderRadius: '8px', margin: '20px', padding: '32px', textAlign: 'center' as const };
 const invoiceIcon = { fontSize: '48px', margin: '0 0 16px' };
-const invoiceNumber = { color: '#111827', fontSize: '18px', fontWeight: 'bold', margin: '8px 0' };
-const invoiceDate = { color: '#6b7280', fontSize: '14px', margin: '4px 0' };
+const invoiceNumberStyle = { color: '#111827', fontSize: '18px', fontWeight: 'bold', margin: '8px 0' };
+const invoiceDateStyle = { color: '#6b7280', fontSize: '14px', margin: '4px 0' };
 const invoiceAmount = { color: '#059669', fontSize: '28px', fontWeight: 'bold', margin: '16px 0 0' };
 const ctaBox = { textAlign: 'center' as const, margin: '20px' };
-const button = { backgroundColor: '#3b82f6', borderRadius: '6px', color: '#ffffff', fontSize: '16px', fontWeight: 'bold', textDecoration: 'none', textAlign: 'center' as const, display: 'inline-block', padding: '12px 32px', margin: '8px 0' };
+const button = { backgroundColor: '#f59e0b', borderRadius: '6px', color: '#ffffff', fontSize: '16px', fontWeight: 'bold', textDecoration: 'none', textAlign: 'center' as const, display: 'inline-block', padding: '12px 32px', margin: '8px 0' };
 const infoBox = { backgroundColor: '#eff6ff', borderRadius: '8px', margin: '20px', padding: '16px 20px' };
 const infoTitle = { color: '#1e40af', fontSize: '14px', fontWeight: 'bold', margin: '0 0 12px' };
 const infoText = { color: '#1e3a8a', fontSize: '14px', lineHeight: '22px', margin: '6px 0' };
-const footer = { color: '#6b7280', fontSize: '12px', lineHeight: '20px', margin: '32px 20px' };
+const footer = { color: '#6b7280', fontSize: '12px', lineHeight: '20px', margin: '32px 20px', textAlign: 'center' as const };
 
 export default InvoiceAvailableEmail;

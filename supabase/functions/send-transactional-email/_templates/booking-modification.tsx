@@ -13,8 +13,8 @@ import {
   Hr,
   Row,
   Column,
-} from '@react-email/components';
-import * as React from 'react';
+} from 'npm:@react-email/components@0.0.22';
+import * as React from 'npm:react@18.3.1';
 
 interface BookingModificationEmailProps {
   clientName: string;
@@ -28,6 +28,8 @@ interface BookingModificationEmailProps {
   modifiedBy: string;
   reason?: string;
 }
+
+const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
 
 export const BookingModificationEmail = ({
   clientName = 'Client',
@@ -47,13 +49,9 @@ export const BookingModificationEmail = ({
       <Preview>📅 Votre réservation a été modifiée</Preview>
       <Body style={main}>
         <Container style={container}>
-          <Img
-            src="https://bikawo.com/logo.png"
-            width="150"
-            height="50"
-            alt="Bikawo"
-            style={logo}
-          />
+          <Section style={logoContainer}>
+            <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
+          </Section>
           
           <Section style={heroSection}>
             <Text style={heroEmoji}>📅</Text>
@@ -148,9 +146,13 @@ const container = {
   maxWidth: '600px',
 };
 
+const logoContainer = {
+  textAlign: 'center' as const,
+  padding: '20px 0',
+};
+
 const logo = {
-  margin: '0 auto 20px',
-  display: 'block',
+  margin: '0 auto',
 };
 
 const heroSection = {

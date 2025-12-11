@@ -4,6 +4,7 @@ import {
   Head,
   Body,
   Container,
+  Img,
   Section,
   Text,
   Heading,
@@ -18,11 +19,16 @@ interface WelcomeEmailProps {
   loginUrl: string;
 }
 
+const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+
 export const WelcomeEmail = ({ email, firstName, tempPassword, loginUrl }: WelcomeEmailProps) => (
   <Html>
     <Head />
     <Body style={main}>
       <Container style={container}>
+        <Section style={logoContainer}>
+          <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
+        </Section>
         <Heading style={h1}>Bienvenue sur Bikawo ! 🎉</Heading>
         
         <Text style={text}>
@@ -86,6 +92,15 @@ const container = {
   padding: '40px 20px',
   maxWidth: '600px',
   borderRadius: '8px',
+};
+
+const logoContainer = {
+  textAlign: 'center' as const,
+  padding: '0 0 20px',
+};
+
+const logo = {
+  margin: '0 auto',
 };
 
 const h1 = {
