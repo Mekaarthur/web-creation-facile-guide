@@ -4,6 +4,7 @@ import {
   Head,
   Heading,
   Html,
+  Img,
   Preview,
   Section,
   Text,
@@ -12,6 +13,8 @@ import {
   Column,
 } from 'npm:@react-email/components@0.0.22';
 import * as React from 'npm:react@18.3.1';
+
+const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
 
 interface ProviderAssignedEmailProps {
   clientName: string;
@@ -35,6 +38,9 @@ export const ProviderAssignedEmail = ({
     <Preview>Un prestataire a été assigné à votre réservation</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Section style={logoContainer}>
+          <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
+        </Section>
         <Heading style={h1}>👤 Prestataire assigné</Heading>
         
         <Text style={text}>
@@ -97,6 +103,9 @@ const container = {
   marginBottom: '64px',
   maxWidth: '600px',
 };
+
+const logoContainer = { textAlign: 'center' as const, padding: '20px 0' };
+const logo = { margin: '0 auto' };
 
 const h1 = {
   color: '#333',
