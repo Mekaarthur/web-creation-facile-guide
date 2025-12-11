@@ -8,6 +8,7 @@ import { AdminKanbanBoard } from '../../AdminKanbanBoard';
 import { AdminMatchingPanel } from '../../AdminMatchingPanel';
 import ModernMessaging from '../ModernMessaging';
 import { MissionAssignmentTrigger } from '../../MissionAssignmentTrigger';
+import { AutomatedReports } from '../AutomatedReports';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -919,7 +920,7 @@ export default function EnhancedModernDashboard() {
         {/* Panneau d'alertes visible sur tous les onglets */}
         <AdminAlertsPanel onNavigate={() => {}} />
         
-        <TabsList className="grid w-full grid-cols-6 lg:grid-cols-10">
+        <TabsList className="grid w-full grid-cols-6 lg:grid-cols-12">
           <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
           <TabsTrigger value="kanban">Kanban</TabsTrigger>
           <TabsTrigger value="matching">🤖 Matching IA</TabsTrigger>
@@ -938,6 +939,7 @@ export default function EnhancedModernDashboard() {
               </Badge>
             )}
           </TabsTrigger>
+          <TabsTrigger value="reports">📊 Rapports</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -1551,6 +1553,24 @@ export default function EnhancedModernDashboard() {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="reports" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <AutomatedReports />
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                  Rapports programmés
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground">
+                <p>Les rapports automatiques peuvent être configurés pour être envoyés par email chaque semaine.</p>
+                <p className="mt-2">Contactez l'administrateur système pour activer cette fonctionnalité.</p>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
