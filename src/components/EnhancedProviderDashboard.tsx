@@ -53,6 +53,7 @@ import MyZones from '@/pages/provider/MyZones';
 import ProviderReferralProgram from '@/components/ProviderReferralProgram';
 import ProviderPerformanceRewards from '@/components/provider/ProviderPerformanceRewards';
 import ProviderKPIsDashboard from '@/components/provider/ProviderKPIsDashboard';
+import { ZoneAlerts } from '@/components/provider/ZoneAlerts';
 import { getStatusColor, getStatusLabel } from '@/utils/statusUtils';
 
 const EnhancedProviderDashboard = () => {
@@ -523,7 +524,10 @@ const EnhancedProviderDashboard = () => {
 
           {/* Zones Tab */}
           <TabsContent value="zones" className="mt-8">
-            <MyZones />
+            <div className="grid gap-6 lg:grid-cols-2">
+              <MyZones />
+              <ZoneAlerts />
+            </div>
           </TabsContent>
 
           {/* Cooptation Tab */}
