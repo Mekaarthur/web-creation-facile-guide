@@ -56,11 +56,16 @@ export const useProviderOnboarding = () => {
     if (!user) return;
 
     try {
-      const { data: providerData } = await supabase
+      const { data: providerData, error: providerError } = await supabase
         .from('providers')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
+
+      if (providerError) {
+        console.error('Erreur récupération provider:', providerError);
+        return;
+      }
 
       if (providerData) {
         setProvider(providerData);

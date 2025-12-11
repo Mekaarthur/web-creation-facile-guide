@@ -49,9 +49,10 @@ const ProviderInvoiceManagement = () => {
         .from('providers')
         .select('id')
         .eq('user_id', user!.id)
-        .single();
+        .maybeSingle();
 
       if (providerError) throw providerError;
+      if (!providerData) return;
 
       // Fetch provider invoices with booking details
       const { data, error } = await supabase

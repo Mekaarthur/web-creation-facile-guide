@@ -104,7 +104,7 @@ const MyZones = () => {
         .from('providers')
         .select('id')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (providerError) throw providerError;
       if (!providerData) {
