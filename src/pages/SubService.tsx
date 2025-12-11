@@ -72,7 +72,7 @@ const SubServicePage = () => {
       <Navbar />
       <ServiceBreadcrumb serviceName={`${currentCategory.packageTitle} - ${displayTitle}`} />
 
-      <main className="pt-10 md:pt-16">
+      <main className="pt-10 md:pt-16 pb-20 md:pb-0">
         <section className="py-8 md:py-12">
           <div className="max-w-5xl mx-auto px-4 grid md:grid-cols-2 gap-8 items-start">
             <div>

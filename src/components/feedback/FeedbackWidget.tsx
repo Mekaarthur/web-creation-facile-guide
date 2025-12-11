@@ -84,7 +84,7 @@ export const FeedbackWidget = () => {
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-20 right-4 z-40 rounded-full shadow-lg gap-2 bg-primary hover:bg-primary/90"
+          className="fixed bottom-36 md:bottom-20 right-4 z-40 rounded-full shadow-lg gap-2 bg-primary hover:bg-primary/90"
           size="sm"
         >
           <MessageSquare className="w-4 h-4" />
@@ -94,7 +94,7 @@ export const FeedbackWidget = () => {
 
       {/* Feedback card */}
       {isOpen && (
-        <div className="fixed bottom-20 right-4 z-50 animate-fade-in">
+        <div className="fixed bottom-36 md:bottom-20 right-4 z-50 animate-fade-in">
           <Card className="w-80 shadow-xl border-primary/20">
             <CardContent className="p-4">
               {/* Header */}
