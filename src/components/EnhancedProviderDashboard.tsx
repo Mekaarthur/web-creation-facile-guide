@@ -52,6 +52,7 @@ import ProviderServices from '@/components/ProviderServices';
 import MyZones from '@/pages/provider/MyZones';
 import ProviderReferralProgram from '@/components/ProviderReferralProgram';
 import ProviderPerformanceRewards from '@/components/provider/ProviderPerformanceRewards';
+import ProviderKPIsDashboard from '@/components/provider/ProviderKPIsDashboard';
 import { getStatusColor, getStatusLabel } from '@/utils/statusUtils';
 
 const EnhancedProviderDashboard = () => {
@@ -485,37 +486,13 @@ const EnhancedProviderDashboard = () => {
             />
           </TabsContent>
 
-          {/* Revenus Tab */}
-          <TabsContent value="revenus" className="space-y-6 mt-8">
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle>Suivi des revenus</CardTitle>
-                <CardDescription>Visualisez vos gains et performances financières</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-muted-foreground">Revenu mensuel</p>
-                      <p className="text-3xl font-bold">{formatCurrency(stats.monthlyEarnings)}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Revenu total</p>
-                      <p className="text-3xl font-bold">{formatCurrency(stats.totalEarnings)}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground mb-2">Progression vers l'objectif mensuel</p>
-                    <div className="w-full bg-muted rounded-full h-4 overflow-hidden">
-                      <div 
-                        className="bg-primary h-4 rounded-full transition-all duration-500" 
-                        style={{ width: `${getProgressPercentage()}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Revenus Tab - KPIs Dashboard */}
+          <TabsContent value="revenus" className="mt-8">
+            <ProviderKPIsDashboard 
+              stats={stats}
+              reviews={reviews}
+              missions={missions}
+            />
           </TabsContent>
 
           {/* Planning Tab */}
