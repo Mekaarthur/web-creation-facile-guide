@@ -163,8 +163,8 @@ const CookieConsentBanner = () => {
 
   return (
     <>
-      {/* Cookie banner compact - moins intrusif - z-40 pour ne pas superposer le tutoriel */}
-      <div className="fixed bottom-4 left-4 right-4 md:left-4 md:max-w-sm z-40 p-4 bg-card border border-border rounded-xl shadow-elegant animate-in slide-in-from-bottom">
+      {/* Cookie banner compact - position ajustée pour éviter superposition avec CTA mobile */}
+      <div className="fixed bottom-20 md:bottom-4 left-4 right-4 md:left-4 md:max-w-sm z-40 p-4 bg-card border border-border rounded-xl shadow-elegant animate-in slide-in-from-bottom">
         <p className="text-xs text-muted-foreground mb-3">
           🍪 Nous utilisons des cookies pour améliorer votre expérience.
         </p>
