@@ -54,14 +54,26 @@ export const HomeTutorial = () => {
     skipTutorial,
   } = useTutorial('home', HOME_TUTORIAL_STEPS);
 
-  // Check if it's a first-time visitor on homepage
+  // Check if it's a first-time visitor on homepage - wait for cookie consent
   useEffect(() => {
     if (location.pathname === '/' && !hasSeenTutorial) {
-      // Show welcome after a short delay
-      const timer = setTimeout(() => {
-        setShowWelcome(true);
-      }, 2000);
-      return () => clearTimeout(timer);
+      // Check if cookie consent has been given
+      const cookieConsent = localStorage.getItem("cookie_consent");
+      
+      if (cookieConsent) {
+        // Cookie consent already given, show after short delay
+        const timer = setTimeout(() => {
+          setShowWelcome(true);
+        }, 2000);
+        return () => clearTimeout(timer);
+      } else {
+        // Listen for cookie consent event
+        const handleCookieConsent = () => {
+          setTimeout(() => setShowWelcome(true), 1000);
+        };
+        window.addEventListener('cookieConsentUpdated', handleCookieConsent);
+        return () => window.removeEventListener('cookieConsentUpdated', handleCookieConsent);
+      }
     }
   }, [location.pathname, hasSeenTutorial]);
 

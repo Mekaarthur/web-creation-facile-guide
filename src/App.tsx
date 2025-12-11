@@ -14,7 +14,6 @@ import { UpdatePrompt } from "@/components/pwa/UpdatePrompt";
 import { HomeTutorial, TutorialHelpButton } from "@/components/tutorial/HomeTutorial";
 import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
 import { ConnectionIndicator } from "@/components/feedback/ConnectionIndicator";
-import { ClientOnboarding } from "@/components/onboarding/ClientOnboarding";
 import { NavigationBehaviors } from "@/components/NavigationBehaviors";
 import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
 import { PageLoadingBar } from "@/components/ui/PageLoadingBar";
@@ -142,7 +141,6 @@ const App = () => (
           <FeedbackWidget />
           <ConnectionIndicator />
           <BrowserRouter>
-            <ClientOnboarding />
             <HomeTutorial />
             <TutorialHelpButton />
             <PageLoadingBar />
