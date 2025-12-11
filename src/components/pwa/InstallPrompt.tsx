@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Download, X, Smartphone } from 'lucide-react';
+import { Download, X } from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -91,9 +91,11 @@ export const InstallPrompt = () => {
       <Card className="bg-background/95 backdrop-blur-sm border-primary/20 shadow-xl">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-              <Smartphone className="w-6 h-6 text-primary" />
-            </div>
+            <img 
+              src="/pwa-icon-192.png" 
+              alt="Bikawo Logo" 
+              className="w-12 h-12 rounded-xl shadow-sm flex-shrink-0"
+            />
             
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
