@@ -5,12 +5,15 @@ import {
   Head,
   Heading,
   Html,
+  Img,
   Preview,
   Section,
   Text,
   Button,
   Hr,
 } from '@react-email/components';
+
+const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
 
 interface ProviderAccountActivatedEmailProps {
   providerName: string;
@@ -27,6 +30,9 @@ export const ProviderAccountActivatedEmail = ({
       <Preview>🎉 Votre compte est activé ! Bienvenue chez Bikawo</Preview>
       <Body style={main}>
         <Container style={container}>
+          <Section style={logoContainer}>
+            <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
+          </Section>
           <Heading style={h1}>🎉 Bienvenue dans l'équipe Bikawo !</Heading>
           
           <Text style={text}>Bonjour {providerName},</Text>
@@ -98,6 +104,9 @@ const container = {
   borderRadius: '8px',
   maxWidth: '600px',
 };
+
+const logoContainer = { textAlign: 'center' as const, padding: '20px 0' };
+const logo = { margin: '0 auto' };
 
 const h1 = {
   color: '#1a1a1a',

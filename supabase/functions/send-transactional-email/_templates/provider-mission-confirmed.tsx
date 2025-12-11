@@ -4,12 +4,15 @@ import {
   Head,
   Heading,
   Html,
+  Img,
   Preview,
   Section,
   Text,
   Button,
 } from 'npm:@react-email/components@0.0.22';
 import * as React from 'npm:react@18.3.1';
+
+const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
 
 interface ProviderMissionConfirmedEmailProps {
   providerName?: string;
@@ -35,6 +38,9 @@ export const ProviderMissionConfirmedEmail = ({
     <Preview>Mission confirmée par le client</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Section style={logoContainer}>
+          <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
+        </Section>
         <Heading style={h1}>✅ Mission confirmée</Heading>
 
         <Text style={text}>Bonjour {providerName},</Text>
@@ -79,6 +85,8 @@ export const ProviderMissionConfirmedEmail = ({
 // Styles
 const main = { backgroundColor: '#f6f9fc', fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif' };
 const container = { backgroundColor: '#ffffff', margin: '0 auto', padding: '20px 0 48px', marginBottom: '64px', maxWidth: '600px' };
+const logoContainer = { textAlign: 'center' as const, padding: '20px 0' };
+const logo = { margin: '0 auto' };
 const h1 = { color: '#333', fontSize: '24px', fontWeight: 'bold', margin: '40px 20px 20px' };
 const text = { color: '#333', fontSize: '16px', lineHeight: '26px', margin: '16px 20px' };
 const confirmedBox = { backgroundColor: '#f0fdf4', border: '3px solid #059669', borderRadius: '12px', margin: '20px', padding: '32px', textAlign: 'center' as const };
