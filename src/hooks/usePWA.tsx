@@ -64,12 +64,19 @@ export const usePWA = () => {
 
   const updateApp = async () => {
     if ('serviceWorker' in navigator) {
-      const registration = await navigator.serviceWorker.ready;
-      if (registration.waiting) {
-        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-        window.location.reload();
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+        // Force update check and reload
+        await registration.update();
+      } catch (error) {
+        console.error('Erreur mise à jour SW:', error);
       }
     }
+    // Always reload to get latest version
+    window.location.reload();
   };
 
   return { ...status, updateApp };
