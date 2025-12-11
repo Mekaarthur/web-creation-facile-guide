@@ -117,16 +117,17 @@ export const useProviderDashboard = () => {
           )
         `)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (providerError) throw providerError;
+      if (!providerData) return null;
 
       // Récupérer le profil utilisateur séparément
-      const { data: profileData, error: profileError } = await supabase
+      const { data: profileData } = await supabase
         .from('profiles')
         .select('first_name, last_name, avatar_url')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       // Combine les données (même si le profil n'existe pas)
       const combinedData = {
@@ -209,7 +210,7 @@ export const useProviderDashboard = () => {
         .from('providers')
         .select('location, provider_services(service_id)')
         .eq('id', providerId)
-        .single();
+        .maybeSingle();
 
       const serviceIds = providerData?.provider_services?.map((ps: any) => ps.service_id) || [];
 

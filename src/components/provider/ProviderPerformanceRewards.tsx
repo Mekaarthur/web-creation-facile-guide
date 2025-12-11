@@ -58,7 +58,7 @@ const ProviderPerformanceRewards = () => {
         .from('providers')
         .select('id, missions_completed, rating, created_at')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (!provider) return;
 

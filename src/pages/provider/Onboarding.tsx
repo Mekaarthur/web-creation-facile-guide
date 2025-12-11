@@ -31,9 +31,17 @@ const ProviderOnboarding = () => {
         .from('providers')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      
+      if (!data) {
+        toast.error('Profil prestataire non trouvé', { 
+          description: 'Veuillez d\'abord créer votre compte prestataire.' 
+        });
+        navigate('/provider-signup');
+        return;
+      }
       
       setProvider(data);
       

@@ -71,7 +71,7 @@ export const ProviderMissionResponse = () => {
         .from('providers')
         .select('id')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (provider) {
         setProviderId(provider.id);
