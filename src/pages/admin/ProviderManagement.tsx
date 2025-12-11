@@ -15,11 +15,14 @@ import {
   CheckCircle,
   XCircle,
   Eye,
-  UserCheck
+  UserCheck,
+  LayoutGrid,
+  List
 } from 'lucide-react';
 import { ApplicationDetails } from '@/components/admin/ApplicationDetails';
 import { ProviderOnboardingTracker } from '@/components/admin/ProviderOnboardingTracker';
 import { ApplicationDocumentsValidator } from '@/components/admin/ApplicationDocumentsValidator';
+import ApplicationsKanban from '@/components/admin/ApplicationsKanban';
 
 export default function ProviderManagement() {
   const [loading, setLoading] = useState(true);
@@ -29,6 +32,7 @@ export default function ProviderManagement() {
   const [selectedTab, setSelectedTab] = useState('pending_applications');
   const [selectedApplication, setSelectedApplication] = useState<any>(null);
   const [selectedProvider, setSelectedProvider] = useState<any>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
   const [stats, setStats] = useState({
     pending: 0,
     approved: 0,
@@ -182,17 +186,44 @@ export default function ProviderManagement() {
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
       {/* En-tête */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">
-          Gestion Prestataires
-        </h1>
-        <p className="text-muted-foreground">
-          Candidatures, onboarding et activation des prestataires
-        </p>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            Gestion Prestataires
+          </h1>
+          <p className="text-muted-foreground">
+            Candidatures, onboarding et activation des prestataires
+          </p>
+        </div>
+        <div className="flex items-center gap-2 bg-muted p-1 rounded-lg">
+          <Button
+            variant={viewMode === 'list' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('list')}
+            className="gap-2"
+          >
+            <List className="w-4 h-4" />
+            Liste
+          </Button>
+          <Button
+            variant={viewMode === 'kanban' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('kanban')}
+            className="gap-2"
+          >
+            <LayoutGrid className="w-4 h-4" />
+            Kanban
+          </Button>
+        </div>
       </div>
 
-      {/* Statistiques */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      {/* Vue Kanban */}
+      {viewMode === 'kanban' ? (
+        <ApplicationsKanban />
+      ) : (
+        <>
+          {/* Statistiques */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="flex items-center p-4">
             <Clock className="h-8 w-8 text-yellow-500 mr-3" />
@@ -417,6 +448,8 @@ export default function ProviderManagement() {
           )}
         </DialogContent>
       </Dialog>
+        </>
+      )}
     </div>
   );
 }
