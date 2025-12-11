@@ -8,7 +8,10 @@ import {
   Shield,
   X,
   ArrowLeft,
-  Home
+  Home,
+  Star,
+  Clock,
+  CheckCircle
 } from 'lucide-react';
 import { SecureAuthForm } from '@/components/auth/SecureAuthForm';
 import { ClientSignupForm } from '@/components/auth/ClientSignupForm';
@@ -131,7 +134,68 @@ const EnhancedAuth = () => {
 
       {/* Content */}
       <div className="flex-1 flex items-center justify-center p-4 pt-24">
-        <div className="w-full max-w-5xl">
+        <div className="w-full max-w-6xl grid lg:grid-cols-5 gap-8 items-start">
+          
+          {/* Left side - Trust indicators (hidden on mobile for step !== userType) */}
+          <div className={`lg:col-span-2 space-y-6 ${step !== 'userType' ? 'hidden lg:block' : ''}`}>
+            <div className="space-y-4">
+              <h1 className="text-2xl lg:text-3xl font-bold">
+                Rejoignez <span className="text-primary">Bikawo</span>
+              </h1>
+              <p className="text-muted-foreground">
+                Plus de 5000 familles nous font confiance en Île-de-France.
+              </p>
+            </div>
+
+            {/* Trust stats */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 bg-card rounded-xl border">
+                <div className="flex items-center gap-2 mb-1">
+                  <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                  <span className="font-bold">4.9/5</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Note moyenne</p>
+              </div>
+              <div className="p-4 bg-card rounded-xl border">
+                <div className="flex items-center gap-2 mb-1">
+                  <Clock className="h-4 w-4 text-primary" />
+                  <span className="font-bold">24h</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Délai moyen</p>
+              </div>
+            </div>
+
+            {/* Benefits list */}
+            <div className="space-y-3">
+              {[
+                '50% de crédit d\'impôts sur vos services',
+                'Prestataires vérifiés et assurés',
+                'Paiement 100% sécurisé',
+                'Support client 7j/7'
+              ].map((benefit, i) => (
+                <div key={i} className="flex items-center gap-3 text-sm">
+                  <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                  <span>{benefit}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Testimonial */}
+            <div className="p-4 bg-primary/5 rounded-xl border border-primary/20">
+              <div className="flex gap-1 mb-2">
+                {[1,2,3,4,5].map(i => (
+                  <Star key={i} className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                ))}
+              </div>
+              <p className="text-sm italic mb-2">
+                "Service impeccable ! Ma nounou est formidable et mes enfants l'adorent."
+              </p>
+              <p className="text-xs text-muted-foreground">— Marie L., Paris 16e</p>
+            </div>
+          </div>
+
+          {/* Right side - Auth form */}
+          <div className="lg:col-span-3">
           {/* En-tête avec retour - Seulement si pas sur userType */}
           {step !== 'userType' && (
             <Button
@@ -279,22 +343,22 @@ const EnhancedAuth = () => {
         </Card>
 
         {/* Footer avec badges de sécurité */}
-        <div className="mt-8 text-center space-y-4">
-          <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4 text-primary" />
-              <span>Connexion sécurisée SSL</span>
+        <div className="mt-6 text-center space-y-3">
+          <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <Shield className="h-3.5 w-3.5 text-primary" />
+              <span>SSL sécurisé</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4 text-primary" />
-              <span>Données protégées RGPD</span>
+            <div className="flex items-center gap-1.5">
+              <Shield className="h-3.5 w-3.5 text-primary" />
+              <span>RGPD conforme</span>
             </div>
           </div>
           
           <p className="text-xs text-muted-foreground">
             En vous inscrivant, vous acceptez nos{' '}
             <button onClick={() => navigate('/cgu')} className="text-primary hover:underline">
-              Conditions d'utilisation
+              CGU
             </button>
             {' '}et notre{' '}
             <button onClick={() => navigate('/privacy')} className="text-primary hover:underline">
@@ -302,6 +366,7 @@ const EnhancedAuth = () => {
             </button>
           </p>
         </div>
+          </div>
         </div>
       </div>
     </div>

@@ -9,6 +9,7 @@ import { ServicesGridSkeleton, TestimonialSkeleton } from "@/components/ui/skele
 
 // Lazy load components below the fold for better LCP/TBT
 const ServicesGrid = lazy(() => import("@/components/ServicesGrid"));
+const HowItWorks = lazy(() => import("@/components/HowItWorks"));
 const WhyBikawo = lazy(() => import("@/components/WhyBikawo"));
 const TestimonialsSection = lazy(() => import("@/components/TestimonialsSection"));
 const FinalCTABiface = lazy(() => import("@/components/FinalCTABiface"));
@@ -95,9 +96,16 @@ const Index = () => {
             </Suspense>
           </div>
         </section>
+
+        {/* How It Works Section - NEW */}
+        <section className="py-16 lg:py-24 bg-background">
+          <Suspense fallback={<SectionSkeleton />}>
+            <HowItWorks />
+          </Suspense>
+        </section>
         
         {/* Why Choose Us Section - Lazy loaded with content-visibility */}
-        <section className="py-16 lg:py-24 bg-background content-visibility-auto">
+        <section className="py-16 lg:py-24 bg-muted/30 content-visibility-auto">
           <Suspense fallback={<SectionSkeleton />}>
             <WhyBikawo />
           </Suspense>
