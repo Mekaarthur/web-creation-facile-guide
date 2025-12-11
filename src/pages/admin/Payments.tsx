@@ -6,19 +6,31 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Euro, Download, Search, CreditCard, TrendingUp, Clock } from "lucide-react";
+import { Euro, Download, Search, CreditCard, TrendingUp, Clock, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { toast } from "sonner";
 
 const AdminPayments = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: payments, isLoading } = useQuery({
-    queryKey: ['admin-payments'],
+  const { data: transactions, isLoading, refetch } = useQuery({
+    queryKey: ['admin-financial-transactions'],
     queryFn: async () => {
+      // Récupérer les transactions financières avec les détails des bookings
       const { data, error } = await supabase
-        .from('payments')
-        .select('*')
+        .from('financial_transactions')
+        .select(`
+          *,
+          bookings:booking_id (
+            id,
+            booking_date,
+            start_time,
+            end_time,
+            status,
+            services:service_id (name)
+          )
+        `)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -26,15 +38,36 @@ const AdminPayments = () => {
     }
   });
 
-  const filteredPayments = payments?.filter(payment => 
-    payment.transaction_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    payment.client_id?.toLowerCase().includes(searchTerm.toLowerCase())
+  // Également récupérer les paiements de la table payments si elle existe
+  const { data: legacyPayments } = useQuery({
+    queryKey: ['admin-legacy-payments'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('payments')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        // Table might not exist, ignore
+        return [];
+      }
+      return data || [];
+    }
+  });
+
+  const filteredTransactions = transactions?.filter(t => 
+    t.booking_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    t.client_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    t.provider_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    t.service_category?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-      completed: { label: "Complété", variant: "default" },
+      paid: { label: "Payé", variant: "default" },
+      client_paid: { label: "Client payé", variant: "default" },
       pending: { label: "En attente", variant: "secondary" },
+      provider_paid: { label: "Prestataire payé", variant: "default" },
       failed: { label: "Échoué", variant: "destructive" },
       refunded: { label: "Remboursé", variant: "outline" }
     };
@@ -42,55 +75,115 @@ const AdminPayments = () => {
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
-  const totalAmount = payments?.filter(p => p.status === 'completed').reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
-  const pendingAmount = payments?.filter(p => p.status === 'pending').reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+  // Calculs des totaux
+  const totalClientAmount = transactions?.reduce((sum, t) => sum + (t.client_price || 0), 0) || 0;
+  const totalProviderAmount = transactions?.reduce((sum, t) => sum + (t.provider_payment || 0), 0) || 0;
+  const totalCommission = transactions?.reduce((sum, t) => sum + (t.company_commission || 0), 0) || 0;
+  const paidTransactions = transactions?.filter(t => t.payment_status === 'paid' || t.payment_status === 'client_paid') || [];
+  const pendingTransactions = transactions?.filter(t => t.payment_status === 'pending') || [];
 
   const handleExportCSV = () => {
-    if (!payments?.length) return;
+    if (!transactions?.length) {
+      toast.error("Aucune donnée à exporter");
+      return;
+    }
     
-    const headers = ['ID', 'Client', 'Montant', 'Méthode', 'Statut', 'Date'];
+    const headers = [
+      'ID Transaction',
+      'ID Réservation',
+      'ID Client',
+      'ID Prestataire',
+      'Catégorie Service',
+      'Prix Client (€)',
+      'Paiement Prestataire (€)',
+      'Commission (€)',
+      'Statut Paiement',
+      'Date Paiement Client',
+      'Date Paiement Prestataire',
+      'Date Création'
+    ];
+    
     const csvContent = [
-      headers.join(','),
-      ...payments.map(p => [
-        p.id,
-        p.client_id,
-        p.amount,
-        p.payment_method,
-        p.status,
-        p.created_at
-      ].join(','))
+      headers.join(';'),
+      ...transactions.map(t => [
+        t.id,
+        t.booking_id,
+        t.client_id,
+        t.provider_id,
+        t.service_category,
+        t.client_price?.toFixed(2),
+        t.provider_payment?.toFixed(2),
+        t.company_commission?.toFixed(2),
+        t.payment_status,
+        t.client_paid_at ? format(new Date(t.client_paid_at), 'dd/MM/yyyy HH:mm') : '',
+        t.provider_paid_at ? format(new Date(t.provider_paid_at), 'dd/MM/yyyy HH:mm') : '',
+        format(new Date(t.created_at), 'dd/MM/yyyy HH:mm')
+      ].join(';'))
     ].join('\n');
     
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    // Ajouter BOM pour Excel
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `paiements_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.download = `transactions_financieres_${format(new Date(), 'yyyy-MM-dd')}.csv`;
     a.click();
+    URL.revokeObjectURL(url);
+    
+    toast.success(`${transactions.length} transactions exportées`);
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-3">
           <Euro className="h-6 w-6 text-primary" />
           <h1 className="text-2xl font-bold">Gestion des Paiements</h1>
         </div>
-        <Button onClick={handleExportCSV}>
-          <Download className="h-4 w-4 mr-2" />
-          Exporter CSV
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => refetch()}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Actualiser
+          </Button>
+          <Button onClick={handleExportCSV}>
+            <Download className="h-4 w-4 mr-2" />
+            Exporter CSV
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4 flex items-center gap-4">
             <div className="p-3 bg-green-100 rounded-full">
               <TrendingUp className="h-5 w-5 text-green-600" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Total encaissé</p>
-              <p className="text-2xl font-bold">{totalAmount.toFixed(2)}€</p>
+              <p className="text-sm text-muted-foreground">Total Clients</p>
+              <p className="text-2xl font-bold">{totalClientAmount.toFixed(2)}€</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="p-3 bg-blue-100 rounded-full">
+              <Euro className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Prestataires</p>
+              <p className="text-2xl font-bold">{totalProviderAmount.toFixed(2)}€</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="p-3 bg-purple-100 rounded-full">
+              <CreditCard className="h-5 w-5 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Commission</p>
+              <p className="text-2xl font-bold">{totalCommission.toFixed(2)}€</p>
             </div>
           </CardContent>
         </Card>
@@ -101,18 +194,7 @@ const AdminPayments = () => {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">En attente</p>
-              <p className="text-2xl font-bold">{pendingAmount.toFixed(2)}€</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="p-3 bg-primary/10 rounded-full">
-              <CreditCard className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Transactions</p>
-              <p className="text-2xl font-bold">{payments?.length || 0}</p>
+              <p className="text-2xl font-bold">{pendingTransactions.length}</p>
             </div>
           </CardContent>
         </Card>
@@ -120,8 +202,8 @@ const AdminPayments = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Liste des paiements</span>
+          <CardTitle className="flex items-center justify-between flex-wrap gap-4">
+            <span>Transactions financières ({transactions?.length || 0})</span>
             <div className="relative w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -141,40 +223,52 @@ const AdminPayments = () => {
               ))}
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Transaction</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Montant</TableHead>
-                  <TableHead>Méthode</TableHead>
-                  <TableHead>Statut</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredPayments?.length === 0 ? (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                      Aucun paiement trouvé
-                    </TableCell>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Service</TableHead>
+                    <TableHead className="text-right">Prix Client</TableHead>
+                    <TableHead className="text-right">Prestataire</TableHead>
+                    <TableHead className="text-right">Commission</TableHead>
+                    <TableHead>Statut</TableHead>
                   </TableRow>
-                ) : (
-                  filteredPayments?.map((payment) => (
-                    <TableRow key={payment.id}>
-                      <TableCell className="font-mono text-sm">
-                        {payment.transaction_id || payment.id.slice(0, 8)}
+                </TableHeader>
+                <TableBody>
+                  {filteredTransactions?.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                        Aucune transaction trouvée
                       </TableCell>
-                      <TableCell>
-                        {format(new Date(payment.created_at), 'dd MMM yyyy HH:mm', { locale: fr })}
-                      </TableCell>
-                      <TableCell className="font-medium">{payment.amount?.toFixed(2)}€</TableCell>
-                      <TableCell>{payment.payment_method}</TableCell>
-                      <TableCell>{getStatusBadge(payment.status)}</TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    filteredTransactions?.map((transaction) => (
+                      <TableRow key={transaction.id}>
+                        <TableCell>
+                          {format(new Date(transaction.created_at), 'dd MMM yyyy', { locale: fr })}
+                        </TableCell>
+                        <TableCell>
+                          <span className="font-medium capitalize">
+                            {transaction.service_category?.replace(/_/g, ' ') || 'N/A'}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right font-medium text-green-600">
+                          {transaction.client_price?.toFixed(2)}€
+                        </TableCell>
+                        <TableCell className="text-right font-medium text-blue-600">
+                          {transaction.provider_payment?.toFixed(2)}€
+                        </TableCell>
+                        <TableCell className="text-right font-medium text-purple-600">
+                          {transaction.company_commission?.toFixed(2)}€
+                        </TableCell>
+                        <TableCell>{getStatusBadge(transaction.payment_status)}</TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

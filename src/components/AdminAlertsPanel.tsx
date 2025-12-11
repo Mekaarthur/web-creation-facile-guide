@@ -29,10 +29,6 @@ interface Alert {
 
 export const AdminAlertsPanel = ({ onNavigate }: { onNavigate?: (tab: string) => void }) => {
   const navigate = useNavigate();
-  const handleNavigate = (route: string) => {
-    // Navigation vers les routes du modern-admin
-    navigate(route);
-  };
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -65,7 +61,7 @@ export const AdminAlertsPanel = ({ onNavigate }: { onNavigate?: (tab: string) =>
           description: `${urgentRequests.length} demande(s) non attribuée(s) depuis plus de 2h`,
           count: urgentRequests.length,
           urgency: 'high',
-          action: () => handleNavigate('/modern-admin/missions'),
+          action: () => navigate('/modern-admin/missions'),
           data: urgentRequests
         });
       }
@@ -86,7 +82,7 @@ export const AdminAlertsPanel = ({ onNavigate }: { onNavigate?: (tab: string) =>
           description: `${inactiveProviders.length} prestataire(s) sans mission depuis 7+ jours`,
           count: inactiveProviders.length,
           urgency: 'medium',
-          action: () => handleNavigate('/modern-admin/prestataires'),
+          action: () => navigate('/modern-admin/providers'),
           data: inactiveProviders
         });
       }
@@ -107,7 +103,7 @@ export const AdminAlertsPanel = ({ onNavigate }: { onNavigate?: (tab: string) =>
           description: `${waitingClients.length} client(s) sans réponse depuis 24h+`,
           count: waitingClients.length,
           urgency: 'medium',
-          action: () => handleNavigate('/modern-admin/clients'),
+          action: () => navigate('/modern-admin/clients'),
           data: waitingClients
         });
       }
@@ -128,7 +124,7 @@ export const AdminAlertsPanel = ({ onNavigate }: { onNavigate?: (tab: string) =>
           description: `${blockedMissions.length} mission(s) en cours depuis 48h+`,
           count: blockedMissions.length,
           urgency: 'high',
-          action: () => handleNavigate('/modern-admin/missions'),
+          action: () => navigate('/modern-admin/missions'),
           data: blockedMissions
         });
       }
