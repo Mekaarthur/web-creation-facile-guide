@@ -23,9 +23,10 @@ interface Conversation {
 
 interface ConversationListProps {
   onSelectConversation: (conversation: Conversation) => void;
+  embedded?: boolean;
 }
 
-export const ConversationList = ({ onSelectConversation }: ConversationListProps) => {
+export const ConversationList = ({ onSelectConversation, embedded = false }: ConversationListProps) => {
   const { user } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -141,10 +142,61 @@ export const ConversationList = ({ onSelectConversation }: ConversationListProps
 
   if (loading) {
     return (
-      <Card className="h-96 flex items-center justify-center">
+      <div className={`${embedded ? 'h-full' : 'h-96'} flex items-center justify-center`}>
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </Card>
+      </div>
     );
+  }
+
+  const content = (
+    <ScrollArea className={embedded ? 'h-full' : 'h-80'}>
+      {conversations.length === 0 ? (
+        <div className="text-center text-muted-foreground py-8">
+          <MessageCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
+          <p className="text-sm">Aucune conversation</p>
+        </div>
+      ) : (
+        <div className="divide-y">
+          {conversations.map((conv) => (
+            <button
+              key={conv.id}
+              onClick={() => onSelectConversation(conv)}
+              className="w-full p-4 hover:bg-muted/50 transition-colors text-left"
+            >
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                    {conv.other_user_name.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium text-sm truncate">{conv.other_user_name}</p>
+                    {conv.last_message_at && (
+                      <span className="text-xs text-muted-foreground">
+                        {format(new Date(conv.last_message_at), 'HH:mm', { locale: fr })}
+                      </span>
+                    )}
+                  </div>
+                  {conv.last_message && (
+                    <p className="text-xs text-muted-foreground truncate">{conv.last_message}</p>
+                  )}
+                </div>
+                {conv.unread_count > 0 && (
+                  <Badge variant="destructive" className="h-5 min-w-5 flex items-center justify-center rounded-full text-xs">
+                    {conv.unread_count}
+                  </Badge>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </ScrollArea>
+  );
+
+  if (embedded) {
+    return content;
   }
 
   return (
@@ -156,50 +208,7 @@ export const ConversationList = ({ onSelectConversation }: ConversationListProps
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea className="h-80">
-          {conversations.length === 0 ? (
-            <div className="text-center text-muted-foreground py-8">
-              <MessageCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Aucune conversation</p>
-            </div>
-          ) : (
-            <div className="divide-y">
-              {conversations.map((conv) => (
-                <button
-                  key={conv.id}
-                  onClick={() => onSelectConversation(conv)}
-                  className="w-full p-4 hover:bg-muted/50 transition-colors text-left"
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10">
-                      <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                        {conv.other_user_name.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="font-medium text-sm truncate">{conv.other_user_name}</p>
-                        {conv.last_message_at && (
-                          <span className="text-xs text-muted-foreground">
-                            {format(new Date(conv.last_message_at), 'HH:mm', { locale: fr })}
-                          </span>
-                        )}
-                      </div>
-                      {conv.last_message && (
-                        <p className="text-xs text-muted-foreground truncate">{conv.last_message}</p>
-                      )}
-                    </div>
-                    {conv.unread_count > 0 && (
-                      <Badge variant="destructive" className="h-5 min-w-5 flex items-center justify-center rounded-full text-xs">
-                        {conv.unread_count}
-                      </Badge>
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </ScrollArea>
+        {content}
       </CardContent>
     </Card>
   );

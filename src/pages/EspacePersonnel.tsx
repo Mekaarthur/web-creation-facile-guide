@@ -34,6 +34,7 @@ import ReferralProgram from '@/components/ReferralProgram';
 import ProfileUpdateForm from '@/components/ProfileUpdateForm';
 import AttestationsManager from '@/components/AttestationsManager';
 import BikawoCart from '@/components/BikawoCart';
+import { ChatWidget } from '@/components/chat';
 import { useTranslation } from 'react-i18next';
 
 const EspacePersonnel = () => {
@@ -295,6 +296,7 @@ const EspacePersonnel = () => {
 
       <Footer />
       <BikawoCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      {user && <ChatWidget />}
     </div>
   );
 };
