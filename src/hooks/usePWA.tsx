@@ -66,16 +66,31 @@ export const usePWA = () => {
     if ('serviceWorker' in navigator) {
       try {
         const registration = await navigator.serviceWorker.ready;
+        
         if (registration.waiting) {
+          // Envoyer le message au SW en attente
           registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          
+          // Attendre que le nouveau SW prenne le contrôle
+          await new Promise<void>((resolve) => {
+            const onControllerChange = () => {
+              navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
+              resolve();
+            };
+            navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
+            
+            // Timeout de sécurité
+            setTimeout(resolve, 2000);
+          });
+        } else {
+          // Forcer une vérification de mise à jour
+          await registration.update();
         }
-        // Force update check and reload
-        await registration.update();
       } catch (error) {
         console.error('Erreur mise à jour SW:', error);
       }
     }
-    // Always reload to get latest version
+    // Recharger la page
     window.location.reload();
   };
 

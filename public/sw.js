@@ -1,12 +1,21 @@
-// Service Worker pour les notifications push
+// Service Worker pour les notifications push et mises à jour
+const CACHE_VERSION = 'v1';
+
 self.addEventListener('install', (event) => {
   console.log('Service Worker installed');
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   console.log('Service Worker activated');
   event.waitUntil(clients.claim());
+});
+
+// Écouter le message SKIP_WAITING pour forcer la mise à jour
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('Received SKIP_WAITING message, activating new SW');
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('push', (event) => {
