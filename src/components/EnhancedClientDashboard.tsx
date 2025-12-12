@@ -260,49 +260,51 @@ const EnhancedClientDashboard = ({ onNavigateToTab }: EnhancedClientDashboardPro
                   {(showAllBookings ? upcomingBookings : upcomingBookings.slice(0, 3)).map((booking, index) => (
                     <div 
                       key={booking.id} 
-                      className="group relative p-5 rounded-2xl border border-border/50 hover:border-primary/30 hover:shadow-lg transition-all duration-300 bg-gradient-to-r from-background to-muted/20 hover:scale-[1.02]"
+                      className="group relative p-3 sm:p-4 lg:p-5 rounded-xl sm:rounded-2xl border border-border/50 hover:border-primary/30 hover:shadow-lg transition-all duration-300 bg-gradient-to-r from-background to-muted/20"
                       style={{ animationDelay: `${index * 100}ms` }}
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="relative">
-                            <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                              <Clock className="w-6 h-6 text-primary" />
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                          <div className="relative flex-shrink-0">
+                            <div className="w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                              <Clock className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
                             </div>
-                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-success rounded-full border-2 border-background flex items-center justify-center">
-                              <CheckCircle className="w-3 h-3 text-white" />
+                            <div className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-success rounded-full border-2 border-background flex items-center justify-center">
+                              <CheckCircle className="w-2 h-2 sm:w-3 sm:h-3 text-white" />
                             </div>
                           </div>
-                          <div className="space-y-1">
-                            <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors text-lg">
+                          <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
+                            <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors text-sm sm:text-lg truncate">
                               {booking.services?.name || 'Service'}
                             </h4>
-                            <p className="text-muted-foreground flex items-center gap-2">
-                              <Calendar className="w-4 h-4" />
-                              {new Date(booking.booking_date).toLocaleDateString('fr-FR', { 
-                                weekday: 'long', 
-                                day: 'numeric', 
-                                month: 'long' 
-                              })} à {booking.start_time}
+                            <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1 sm:gap-2 truncate">
+                              <Calendar className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                              <span className="truncate">
+                                {new Date(booking.booking_date).toLocaleDateString('fr-FR', { 
+                                  weekday: 'short', 
+                                  day: 'numeric', 
+                                  month: 'short' 
+                                })} à {booking.start_time}
+                              </span>
                             </p>
-                            <p className="text-sm text-muted-foreground flex items-center gap-2">
-                              <User className="w-4 h-4" />
-                              {booking.providers?.business_name || 'Prestataire'}
+                            <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1 sm:gap-2 truncate">
+                              <User className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                              <span className="truncate">{booking.providers?.business_name || 'Prestataire'}</span>
                             </p>
                           </div>
                         </div>
-                        <div className="text-right space-y-2">
-                        <Badge 
+                        <div className="flex sm:flex-col items-center sm:items-end gap-2 sm:gap-1.5 ml-auto sm:ml-0 flex-shrink-0">
+                          <Badge 
                             variant="outline" 
-                            className="bg-success/10 text-success border-success/20 hover:bg-success/20 transition-colors"
+                            className="bg-success/10 text-success border-success/20 hover:bg-success/20 transition-colors text-[10px] sm:text-xs"
                           >
                             {t('clientDashboard.status.confirmed')}
                           </Badge>
-                          <div className="text-lg font-semibold text-primary">
+                          <div className="text-sm sm:text-lg font-semibold text-primary">
                             {booking.total_price}€
                           </div>
-                          <Button size="sm" variant="outline" className="hover:bg-primary/10">
-                            <MoreHorizontal className="w-4 h-4" />
+                          <Button size="sm" variant="outline" className="hover:bg-primary/10 h-7 w-7 sm:h-8 sm:w-8 p-0">
+                            <MoreHorizontal className="w-3 h-3 sm:w-4 sm:h-4" />
                           </Button>
                         </div>
                       </div>
