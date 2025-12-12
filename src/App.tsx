@@ -10,7 +10,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "./hooks/useAuth";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { OfflineBanner } from "@/components/pwa/OfflineBanner";
-import { UpdatePrompt } from "@/components/pwa/UpdatePrompt";
+
 import { HomeTutorial, TutorialHelpButton } from "@/components/tutorial/HomeTutorial";
 import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
 import { ConnectionIndicator } from "@/components/feedback/ConnectionIndicator";
@@ -137,7 +137,7 @@ const App = () => (
           <Sonner />
           <CookieConsentBanner />
           <InstallPrompt />
-          <UpdatePrompt />
+          
           <FeedbackWidget />
           <ConnectionIndicator />
           <BrowserRouter>
