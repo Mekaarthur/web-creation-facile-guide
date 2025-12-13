@@ -254,7 +254,7 @@ const adminNavItems: MobileNavItem[] = [
 export const MobileNavigation = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, primaryRole } = useAuth();
   const { getCartItemsCount } = useBikawoCart();
 
   // Déterminer le type d'utilisateur et les éléments de navigation
@@ -373,17 +373,21 @@ export const MobileNavigation = () => {
             <div className="p-4 border-t border-border/50">
               {user ? (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                  <Link 
+                    to={primaryRole === 'provider' ? '/espace-prestataire' : '/espace-personnel'} 
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
+                  >
                     <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
                       <User className="h-4 w-4 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">Connecté</p>
+                      <p className="text-sm font-medium truncate">Mon compte</p>
                       <p className="text-xs text-muted-foreground truncate">
                         {user.email}
                       </p>
                     </div>
-                  </div>
+                  </Link>
                   <SecureLogout 
                     variant="outline" 
                     size="sm" 
