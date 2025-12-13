@@ -13,7 +13,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
-import { ChevronDown, Sparkles, ArrowRight } from "lucide-react";
+import { ChevronDown, Sparkles, ArrowRight, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { cn } from "@/lib/utils";
@@ -39,7 +39,7 @@ const Navbar = () => {
   const { t } = useTranslation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, primaryRole } = useAuth();
   const location = useLocation();
 
   // Détection du scroll pour effet glassmorphism
@@ -262,7 +262,12 @@ const Navbar = () => {
                     </Button>
                   </Link>
                 )}
-                <UserProfileMenu userType="client" />
+                <Link to={primaryRole === 'provider' ? '/espace-prestataire' : '/espace-personnel'}>
+                  <Button size="sm" variant="outline" className="border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground">
+                    <User className="mr-1 h-3 w-3" />
+                    Mon compte
+                  </Button>
+                </Link>
                 <SecureLogout variant="outline" size="sm" />
               </div>
             ) : (
