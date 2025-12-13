@@ -310,9 +310,9 @@ export const MobileNavigation = () => {
                 className="flex items-center gap-3 group"
               >
                 <img 
-                  src="/pwa-icon-192.png" 
+                  src="/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png" 
                   alt="Bikawo Logo" 
-                  className="h-12 w-12 rounded-xl shadow-sm transition-transform group-hover:scale-105"
+                  className="h-12 w-auto transition-transform group-hover:scale-105"
                 />
                 <div className="flex flex-col">
                   <h2 className="font-bold text-xl text-foreground tracking-tight">Bikawo</h2>

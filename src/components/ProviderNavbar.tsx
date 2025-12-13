@@ -19,8 +19,8 @@ import Cart from "@/components/Cart";
 import CartIndicator from "@/components/CartIndicator";
 import UserProfileMenu from "@/components/UserProfileMenu";
 import { SecureLogout } from "@/components/SecureLogout";
-// Use optimized logo from public folder (~15KB vs 766KB)
-const bikawoLogo = "/logo-small.webp";
+// Logo Bikawo officiel
+const bikawoLogo = "/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png";
 
 const ProviderNavbar = () => {
   const { t } = useTranslation();

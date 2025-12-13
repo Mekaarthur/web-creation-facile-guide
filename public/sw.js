@@ -1,13 +1,30 @@
-// Service Worker pour les notifications push et mises à jour
-const CACHE_VERSION = 'v1';
+// Service Worker pour les notifications push et mises à jour automatiques
+const CACHE_VERSION = 'v2';
 
+// Force le nouveau SW à s'activer immédiatement
 self.addEventListener('install', (event) => {
-  console.log('Service Worker installed');
+  console.log('Service Worker installed - skipping waiting');
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker activated');
-  event.waitUntil(clients.claim());
+  console.log('Service Worker activated - claiming clients');
+  event.waitUntil(
+    Promise.all([
+      clients.claim(),
+      // Nettoyer les anciens caches
+      caches.keys().then(cacheNames => {
+        return Promise.all(
+          cacheNames.map(cacheName => {
+            if (!cacheName.includes(CACHE_VERSION)) {
+              console.log('Deleting old cache:', cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      })
+    ])
+  );
 });
 
 // Écouter le message SKIP_WAITING pour forcer la mise à jour

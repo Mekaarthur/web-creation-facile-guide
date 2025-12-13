@@ -61,6 +61,8 @@ export default defineConfig(({ mode }) => ({
         ]
       },
       workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff2}'],
         runtimeCaching: [
           {
@@ -93,12 +95,12 @@ export default defineConfig(({ mode }) => ({
           },
           {
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
-            handler: 'CacheFirst',
+            handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'images-cache',
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days (reduced for faster updates)
               }
             }
           },

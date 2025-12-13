@@ -23,8 +23,8 @@ import UserProfileMenu from "@/components/UserProfileMenu";
 import { SecureLogout } from "@/components/SecureLogout";
 import { servicesData } from "@/utils/servicesData";
 import { GlobalSearch } from "@/components/search/GlobalSearch";
-// Use optimized logo from public folder (~15KB vs 766KB)
-const bikawoLogo = "/logo-small.webp";
+// Logo Bikawo officiel
+const bikawoLogo = "/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png";
 // Import service images
 import serviceKids from '@/assets/service-kids.jpg';
 import serviceMaison from '@/assets/service-maison.jpg';
@@ -147,13 +147,14 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <div className="flex items-center space-x-3 group">
-            <Link to="/" className="flex items-center">
+          <div className="flex items-center space-x-2 group">
+            <Link to="/" className="flex items-center gap-2">
               <img 
                 src={bikawoLogo} 
-                alt="Bikawô Logo" 
-                className="h-10 sm:h-12 w-auto bg-transparent transition-smooth group-hover:scale-105"
+                alt="Bikawo Logo" 
+                className="h-8 sm:h-10 w-auto transition-smooth group-hover:scale-105"
               />
+              <span className="font-bold text-lg sm:text-xl text-foreground hidden sm:inline">Bikawo</span>
             </Link>
           </div>
 
