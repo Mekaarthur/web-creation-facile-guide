@@ -78,6 +78,20 @@ const CookieConsentBanner = () => {
 
     // Écouter l'événement pour ouvrir les paramètres de cookies
     const handleOpenSettings = () => {
+      // Charger les préférences existantes depuis localStorage
+      const existingConsent = localStorage.getItem("cookie_consent");
+      if (existingConsent) {
+        try {
+          const savedPrefs = JSON.parse(existingConsent);
+          setPreferences({
+            necessary: true,
+            analytics: savedPrefs.analytics || false,
+            marketing: savedPrefs.marketing || false,
+          });
+        } catch (e) {
+          console.error('Erreur lors du chargement des préférences cookies:', e);
+        }
+      }
       setShowCustomize(true);
     };
     window.addEventListener('openCookieSettings', handleOpenSettings);

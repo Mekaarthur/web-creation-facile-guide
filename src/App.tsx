@@ -138,12 +138,12 @@ const App = () => (
           <OfflineBanner />
           <Toaster />
           <Sonner />
-          <CookieConsentBanner />
           <InstallPrompt />
           
           <FeedbackWidget />
           <ConnectionIndicator />
           <BrowserRouter>
+            <CookieConsentBanner />
             <HomeTutorial />
             <TutorialHelpButton />
             <PageLoadingBar />
