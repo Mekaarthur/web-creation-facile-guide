@@ -48,6 +48,7 @@ const BikaTravel = lazy(() => import("./pages/BikaTravel"));
 const BikaPlus = lazy(() => import("./pages/BikaPlus"));
 const BikaAnimals = lazy(() => import("./pages/BikaAnimals"));
 const BikaSeniors = lazy(() => import("./pages/BikaSeniors"));
+const CGU = lazy(() => import("./pages/CGU"));
 const BikaPro = lazy(() => import("./pages/BikaPro"));
 const SubServicePage = lazy(() => import("./pages/SubService"));
 const LocalServicePage = lazy(() => import("./pages/LocalServicePage"));
