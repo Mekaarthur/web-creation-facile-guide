@@ -69,6 +69,7 @@ const AProposDeNous = lazy(() => import("./pages/AProposDeNous"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
+const InformationConsommateurs = lazy(() => import("./pages/InformationConsommateurs"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Admin pages - lazy loaded (heavy)
@@ -216,6 +217,7 @@ const App = () => (
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/politique-cookies" element={<CookiePolicy />} />
                 <Route path="/cgu" element={<CGU />} />
+                <Route path="/information-consommateurs" element={<InformationConsommateurs />} />
                 <Route path="/panier-demo" element={<BikawoCartDemo />} />
                 <Route path="/analytics-seo" element={<AnalyticsSEO />} />
                 <Route path="/config-messages" element={<ConfigMessages />} />
