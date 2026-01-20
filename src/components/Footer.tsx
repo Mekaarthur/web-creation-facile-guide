@@ -151,9 +151,9 @@ const Footer = () => {
               <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-8 text-white/50 text-sm">
                 <span>{t('footer.copyright')}</span>
                 <div className="flex space-x-6">
-                  <Link to="/aide" className="hover:text-white transition-colors">{t('footer.privacy')}</Link>
-                  <Link to="/aide" className="hover:text-white transition-colors">{t('footer.terms')}</Link>
-                  <Link to="/aide" className="hover:text-white transition-colors">{t('footer.legal')}</Link>
+                  <Link to="/politique-confidentialite" className="hover:text-white transition-colors">{t('footer.privacy')}</Link>
+                  <Link to="/cgu" className="hover:text-white transition-colors">{t('footer.terms')}</Link>
+                  <Link to="/mentions-legales" className="hover:text-white transition-colors">{t('footer.legal')}</Link>
                   <Link to="/politique-cookies" className="hover:text-white transition-colors">Politique de cookies</Link>
                   <button 
                     onClick={() => window.dispatchEvent(new CustomEvent('openCookieSettings'))}
