@@ -214,6 +214,7 @@ const App = () => (
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/politique-cookies" element={<CookiePolicy />} />
+                <Route path="/cgu" element={<CGU />} />
                 <Route path="/panier-demo" element={<BikawoCartDemo />} />
                 <Route path="/analytics-seo" element={<AnalyticsSEO />} />
                 <Route path="/config-messages" element={<ConfigMessages />} />

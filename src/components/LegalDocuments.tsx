@@ -37,23 +37,72 @@ Toute annulation doit être effectuée au moins 24h avant la prestation prévue.
     },
     cgu: {
       title: "Conditions Générales d'Utilisation",
-      content: `CONDITIONS GÉNÉRALES D'UTILISATION
+      content: `CONDITIONS GÉNÉRALES D'UTILISATION BIKAWO
+Dernière mise à jour : 20/01/2026
 
-Article 1 - Définitions
-La plateforme Bikawo met en relation des particuliers avec des prestataires de services qualifiés.
+1. DÉFINITIONS
 
-Article 2 - Accès au service
-L'accès aux services nécessite une inscription préalable et l'acceptation des présentes CGU.
+Les définitions ci-dessous s'appliquent à l'ensemble des présentes CGU :
 
-Article 3 - Obligations de l'utilisateur
-L'utilisateur s'engage à fournir des informations exactes et à respecter les prestataires.
+• « CGU » : désigne les présentes conditions générales d'utilisation.
+• « Client » : désigne toute personne physique ou morale utilisant la Plateforme afin d'être mise en relation avec un Partenaire pour bénéficier d'une Prestation.
+• « Commande » : désigne toute commande d'une Prestation effectuée par un Client.
+• « Compte » : désigne l'espace numérique, personnel et individualisé, créé par un Utilisateur sur la Plateforme.
+• « Partenaire » : désigne un travailleur indépendant ou une personne morale exerçant une activité de Services ou de Services à la Personne, régulièrement inscrit(e) sur la Plateforme.
+• « Plateforme » : désigne la plateforme de mise en relation opérée par Bikawo, accessible depuis le Site et/ou l'Application Bikawo.
+• « Prestation » : désigne les prestations proposées via la Plateforme et réalisées par un Partenaire au bénéfice d'un Client.
+• « Services » : désigne les services fournis par Bikawo aux Utilisateurs, incluant notamment la mise en relation.
+• « Utilisateur » : désigne indifféremment un Client ou un Partenaire utilisant la Plateforme.
+• « Bikawo » : désigne l'auto-entreprise enregistrée à l'INPI sous le numéro 880 491 436, domiciliée 231 rue Saint-Honoré, Paris.
 
-Article 4 - Responsabilités
-Bikawo agit en qualité d'intermédiaire et s'assure de la qualité des prestataires référencés.
+2. OBJET ET PORTÉE DES CGU
 
-Article 5 - Protection des données
-Vos données personnelles sont protégées conformément au RGPD.`,
-      lastUpdate: "2024-01-15"
+Bikawo exploite la Plateforme, un service numérique de mise en relation permettant aux Partenaires d'être mis en relation avec des Clients afin que ces derniers bénéficient de Prestations.
+
+Les présentes CGU ont pour objet :
+• de définir les modalités d'accès et d'utilisation de la Plateforme ;
+• de préciser les droits et obligations de Bikawo, des Partenaires et des Clients.
+
+En qualité d'opérateur de plateforme en ligne, Bikawo n'assume aucune obligation au titre de la relation contractuelle entre Client et Partenaire.
+
+3. INSCRIPTION ET ACCEPTATION DES CGU
+
+Le Client/Partenaire peut créer un Compte et s'inscrire sur la Plateforme via le Site. Au moment de la création du Compte, l'Utilisateur reconnaît avoir pris connaissance des CGU et matérialise son consentement en cochant la case « J'accepte les conditions générales d'utilisation ».
+
+4. RÉALISATION DES PRESTATIONS
+
+Le Client peut effectuer une Commande sur le Site en sélectionnant une ou plusieurs Prestations. Après validation, la Commande est transmise aux Partenaires disponibles.
+
+Frais d'annulation :
+• Plus de 24h avant : aucun frais
+• Entre 8h et 24h : 5 €
+• Entre 4h et 8h : 10 €
+• Entre 2h et 4h : 50 % (plafond 15 €)
+• Moins de 2h : 80 % (plafond 25 €)
+• Après l'heure prévue : 100 % (plafond 30 €)
+
+5. CONDITIONS FINANCIÈRES
+
+Le prix des prestations est affiché sur la Plateforme. Le paiement s'effectue par carte bancaire ou via l'avance immédiate URSSAF. La rémunération du Partenaire est reversée via Stripe.
+
+6. ENGAGEMENTS DE BIKAWO
+
+Bikawo s'engage à mettre la Plateforme et les Services à disposition des Utilisateurs 24h/24 et 7j/7, sauf force majeure ou maintenance.
+
+7. RESPONSABILITÉ
+
+Bikawo n'est pas responsable des Prestations, celles-ci étant réalisées par les Partenaires. La responsabilité de Bikawo est limitée aux dommages certains, directs et prévisibles.
+
+8. DONNÉES PERSONNELLES
+
+Bikawo respecte le RGPD (Règlement (UE) 2016/679). Consultez notre Politique de Confidentialité pour plus d'informations.
+
+9. LOI APPLICABLE
+
+Les CGU sont régies par le droit français. Pour les professionnels : Tribunal de commerce de Paris. Pour les consommateurs : juridiction du lieu de domicile.
+
+Contact : contact@bikawo.com | 231 rue Saint-Honoré, 75001 Paris | N° INPI : 880 491 436`,
+      lastUpdate: "2026-01-20"
     },
     privacy: {
       title: "Politique de Confidentialité",
