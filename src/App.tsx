@@ -71,6 +71,7 @@ const BlogPost = lazy(() => import("./pages/BlogPost"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
 const InformationConsommateurs = lazy(() => import("./pages/InformationConsommateurs"));
 const MentionsLegales = lazy(() => import("./pages/MentionsLegales"));
+const PolitiqueConfidentialite = lazy(() => import("./pages/PolitiqueConfidentialite"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Admin pages - lazy loaded (heavy)
@@ -220,6 +221,7 @@ const App = () => (
                 <Route path="/cgu" element={<CGU />} />
                 <Route path="/information-consommateurs" element={<InformationConsommateurs />} />
                 <Route path="/mentions-legales" element={<MentionsLegales />} />
+                <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
                 <Route path="/panier-demo" element={<BikawoCartDemo />} />
                 <Route path="/analytics-seo" element={<AnalyticsSEO />} />
                 <Route path="/config-messages" element={<ConfigMessages />} />
