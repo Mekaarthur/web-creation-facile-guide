@@ -159,42 +159,42 @@ const CookieConsentBanner = () => {
     saveConsent(preferences);
   };
 
-  if (!showBanner) return null;
-
   return (
     <>
-      {/* Cookie banner compact - position ajustée pour éviter superposition avec CTA mobile */}
-      <div className="fixed bottom-20 md:bottom-4 left-4 right-4 md:left-4 md:max-w-sm z-40 p-4 bg-card border border-border rounded-xl shadow-elegant animate-in slide-in-from-bottom">
-        <p className="text-xs text-muted-foreground mb-3">
-          🍪 Nous utilisons des cookies pour améliorer votre expérience.
-        </p>
-        
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowCustomize(true)}
-            className="text-xs text-muted-foreground hover:text-foreground px-2"
-          >
-            Personnaliser
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={rejectAll}
-            className="text-xs text-muted-foreground hover:text-foreground px-2"
-          >
-            Refuser
-          </Button>
-          <Button
-            size="sm"
-            onClick={acceptAll}
-            className="text-xs ml-auto"
-          >
-            Accepter
-          </Button>
+      {/* Cookie banner compact - affiché seulement si showBanner est true */}
+      {showBanner && (
+        <div className="fixed bottom-20 md:bottom-4 left-4 right-4 md:left-4 md:max-w-sm z-40 p-4 bg-card border border-border rounded-xl shadow-elegant animate-in slide-in-from-bottom">
+          <p className="text-xs text-muted-foreground mb-3">
+            🍪 Nous utilisons des cookies pour améliorer votre expérience.
+          </p>
+          
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowCustomize(true)}
+              className="text-xs text-muted-foreground hover:text-foreground px-2"
+            >
+              Personnaliser
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={rejectAll}
+              className="text-xs text-muted-foreground hover:text-foreground px-2"
+            >
+              Refuser
+            </Button>
+            <Button
+              size="sm"
+              onClick={acceptAll}
+              className="text-xs ml-auto"
+            >
+              Accepter
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       <Dialog open={showCustomize} onOpenChange={setShowCustomize}>
         <DialogContent className="sm:max-w-md">
