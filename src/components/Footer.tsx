@@ -189,6 +189,7 @@ const Footer = () => {
                   <Link to="/cgu" className="hover:text-white transition-colors">{t('footer.terms')}</Link>
                   <Link to="/information-consommateurs" className="hover:text-white transition-colors">Information consommateurs</Link>
                   <Link to="/mentions-legales" className="hover:text-white transition-colors">{t('footer.legal')}</Link>
+                  <Link to="/avance-immediate" className="hover:text-white transition-colors">Avance Immédiate</Link>
                   <Link to="/politique-cookies" className="hover:text-white transition-colors">Politique de cookies</Link>
                   <button 
                     onClick={() => window.dispatchEvent(new CustomEvent('openCookieSettings'))}
