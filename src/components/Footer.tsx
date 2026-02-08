@@ -2,6 +2,7 @@ import { MessageCircle, Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instag
 import { Link } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import traceurSap from "@/assets/traceur-sap.jpg";
+import logoUrssaf from "@/assets/logo-urssaf.png";
 
 const Footer = () => {
   const { t } = useTranslation();
@@ -100,21 +101,37 @@ const Footer = () => {
                 </a>
               </div>
 
-              {/* Traceur SAP */}
-              <a
-                href="https://www.servicesalapersonne.gouv.fr"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block"
-                aria-label="Services à la personne - Direction générale des Entreprises"
-              >
-                <img
-                  src={traceurSap}
-                  alt="Services à la personne"
-                  className="w-[80px] h-auto hover:opacity-80 transition-opacity duration-300"
-                  style={{ minWidth: '60px' }}
-                />
-              </a>
+              {/* Logos réglementaires */}
+              <div className="flex items-center gap-6">
+                <a
+                  href="https://www.servicesalapersonne.gouv.fr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block"
+                  aria-label="Services à la personne - Direction générale des Entreprises"
+                >
+                  <img
+                    src={traceurSap}
+                    alt="Services à la personne"
+                    className="w-[80px] h-auto hover:opacity-80 transition-opacity duration-300"
+                    style={{ minWidth: '60px' }}
+                  />
+                </a>
+                <a
+                  href="https://www.urssaf.fr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block"
+                  aria-label="URSSAF - Avance immédiate"
+                >
+                  <img
+                    src={logoUrssaf}
+                    alt="URSSAF"
+                    className="w-[80px] h-auto hover:opacity-80 transition-opacity duration-300"
+                    style={{ minWidth: '60px' }}
+                  />
+                </a>
+              </div>
 
               {/* Social Links */}
               <div className="flex space-x-3">
