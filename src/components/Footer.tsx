@@ -2,7 +2,7 @@ import { MessageCircle, Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instag
 import { Link } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import traceurSap from "@/assets/traceur-sap.jpg";
-import logoUrssaf from "@/assets/logo-urssaf.png";
+import LogoUrssaf from "@/components/LogoUrssaf";
 
 const Footer = () => {
   const { t } = useTranslation();
@@ -124,12 +124,7 @@ const Footer = () => {
                   className="inline-block"
                   aria-label="URSSAF - Avance immédiate"
                 >
-                  <img
-                    src={logoUrssaf}
-                    alt="URSSAF"
-                    className="w-[80px] h-auto hover:opacity-80 transition-opacity duration-300"
-                    style={{ minWidth: '60px' }}
-                  />
+                  <LogoUrssaf width={80} className="hover:opacity-80 transition-opacity duration-300" />
                 </a>
               </div>
 

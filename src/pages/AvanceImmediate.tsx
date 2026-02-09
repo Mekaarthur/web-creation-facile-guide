@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, CheckCircle, Info, ArrowRight, Shield, Clock, HelpCircle } from "lucide-react";
 import { Link } from "react-router-dom";
-import logoUrssaf from "@/assets/logo-urssaf.png";
+import LogoUrssaf from "@/components/LogoUrssaf";
 
 const AvanceImmediate = () => {
   return (
@@ -19,11 +19,7 @@ const AvanceImmediate = () => {
         <section className="relative bg-gradient-to-br from-primary/10 via-background to-accent/10 pt-28 pb-16">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
             <div className="flex flex-col items-center text-center space-y-6">
-              <img
-                src={logoUrssaf}
-                alt="URSSAF"
-                className="w-24 h-auto"
-              />
+              <LogoUrssaf width={140} />
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground leading-tight">
                 L'Avance Immédiate du <br className="hidden sm:block" />
                 <span className="text-primary">Crédit d'Impôt</span>
