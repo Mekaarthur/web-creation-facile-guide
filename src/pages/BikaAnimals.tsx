@@ -40,8 +40,8 @@ const BikaAnimals = () => {
         subtitle="Pet-sitting et soins pour vos compagnons"
         rating={5}
         reviewCount="900+ avis vérifiés"
-        price="Dès 18€/h"
-        discountPrice="9€/h"
+        price="Dès 25€/h"
+        discountPrice="12,50€/h"
         heroImage={serviceAnimalsImage}
         heroImageAlt="Service garde d'animaux Bika Animals"
         keyPoints={[
