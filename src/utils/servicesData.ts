@@ -176,15 +176,15 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
       },
       {
         slug: "rangement-armoire",
-        title: "Rangement d'armoire",
+        title: "Rangement d'armoire - Optimisation d'espace de vie",
         price: 30,
         priceDisplay: "30€/h",
         image: serviceHouseLogistics,
-        description: "Organisation et rangement de vos armoires et espaces de rangement.",
+        description: "Prestations au choix : tri et organisation des vêtements, optimisation de l'espace, conseils de rangement et accompagnement au rangement.",
         options: [
           "Tri et organisation des vêtements",
           "Optimisation de l'espace",
-          "Conseils de rangement"
+          "Conseils de rangement et accompagnement au rangement"
         ],
       },
       {
