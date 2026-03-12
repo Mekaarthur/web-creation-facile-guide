@@ -64,6 +64,7 @@ const ServiceCard = ({ service, pricing }: ServiceCardProps) => {
           <div className="absolute top-3 right-3 bg-primary text-primary-foreground px-3 py-1.5 rounded-lg text-xs font-semibold shadow-lg">
             {hasCredit ? (
               <>
+                <span className="opacity-90">À partir de </span>
                 <span className="line-through opacity-70">{pricing.original}</span>
                 <span className="mx-1">→</span>
                 <span className="text-white font-bold">{pricing.afterCredit}</span>
