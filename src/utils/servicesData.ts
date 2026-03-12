@@ -194,11 +194,10 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         image: serviceMaisonFull,
         description: "Ménage complet de votre domicile, vaisselle et repassage soigné de vos vêtements.",
         options: [
-          "Ménage et nettoyage",
-          "Vaisselle",
-          "Repassage de tout type de vêtements",
-          "Pliage et rangement",
-          "Traitement des textiles délicats"
+          "Ménage et nettoyage du quotidien",
+          "Repassage de tout type de vêtements (hors vêtements délicats)",
+          "Pliage et rangement des vêtements",
+          "Vaisselle"
         ],
       },
       {
