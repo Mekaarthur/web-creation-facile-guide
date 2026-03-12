@@ -140,7 +140,7 @@ const ServicesGrid = () => {
     maison: { original: "25€/h", afterCredit: "12,50€/h" },
     vie: { original: "25€/h", afterCredit: "12,50€/h" },
     travel: { original: "30€/h" },
-    animals: { original: "20€/h", afterCredit: "10€/h" },
+    animals: { original: "25€/h", afterCredit: "12,50€/h" },
     seniors: { original: "25€/h", afterCredit: "12,50€/h" },
     pro: { original: "35€/h" },
     plus: { original: "40€/h" },
