@@ -188,6 +188,17 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         ],
       },
       {
+        slug: "produits-menage",
+        title: "Produits de ménage",
+        price: 2.5,
+        priceDisplay: "2,50€",
+        image: serviceHomeCleaning,
+        description: "Fourniture de produits de ménage pour les prestations de nettoyage.",
+        options: [
+          "Produits de nettoyage fournis"
+        ],
+      },
+      {
         slug: "repassage-vetements",
         title: "Ménage, vaisselle et repassage des vêtements",
         price: 30,
