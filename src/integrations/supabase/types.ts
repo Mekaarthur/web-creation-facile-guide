@@ -483,7 +483,7 @@ export type Database = {
           id: string
           mission_assignment_id: string
           provider_id: string
-          response_time: unknown
+          response_time: string | null
           response_type: string
         }
         Insert: {
@@ -491,7 +491,7 @@ export type Database = {
           id?: string
           mission_assignment_id: string
           provider_id: string
-          response_time?: unknown
+          response_time?: string | null
           response_type: string
         }
         Update: {
@@ -499,7 +499,7 @@ export type Database = {
           id?: string
           mission_assignment_id?: string
           provider_id?: string
-          response_time?: unknown
+          response_time?: string | null
           response_type?: string
         }
         Relationships: [
