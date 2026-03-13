@@ -41,7 +41,6 @@ const BikaPro = () => {
         rating={5}
         reviewCount="600+ avis vérifiés"
         price="Dès 35€/h"
-        discountPrice="17,50€/h"
         heroImage={serviceBusinessImage}
         heroImageAlt="Services professionnels Bika Pro"
         keyPoints={[

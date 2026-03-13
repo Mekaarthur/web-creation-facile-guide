@@ -40,8 +40,8 @@ const BikaVie = () => {
         subtitle="Gestion de votre vie quotidienne"
         rating={5}
         reviewCount="800+ avis vérifiés"
-        price="Dès 30€/h"
-        discountPrice="15€/h"
+        price="Dès 25€/h"
+        discountPrice="12,50€/h"
         heroImage={serviceVieImage}
         heroImageAlt="Assistant personnel Bika Vie"
         keyPoints={[
