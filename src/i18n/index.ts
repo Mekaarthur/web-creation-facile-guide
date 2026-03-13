@@ -590,6 +590,7 @@ const resources = {
       "servicePage.benefitsTitle": "You'll love us",
       "servicePage.benefitsSubtitle": "Discover the advantages that make Bikawo your trusted partner",
       "servicePage.taxCredit": "or {{discountPrice}} with tax credit",
+      "servicePage.notEligibleTaxCredit": "Not eligible for immediate tax credit advance",
       
       // Service Subgrid
       "serviceSubgrid.title": "Our {{packageTitle}} sub-services",
