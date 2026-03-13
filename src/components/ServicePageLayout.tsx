@@ -96,9 +96,13 @@ const ServicePageLayout = ({
                   <div className="text-2xl lg:text-3xl font-bold mb-1">
                     {price}
                   </div>
-                  {discountPrice && (
+                  {discountPrice ? (
                     <div className="text-lg text-primary-foreground/80">
                       {t('servicePage.taxCredit', { discountPrice })}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-primary-foreground/60 italic">
+                      {t('servicePage.notEligibleTaxCredit')}
                     </div>
                   )}
                 </div>

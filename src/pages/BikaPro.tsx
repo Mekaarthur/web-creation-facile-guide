@@ -40,7 +40,7 @@ const BikaPro = () => {
         subtitle="Assistance administrative pour entreprises"
         rating={5}
         reviewCount="600+ avis vérifiés"
-        price="Dès 35€/h"
+        price="Dès 40€/h"
         heroImage={serviceBusinessImage}
         heroImageAlt="Services professionnels Bika Pro"
         keyPoints={[
