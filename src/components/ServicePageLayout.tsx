@@ -20,7 +20,7 @@ interface ServicePageProps {
   rating: number;
   reviewCount: string;
   price: string;
-  discountPrice: string;
+  discountPrice?: string;
   heroImage: string;
   heroImageAlt: string;
   keyPoints: string[];
