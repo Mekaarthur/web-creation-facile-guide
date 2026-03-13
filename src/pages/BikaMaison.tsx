@@ -40,8 +40,8 @@ const BikaMaison = () => {
         subtitle="Préparation culinaire / batch cooking, repassage et entretien"
         rating={5}
         reviewCount="2 500+ avis vérifiés"
-        price="Dès 15€/h"
-        discountPrice="7,50€/h"
+        price="Dès 25€/h"
+        discountPrice="12,50€/h"
         heroImage={serviceMaisonImage}
         heroImageAlt="Services maison Bika Maison"
         keyPoints={[

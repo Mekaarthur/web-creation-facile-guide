@@ -40,8 +40,7 @@ const BikaTravel = () => {
         subtitle="Accompagnement et organisation de voyages"
         rating={5}
         reviewCount="450+ avis vérifiés"
-        price="Dès 40€/h"
-        discountPrice="20€/h"
+        price="Dès 30€/h"
         heroImage={serviceTravelImage}
         heroImageAlt="Services voyage Bika Travel"
         keyPoints={[

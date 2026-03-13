@@ -40,8 +40,8 @@ const BikaSeniors = () => {
         subtitle="Accompagnement bienveillant pour nos aînés"
         rating={5}
         reviewCount="1 200+ avis vérifiés"
-        price="Dès 20€/h"
-        discountPrice="10€/h"
+        price="Dès 25€/h"
+        discountPrice="12,50€/h"
         heroImage={serviceSeniorsImage}
         heroImageAlt="Service aide seniors Bika Seniors"
         keyPoints={[
