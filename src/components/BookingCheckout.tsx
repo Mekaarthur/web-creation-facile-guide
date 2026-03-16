@@ -591,15 +591,95 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                     <p className="text-xs text-muted-foreground">50% déduit directement, vous ne payez que la moitié</p>
                   </div>
                 </div>
-                <Switch checked={urssafEnabled} onCheckedChange={setUrssafEnabled} />
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowUrssafDialog(true)}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="En savoir plus sur l'avance immédiate"
+                  >
+                    <Info className="w-4 h-4" />
+                  </button>
+                  <Switch checked={urssafEnabled} onCheckedChange={setUrssafEnabled} />
+                </div>
               </div>
               {urssafEnabled && (
-                <p className="text-xs text-green-700 dark:text-green-400">
-                  ✅ Vous économisez {(getCartTotal() * 0.5).toFixed(2)}€ grâce au crédit d'impôt
-                </p>
+                <div className="space-y-2">
+                  <p className="text-xs text-green-700 dark:text-green-400">
+                    ✅ Vous économisez {(getCartTotal() * 0.5).toFixed(2)}€ grâce au crédit d'impôt
+                  </p>
+                  <a
+                    href="https://www.cesu.urssaf.fr"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-medium"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    Activer votre compte CESU sur cesu.urssaf.fr
+                  </a>
+                </div>
               )}
             </CardContent>
           </Card>
+
+          {/* Dialog explicatif Avance Immédiate */}
+          <Dialog open={showUrssafDialog} onOpenChange={setShowUrssafDialog}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <BadgePercent className="w-5 h-5 text-green-600" />
+                  Avance immédiate d'impôts
+                </DialogTitle>
+                <DialogDescription>
+                  Bénéficiez du crédit d'impôt de 50% directement lors du paiement grâce au dispositif URSSAF.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-2">
+                <div className="space-y-3">
+                  {[
+                    { step: "1", text: "Activez l'option lors du paiement" },
+                    { step: "2", text: "Créez ou connectez votre compte sur cesu.urssaf.fr" },
+                    { step: "3", text: "Validez votre identité et vos coordonnées fiscales" },
+                    { step: "4", text: "Le crédit d'impôt est appliqué : vous ne payez que 50%" },
+                    { step: "5", text: "Après la prestation, la déclaration est automatique" },
+                  ].map((item) => (
+                    <div key={item.step} className="flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-bold text-primary">{item.step}</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{item.text}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-muted-foreground">
+                      <strong>Plafond annuel :</strong> 12 000€ de dépenses soit 6 000€ de crédit d'impôt maximum.
+                      En savoir plus sur{" "}
+                      <a href="https://www.impots.gouv.fr" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        impots.gouv.fr
+                      </a>
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <DialogFooter className="flex-col sm:flex-row gap-2">
+                <a
+                  href="https://www.cesu.urssaf.fr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Ouvrir cesu.urssaf.fr
+                </a>
+                <Button onClick={() => { setUrssafEnabled(true); setShowUrssafDialog(false); }}>
+                  Activer l'avance immédiate
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Right Column - Order Summary - Desktop uniquement */}
