@@ -17,9 +17,20 @@ import {
   AlertTriangle,
   ArrowLeft,
   Loader2,
-  BadgePercent
+  BadgePercent,
+  ExternalLink,
+  Info,
+  CheckCircle2
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { useBikawoCart } from "@/hooks/useBikawoCart";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
