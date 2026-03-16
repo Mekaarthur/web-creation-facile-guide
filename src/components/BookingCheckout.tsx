@@ -16,8 +16,10 @@ import {
   Clock,
   AlertTriangle,
   ArrowLeft,
-  Loader2
+  Loader2,
+  BadgePercent
 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { useBikawoCart } from "@/hooks/useBikawoCart";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
