@@ -644,11 +644,16 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                   <span>{getCartTotal()}€</span>
                 </div>
                 
-                {/* Avance immédiate désactivée temporairement */}
+                {urssafEnabled && (
+                  <div className="flex justify-between items-center text-xs text-green-700 dark:text-green-400">
+                    <span>Crédit d'impôt (-50%)</span>
+                    <span>-{(getCartTotal() * 0.5).toFixed(2)}€</span>
+                  </div>
+                )}
                 
                 <div className="flex justify-between items-center text-lg font-bold border-t pt-2">
-                  <span>Montant à payer</span>
-                  <span className="text-primary">{getCartTotal()}€</span>
+                  <span>{urssafEnabled ? 'Votre part' : 'Montant à payer'}</span>
+                  <span className="text-primary">{urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€</span>
                 </div>
               </div>
 
