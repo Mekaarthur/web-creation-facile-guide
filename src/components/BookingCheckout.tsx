@@ -780,10 +780,13 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       <div className="lg:hidden sticky bottom-0 left-0 right-0 p-3 bg-background/98 backdrop-blur-md border-t shadow-elegant z-50 safe-area-bottom">
         <div className="max-w-lg mx-auto space-y-2">
           <div className="flex justify-between items-center text-sm">
-            <span className="font-medium">Total à payer</span>
+            <span className="font-medium">{urssafEnabled ? 'Votre part' : 'Total à payer'}</span>
             <div className="text-right">
+              {urssafEnabled && (
+                <div className="text-xs text-green-600 line-through">{getCartTotal()}€</div>
+              )}
               <div className="font-bold text-primary text-lg">
-                {getCartTotal()}€
+                {urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€
               </div>
             </div>
           </div>
