@@ -16,8 +16,10 @@ import {
   Clock,
   AlertTriangle,
   ArrowLeft,
-  Loader2
+  Loader2,
+  BadgePercent
 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { useBikawoCart } from "@/hooks/useBikawoCart";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -416,11 +418,28 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                 <span className="font-medium">{getCartTotal()}€</span>
               </div>
               
-              {/* Avance immédiate désactivée temporairement */}
+              {/* Avance immédiate */}
+              <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
+                <div className="flex items-center gap-2">
+                  <BadgePercent className="w-4 h-4 text-green-600" />
+                  <div>
+                    <span className="text-xs sm:text-sm font-medium">Avance immédiate (-50%)</span>
+                    <p className="text-[10px] text-muted-foreground">Crédit d'impôt déduit directement</p>
+                  </div>
+                </div>
+                <Switch checked={urssafEnabled} onCheckedChange={setUrssafEnabled} />
+              </div>
+
+              {urssafEnabled && (
+                <div className="flex justify-between items-center text-xs text-green-700 dark:text-green-400">
+                  <span>Pris en charge par l'État</span>
+                  <span>-{(getCartTotal() * 0.5).toFixed(2)}€</span>
+                </div>
+              )}
               
               <div className="flex justify-between items-center text-lg sm:text-xl font-bold border-t pt-2">
-                <span>Total</span>
-                <span className="text-primary">{getCartTotal()}€</span>
+                <span>{urssafEnabled ? 'Votre part' : 'Total'}</span>
+                <span className="text-primary">{urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€</span>
               </div>
             </div>
           </CardContent>
@@ -550,7 +569,26 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
             </CardContent>
           </Card>
 
-          {/* Avance immédiate URSSAF — retirée temporairement */}
+          {/* Avance immédiate URSSAF */}
+          <Card className="border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/20">
+            <CardContent className="p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <BadgePercent className="w-5 h-5 text-green-600" />
+                  <div>
+                    <h4 className="text-sm font-semibold">Avance immédiate d'impôts</h4>
+                    <p className="text-xs text-muted-foreground">50% déduit directement, vous ne payez que la moitié</p>
+                  </div>
+                </div>
+                <Switch checked={urssafEnabled} onCheckedChange={setUrssafEnabled} />
+              </div>
+              {urssafEnabled && (
+                <p className="text-xs text-green-700 dark:text-green-400">
+                  ✅ Vous économisez {(getCartTotal() * 0.5).toFixed(2)}€ grâce au crédit d'impôt
+                </p>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Right Column - Order Summary - Desktop uniquement */}
@@ -606,11 +644,16 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                   <span>{getCartTotal()}€</span>
                 </div>
                 
-                {/* Avance immédiate désactivée temporairement */}
+                {urssafEnabled && (
+                  <div className="flex justify-between items-center text-xs text-green-700 dark:text-green-400">
+                    <span>Crédit d'impôt (-50%)</span>
+                    <span>-{(getCartTotal() * 0.5).toFixed(2)}€</span>
+                  </div>
+                )}
                 
                 <div className="flex justify-between items-center text-lg font-bold border-t pt-2">
-                  <span>Montant à payer</span>
-                  <span className="text-primary">{getCartTotal()}€</span>
+                  <span>{urssafEnabled ? 'Votre part' : 'Montant à payer'}</span>
+                  <span className="text-primary">{urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€</span>
                 </div>
               </div>
 
