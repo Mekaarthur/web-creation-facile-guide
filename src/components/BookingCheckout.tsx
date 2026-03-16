@@ -418,11 +418,28 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                 <span className="font-medium">{getCartTotal()}€</span>
               </div>
               
-              {/* Avance immédiate désactivée temporairement */}
+              {/* Avance immédiate */}
+              <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
+                <div className="flex items-center gap-2">
+                  <BadgePercent className="w-4 h-4 text-green-600" />
+                  <div>
+                    <span className="text-xs sm:text-sm font-medium">Avance immédiate (-50%)</span>
+                    <p className="text-[10px] text-muted-foreground">Crédit d'impôt déduit directement</p>
+                  </div>
+                </div>
+                <Switch checked={urssafEnabled} onCheckedChange={setUrssafEnabled} />
+              </div>
+
+              {urssafEnabled && (
+                <div className="flex justify-between items-center text-xs text-green-700 dark:text-green-400">
+                  <span>Pris en charge par l'État</span>
+                  <span>-{(getCartTotal() * 0.5).toFixed(2)}€</span>
+                </div>
+              )}
               
               <div className="flex justify-between items-center text-lg sm:text-xl font-bold border-t pt-2">
-                <span>Total</span>
-                <span className="text-primary">{getCartTotal()}€</span>
+                <span>{urssafEnabled ? 'Votre part' : 'Total'}</span>
+                <span className="text-primary">{urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€</span>
               </div>
             </div>
           </CardContent>
