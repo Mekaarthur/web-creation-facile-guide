@@ -804,7 +804,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
             ) : (
               <>
                 <CreditCard className="w-4 h-4 mr-2" />
-                Confirmer {getCartTotal()}€
+                Confirmer {urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€
               </>
             )}
           </Button>
