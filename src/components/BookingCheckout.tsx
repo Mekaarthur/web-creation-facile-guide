@@ -569,7 +569,26 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
             </CardContent>
           </Card>
 
-          {/* Avance immédiate URSSAF — retirée temporairement */}
+          {/* Avance immédiate URSSAF */}
+          <Card className="border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/20">
+            <CardContent className="p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <BadgePercent className="w-5 h-5 text-green-600" />
+                  <div>
+                    <h4 className="text-sm font-semibold">Avance immédiate d'impôts</h4>
+                    <p className="text-xs text-muted-foreground">50% déduit directement, vous ne payez que la moitié</p>
+                  </div>
+                </div>
+                <Switch checked={urssafEnabled} onCheckedChange={setUrssafEnabled} />
+              </div>
+              {urssafEnabled && (
+                <p className="text-xs text-green-700 dark:text-green-400">
+                  ✅ Vous économisez {(getCartTotal() * 0.5).toFixed(2)}€ grâce au crédit d'impôt
+                </p>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Right Column - Order Summary - Desktop uniquement */}
