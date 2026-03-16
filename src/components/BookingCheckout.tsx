@@ -48,6 +48,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [showUrssafDialog, setShowUrssafDialog] = useState(false);
+  const [urssafEnabled, setUrssafEnabled] = useState(false);
   const [clientInfo, setClientInfo] = useState({
     firstName: "",
     lastName: "",
