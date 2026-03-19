@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      acquisition_tracking: {
+        Row: {
+          channel: string
+          conversions: number
+          cost: number
+          created_at: string
+          id: string
+          notes: string | null
+          period_end: string
+          period_start: string
+          updated_at: string
+        }
+        Insert: {
+          channel: string
+          conversions?: number
+          cost?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          period_end: string
+          period_start: string
+          updated_at?: string
+        }
+        Update: {
+          channel?: string
+          conversions?: number
+          cost?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          period_end?: string
+          period_start?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       action_history: {
         Row: {
           action_type: string
@@ -4831,6 +4867,8 @@ export type Database = {
           longitude: number
         }[]
       }
+      get_acquisition_cost_by_channel: { Args: never; Returns: Json }
+      get_active_providers_ratio: { Args: never; Returns: Json }
       get_binome_history: {
         Args: { p_binome_id: string }
         Returns: {
@@ -4941,6 +4979,7 @@ export type Database = {
           rating: number
         }[]
       }
+      get_recurring_clients_rate: { Args: never; Returns: Json }
       get_reward_amount: { Args: { p_tier: string }; Returns: number }
       get_safe_platform_stats: {
         Args: never
@@ -4960,6 +4999,8 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"][]
       }
+      get_weekly_avg_rating: { Args: never; Returns: Json }
+      get_weekly_completed_bookings: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
