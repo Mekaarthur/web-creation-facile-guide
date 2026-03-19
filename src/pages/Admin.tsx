@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAdminRole } from '@/hooks/useAdminRole';
 import EnhancedModernDashboard from '@/components/admin/enhanced/EnhancedModernDashboard';
+import { WeeklyDashboard } from '@/components/admin/WeeklyDashboard';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertTriangle } from 'lucide-react';
 
@@ -40,7 +41,10 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <EnhancedModernDashboard />
+      <div className="container mx-auto p-6 space-y-8">
+        <WeeklyDashboard />
+        <EnhancedModernDashboard />
+      </div>
     </div>
   );
 };
