@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAdminRole } from '@/hooks/useAdminRole';
 import EnhancedModernDashboard from '@/components/admin/enhanced/EnhancedModernDashboard';
+import { WeeklyDashboard } from '@/components/admin/WeeklyDashboard';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertTriangle } from 'lucide-react';
 
