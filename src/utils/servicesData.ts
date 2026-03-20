@@ -201,8 +201,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
       {
         slug: "repassage-vetements",
         title: "Ménage, vaisselle et repassage des vêtements",
-        price: 30,
-        priceDisplay: "30€/h",
+        price: 28,
+        priceDisplay: "28€/h",
         image: serviceMaisonFull,
         description: "Ménage complet de votre domicile, vaisselle et repassage soigné de vos vêtements.",
         options: [

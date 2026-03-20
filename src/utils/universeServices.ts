@@ -86,8 +86,8 @@ export const universeServices: UniverseCategory[] = [
       {
         id: 'repassage-vetements',
         name: 'Repassage des vêtements',
-        clientPrice: 30,
-        providerPrice: 22
+        clientPrice: 28,
+        providerPrice: 20
       },
       {
         id: 'batch-cooking',
