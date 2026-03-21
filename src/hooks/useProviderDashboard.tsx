@@ -39,13 +39,15 @@ interface Review {
 
 interface ProviderStats {
   monthlyEarnings: number;
+  previousMonthEarnings: number;
+  earningsGrowth: number;
   totalEarnings: number;
   activeMissions: number;
   completedMissions: number;
   averageRating: number;
   acceptanceRate: number;
   totalReviews: number;
-  responseTime: number; // in minutes
+  responseTime: number;
 }
 
 interface ProviderDashboardData {
