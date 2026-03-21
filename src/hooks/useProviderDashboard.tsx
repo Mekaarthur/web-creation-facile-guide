@@ -71,6 +71,8 @@ export const useProviderDashboard = () => {
     reviews: [],
     stats: {
       monthlyEarnings: 0,
+      previousMonthEarnings: 0,
+      earningsGrowth: 0,
       totalEarnings: 0,
       activeMissions: 0,
       completedMissions: 0,
