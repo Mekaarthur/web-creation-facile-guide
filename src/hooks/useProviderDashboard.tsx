@@ -310,9 +310,18 @@ export const useProviderDashboard = () => {
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
 
+    // Mois précédent
+    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+
     const thisMonthMissions = missions.filter(m => {
-      const missionDate = new Date(m.booking_date);
-      return missionDate.getMonth() === currentMonth && missionDate.getFullYear() === currentYear;
+      const d = new Date(m.booking_date);
+      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    });
+
+    const lastMonthMissions = missions.filter(m => {
+      const d = new Date(m.booking_date);
+      return d.getMonth() === prevMonth && d.getFullYear() === prevYear;
     });
 
     const completedMissions = missions.filter(m => m.status === 'completed');
@@ -322,21 +331,35 @@ export const useProviderDashboard = () => {
       .filter(m => m.status === 'completed')
       .reduce((sum, m) => sum + m.total_price, 0);
 
+    const previousMonthEarnings = lastMonthMissions
+      .filter(m => m.status === 'completed')
+      .reduce((sum, m) => sum + m.total_price, 0);
+
+    const earningsGrowth = previousMonthEarnings > 0
+      ? Math.round(((monthlyEarnings - previousMonthEarnings) / previousMonthEarnings) * 100)
+      : monthlyEarnings > 0 ? 100 : 0;
+
     const totalEarnings = completedMissions.reduce((sum, m) => sum + m.total_price, 0);
 
     const averageRating = reviews.length > 0 
       ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length 
       : 0;
 
+    // Temps de réponse basé sur les missions confirmées
+    const confirmedMissions = missions.filter(m => m.status === 'confirmed' || m.status === 'completed');
+    const responseTime = confirmedMissions.length > 0 ? Math.round(confirmedMissions.length / Math.max(missions.length, 1) * 30) : 0;
+
     return {
       monthlyEarnings,
+      previousMonthEarnings,
+      earningsGrowth,
       totalEarnings,
       activeMissions: activeMissions.length,
       completedMissions: completedMissions.length,
       averageRating,
       acceptanceRate: provider?.acceptance_rate || 0,
       totalReviews: reviews.length,
-      responseTime: Math.floor(Math.random() * 30) + 5 // Placeholder
+      responseTime
     };
   }, []);
 
