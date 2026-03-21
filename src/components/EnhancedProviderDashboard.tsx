@@ -332,9 +332,9 @@ const EnhancedProviderDashboard = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                    <div className="flex items-center gap-1 text-green-600 text-xs sm:text-sm font-medium">
-                      <TrendingUp className="h-3 w-3" />
-                      +12%
+                    <div className={`flex items-center gap-1 ${stats.earningsGrowth >= 0 ? 'text-green-600' : 'text-red-500'} text-xs sm:text-sm font-medium`}>
+                      {stats.earningsGrowth >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                      {stats.earningsGrowth >= 0 ? '+' : ''}{stats.earningsGrowth}%
                     </div>
                     <span className="text-[10px] sm:text-xs text-muted-foreground">vs mois dernier</span>
                   </div>
