@@ -240,8 +240,7 @@ export const useProviderDashboard = () => {
 
       const opportunities = (opportunitiesData || []).map((opportunity: any) => ({
         ...opportunity,
-        services: opportunity.services || null,
-        distance: Math.floor(Math.random() * 15) + 1
+        services: opportunity.services || null
       }));
 
       setCachedData(cacheKey, opportunities);
