@@ -203,6 +203,7 @@ export const useProviderDashboard = () => {
   }, [getCachedData, setCachedData]);
 
   // Load opportunities with intelligent matching
+  // Combines: 1) bookings sans provider + 2) missions assignées au provider via matching admin
   const loadOpportunities = useCallback(async (providerId: string): Promise<Opportunity[]> => {
     const cacheKey = `opportunities_${providerId}`;
     const cached = getCachedData(cacheKey);
@@ -218,7 +219,14 @@ export const useProviderDashboard = () => {
 
       const serviceIds = providerData?.provider_services?.map((ps: any) => ps.service_id) || [];
 
-      const { data: opportunitiesData, error } = await supabase
+      // If no services configured, return empty
+      if (serviceIds.length === 0) {
+        setCachedData(cacheKey, []);
+        return [];
+      }
+
+      // 1) Bookings ouverts (sans provider assigné)
+      const { data: openBookings, error: bookingsError } = await supabase
         .from('bookings')
         .select(`
           id,
@@ -235,21 +243,67 @@ export const useProviderDashboard = () => {
         .order('created_at', { ascending: false })
         .limit(10);
 
-      // If no services configured, return empty
-      if (serviceIds.length === 0) {
-        setCachedData(cacheKey, []);
-        return [];
-      }
+      if (bookingsError) throw bookingsError;
 
-      // Filter by provider's services
-      const opportunities = (opportunitiesData || [])
-        .filter((o: any) => serviceIds.includes(o.service_id))
+      // 2) Missions assignées via le matching admin (table missions)
+      const { data: matchedMissions, error: missionsError } = await supabase
+        .from('missions')
+        .select(`
+          id,
+          client_request_id,
+          match_score,
+          priority,
+          assigned_at,
+          expires_at,
+          client_requests(
+            service_type,
+            location,
+            preferred_date,
+            preferred_time,
+            budget_range
+          )
+        `)
+        .eq('assigned_provider_id', providerId)
+        .eq('status', 'pending')
+        .order('priority', { ascending: true })
+        .limit(10);
+
+      if (missionsError) throw missionsError;
+
+      // Exclure les opportunités pour lesquelles le provider a déjà postulé
+      const { data: existingCandidatures } = await supabase
+        .from('candidatures_prestataires')
+        .select('mission_assignment_id')
+        .eq('provider_id', providerId);
+
+      const appliedIds = new Set((existingCandidatures || []).map(c => c.mission_assignment_id));
+
+      // Fusionner les deux sources
+      const bookingOpportunities = (openBookings || [])
+        .filter((o: any) => serviceIds.includes(o.service_id) && !appliedIds.has(o.id))
         .map((opportunity: any) => ({
           ...opportunity,
-          services: opportunity.services || null
+          services: opportunity.services || null,
+          source: 'booking' as const
         }));
 
-      if (error) throw error;
+      const missionOpportunities = (matchedMissions || [])
+        .filter((m: any) => !appliedIds.has(m.id))
+        .map((mission: any) => ({
+          id: mission.id,
+          booking_date: mission.client_requests?.preferred_date || new Date().toISOString().split('T')[0],
+          start_time: mission.client_requests?.preferred_time || '09:00',
+          address: mission.client_requests?.location || '',
+          total_price: parseFloat(mission.client_requests?.budget_range) || 0,
+          service_id: null,
+          services: { name: mission.client_requests?.service_type || 'Mission', category: 'matching' },
+          match_score: mission.match_score,
+          priority: mission.priority,
+          source: 'matching' as const
+        }));
+
+      // Missions matching en priorité, puis bookings ouverts
+      const opportunities = [...missionOpportunities, ...bookingOpportunities];
 
       setCachedData(cacheKey, opportunities);
       return opportunities;
