@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import AddressAutocomplete from "@/components/ui/AddressAutocomplete";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
@@ -298,16 +299,12 @@ const CustomRequestForm = () => {
             <Label className="text-sm font-medium text-foreground mb-2 block">
               Adresse de départ / récupération <span className="text-destructive">*</span>
             </Label>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                value={formData.pickup_address}
-                onChange={(e) => setFormData({...formData, pickup_address: e.target.value})}
-                placeholder="Adresse complète de départ"
-                className="pl-10"
-                required
-              />
-            </div>
+            <AddressAutocomplete
+              value={formData.pickup_address}
+              onChange={(val) => setFormData({...formData, pickup_address: val})}
+              placeholder="Adresse complète de départ"
+              required
+            />
           </div>
 
           {/* Option livraison/destination */}
@@ -331,15 +328,11 @@ const CustomRequestForm = () => {
                 <Label className="text-sm font-medium text-foreground mb-2 block">
                   Adresse de livraison / lieu de destination
                 </Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    value={formData.delivery_address}
-                    onChange={(e) => setFormData({...formData, delivery_address: e.target.value})}
-                    placeholder="Adresse complète de livraison"
-                    className="pl-10"
-                  />
-                </div>
+                <AddressAutocomplete
+                  value={formData.delivery_address}
+                  onChange={(val) => setFormData({...formData, delivery_address: val})}
+                  placeholder="Adresse complète de livraison"
+                />
               </div>
             )}
           </div>
