@@ -53,6 +53,7 @@ interface UnifiedPerson {
   // Services count
   servicesCount: number;
   serviceCategories: string[];
+  providerServices?: string[];
 }
 
 interface DocumentItem {
