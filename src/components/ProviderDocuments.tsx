@@ -266,13 +266,12 @@ const ProviderDocuments = () => {
         return;
       }
 
-      // Mettre à jour le statut du provider pour indiquer que les documents sont soumis
+      // Mettre à jour le statut du provider
       const { error } = await supabase
         .from('providers')
         .update({ 
-          documents_submitted: true,
-          documents_submitted_at: new Date().toISOString()
-        } as any)
+          updated_at: new Date().toISOString()
+        })
         .eq('id', provider.id);
 
       if (error) throw error;
@@ -520,7 +519,7 @@ const ProviderDocuments = () => {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => deleteDocument(document)}
-                                className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                className="gap-1 text-destructive hover:text-destructive hover:bg-destructive/10"
                               >
                                 <Trash2 className="w-4 h-4" />
                                 Supprimer
