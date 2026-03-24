@@ -340,24 +340,27 @@ const ProviderProfileForm = () => {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <Label htmlFor="avatar-upload" className="cursor-pointer">
-                  <div className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
-                    {uploading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Upload className="h-4 w-4" />
-                    )}
-                    <span>{uploading ? "Upload..." : "Changer la photo"}</span>
-                  </div>
-                </Label>
                 <input
-                  id="avatar-upload"
+                  ref={avatarInputRef}
                   type="file"
                   accept="image/*"
                   className="hidden"
                   onChange={uploadAvatar}
                   disabled={uploading}
                 />
+                <button
+                  type="button"
+                  onClick={() => avatarInputRef.current?.click()}
+                  disabled={uploading}
+                  className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  {uploading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Upload className="h-4 w-4" />
+                  )}
+                  <span>{uploading ? "Upload..." : "Changer la photo"}</span>
+                </button>
                 <p className="text-xs text-muted-foreground mt-1">
                   Recommandée pour rassurer les clients
                 </p>
