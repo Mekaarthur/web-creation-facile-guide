@@ -56,7 +56,8 @@ const ProviderProfileForm = () => {
       await executeSaveProfile(validatedData);
     },
     rateLimitKey: `provider_profile_${user?.id}`,
-    rateLimitAction: 'update_provider_profile'
+    rateLimitAction: 'update_provider_profile',
+    rateLimitConfig: { maxAttempts: 15, windowMs: 60000 }
   });
 
   // Afficher les erreurs de validation dans la console
@@ -173,6 +174,16 @@ const ProviderProfileForm = () => {
   };
 
   const saveProfile = () => {
+    // Validate step 2 before submitting
+    if (!profile.description || profile.description.trim().length < 10) {
+      toast({
+        title: "Description requise",
+        description: "Veuillez saisir une description d'au moins 10 caractères",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Prepare data for validation
     const dataToValidate = {
       businessName: profile.business_name?.trim() || '',
@@ -534,6 +545,16 @@ const ProviderProfileForm = () => {
 
           </CardContent>
         </Card>
+      )}
+
+      {/* Validation errors */}
+      {Object.keys(errors).length > 0 && (
+        <div className="p-3 rounded-lg border border-destructive bg-destructive/10">
+          <p className="text-sm font-medium text-destructive mb-1">Veuillez corriger les erreurs :</p>
+          {Object.entries(errors).map(([key, msg]) => (
+            <p key={key} className="text-sm text-destructive">• {msg}</p>
+          ))}
+        </div>
       )}
 
       {/* Navigation */}

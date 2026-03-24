@@ -205,7 +205,7 @@ export const EmergencyDashboard = () => {
               alerts.map((alert) => (
                 <Card key={alert.id} className="border-destructive">
                   <CardContent className="pt-6">
-                    <div className="flex items-start justify-between">
+                    <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
                       <div className="space-y-2 flex-1">
                         <div className="flex items-center gap-2">
                           <Badge variant="destructive">
@@ -250,6 +250,7 @@ export const EmergencyDashboard = () => {
                         variant="destructive"
                         size="sm"
                         onClick={() => handleEscalate(alert.id)}
+                        className="self-start sm:self-auto"
                       >
                         <AlertTriangle className="mr-2 h-4 w-4" />
                         Escalader
