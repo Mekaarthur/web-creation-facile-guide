@@ -334,10 +334,10 @@ const ProviderDocuments = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'approved': return 'bg-green-100 text-green-800 border-green-200';
-      case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'rejected': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'approved': return 'bg-success/10 text-success border-success/20';
+      case 'pending': return 'bg-warning/10 text-warning border-warning/20';
+      case 'rejected': return 'bg-destructive/10 text-destructive border-destructive/20';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -585,8 +585,8 @@ const ProviderDocuments = () => {
                 </div>
                 
                 {document?.status === 'rejected' && (document.rejection_reason || document.notes) && (
-                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-sm text-red-800">
+                  <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                    <p className="text-sm text-destructive">
                       <strong>Motif du rejet :</strong> {document.rejection_reason || document.notes}
                     </p>
                   </div>
@@ -637,13 +637,13 @@ const ProviderDocuments = () => {
       )}
 
       {/* Informations importantes */}
-      <Card className="bg-blue-50 border-blue-200">
+      <Card className="bg-primary/5 border-primary/20">
         <CardContent className="p-6">
           <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
             <div>
-              <h4 className="font-medium text-blue-900 mb-2">Informations importantes</h4>
-              <ul className="text-sm text-blue-800 space-y-1">
+              <h4 className="font-medium text-foreground mb-2">Informations importantes</h4>
+              <ul className="text-sm text-muted-foreground space-y-1">
                 <li>• Les documents sont vérifiés sous 48h ouvrées</li>
                 <li>• Formats acceptés : PDF, JPEG, PNG (max 10MB)</li>
                 <li>• Les documents doivent être lisibles et récents</li>
