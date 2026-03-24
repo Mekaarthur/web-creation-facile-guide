@@ -242,16 +242,14 @@ export const useProviderDashboard = () => {
       }
 
       // Filter by provider's services
-      const filteredOpportunities = (opportunitiesData || []).filter((o: any) =>
-        serviceIds.includes(o.service_id)
-      );
+      const opportunities = (opportunitiesData || [])
+        .filter((o: any) => serviceIds.includes(o.service_id))
+        .map((opportunity: any) => ({
+          ...opportunity,
+          services: opportunity.services || null
+        }));
 
       if (error) throw error;
-
-      const opportunities = (opportunitiesData || []).map((opportunity: any) => ({
-        ...opportunity,
-        services: opportunity.services || null
-      }));
 
       setCachedData(cacheKey, opportunities);
       return opportunities;
