@@ -91,14 +91,16 @@ const AdminSystem = () => {
           </div>
 
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6">
-              <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
-              <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-              <TabsTrigger value="payment">Paiements</TabsTrigger>
-              <TabsTrigger value="emails">Emails</TabsTrigger>
-              <TabsTrigger value="validation">Validation</TabsTrigger>
-              <TabsTrigger value="legal">Légal</TabsTrigger>
-            </TabsList>
+            <div className="overflow-x-auto -mx-2 sm:mx-0 px-2 sm:px-0">
+              <TabsList className="inline-flex w-max sm:grid sm:w-full sm:grid-cols-6">
+                <TabsTrigger value="overview" className="text-xs sm:text-sm whitespace-nowrap">Vue d'ensemble</TabsTrigger>
+                <TabsTrigger value="dashboard" className="text-xs sm:text-sm whitespace-nowrap">Dashboard</TabsTrigger>
+                <TabsTrigger value="payment" className="text-xs sm:text-sm whitespace-nowrap">Paiements</TabsTrigger>
+                <TabsTrigger value="emails" className="text-xs sm:text-sm whitespace-nowrap">Emails</TabsTrigger>
+                <TabsTrigger value="validation" className="text-xs sm:text-sm whitespace-nowrap">Validation</TabsTrigger>
+                <TabsTrigger value="legal" className="text-xs sm:text-sm whitespace-nowrap">Légal</TabsTrigger>
+              </TabsList>
+            </div>
 
             <TabsContent value="overview" className="space-y-6">
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
