@@ -14,7 +14,7 @@ interface Candidature {
   response_time: string | null;
   created_at: string | null;
   provider?: { business_name: string; rating: number | null };
-  mission?: { title: string | null; status: string };
+  mission?: { status: string; client_request_id: string };
 }
 
 export const CandidaturesPrestatairesPanel = () => {
@@ -31,7 +31,7 @@ export const CandidaturesPrestatairesPanel = () => {
       .select(`
         *,
         provider:providers!provider_responses_provider_id_fkey(business_name, rating),
-        mission:missions!provider_responses_mission_assignment_id_fkey(title, status)
+        mission:missions!provider_responses_mission_assignment_id_fkey(status, client_request_id)
       `)
       .order("created_at", { ascending: false })
       .limit(50);
@@ -72,7 +72,7 @@ export const CandidaturesPrestatairesPanel = () => {
 
   const getStatusBadge = (type: string) => {
     switch (type) {
-      case "accepted": return <Badge className="bg-green-500/10 text-green-600">Acceptée</Badge>;
+      case "accepted": return <Badge className="bg-primary/10 text-primary">Acceptée</Badge>;
       case "declined": return <Badge variant="destructive">Refusée</Badge>;
       default: return <Badge variant="secondary">En attente</Badge>;
     }
@@ -101,7 +101,7 @@ export const CandidaturesPrestatairesPanel = () => {
                     {getStatusBadge(c.response_type)}
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Mission: {c.mission?.title || c.mission_assignment_id.slice(0, 8)}
+                    Mission: {c.mission_assignment_id.slice(0, 8)}
                     {c.provider?.rating && <span> • ⭐ {c.provider.rating}</span>}
                   </p>
                   <p className="text-xs text-muted-foreground">
