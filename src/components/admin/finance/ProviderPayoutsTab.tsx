@@ -183,6 +183,10 @@ export const ProviderPayoutsTab = () => {
                           Virement manuel
                         </Badge>
                       )}
+                      <Badge variant="outline" className="text-xs flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {payout.payout_frequency === "monthly" ? "Mensuel" : "Hebdomadaire"}
+                      </Badge>
                     </div>
                   </div>
                 </div>
