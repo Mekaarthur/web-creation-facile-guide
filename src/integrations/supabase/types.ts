@@ -2708,6 +2708,63 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_attestations: {
+        Row: {
+          created_at: string
+          description: string | null
+          expiry_date: string | null
+          file_url: string | null
+          id: string
+          issued_date: string
+          provider_id: string
+          status: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          expiry_date?: string | null
+          file_url?: string | null
+          id?: string
+          issued_date?: string
+          provider_id: string
+          status?: string
+          title: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          expiry_date?: string | null
+          file_url?: string | null
+          id?: string
+          issued_date?: string
+          provider_id?: string
+          status?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_attestations_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_attestations_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provider_availability: {
         Row: {
           created_at: string
