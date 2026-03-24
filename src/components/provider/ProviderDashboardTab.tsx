@@ -158,13 +158,22 @@ const ProviderDashboardTab = ({ stats, opportunities, missions, applyToMission }
                   <li key={opportunity.id} className="border rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow cursor-pointer">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-4">
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-semibold text-sm sm:text-lg truncate">{opportunity.services?.name || 'Service non spécifié'}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-sm sm:text-lg truncate">{opportunity.services?.name || 'Service non spécifié'}</h3>
+                          {opportunity.match_score && (
+                            <Badge variant="outline" className="text-[10px] text-primary border-primary/30 flex-shrink-0">
+                              Score: {opportunity.match_score}%
+                            </Badge>
+                          )}
+                        </div>
                         <p className="text-xs sm:text-sm text-muted-foreground truncate">{format(new Date(opportunity.booking_date), 'PPP', { locale: fr })} - {opportunity.start_time}</p>
                         <p className="text-xs sm:text-sm text-muted-foreground truncate">{opportunity.address}</p>
                       </div>
                       <div className="flex sm:flex-col items-center sm:items-end gap-2 flex-shrink-0">
                         <p className="font-bold text-primary text-sm sm:text-base">{formatCurrency(opportunity.total_price)}</p>
-                        <Badge variant="outline" className="text-blue-600 text-[10px] sm:text-xs">Normal</Badge>
+                        <Badge variant="outline" className={`text-[10px] sm:text-xs ${opportunity.source === 'matching' ? 'text-secondary border-secondary/30' : 'text-blue-600'}`}>
+                          {opportunity.source === 'matching' ? '⚡ Recommandé' : 'Normal'}
+                        </Badge>
                       </div>
                     </div>
                     <Button

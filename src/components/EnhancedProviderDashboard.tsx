@@ -6,7 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useProviderDashboard } from '@/hooks/useProviderDashboard';
 import {
-  LayoutDashboard, Briefcase, User, CheckCircle, Phone, Settings, RefreshCw, MessageSquare, TrendingUp
+  LayoutDashboard, Briefcase, User, CheckCircle, Phone, Settings, RefreshCw, MessageSquare, TrendingUp, ShieldAlert
+} from 'lucide-react';
+import { EmergencyReportButton } from '@/components/provider/EmergencyReportButton';
 } from 'lucide-react';
 import { LoadingSkeleton, DashboardLoadingSkeleton } from '@/components/ui/loading-skeleton';
 
@@ -120,6 +122,9 @@ const EnhancedProviderDashboard = () => {
                 <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2 ${refreshing ? 'animate-spin' : ''}`} />
                 <span className="hidden sm:inline text-xs sm:text-sm">{t('providerDashboard.refresh')}</span>
               </Button>
+              {provider?.id && (
+                <EmergencyReportButton providerId={provider.id} />
+              )}
               <Button
                 variant="outline"
                 size="sm"
