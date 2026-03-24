@@ -9,7 +9,6 @@ import {
   LayoutDashboard, Briefcase, User, CheckCircle, Phone, Settings, RefreshCw, MessageSquare, TrendingUp, ShieldAlert
 } from 'lucide-react';
 import { EmergencyReportButton } from '@/components/provider/EmergencyReportButton';
-} from 'lucide-react';
 import { LoadingSkeleton, DashboardLoadingSkeleton } from '@/components/ui/loading-skeleton';
 
 // Tab components
