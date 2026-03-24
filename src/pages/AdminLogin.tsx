@@ -61,7 +61,7 @@ export default function AdminLogin() {
         description: "Bienvenue dans l'espace administrateur",
       });
       
-      navigate('/admin/dashboard');
+      navigate('/modern-admin');
     } catch (error: any) {
       console.error('Erreur de connexion:', error);
       toast({
