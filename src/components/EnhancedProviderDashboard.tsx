@@ -25,6 +25,7 @@ import ProviderProfileForm from './ProviderProfileForm';
 import ProviderDocuments from '@/components/ProviderDocuments';
 import ProviderServices from '@/components/ProviderServices';
 import MyZones from '@/pages/provider/MyZones';
+import { StripeConnectCard } from '@/components/provider/StripeConnectCard';
 
 const EnhancedProviderDashboard = () => {
   const { t } = useTranslation();
@@ -269,11 +270,12 @@ const EnhancedProviderDashboard = () => {
           <TabsContent value="profil" className="mt-4 sm:mt-6 lg:mt-8">
             <Tabs defaultValue="infos" className="w-full">
               <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0 pb-2">
-                <TabsList className="inline-flex sm:grid sm:grid-cols-4 mb-4 min-w-max sm:min-w-0 sm:w-full">
+                <TabsList className="inline-flex sm:grid sm:grid-cols-5 mb-4 min-w-max sm:min-w-0 sm:w-full">
                   <TabsTrigger value="infos" className="text-xs sm:text-sm whitespace-nowrap">Informations</TabsTrigger>
                   <TabsTrigger value="services" className="text-xs sm:text-sm whitespace-nowrap">Services</TabsTrigger>
                   <TabsTrigger value="zones" className="text-xs sm:text-sm whitespace-nowrap">Zones</TabsTrigger>
                   <TabsTrigger value="documents" className="text-xs sm:text-sm whitespace-nowrap">Documents</TabsTrigger>
+                  <TabsTrigger value="paiements" className="text-xs sm:text-sm whitespace-nowrap">Paiements</TabsTrigger>
                 </TabsList>
               </div>
               <TabsContent value="infos">
@@ -287,6 +289,9 @@ const EnhancedProviderDashboard = () => {
               </TabsContent>
               <TabsContent value="documents">
                 <ProviderDocuments />
+              </TabsContent>
+              <TabsContent value="paiements">
+                <StripeConnectCard />
               </TabsContent>
             </Tabs>
           </TabsContent>
