@@ -619,6 +619,25 @@ export const UnifiedProviderPipeline = () => {
                         </div>
                       )}
 
+                      {/* Services actifs du prestataire */}
+                      {person.providerServices && person.providerServices.length > 0 && (
+                        <div className="text-sm">
+                          <span className="text-muted-foreground font-medium">Services actifs ({person.providerServices.length}) :</span>
+                          <div className="flex gap-1 mt-1 flex-wrap">
+                            {person.providerServices.map((name: string) => (
+                              <Badge key={name} className="text-xs bg-primary/10 text-primary border-primary/20">
+                                {name}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {person.provider && (!person.providerServices || person.providerServices.length === 0) && (
+                        <div className="text-sm">
+                          <span className="text-destructive font-medium">⚠ Aucun service sélectionné par le prestataire</span>
+                        </div>
+                      )}
+
                       {/* Documents */}
                       <div>
                         <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
