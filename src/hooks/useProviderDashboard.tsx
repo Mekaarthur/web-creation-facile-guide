@@ -232,9 +232,19 @@ export const useProviderDashboard = () => {
         .is('provider_id', null)
         .eq('status', 'pending')
         .gte('booking_date', new Date().toISOString().split('T')[0])
-        .in('service_id', serviceIds.length > 0 ? serviceIds : ['00000000-0000-0000-0000-000000000000'])
         .order('created_at', { ascending: false })
         .limit(10);
+
+      // If no services configured, return empty
+      if (serviceIds.length === 0) {
+        setCachedData(cacheKey, []);
+        return [];
+      }
+
+      // Filter by provider's services
+      const filteredOpportunities = (opportunitiesData || []).filter((o: any) =>
+        serviceIds.includes(o.service_id)
+      );
 
       if (error) throw error;
 
@@ -299,52 +309,67 @@ export const useProviderDashboard = () => {
     }
   }, [getCachedData, setCachedData]);
 
+  // Load financial data for accurate provider earnings
+  const loadFinancialData = useCallback(async (providerId: string) => {
+    try {
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+      const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+
+      const startOfMonth = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`;
+      const startOfPrevMonth = `${prevYear}-${String(prevMonth + 1).padStart(2, '0')}-01`;
+      const endOfPrevMonth = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`;
+
+      const [currentMonthRes, prevMonthRes, totalRes] = await Promise.all([
+        supabase.from('financial_transactions')
+          .select('provider_payment')
+          .eq('provider_id', providerId)
+          .eq('payment_status', 'completed')
+          .gte('created_at', startOfMonth),
+        supabase.from('financial_transactions')
+          .select('provider_payment')
+          .eq('provider_id', providerId)
+          .eq('payment_status', 'completed')
+          .gte('created_at', startOfPrevMonth)
+          .lt('created_at', endOfPrevMonth),
+        supabase.from('financial_transactions')
+          .select('provider_payment')
+          .eq('provider_id', providerId)
+          .eq('payment_status', 'completed'),
+      ]);
+
+      const monthlyEarnings = (currentMonthRes.data || []).reduce((sum, t) => sum + (t.provider_payment || 0), 0);
+      const previousMonthEarnings = (prevMonthRes.data || []).reduce((sum, t) => sum + (t.provider_payment || 0), 0);
+      const totalEarnings = (totalRes.data || []).reduce((sum, t) => sum + (t.provider_payment || 0), 0);
+
+      return { monthlyEarnings, previousMonthEarnings, totalEarnings };
+    } catch {
+      return { monthlyEarnings: 0, previousMonthEarnings: 0, totalEarnings: 0 };
+    }
+  }, []);
+
   // Calculate comprehensive stats
   const calculateStats = useCallback((
     missions: Mission[], 
     reviews: Review[], 
-    provider: Provider | null
+    provider: Provider | null,
+    financialData: { monthlyEarnings: number; previousMonthEarnings: number; totalEarnings: number }
   ): ProviderStats => {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-
-    // Mois précédent
-    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-    const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-
-    const thisMonthMissions = missions.filter(m => {
-      const d = new Date(m.booking_date);
-      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-    });
-
-    const lastMonthMissions = missions.filter(m => {
-      const d = new Date(m.booking_date);
-      return d.getMonth() === prevMonth && d.getFullYear() === prevYear;
-    });
+    const { monthlyEarnings, previousMonthEarnings, totalEarnings } = financialData;
 
     const completedMissions = missions.filter(m => m.status === 'completed');
     const activeMissions = missions.filter(m => ['pending', 'confirmed', 'in_progress'].includes(m.status));
-
-    const monthlyEarnings = thisMonthMissions
-      .filter(m => m.status === 'completed')
-      .reduce((sum, m) => sum + m.total_price, 0);
-
-    const previousMonthEarnings = lastMonthMissions
-      .filter(m => m.status === 'completed')
-      .reduce((sum, m) => sum + m.total_price, 0);
 
     const earningsGrowth = previousMonthEarnings > 0
       ? Math.round(((monthlyEarnings - previousMonthEarnings) / previousMonthEarnings) * 100)
       : monthlyEarnings > 0 ? 100 : 0;
 
-    const totalEarnings = completedMissions.reduce((sum, m) => sum + m.total_price, 0);
-
     const averageRating = reviews.length > 0 
       ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length 
       : 0;
 
-    // Temps de réponse basé sur les missions confirmées
     const confirmedMissions = missions.filter(m => m.status === 'confirmed' || m.status === 'completed');
     const responseTime = confirmedMissions.length > 0 ? Math.round(confirmedMissions.length / Math.max(missions.length, 1) * 30) : 0;
 
@@ -366,14 +391,12 @@ export const useProviderDashboard = () => {
   const loadDashboardData = useCallback(async (force = false) => {
     if (!user) return;
 
-    const isInitialLoad = !data.provider;
-    setLoading(isInitialLoad);
-    setRefreshing(!isInitialLoad);
+    setLoading(prev => prev || !data.provider);
+    setRefreshing(!!data.provider);
     setError(null);
 
     try {
       if (force) {
-        // Clear all cached data for this user
         const keysToDelete = Array.from(cache.keys()).filter(key => 
           key.includes(user.id) || key.includes('provider_') || key.includes('missions_') || 
           key.includes('opportunities_') || key.includes('reviews_')
@@ -384,13 +407,14 @@ export const useProviderDashboard = () => {
       const provider = await loadProviderProfile();
       if (!provider) return;
 
-      const [missions, opportunities, reviews] = await Promise.all([
+      const [missions, opportunities, reviews, financialData] = await Promise.all([
         loadMissions(provider.id),
         loadOpportunities(provider.id),
-        loadReviews(provider.id)
+        loadReviews(provider.id),
+        loadFinancialData(provider.id)
       ]);
 
-      const stats = calculateStats(missions, reviews, provider);
+      const stats = calculateStats(missions, reviews, provider, financialData);
 
       setData({
         provider,
@@ -403,18 +427,17 @@ export const useProviderDashboard = () => {
       console.error('Error loading dashboard data:', error);
       setError(error.message || 'Erreur lors du chargement des données');
       
-      if (isInitialLoad) {
-        toast({
-          title: "Erreur de chargement",
-          description: "Impossible de charger les données du dashboard",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Erreur de chargement",
+        description: "Impossible de charger les données du dashboard",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [user, data.provider, loadProviderProfile, loadMissions, loadOpportunities, loadReviews, calculateStats, toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, loadProviderProfile, loadMissions, loadOpportunities, loadReviews, loadFinancialData, calculateStats, toast]);
 
   // Debounced refresh function
   const debouncedRefresh = useMemo(
@@ -422,34 +445,34 @@ export const useProviderDashboard = () => {
     [loadDashboardData]
   );
 
-  // Apply to mission with optimistic updates
+  // Apply to mission via candidatures_prestataires (proper candidature flow)
   const applyToMission = useCallback(async (missionId: string) => {
     if (!data.provider) return;
 
     try {
-      // Optimistic update
+      // Optimistic update - remove from opportunities list
       setData(prev => ({
         ...prev,
         opportunities: prev.opportunities.filter(o => o.id !== missionId)
       }));
 
+      // Insert a candidature instead of directly assigning
       const { error } = await supabase
-        .from('bookings')
-        .update({ 
+        .from('candidatures_prestataires')
+        .insert({
+          mission_assignment_id: missionId,
           provider_id: data.provider.id,
-          status: 'assigned',
-          assigned_at: new Date().toISOString()
-        })
-        .eq('id', missionId);
+          response_type: 'accepted',
+          response_time: new Date().toISOString()
+        });
 
       if (error) throw error;
 
       toast({
-        title: "Candidature envoyée",
-        description: "Votre candidature a été envoyée avec succès !",
+        title: "Candidature envoyée ✅",
+        description: "Votre candidature a été soumise. L'équipe Bikawo va l'examiner.",
       });
 
-      // Refresh data after successful application
       setTimeout(() => loadDashboardData(true), 1000);
     } catch (error: any) {
       // Revert optimistic update on error
