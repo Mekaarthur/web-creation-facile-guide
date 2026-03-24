@@ -22,6 +22,7 @@ import {
 import { ApplicationDetails } from '@/components/admin/ApplicationDetails';
 import { ProviderOnboardingTracker } from '@/components/admin/ProviderOnboardingTracker';
 import { ApplicationDocumentsValidator } from '@/components/admin/ApplicationDocumentsValidator';
+import { ProviderDocumentsReview } from '@/components/admin/ProviderDocumentsReview';
 import ApplicationsKanban from '@/components/admin/ApplicationsKanban';
 
 export default function ProviderManagement() {
