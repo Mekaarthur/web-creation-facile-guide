@@ -547,6 +547,16 @@ const ProviderProfileForm = () => {
         </Card>
       )}
 
+      {/* Validation errors */}
+      {Object.keys(errors).length > 0 && (
+        <div className="p-3 rounded-lg border border-destructive bg-destructive/10">
+          <p className="text-sm font-medium text-destructive mb-1">Veuillez corriger les erreurs :</p>
+          {Object.entries(errors).map(([key, msg]) => (
+            <p key={key} className="text-sm text-destructive">• {msg}</p>
+          ))}
+        </div>
+      )}
+
       {/* Navigation */}
       <div className="flex justify-between items-center">
         <Button 
