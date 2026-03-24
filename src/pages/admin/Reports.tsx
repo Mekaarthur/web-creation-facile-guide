@@ -1,291 +1,310 @@
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, Shield, Flag, Eye, CheckCircle, XCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-
-interface Report {
-  id: string;
-  type: 'user' | 'provider' | 'booking' | 'review';
-  reporter_name: string;
-  reported_entity: string;
-  reason: string;
-  description: string;
-  status: 'pending' | 'investigating' | 'resolved' | 'dismissed';
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  created_at: string;
-}
+import { Textarea } from "@/components/ui/textarea";
+import { AlertTriangle, Shield, Flag, Eye, CheckCircle, XCircle, Clock, MessageSquareWarning } from "lucide-react";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 const AdminReports = () => {
-  const [reports, setReports] = useState<Report[]>([
-    {
-      id: '1',
-      type: 'provider',
-      reporter_name: 'Marie Dubois',
-      reported_entity: 'Jean Martin (Prestataire)',
-      reason: 'Service non conforme',
-      description: 'Le prestataire n\'a pas respecté les horaires convenus et le service était de mauvaise qualité.',
-      status: 'pending',
-      priority: 'high',
-      created_at: '2024-12-10T14:30:00Z'
-    },
-    {
-      id: '2',
-      type: 'user',
-      reporter_name: 'Sophie Bernard',
-      reported_entity: 'Pierre Durand (Client)',
-      reason: 'Comportement inapproprié',
-      description: 'Le client a tenu des propos déplacés et irrespectueux.',
-      status: 'investigating',
-      priority: 'critical',
-      created_at: '2024-12-09T11:20:00Z'
-    },
-    {
-      id: '3',
-      type: 'review',
-      reporter_name: 'Admin System',
-      reported_entity: 'Avis #1234',
-      reason: 'Contenu inapproprié',
-      description: 'L\'avis contient des propos diffamatoires.',
-      status: 'resolved',
-      priority: 'medium',
-      created_at: '2024-12-08T09:15:00Z'
+  const queryClient = useQueryClient();
+  const [resolutionNotes, setResolutionNotes] = useState<Record<string, string>>({});
+
+  // Réclamations clients (table complaints)
+  const { data: complaints = [], isLoading: loadingComplaints } = useQuery({
+    queryKey: ['admin-complaints-reports'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('complaints')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data || [];
     }
-  ]);
+  });
 
-  const { toast } = useToast();
-
-  const getStatusBadge = (status: Report['status']) => {
-    const variants = {
-      pending: { variant: 'outline' as const, label: 'En attente', color: 'text-yellow-600' },
-      investigating: { variant: 'secondary' as const, label: 'En cours', color: 'text-blue-600' },
-      resolved: { variant: 'default' as const, label: 'Résolu', color: 'text-green-600' },
-      dismissed: { variant: 'destructive' as const, label: 'Rejeté', color: 'text-red-600' }
-    };
-
-    const config = variants[status];
-    return <Badge variant={config.variant} className={config.color}>{config.label}</Badge>;
-  };
-
-  const getPriorityBadge = (priority: Report['priority']) => {
-    const variants = {
-      low: { variant: 'outline' as const, label: 'Faible', color: 'text-green-600' },
-      medium: { variant: 'secondary' as const, label: 'Moyenne', color: 'text-yellow-600' },
-      high: { variant: 'default' as const, label: 'Haute', color: 'text-orange-600' },
-      critical: { variant: 'destructive' as const, label: 'Critique', color: 'text-red-600' }
-    };
-
-    const config = variants[priority];
-    return <Badge variant={config.variant} className={config.color}>{config.label}</Badge>;
-  };
-
-  const getTypeIcon = (type: Report['type']) => {
-    switch (type) {
-      case 'user': return Shield;
-      case 'provider': return Shield;
-      case 'booking': return Flag;
-      case 'review': return Eye;
-      default: return AlertTriangle;
+  // Signalements de contenu (table content_reports)
+  const { data: contentReports = [], isLoading: loadingReports } = useQuery({
+    queryKey: ['admin-content-reports'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('content_reports')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (error) return [];
+      return data || [];
     }
-  };
+  });
 
-  const handleStatusChange = (id: string, newStatus: Report['status']) => {
-    setReports(prev => prev.map(report => 
-      report.id === id ? { ...report, status: newStatus } : report
-    ));
-    
-    const statusLabels = {
-      investigating: 'en cours d\'investigation',
-      resolved: 'résolu',
-      dismissed: 'rejeté'
+  const resolveComplaint = useMutation({
+    mutationFn: async ({ id, notes }: { id: string; notes: string }) => {
+      const { error } = await supabase
+        .from('complaints')
+        .update({
+          status: 'resolved',
+          resolved_at: new Date().toISOString(),
+          resolution_notes: notes || 'Résolu par l\'admin',
+        })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Réclamation résolue");
+      queryClient.invalidateQueries({ queryKey: ['admin-complaints-reports'] });
+    },
+    onError: () => toast.error("Erreur lors de la résolution"),
+  });
+
+  const resolveContentReport = useMutation({
+    mutationFn: async ({ id, notes }: { id: string; notes: string }) => {
+      const { error } = await supabase
+        .from('content_reports')
+        .update({
+          status: 'resolved',
+          resolved_at: new Date().toISOString(),
+          resolution_notes: notes || 'Résolu par l\'admin',
+        })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Signalement résolu");
+      queryClient.invalidateQueries({ queryKey: ['admin-content-reports'] });
+    },
+    onError: () => toast.error("Erreur lors de la résolution"),
+  });
+
+  const getPriorityBadge = (priority: string) => {
+    const config: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+      urgent: { label: "Urgent", variant: "destructive" },
+      high: { label: "Haute", variant: "destructive" },
+      medium: { label: "Moyenne", variant: "default" },
+      low: { label: "Faible", variant: "secondary" },
+      normal: { label: "Normal", variant: "secondary" },
     };
-    
-    toast({
-      title: "Statut mis à jour",
-      description: `Le signalement a été marqué comme ${statusLabels[newStatus]}.`,
-    });
+    const c = config[priority] || { label: priority, variant: "outline" };
+    return <Badge variant={c.variant}>{c.label}</Badge>;
   };
 
-  const getStatusCount = (status: string) => {
-    if (status === 'all') return reports.length;
-    return reports.filter(report => report.status === status).length;
+  const getStatusBadge = (status: string) => {
+    const config: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+      open: { label: "Ouvert", variant: "destructive" },
+      pending: { label: "En attente", variant: "outline" },
+      reviewing: { label: "En cours", variant: "secondary" },
+      in_progress: { label: "En cours", variant: "secondary" },
+      resolved: { label: "Résolu", variant: "default" },
+      dismissed: { label: "Rejeté", variant: "outline" },
+    };
+    const c = config[status] || { label: status, variant: "secondary" };
+    return <Badge variant={c.variant}>{c.label}</Badge>;
   };
 
-  const filteredReports = (status: string) => {
-    if (status === 'all') return reports;
-    return reports.filter(report => report.status === status);
-  };
+  const openComplaints = complaints.filter(c => c.status !== 'resolved');
+  const resolvedComplaints = complaints.filter(c => c.status === 'resolved');
+  const openContentReports = contentReports.filter(r => r.status !== 'resolved');
+  const resolvedContentReports = contentReports.filter(r => r.status === 'resolved');
+
+  const totalOpen = openComplaints.length + openContentReports.length;
+  const totalUrgent = complaints.filter(c => c.priority === 'urgent' || c.priority === 'high').length;
+
+  const isLoading = loadingComplaints || loadingReports;
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Signalements</h1>
-        <p className="text-muted-foreground">Gestion des signalements et modération</p>
+        <h1 className="text-3xl font-bold">Signalements & Réclamations</h1>
+        <p className="text-muted-foreground">Vue unifiée des réclamations clients et signalements de contenu</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total</CardTitle>
+            <CardTitle className="text-sm font-medium">Total ouvert</CardTitle>
             <Flag className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{reports.length}</div>
+            <div className="text-2xl font-bold">{totalOpen}</div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En attente</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-yellow-500" />
+            <CardTitle className="text-sm font-medium">Réclamations</CardTitle>
+            <MessageSquareWarning className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{getStatusCount('pending')}</div>
+            <div className="text-2xl font-bold">{openComplaints.length}</div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En cours</CardTitle>
-            <Eye className="h-4 w-4 text-blue-500" />
+            <CardTitle className="text-sm font-medium">Signalements contenu</CardTitle>
+            <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{getStatusCount('investigating')}</div>
+            <div className="text-2xl font-bold">{openContentReports.length}</div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Critiques</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-red-500" />
+            <CardTitle className="text-sm font-medium">Urgents</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {reports.filter(r => r.priority === 'critical').length}
-            </div>
+            <div className="text-2xl font-bold">{totalUrgent}</div>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="all" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="all">Tous ({getStatusCount('all')})</TabsTrigger>
-          <TabsTrigger value="pending">En attente ({getStatusCount('pending')})</TabsTrigger>
-          <TabsTrigger value="investigating">En cours ({getStatusCount('investigating')})</TabsTrigger>
-          <TabsTrigger value="resolved">Résolus ({getStatusCount('resolved')})</TabsTrigger>
-        </TabsList>
+      {isLoading ? (
+        <div className="space-y-3">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
+          ))}
+        </div>
+      ) : (
+        <Tabs defaultValue="complaints" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="complaints">
+              Réclamations ({openComplaints.length})
+            </TabsTrigger>
+            <TabsTrigger value="content">
+              Signalements ({openContentReports.length})
+            </TabsTrigger>
+            <TabsTrigger value="resolved">
+              Résolus ({resolvedComplaints.length + resolvedContentReports.length})
+            </TabsTrigger>
+          </TabsList>
 
-        {['all', 'pending', 'investigating', 'resolved'].map((tabValue) => (
-          <TabsContent key={tabValue} value={tabValue} className="space-y-4">
-            {filteredReports(tabValue).map((report) => {
-              const IconComponent = getTypeIcon(report.type);
-              return (
-                <Card key={report.id}>
+          <TabsContent value="complaints" className="space-y-4">
+            {openComplaints.length === 0 ? (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                  <p className="text-muted-foreground">Aucune réclamation en cours</p>
+                </CardContent>
+              </Card>
+            ) : (
+              openComplaints.map((c) => (
+                <Card key={c.id}>
                   <CardHeader>
                     <div className="flex items-start justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-red-100 rounded-lg">
-                          <IconComponent className="h-5 w-5 text-red-600" />
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <CardTitle className="text-lg">{c.title}</CardTitle>
+                          {getPriorityBadge(c.priority)}
+                          <Badge variant="outline">{c.complaint_type}</Badge>
                         </div>
-                        <div>
-                          <CardTitle className="text-lg">{report.reason}</CardTitle>
-                          <CardDescription>
-                            Signalé par {report.reporter_name} • {report.reported_entity}
-                          </CardDescription>
-                        </div>
+                        <CardDescription>{c.description}</CardDescription>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {format(new Date(c.created_at), 'PPp', { locale: fr })}
+                        </p>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        {getPriorityBadge(report.priority)}
-                        {getStatusBadge(report.status)}
-                      </div>
+                      {getStatusBadge(c.status)}
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      {report.description}
-                    </p>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(report.created_at).toLocaleDateString('fr-FR')} à {new Date(report.created_at).toLocaleTimeString('fr-FR')}
-                      </span>
-                      
-                      {report.status === 'pending' && (
-                        <div className="flex space-x-2">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleStatusChange(report.id, 'investigating')}
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            Investiguer
-                          </Button>
-                          <Button 
-                            size="sm"
-                            onClick={() => handleStatusChange(report.id, 'resolved')}
-                            className="bg-green-600 hover:bg-green-700"
-                          >
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            Résoudre
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="destructive"
-                            onClick={() => handleStatusChange(report.id, 'dismissed')}
-                          >
-                            <XCircle className="h-4 w-4 mr-2" />
-                            Rejeter
-                          </Button>
-                        </div>
-                      )}
-                      
-                      {report.status === 'investigating' && (
-                        <div className="flex space-x-2">
-                          <Button 
-                            size="sm"
-                            onClick={() => handleStatusChange(report.id, 'resolved')}
-                            className="bg-green-600 hover:bg-green-700"
-                          >
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            Résoudre
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="destructive"
-                            onClick={() => handleStatusChange(report.id, 'dismissed')}
-                          >
-                            <XCircle className="h-4 w-4 mr-2" />
-                            Rejeter
-                          </Button>
-                        </div>
-                      )}
+                    <div className="flex gap-2 items-end">
+                      <Textarea
+                        placeholder="Notes de résolution..."
+                        value={resolutionNotes[c.id] || ""}
+                        onChange={(e) => setResolutionNotes(prev => ({ ...prev, [c.id]: e.target.value }))}
+                        className="flex-1 h-16"
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() => resolveComplaint.mutate({ id: c.id, notes: resolutionNotes[c.id] || "" })}
+                        disabled={resolveComplaint.isPending}
+                      >
+                        <CheckCircle className="h-4 w-4 mr-1" /> Résoudre
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
-              );
-            })}
-
-            {filteredReports(tabValue).length === 0 && (
-              <Card>
-                <CardContent className="text-center py-8">
-                  <Flag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-lg font-medium text-muted-foreground">
-                    Aucun signalement trouvé
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {tabValue === 'all' 
-                      ? "Aucun signalement pour le moment"
-                      : `Aucun signalement ${tabValue === 'pending' ? 'en attente' : tabValue === 'investigating' ? 'en cours' : 'résolu'}`
-                    }
-                  </p>
-                </CardContent>
-              </Card>
+              ))
             )}
           </TabsContent>
-        ))}
-      </Tabs>
+
+          <TabsContent value="content" className="space-y-4">
+            {openContentReports.length === 0 ? (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                  <p className="text-muted-foreground">Aucun signalement en cours</p>
+                </CardContent>
+              </Card>
+            ) : (
+              openContentReports.map((r) => (
+                <Card key={r.id}>
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <CardTitle className="text-lg">{r.report_reason}</CardTitle>
+                          <Badge variant="outline">{r.report_category}</Badge>
+                        </div>
+                        <CardDescription>
+                          {r.additional_details || 'Pas de détails supplémentaires'}
+                        </CardDescription>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {format(new Date(r.created_at), 'PPp', { locale: fr })}
+                          {' • '}Type: {r.reported_content_type}
+                        </p>
+                      </div>
+                      {getStatusBadge(r.status)}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex gap-2 items-end">
+                      <Textarea
+                        placeholder="Notes de résolution..."
+                        value={resolutionNotes[r.id] || ""}
+                        onChange={(e) => setResolutionNotes(prev => ({ ...prev, [r.id]: e.target.value }))}
+                        className="flex-1 h-16"
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() => resolveContentReport.mutate({ id: r.id, notes: resolutionNotes[r.id] || "" })}
+                        disabled={resolveContentReport.isPending}
+                      >
+                        <CheckCircle className="h-4 w-4 mr-1" /> Résoudre
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </TabsContent>
+
+          <TabsContent value="resolved" className="space-y-4">
+            {[...resolvedComplaints, ...resolvedContentReports]
+              .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+              .slice(0, 20)
+              .map((item) => (
+                <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg opacity-70">
+                  <div>
+                    <p className="font-medium text-sm">
+                      {'title' in item ? item.title : ('report_reason' in item ? (item as any).report_reason : 'Signalement')}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.resolution_notes || 'Résolu'}
+                      {' • '}{format(new Date(item.created_at), 'dd/MM/yyyy', { locale: fr })}
+                    </p>
+                  </div>
+                  <Badge variant="outline">Résolu</Badge>
+                </div>
+              ))}
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   );
 };
