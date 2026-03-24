@@ -1541,6 +1541,7 @@ export type Database = {
           company_commission: number
           created_at: string
           id: string
+          paid_via: string | null
           payment_status: string
           provider_id: string
           provider_paid_at: string | null
@@ -1556,6 +1557,7 @@ export type Database = {
           company_commission: number
           created_at?: string
           id?: string
+          paid_via?: string | null
           payment_status?: string
           provider_id: string
           provider_paid_at?: string | null
@@ -1571,6 +1573,7 @@ export type Database = {
           company_commission?: number
           created_at?: string
           id?: string
+          paid_via?: string | null
           payment_status?: string
           provider_id?: string
           provider_paid_at?: string | null
@@ -3526,6 +3529,8 @@ export type Database = {
           service_zones: string[] | null
           siret_number: string | null
           status: string | null
+          stripe_account_id: string | null
+          stripe_onboarding_complete: boolean | null
           total_earnings: number | null
           universes: string[] | null
           updated_at: string
@@ -3590,6 +3595,8 @@ export type Database = {
           service_zones?: string[] | null
           siret_number?: string | null
           status?: string | null
+          stripe_account_id?: string | null
+          stripe_onboarding_complete?: boolean | null
           total_earnings?: number | null
           universes?: string[] | null
           updated_at?: string
@@ -3654,6 +3661,8 @@ export type Database = {
           service_zones?: string[] | null
           siret_number?: string | null
           status?: string | null
+          stripe_account_id?: string | null
+          stripe_onboarding_complete?: boolean | null
           total_earnings?: number | null
           universes?: string[] | null
           updated_at?: string
