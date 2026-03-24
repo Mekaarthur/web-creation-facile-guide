@@ -173,6 +173,16 @@ const ProviderProfileForm = () => {
   };
 
   const saveProfile = () => {
+    // Validate step 2 before submitting
+    if (!profile.description || profile.description.trim().length < 10) {
+      toast({
+        title: "Description requise",
+        description: "Veuillez saisir une description d'au moins 10 caractères",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Prepare data for validation
     const dataToValidate = {
       businessName: profile.business_name?.trim() || '',
