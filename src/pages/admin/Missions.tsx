@@ -246,6 +246,9 @@ const AdminMissions = () => {
         <CleanupDuplicatesButton />
       </div>
 
+      {/* Candidatures prestataires */}
+      <CandidaturesPrestatairesPanel />
+
       {/* Statistics Cards & Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Stats cards */}
