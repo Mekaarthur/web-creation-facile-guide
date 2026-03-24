@@ -172,6 +172,17 @@ export const UnifiedProviderPipeline = () => {
             createdAt: d.created_at,
           }));
 
+        // Get provider's active services
+        const thisProvServices = provServices.filter((ps: any) => ps.provider_id === prov.id);
+        const provServiceNames = thisProvServices
+          .map((ps: any) => ps.services?.name)
+          .filter(Boolean);
+        const provServiceCategories = [...new Set(
+          thisProvServices
+            .map((ps: any) => ps.services?.category)
+            .filter(Boolean)
+        )] as string[];
+
         // Try to find matching application by user_id or by checking approved apps
         const matchingApp = apps.find((a: any) => a.status === "approved");
 
@@ -185,6 +196,11 @@ export const UnifiedProviderPipeline = () => {
             existing.provider = prov;
             existing.stage = determineStage(existing.application, prov);
             existing.name = prov.business_name || existing.name;
+            existing.servicesCount = thisProvServices.length;
+            existing.serviceCategories = provServiceCategories.length > 0 
+              ? provServiceCategories 
+              : existing.serviceCategories;
+            existing.providerServices = provServiceNames;
             // Merge docs
             const existingTypes = new Set(existing.allDocuments.map(d => d.type));
             for (const pd of providerDocs) {
@@ -212,8 +228,11 @@ export const UnifiedProviderPipeline = () => {
             createdAt: prov.created_at,
             provider: prov,
             allDocuments: providerDocs,
-            servicesCount: 0,
-            serviceCategories: matchingApp?.service_categories || [],
+            servicesCount: thisProvServices.length,
+            serviceCategories: provServiceCategories.length > 0 
+              ? provServiceCategories 
+              : matchingApp?.service_categories || [],
+            providerServices: provServiceNames,
           });
         }
       }
