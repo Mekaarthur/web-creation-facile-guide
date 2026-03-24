@@ -552,30 +552,29 @@ const ProviderDocuments = () => {
                   </div>
                   
                   <div className="flex flex-col gap-2">
-                    <Label 
-                      htmlFor={`file-${requirement.type}`} 
-                      className="cursor-pointer"
+                    <Button
+                      variant={document ? "outline" : "default"}
+                      size="sm"
+                      disabled={uploading === requirement.type}
+                      onClick={() => {
+                        const input = window.document.getElementById(`file-${requirement.type}`) as HTMLInputElement;
+                        if (input) {
+                          input.value = '';
+                          input.click();
+                        }
+                      }}
                     >
-                      <Button 
-                        variant={document ? "outline" : "default"}
-                        size="sm"
-                        disabled={uploading === requirement.type}
-                        asChild
-                      >
-                        <span>
-                          {uploading === requirement.type ? (
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          ) : (
-                            <Upload className="w-4 h-4 mr-2" />
-                          )}
-                          {document ? 'Remplacer' : 'Télécharger'}
-                        </span>
-                      </Button>
-                    </Label>
-                    <Input
+                      {uploading === requirement.type ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Upload className="w-4 h-4 mr-2" />
+                      )}
+                      {document ? 'Remplacer' : 'Télécharger'}
+                    </Button>
+                    <input
                       id={`file-${requirement.type}`}
                       type="file"
-                      accept="image/*,.pdf"
+                      accept=".pdf,.jpg,.jpeg,.png"
                       className="hidden"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
