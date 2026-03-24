@@ -264,7 +264,7 @@ const Navbar = () => {
             <GlobalSearch />
             <BikawoCartIndicator onOpenCart={() => setIsCartOpen(true)} showTotal />
             <LanguageSwitcher />
-            <NotificationCenter />
+            <NotificationBell />
             
             {user ? (
               <div className="flex items-center space-x-3">
