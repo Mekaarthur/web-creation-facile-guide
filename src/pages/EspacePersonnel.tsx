@@ -37,6 +37,7 @@ import AttestationsManager from '@/components/AttestationsManager';
 import BikawoCart from '@/components/BikawoCart';
 import { ChatWidget } from '@/components/chat';
 import { TaxCreditSavings } from '@/components/client/TaxCreditSavings';
+import { PendingReviews } from '@/components/client/PendingReviews';
 import { useTranslation } from 'react-i18next';
 
 const EspacePersonnel = () => {
@@ -240,6 +241,7 @@ const EspacePersonnel = () => {
             {/* Dashboard */}
             <TabsContent value="dashboard" className="space-y-6">
               <EnhancedClientDashboard onNavigateToTab={setSelectedTab} />
+              <PendingReviews />
             </TabsContent>
 
             {/* Mes Rendez-vous à Venir */}

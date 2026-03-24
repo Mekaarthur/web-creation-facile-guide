@@ -129,6 +129,45 @@ export const AdminAlertsPanel = ({ onNavigate }: { onNavigate?: (tab: string) =>
         });
       }
 
+      // 5. Réclamations clients non résolues (table complaints)
+      const { data: openComplaints, error: complaintsError } = await supabase
+        .from('complaints')
+        .select('*')
+        .in('status', ['open', 'pending', 'in_progress']);
+
+      if (!complaintsError && openComplaints?.length > 0) {
+        const urgentComplaints = openComplaints.filter(c => c.priority === 'urgent' || c.priority === 'high');
+        alertsData.push({
+          id: 'open_complaints',
+          type: 'urgent_request',
+          title: 'Réclamations clients',
+          description: `${openComplaints.length} réclamation(s) en cours${urgentComplaints.length > 0 ? ` dont ${urgentComplaints.length} urgente(s)` : ''}`,
+          count: openComplaints.length,
+          urgency: urgentComplaints.length > 0 ? 'high' : 'medium',
+          action: () => navigate('/modern-admin/reclamations'),
+          data: openComplaints
+        });
+      }
+
+      // 6. Paiements échoués (financial_transactions avec statut failed)
+      const { data: failedPayments, error: failedError } = await supabase
+        .from('financial_transactions')
+        .select('*')
+        .eq('payment_status', 'failed');
+
+      if (!failedError && failedPayments?.length > 0) {
+        alertsData.push({
+          id: 'failed_payments',
+          type: 'urgent_request',
+          title: 'Paiements échoués',
+          description: `${failedPayments.length} paiement(s) en échec nécessitant une intervention`,
+          count: failedPayments.length,
+          urgency: 'high',
+          action: () => navigate('/modern-admin/payments'),
+          data: failedPayments
+        });
+      }
+
       setAlerts(alertsData);
     } catch (error) {
       console.error('Error loading alerts:', error);
