@@ -385,6 +385,7 @@ const MyZones = () => {
           <DialogTrigger asChild>
             <Button onClick={() => {
               setEditingZone(null);
+              setDetectedZone(null);
               setFormData({
                 adresse_reference: '',
                 rayon_km: '10',
