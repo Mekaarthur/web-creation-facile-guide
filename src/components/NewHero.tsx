@@ -28,8 +28,8 @@ const NewHero = () => {
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* Urgency Badge */}
-        <div className="inline-flex items-center gap-2 bg-accent/90 text-accent-foreground px-4 py-2 rounded-full mb-6 shadow-lg">
-          <span className="text-sm font-semibold">💰 Profitez de 50% d'avance immédiate sur vos impôts</span>
+        <div className="inline-flex items-center gap-2 bg-accent/90 text-accent-foreground px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6 shadow-lg">
+          <span className="text-xs sm:text-sm font-semibold">💰 50% d'avance immédiate sur vos impôts</span>
         </div>
 
         <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 leading-tight">
@@ -79,16 +79,16 @@ const NewHero = () => {
 
         {/* Trust Indicators */}
         <div className="mt-8">
-          <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-8 text-white/90 text-sm">
-            <div className="flex items-center gap-2 bg-black/30 px-4 py-2 rounded-full">
+          <div className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-2 sm:gap-4 text-white/90 text-xs sm:text-sm">
+            <div className="flex items-center gap-1.5 sm:gap-2 bg-black/30 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full">
               <span className="text-warning">⭐⭐⭐⭐⭐</span>
-              <span className="font-medium">4,9/5 - 2500+ avis</span>
+              <span className="font-medium">4,9/5</span>
             </div>
-            <div className="flex items-center gap-2 bg-black/30 px-4 py-2 rounded-full">
-              <Clock className="w-4 h-4 text-success" />
-              <span>Service 7j/7</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 bg-black/30 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full">
+              <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-success" />
+              <span>7j/7</span>
             </div>
-            <div className="flex items-center gap-2 bg-black/30 px-4 py-2 rounded-full">
+            <div className="flex items-center gap-1.5 sm:gap-2 bg-black/30 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full">
               <span className="text-success">✓</span>
               <span>Crédit d'impôt 50%</span>
             </div>
