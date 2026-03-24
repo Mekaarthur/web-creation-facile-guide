@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DollarSign, TrendingUp, Users, CreditCard, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { ProviderPayoutsTab } from "./ProviderPayoutsTab";
 
 export const FinanceDashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -197,6 +198,9 @@ export const FinanceDashboard = () => {
           <TabsTrigger value="providers">
             Paiements Prestataires ({providerPayments.length})
           </TabsTrigger>
+          <TabsTrigger value="payouts">
+            Virements Prestataires
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="transactions" className="space-y-4">
@@ -271,6 +275,9 @@ export const FinanceDashboard = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+        <TabsContent value="payouts">
+          <ProviderPayoutsTab />
         </TabsContent>
       </Tabs>
     </div>
