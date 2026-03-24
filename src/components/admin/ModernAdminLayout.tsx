@@ -35,7 +35,8 @@ import {
   CreditCard,
   FileText,
   PieChart,
-  Gift
+  Gift,
+  MessageSquareWarning
 } from "lucide-react";
 import { Mail } from "lucide-react";
 import { NotificationBell } from './NotificationBell';
