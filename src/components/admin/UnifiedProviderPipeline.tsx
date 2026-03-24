@@ -50,6 +50,9 @@ interface UnifiedPerson {
   provider?: any;
   // All documents (merged)
   allDocuments: DocumentItem[];
+  // Services count
+  servicesCount: number;
+  serviceCategories: string[];
 }
 
 interface DocumentItem {
