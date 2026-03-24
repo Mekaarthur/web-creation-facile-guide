@@ -53,6 +53,7 @@ interface UnifiedPerson {
   // Services count
   servicesCount: number;
   serviceCategories: string[];
+  providerServices?: string[];
 }
 
 interface DocumentItem {
@@ -115,17 +116,19 @@ export const UnifiedProviderPipeline = () => {
   const loadAll = async () => {
     setLoading(true);
     try {
-      const [appsRes, providersRes, provDocsRes, validationsRes] = await Promise.all([
+      const [appsRes, providersRes, provDocsRes, validationsRes, provServicesRes] = await Promise.all([
         supabase.from("job_applications").select("*").order("created_at", { ascending: false }),
         supabase.from("providers").select("*").order("created_at", { ascending: false }),
         supabase.from("provider_documents").select("*").order("created_at", { ascending: false }),
         supabase.from("application_document_validations").select("*"),
+        supabase.from("provider_services").select("*, services(id, name, category)"),
       ]);
 
       const apps = appsRes.data || [];
       const providers = providersRes.data || [];
       const provDocs = provDocsRes.data || [];
       const validations = validationsRes.data || [];
+      const provServices = provServicesRes.data || [];
 
       // Build unified list
       const emailMap = new Map<string, UnifiedPerson>();
@@ -170,6 +173,17 @@ export const UnifiedProviderPipeline = () => {
             createdAt: d.created_at,
           }));
 
+        // Get provider's active services
+        const thisProvServices = provServices.filter((ps: any) => ps.provider_id === prov.id);
+        const provServiceNames = thisProvServices
+          .map((ps: any) => ps.services?.name)
+          .filter(Boolean);
+        const provServiceCategories = [...new Set(
+          thisProvServices
+            .map((ps: any) => ps.services?.category)
+            .filter(Boolean)
+        )] as string[];
+
         // Try to find matching application by user_id or by checking approved apps
         const matchingApp = apps.find((a: any) => a.status === "approved");
 
@@ -183,6 +197,11 @@ export const UnifiedProviderPipeline = () => {
             existing.provider = prov;
             existing.stage = determineStage(existing.application, prov);
             existing.name = prov.business_name || existing.name;
+            existing.servicesCount = thisProvServices.length;
+            existing.serviceCategories = provServiceCategories.length > 0 
+              ? provServiceCategories 
+              : existing.serviceCategories;
+            existing.providerServices = provServiceNames;
             // Merge docs
             const existingTypes = new Set(existing.allDocuments.map(d => d.type));
             for (const pd of providerDocs) {
@@ -210,8 +229,11 @@ export const UnifiedProviderPipeline = () => {
             createdAt: prov.created_at,
             provider: prov,
             allDocuments: providerDocs,
-            servicesCount: 0,
-            serviceCategories: matchingApp?.service_categories || [],
+            servicesCount: thisProvServices.length,
+            serviceCategories: provServiceCategories.length > 0 
+              ? provServiceCategories 
+              : matchingApp?.service_categories || [],
+            providerServices: provServiceNames,
           });
         }
       }
@@ -493,9 +515,13 @@ export const UnifiedProviderPipeline = () => {
                       </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <span className="truncate">{person.email}</span>
-                        {person.serviceCategories.length > 0 ? (
+                        {person.providerServices && person.providerServices.length > 0 ? (
                           <Badge variant="outline" className="text-xs">
-                            {person.serviceCategories.length} service(s)
+                            {person.providerServices.length} service(s)
+                          </Badge>
+                        ) : person.serviceCategories.length > 0 ? (
+                          <Badge variant="outline" className="text-xs">
+                            {person.serviceCategories.length} catégorie(s)
                           </Badge>
                         ) : person.stage !== "candidature" ? (
                           <Badge variant="destructive" className="text-xs">
@@ -594,6 +620,25 @@ export const UnifiedProviderPipeline = () => {
                               <Badge variant="outline" className="text-xs">{person.application.category}</Badge>
                             )}
                           </div>
+                        </div>
+                      )}
+
+                      {/* Services actifs du prestataire */}
+                      {person.providerServices && person.providerServices.length > 0 && (
+                        <div className="text-sm">
+                          <span className="text-muted-foreground font-medium">Services actifs ({person.providerServices.length}) :</span>
+                          <div className="flex gap-1 mt-1 flex-wrap">
+                            {person.providerServices.map((name: string) => (
+                              <Badge key={name} className="text-xs bg-primary/10 text-primary border-primary/20">
+                                {name}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {person.provider && (!person.providerServices || person.providerServices.length === 0) && (
+                        <div className="text-sm">
+                          <span className="text-destructive font-medium">⚠ Aucun service sélectionné par le prestataire</span>
                         </div>
                       )}
 
