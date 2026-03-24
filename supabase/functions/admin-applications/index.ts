@@ -209,6 +209,50 @@ serve(async (req) => {
 
       if (providerError) throw providerError;
 
+      // *** SYNC SERVICES: Copy service_categories from application to provider_services ***
+      const serviceCategories = application.service_categories || [application.category];
+      if (serviceCategories.length > 0) {
+        // Find matching services by category name
+        const { data: matchingServices } = await supabase
+          .from('services')
+          .select('id, category, name')
+          .eq('is_active', true);
+
+        if (matchingServices && matchingServices.length > 0) {
+          const serviceInserts = [];
+          for (const cat of serviceCategories) {
+            const matched = matchingServices.filter(s => 
+              s.category.toLowerCase().includes(cat.toLowerCase()) ||
+              cat.toLowerCase().includes(s.category.toLowerCase()) ||
+              s.name.toLowerCase().includes(cat.toLowerCase())
+            );
+            for (const svc of matched) {
+              serviceInserts.push({
+                provider_id: provider.id,
+                service_id: svc.id,
+                is_active: true,
+              });
+            }
+          }
+
+          if (serviceInserts.length > 0) {
+            // Deduplicate by service_id
+            const unique = serviceInserts.filter((v, i, a) => 
+              a.findIndex(t => t.service_id === v.service_id) === i
+            );
+            const { error: svcError } = await supabase
+              .from('provider_services')
+              .upsert(unique, { onConflict: 'provider_id,service_id', ignoreDuplicates: true });
+
+            if (svcError) {
+              console.error('Error syncing services:', svcError);
+            } else {
+              console.log(`Synced ${unique.length} services for provider ${provider.id}`);
+            }
+          }
+        }
+      }
+
       // Assigner rôle provider
       await supabase.rpc('add_user_role', {
         target_user_id: userId,
@@ -237,6 +281,7 @@ serve(async (req) => {
             status: 'approved',
             provider_id: provider.id,
             user_id: userId,
+            synced_services: serviceCategories,
           },
           description: `Candidature approuvée et prestataire créé: ${application.first_name} ${application.last_name}`,
         });
