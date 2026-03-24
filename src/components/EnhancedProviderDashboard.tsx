@@ -198,11 +198,13 @@ const EnhancedProviderDashboard = () => {
           {/* ═══════ MES MISSIONS: RDV + Missions + Planning ═══════ */}
           <TabsContent value="missions" className="mt-4 sm:mt-6 lg:mt-8">
             <Tabs defaultValue="rdv" className="w-full">
-              <TabsList className="w-full grid grid-cols-3 mb-4">
-                <TabsTrigger value="rdv">Rendez-vous</TabsTrigger>
-                <TabsTrigger value="gestion">Gestion missions</TabsTrigger>
-                <TabsTrigger value="planning">Planning</TabsTrigger>
-              </TabsList>
+              <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0 pb-2">
+                <TabsList className="inline-flex sm:grid sm:grid-cols-3 mb-4 min-w-max sm:min-w-0 sm:w-full">
+                  <TabsTrigger value="rdv" className="text-xs sm:text-sm whitespace-nowrap">Rendez-vous</TabsTrigger>
+                  <TabsTrigger value="gestion" className="text-xs sm:text-sm whitespace-nowrap">Gestion missions</TabsTrigger>
+                  <TabsTrigger value="planning" className="text-xs sm:text-sm whitespace-nowrap">Planning</TabsTrigger>
+                </TabsList>
+              </div>
               <TabsContent value="rdv">
                 <ProviderAppointments />
               </TabsContent>
@@ -222,11 +224,13 @@ const EnhancedProviderDashboard = () => {
           {/* ═══════ MON ACTIVITÉ: Revenus + Évaluations + Récompenses ═══════ */}
           <TabsContent value="activite" className="mt-4 sm:mt-6 lg:mt-8">
             <Tabs defaultValue="revenus" className="w-full">
-              <TabsList className="w-full grid grid-cols-3 mb-4">
-                <TabsTrigger value="revenus">Revenus</TabsTrigger>
-                <TabsTrigger value="evaluations">Évaluations</TabsTrigger>
-                <TabsTrigger value="recompenses">Récompenses</TabsTrigger>
-              </TabsList>
+              <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0 pb-2">
+                <TabsList className="inline-flex sm:grid sm:grid-cols-3 mb-4 min-w-max sm:min-w-0 sm:w-full">
+                  <TabsTrigger value="revenus" className="text-xs sm:text-sm whitespace-nowrap">Revenus</TabsTrigger>
+                  <TabsTrigger value="evaluations" className="text-xs sm:text-sm whitespace-nowrap">Évaluations</TabsTrigger>
+                  <TabsTrigger value="recompenses" className="text-xs sm:text-sm whitespace-nowrap">Récompenses</TabsTrigger>
+                </TabsList>
+              </div>
               <TabsContent value="revenus">
                 <ProviderKPIsDashboard
                   stats={stats}
@@ -246,10 +250,12 @@ const EnhancedProviderDashboard = () => {
           {/* ═══════ MA COMMUNAUTÉ: Messages + Cooptation ═══════ */}
           <TabsContent value="communaute" className="mt-4 sm:mt-6 lg:mt-8">
             <Tabs defaultValue="messages" className="w-full">
-              <TabsList className="w-full grid grid-cols-2 mb-4">
-                <TabsTrigger value="messages">Messages</TabsTrigger>
-                <TabsTrigger value="cooptation">Cooptation</TabsTrigger>
-              </TabsList>
+              <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0 pb-2">
+                <TabsList className="inline-flex sm:grid sm:grid-cols-2 mb-4 min-w-max sm:min-w-0 sm:w-full">
+                  <TabsTrigger value="messages" className="text-xs sm:text-sm whitespace-nowrap">Messages</TabsTrigger>
+                  <TabsTrigger value="cooptation" className="text-xs sm:text-sm whitespace-nowrap">Cooptation</TabsTrigger>
+                </TabsList>
+              </div>
               <TabsContent value="messages">
                 <ProviderMessaging />
               </TabsContent>
@@ -262,12 +268,14 @@ const EnhancedProviderDashboard = () => {
           {/* ═══════ MON PROFIL: Profil + Services + Zones + Documents ═══════ */}
           <TabsContent value="profil" className="mt-4 sm:mt-6 lg:mt-8">
             <Tabs defaultValue="infos" className="w-full">
-              <TabsList className="w-full grid grid-cols-4 mb-4">
-                <TabsTrigger value="infos">Informations</TabsTrigger>
-                <TabsTrigger value="services">Services</TabsTrigger>
-                <TabsTrigger value="zones">Zones</TabsTrigger>
-                <TabsTrigger value="documents">Documents</TabsTrigger>
-              </TabsList>
+              <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0 pb-2">
+                <TabsList className="inline-flex sm:grid sm:grid-cols-4 mb-4 min-w-max sm:min-w-0 sm:w-full">
+                  <TabsTrigger value="infos" className="text-xs sm:text-sm whitespace-nowrap">Informations</TabsTrigger>
+                  <TabsTrigger value="services" className="text-xs sm:text-sm whitespace-nowrap">Services</TabsTrigger>
+                  <TabsTrigger value="zones" className="text-xs sm:text-sm whitespace-nowrap">Zones</TabsTrigger>
+                  <TabsTrigger value="documents" className="text-xs sm:text-sm whitespace-nowrap">Documents</TabsTrigger>
+                </TabsList>
+              </div>
               <TabsContent value="infos">
                 <ProviderProfileForm />
               </TabsContent>
