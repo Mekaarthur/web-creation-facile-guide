@@ -8,6 +8,7 @@ interface UseSecureFormOptions<T extends z.ZodType> {
   onSubmit: (data: z.infer<T>) => Promise<void>;
   rateLimitKey?: string;
   rateLimitAction?: string;
+  rateLimitConfig?: { maxAttempts: number; windowMs: number };
 }
 
 /**
@@ -21,7 +22,8 @@ export function useSecureForm<T extends z.ZodType>({
   schema,
   onSubmit,
   rateLimitKey,
-  rateLimitAction = 'form_submit'
+  rateLimitAction = 'form_submit',
+  rateLimitConfig
 }: UseSecureFormOptions<T>) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -33,7 +35,7 @@ export function useSecureForm<T extends z.ZodType>({
 
     // Rate limiting
     if (rateLimitKey) {
-      const rateLimit = checkRateLimit(rateLimitKey, rateLimitAction);
+      const rateLimit = checkRateLimit(rateLimitKey, rateLimitAction, rateLimitConfig);
       if (!rateLimit.allowed) {
         toast({
           title: "Trop de tentatives",
