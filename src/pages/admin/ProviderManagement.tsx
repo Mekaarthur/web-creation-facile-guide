@@ -366,6 +366,12 @@ export default function ProviderManagement() {
           ))}
         </TabsContent>
 
+
+        {/* Documents prestataires (provider_documents) */}
+        <TabsContent value="provider_documents" className="space-y-4">
+          <ProviderDocumentsReview />
+        </TabsContent>
+
         {/* Onboarding */}
         <TabsContent value="onboarding" className="space-y-4">
           {filterProviders('onboarding').map((provider) => (
