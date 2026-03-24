@@ -115,17 +115,19 @@ export const UnifiedProviderPipeline = () => {
   const loadAll = async () => {
     setLoading(true);
     try {
-      const [appsRes, providersRes, provDocsRes, validationsRes] = await Promise.all([
+      const [appsRes, providersRes, provDocsRes, validationsRes, provServicesRes] = await Promise.all([
         supabase.from("job_applications").select("*").order("created_at", { ascending: false }),
         supabase.from("providers").select("*").order("created_at", { ascending: false }),
         supabase.from("provider_documents").select("*").order("created_at", { ascending: false }),
         supabase.from("application_document_validations").select("*"),
+        supabase.from("provider_services").select("*, services(id, name, category)"),
       ]);
 
       const apps = appsRes.data || [];
       const providers = providersRes.data || [];
       const provDocs = provDocsRes.data || [];
       const validations = validationsRes.data || [];
+      const provServices = provServicesRes.data || [];
 
       // Build unified list
       const emailMap = new Map<string, UnifiedPerson>();
