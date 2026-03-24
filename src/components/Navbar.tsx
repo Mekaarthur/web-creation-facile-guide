@@ -58,7 +58,6 @@ const Navbar = () => {
   const navItems = [
     { name: t('nav.about'), href: "/a-propos-de-nous", label: "nav.about" },
     { name: t('nav.contact'), href: "/contact", label: "nav.contact" },
-    { name: t('nav.blog'), href: "/blog", label: "nav.blog" },
   ];
 
   // Structure organisée des services avec images
@@ -144,10 +143,10 @@ const Navbar = () => {
           ? "bg-white/90 backdrop-blur-lg border-b border-border/50 shadow-elegant" 
           : "bg-white/95 backdrop-blur-md border-b border-border shadow-soft"
       )}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+      <div className="max-w-7xl mx-auto px-4 lg:px-6 xl:px-8">
+        <div className="flex justify-between items-center h-16 lg:h-20">
           {/* Logo */}
-          <div className="flex items-center space-x-2 group mr-6">
+          <div className="flex items-center space-x-2 group mr-3 lg:mr-4 flex-shrink-0">
             <Link to="/" className="flex items-center gap-2">
               <img 
                 src={bikawoLogo} 
@@ -159,7 +158,7 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-1">
+          <div className="hidden lg:flex items-center space-x-0.5 xl:space-x-1 flex-shrink-0">
             {/* Accueil Link */}
             <Link
               to="/"
@@ -230,7 +229,7 @@ const Navbar = () => {
                 key={item.name}
                 to={item.href}
                 className={cn(
-                  "relative px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium transition-smooth rounded-lg group",
+                  "relative px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-smooth rounded-lg group whitespace-nowrap",
                   location.pathname === item.href 
                     ? "text-primary font-bold bg-muted/50" 
                     : "text-foreground hover:text-primary hover:bg-muted/50"
@@ -245,10 +244,23 @@ const Navbar = () => {
                 )}
               </Link>
             ))}
+
+            {/* Blog link */}
+            <Link
+              to="/blog"
+              className={cn(
+                "relative px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-smooth rounded-lg group whitespace-nowrap",
+                location.pathname === "/blog"
+                  ? "text-primary font-bold bg-muted/50" 
+                  : "text-foreground hover:text-primary hover:bg-muted/50"
+              )}
+            >
+              {t('nav.blog')}
+            </Link>
           </div>
 
           {/* Actions Desktop */}
-          <div className="hidden lg:flex items-center space-x-3">
+          <div className="hidden lg:flex items-center space-x-1.5 xl:space-x-2 flex-shrink-0">
             <GlobalSearch />
             <BikawoCartIndicator onOpenCart={() => setIsCartOpen(true)} showTotal />
             <LanguageSwitcher />
@@ -272,21 +284,21 @@ const Navbar = () => {
                 <SecureLogout variant="outline" size="sm" />
               </div>
             ) : (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1.5">
                 <Link to="/services">
-                  <Button size="sm" className="bg-gradient-primary hover:opacity-90 transition-opacity">
+                  <Button size="sm" className="bg-gradient-primary hover:opacity-90 transition-opacity text-xs xl:text-sm px-2.5 xl:px-3">
                     <Sparkles className="mr-1 h-3 w-3" />
                     {t('cta.book')}
                   </Button>
                 </Link>
                 <Link to="/nous-recrutons">
-                  <Button variant="outline" size="sm" className="hover:bg-accent hover:text-accent-foreground border-primary/20 text-primary hover:border-primary">
+                  <Button variant="outline" size="sm" className="hover:bg-accent hover:text-accent-foreground border-primary/20 text-primary hover:border-primary text-xs xl:text-sm px-2.5 xl:px-3 hidden xl:inline-flex">
                     {t('cta.becomeProvider')}
                   </Button>
                 </Link>
-                <div className="h-6 w-px bg-border mx-2" />
+                <div className="h-5 w-px bg-border mx-1" />
                 <Link to="/auth">
-                  <Button variant="ghost" size="sm" className="hover:bg-accent hover:text-accent-foreground">
+                  <Button variant="ghost" size="sm" className="hover:bg-accent hover:text-accent-foreground text-xs xl:text-sm px-2 xl:px-3">
                     {t('auth.login')}
                   </Button>
                 </Link>
