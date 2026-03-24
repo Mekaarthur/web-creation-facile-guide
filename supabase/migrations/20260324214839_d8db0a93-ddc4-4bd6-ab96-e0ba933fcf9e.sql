@@ -1,0 +1,1 @@
+UPDATE providers SET business_name = 'Marie Philipee Momnougui' WHERE id = '4dc4d40f-90b7-443d-ac5f-8dc224be46b2' AND (business_name IS NULL OR business_name = '');
