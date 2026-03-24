@@ -515,9 +515,13 @@ export const UnifiedProviderPipeline = () => {
                       </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <span className="truncate">{person.email}</span>
-                        {person.serviceCategories.length > 0 ? (
+                        {person.providerServices && person.providerServices.length > 0 ? (
                           <Badge variant="outline" className="text-xs">
-                            {person.serviceCategories.length} service(s)
+                            {person.providerServices.length} service(s)
+                          </Badge>
+                        ) : person.serviceCategories.length > 0 ? (
+                          <Badge variant="outline" className="text-xs">
+                            {person.serviceCategories.length} catégorie(s)
                           </Badge>
                         ) : person.stage !== "candidature" ? (
                           <Badge variant="destructive" className="text-xs">
