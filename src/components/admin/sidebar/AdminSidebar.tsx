@@ -256,6 +256,12 @@ export function AdminSidebar() {
           icon: Mail,
           description: "Tests envoi emails"
         },
+        { 
+          title: "Suivi Accès Admin", 
+          url: "/modern-admin/acces", 
+          icon: Users,
+          description: "Historique connexions & rôles admin"
+        },
       ]
     }
   ]
