@@ -87,6 +87,12 @@ const navigationGroups = [
         href: "/modern-admin/urgences", 
         icon: AlertTriangle,
         badge: null
+      },
+      { 
+        title: "Réclamations", 
+        href: "/modern-admin/reclamations", 
+        icon: MessageSquareWarning,
+        badge: null
       }
     ]
   },
