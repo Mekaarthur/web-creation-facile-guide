@@ -61,24 +61,24 @@ const ServiceCard = ({ service, pricing }: ServiceCardProps) => {
             onLoad={() => setImageLoaded(true)}
           />
           {/* Badge prix */}
-          <div className="absolute top-3 right-3 bg-primary text-primary-foreground px-3 py-1.5 rounded-lg text-xs font-semibold shadow-lg">
+          <div className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-primary text-primary-foreground px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold shadow-lg">
             {hasCredit ? (
               <>
-                <span className="opacity-90">À partir de </span>
+                <span className="hidden sm:inline opacity-90">À partir de </span>
                 <span className="line-through opacity-70">{pricing.original}</span>
-                <span className="mx-1">→</span>
+                <span className="mx-0.5 sm:mx-1">→</span>
                 <span className="text-white font-bold">{pricing.afterCredit}</span>
               </>
             ) : (
-              <span className="text-white font-bold">À partir de {pricing?.original}</span>
+              <span className="text-white font-bold"><span className="hidden sm:inline">À partir de </span>{pricing?.original}</span>
             )}
           </div>
         </div>
-        <CardContent className="p-4">
-          <h3 className="font-semibold text-lg mb-1 group-hover:text-primary transition-colors">
+        <CardContent className="p-3 sm:p-4">
+          <h3 className="font-semibold text-sm sm:text-lg mb-0.5 sm:mb-1 group-hover:text-primary transition-colors line-clamp-1">
             {service.title}
           </h3>
-          <p className="text-sm text-muted-foreground">{service.subtitle}</p>
+          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{service.subtitle}</p>
         </CardContent>
       </Card>
     </Link>
@@ -149,7 +149,7 @@ const ServicesGrid = () => {
   // Afficher les skeletons pendant le chargement
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {Array.from({ length: 8 }).map((_, i) => (
           <ServiceCardSkeleton key={i} />
         ))}
@@ -158,7 +158,7 @@ const ServicesGrid = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
       {servicesList.map((service) => (
         <ServiceCard
           key={service.id}
