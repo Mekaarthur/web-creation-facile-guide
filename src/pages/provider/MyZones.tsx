@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -88,6 +88,9 @@ const MyZones = () => {
       sunday: false
     }
   });
+  const [detectedZone, setDetectedZone] = useState<{ city: string; postcode: string; department: string; lat: number; lon: number } | null>(null);
+  const [geocoding, setGeocoding] = useState(false);
+  const geocodeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -96,6 +99,52 @@ const MyZones = () => {
       loadProviderAndZones();
     }
   }, [user]);
+
+  const geocodeAddress = useCallback(async (address: string) => {
+    if (address.trim().length < 3) {
+      setDetectedZone(null);
+      return;
+    }
+    setGeocoding(true);
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&countrycodes=fr&addressdetails=1&limit=1`,
+        { headers: { 'Accept-Language': 'fr' } }
+      );
+      const data = await response.json();
+      if (data && data.length > 0) {
+        const result = data[0];
+        const addr = result.address || {};
+        const postcode = addr.postcode || '';
+        const dept = postcode.substring(0, 2);
+        const deptNames: Record<string, string> = {
+          '75': 'Paris', '77': 'Seine-et-Marne', '78': 'Yvelines',
+          '91': 'Essonne', '92': 'Hauts-de-Seine', '93': 'Seine-Saint-Denis',
+          '94': 'Val-de-Marne', '95': "Val-d'Oise", '60': 'Oise'
+        };
+        setDetectedZone({
+          city: addr.city || addr.town || addr.village || addr.municipality || '',
+          postcode,
+          department: deptNames[dept] ? `${dept} - ${deptNames[dept]}` : dept,
+          lat: parseFloat(result.lat),
+          lon: parseFloat(result.lon)
+        });
+      } else {
+        setDetectedZone(null);
+      }
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      setDetectedZone(null);
+    } finally {
+      setGeocoding(false);
+    }
+  }, []);
+
+  const handleAddressChange = (value: string) => {
+    setFormData({ ...formData, adresse_reference: value });
+    if (geocodeTimerRef.current) clearTimeout(geocodeTimerRef.current);
+    geocodeTimerRef.current = setTimeout(() => geocodeAddress(value), 800);
+  };
 
   const loadProviderAndZones = async () => {
     try {
@@ -163,7 +212,12 @@ const MyZones = () => {
         adresse_reference: formData.adresse_reference,
         rayon_km: parseInt(formData.rayon_km),
         statut: formData.statut,
-        disponibilite: formData.disponibilite
+        disponibilite: formData.disponibilite,
+        ...(detectedZone && {
+          latitude: detectedZone.lat,
+          longitude: detectedZone.lon,
+          zone_name: detectedZone.department
+        })
       };
 
       if (editingZone) {
@@ -365,12 +419,32 @@ const MyZones = () => {
                 <Input
                   id="adresse"
                   value={formData.adresse_reference}
-                  onChange={(e) => setFormData({ ...formData, adresse_reference: e.target.value })}
+                  onChange={(e) => handleAddressChange(e.target.value)}
                   placeholder="Ex: Rueil-Malmaison, 92500"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Le système détectera automatiquement la zone géographique
-                </p>
+                {geocoding && (
+                  <p className="text-xs text-muted-foreground animate-pulse">
+                    🔍 Détection de la zone en cours...
+                  </p>
+                )}
+                {detectedZone && !geocoding && (
+                  <div className="text-xs p-2 rounded-md bg-accent/50 border border-accent space-y-1">
+                    <p className="font-medium text-foreground">✅ Zone détectée :</p>
+                    <p className="text-muted-foreground">
+                      📍 {detectedZone.city}{detectedZone.postcode ? ` (${detectedZone.postcode})` : ''} — {detectedZone.department}
+                    </p>
+                  </div>
+                )}
+                {!detectedZone && !geocoding && formData.adresse_reference.length >= 3 && (
+                  <p className="text-xs text-destructive">
+                    ⚠️ Adresse non reconnue. Essayez avec plus de détails.
+                  </p>
+                )}
+                {formData.adresse_reference.length < 3 && (
+                  <p className="text-xs text-muted-foreground">
+                    Saisissez une adresse pour détecter automatiquement la zone
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
