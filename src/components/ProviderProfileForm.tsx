@@ -56,7 +56,8 @@ const ProviderProfileForm = () => {
       await executeSaveProfile(validatedData);
     },
     rateLimitKey: `provider_profile_${user?.id}`,
-    rateLimitAction: 'update_provider_profile'
+    rateLimitAction: 'update_provider_profile',
+    rateLimitConfig: { maxAttempts: 15, windowMs: 60000 }
   });
 
   // Afficher les erreurs de validation dans la console
