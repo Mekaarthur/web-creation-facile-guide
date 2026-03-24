@@ -158,7 +158,7 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-0.5 xl:space-x-1 flex-shrink-0">
+          <div className="hidden xl:flex items-center space-x-0.5 2xl:space-x-1 flex-shrink-0">
             {/* Accueil Link */}
             <Link
               to="/"
@@ -260,7 +260,7 @@ const Navbar = () => {
           </div>
 
           {/* Actions Desktop */}
-          <div className="hidden lg:flex items-center space-x-1.5 xl:space-x-2 flex-shrink-0">
+          <div className="hidden xl:flex items-center space-x-1.5 2xl:space-x-2 flex-shrink-0">
             <GlobalSearch />
             <BikawoCartIndicator onOpenCart={() => setIsCartOpen(true)} showTotal />
             <LanguageSwitcher />
@@ -307,7 +307,7 @@ const Navbar = () => {
           </div>
 
           {/* Navigation Mobile */}
-          <div className="flex lg:hidden items-center gap-2">
+          <div className="flex xl:hidden items-center gap-2">
             <BikawoCartIndicator onOpenCart={() => setIsCartOpen(true)} className="mr-1" />
             <MobileNavigation />
           </div>
