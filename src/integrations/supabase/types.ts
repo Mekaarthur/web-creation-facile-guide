@@ -3515,6 +3515,7 @@ export type Database = {
           missions_completed: number | null
           missions_this_week: number | null
           monthly_earnings: number | null
+          payout_frequency: string | null
           performance_score: number | null
           postal_codes: string[] | null
           professional_status: string | null
@@ -3581,6 +3582,7 @@ export type Database = {
           missions_completed?: number | null
           missions_this_week?: number | null
           monthly_earnings?: number | null
+          payout_frequency?: string | null
           performance_score?: number | null
           postal_codes?: string[] | null
           professional_status?: string | null
@@ -3647,6 +3649,7 @@ export type Database = {
           missions_completed?: number | null
           missions_this_week?: number | null
           monthly_earnings?: number | null
+          payout_frequency?: string | null
           performance_score?: number | null
           postal_codes?: string[] | null
           professional_status?: string | null
