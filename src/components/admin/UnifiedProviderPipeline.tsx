@@ -149,6 +149,8 @@ export const UnifiedProviderPipeline = () => {
           createdAt: app.created_at,
           application: app,
           allDocuments: appDocs,
+          servicesCount: 0,
+          serviceCategories: app.service_categories || [app.category].filter(Boolean),
         });
       }
 
@@ -208,6 +210,8 @@ export const UnifiedProviderPipeline = () => {
             createdAt: prov.created_at,
             provider: prov,
             allDocuments: providerDocs,
+            servicesCount: 0,
+            serviceCategories: matchingApp?.service_categories || [],
           });
         }
       }
