@@ -13,6 +13,7 @@ interface ProviderPayout {
   provider_id: string;
   provider_name: string;
   stripe_connected: boolean;
+  payout_frequency: string;
   total_due: number;
   transaction_count: number;
   transactions: any[];
@@ -33,7 +34,7 @@ export const ProviderPayoutsTab = () => {
         .from("financial_transactions")
         .select(`
           *,
-          provider:providers(id, business_name, stripe_account_id, stripe_onboarding_complete, profiles(first_name, last_name))
+          provider:providers(id, business_name, stripe_account_id, stripe_onboarding_complete, payout_frequency, profiles(first_name, last_name))
         `)
         .in("payment_status", ["client_paid", "paid", "completed"])
         .is("provider_paid_at", null);
@@ -51,6 +52,7 @@ export const ProviderPayoutsTab = () => {
             provider_name: provider?.business_name || 
               `${provider?.profiles?.first_name || ""} ${provider?.profiles?.last_name || ""}`.trim() || "Inconnu",
             stripe_connected: !!provider?.stripe_account_id && !!provider?.stripe_onboarding_complete,
+            payout_frequency: provider?.payout_frequency || "weekly",
             total_due: 0,
             transaction_count: 0,
             transactions: [],
