@@ -33,19 +33,19 @@ const WhyBikawo = () => {
           {t('why.title')}
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8">
           {benefits.map((benefit, index) => (
             <Card key={index} className="border-0 shadow-lg bg-card/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-              <CardContent className="p-8 text-center">
-                <div className="mb-6">
-                  <benefit.icon className={`h-16 w-16 mx-auto ${benefit.color}`} />
+              <CardContent className="p-4 sm:p-8 text-center">
+                <div className="mb-3 sm:mb-6">
+                  <benefit.icon className={`h-10 w-10 sm:h-16 sm:w-16 mx-auto ${benefit.color}`} />
                 </div>
                 
-                <h3 className="text-xl font-semibold mb-4 text-foreground">
+                <h3 className="text-base sm:text-xl font-semibold mb-2 sm:mb-4 text-foreground">
                   {benefit.title}
                 </h3>
                 
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   {benefit.description}
                 </p>
               </CardContent>

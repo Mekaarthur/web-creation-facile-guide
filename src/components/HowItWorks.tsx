@@ -42,7 +42,7 @@ const HowItWorks = () => {
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8">
         {steps.map((item, index) => (
           <div key={index} className="relative group">
             {/* Connector line - hidden on mobile and last item */}
@@ -50,22 +50,22 @@ const HowItWorks = () => {
               <div className="hidden lg:block absolute top-12 left-1/2 w-full h-0.5 bg-gradient-to-r from-primary/30 to-primary/10" />
             )}
             
-            <div className="relative bg-card rounded-2xl p-6 border shadow-sm hover:shadow-lg transition-all duration-300 group-hover:-translate-y-1">
+            <div className="relative bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 border shadow-sm hover:shadow-lg transition-all duration-300 group-hover:-translate-y-1">
               {/* Step number badge */}
               <div className="absolute -top-3 -right-3 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold shadow-lg">
                 {item.step}
               </div>
               
               {/* Icon */}
-              <div className="mb-4">
-                <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                  <item.icon className="h-7 w-7 text-primary" />
+              <div className="mb-3 sm:mb-4">
+                <div className="w-10 h-10 sm:w-14 sm:h-14 bg-primary/10 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <item.icon className="h-5 w-5 sm:h-7 sm:w-7 text-primary" />
                 </div>
               </div>
               
               {/* Content */}
-              <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <h3 className="text-sm sm:text-lg font-semibold mb-1 sm:mb-2">{item.title}</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                 {item.description}
               </p>
             </div>

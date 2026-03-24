@@ -94,14 +94,14 @@ const EspacePersonnel = () => {
       <div className="pt-20 pb-16 bg-gradient-to-br from-background via-background to-muted/20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header moderne */}
-          <div className="mb-12 text-center">
+          <div className="mb-6 sm:mb-12 text-center">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-3xl blur-3xl transform -rotate-1"></div>
-              <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border">
-                <h1 className="text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-4">
+              <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl p-4 sm:p-8 shadow-lg border">
+                <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2 sm:mb-4">
                   {t('personalSpace.title')}
                 </h1>
-                <p className="text-muted-foreground text-xl">
+                <p className="text-muted-foreground text-sm sm:text-xl">
                   {user ? t('personalSpace.welcome', { name: user.email?.split('@')[0] }) : t('personalSpace.pleaseLogin')}
                 </p>
               </div>
@@ -125,7 +125,8 @@ const EspacePersonnel = () => {
             }
             window.history.replaceState({}, '', newUrl);
           }} className="w-full">
-            <TabsList className={`w-full mb-12 grid gap-2 bg-white/80 backdrop-blur-sm p-2 shadow-lg rounded-xl border-0 ${user ? 'grid-cols-2 sm:grid-cols-5 lg:grid-cols-9' : 'grid-cols-1'}`}>
+            <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 pb-2 mb-6 sm:mb-12">
+            <TabsList className={`inline-flex sm:grid gap-1.5 sm:gap-2 bg-white/80 backdrop-blur-sm p-1.5 sm:p-2 shadow-lg rounded-xl border-0 min-w-max sm:min-w-0 sm:w-full ${user ? 'sm:grid-cols-5 lg:grid-cols-9' : 'sm:grid-cols-1'}`}>
               {!user && (
                 <TabsTrigger 
                   value="connexion" 
@@ -203,6 +204,7 @@ const EspacePersonnel = () => {
                 </>
               )}
             </TabsList>
+            </div>
 
             {/* Connexion / Inscription */}
             <TabsContent value="connexion" className="space-y-6">

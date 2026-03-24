@@ -46,13 +46,13 @@ const TestimonialsSection = () => {
           {t('testimonials.title')}
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8 max-w-6xl mx-auto">
           {testimonials.map((testimonial, index) => (
             <Card key={index} className="border-0 shadow-lg bg-card hover:shadow-xl transition-all duration-300">
-              <CardContent className="p-6 text-center">
+              <CardContent className="p-4 sm:p-6 text-center">
                 {renderStars()}
                 
-                <p className="text-lg italic mb-6 text-muted-foreground leading-relaxed">
+                <p className="text-sm sm:text-lg italic mb-4 sm:mb-6 text-muted-foreground leading-relaxed line-clamp-4 sm:line-clamp-none">
                   "{testimonial.content}"
                 </p>
                 
