@@ -113,6 +113,7 @@ const AdminFinance = lazy(() => import("./pages/admin/Finance"));
 const AdminUrgences = lazy(() => import("./pages/admin/Urgences"));
 const AdminBrand = lazy(() => import("./pages/admin/Brand"));
 const AdminReclamations = lazy(() => import("./pages/admin/Reclamations"));
+const AdminAccessTracking = lazy(() => import("./pages/admin/AdminAccessTracking"));
 const AuditReport = lazy(() => import("./components/AuditReport"));
 const BikawoCartDemo = lazy(() => import("./components/BikawoCartDemo"));
 const AnalyticsSEO = lazy(() => import("./pages/AnalyticsSEO"));
@@ -279,6 +280,7 @@ const App = () => (
                   <Route path="urgences" element={<AdminUrgences />} />
                   <Route path="brand" element={<AdminBrand />} />
                   <Route path="reclamations" element={<AdminReclamations />} />
+                  <Route path="acces" element={<AdminAccessTracking />} />
                 </Route>
                 
                 <Route path="*" element={<NotFound />} />

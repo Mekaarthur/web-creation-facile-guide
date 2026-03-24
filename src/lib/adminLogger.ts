@@ -45,6 +45,12 @@ export async function logAdminAction(
       .maybeSingle();
 
     // Logger dans admin_actions_log
+    const adminEmail = profile?.email || user.email;
+    const enrichedNewData = {
+      ...(newData ? JSON.parse(JSON.stringify(newData)) : {}),
+      admin_email: adminEmail,
+    };
+
     const { error } = await supabase
       .from('admin_actions_log')
       .insert({
@@ -54,9 +60,8 @@ export async function logAdminAction(
         action_type: actionType,
         description: description,
         old_data: oldData ? JSON.parse(JSON.stringify(oldData)) : null,
-        new_data: newData ? JSON.parse(JSON.stringify(newData)) : null,
+        new_data: enrichedNewData,
         ip_address: ipAddress,
-        admin_email: profile?.email || user.email,
       });
 
     if (error) {
