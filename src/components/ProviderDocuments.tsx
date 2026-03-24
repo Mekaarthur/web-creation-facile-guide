@@ -106,6 +106,36 @@ const ProviderDocuments = () => {
     }
   }, [user]);
 
+  // Realtime: écouter les changements de statut des documents (validation admin)
+  useEffect(() => {
+    if (!provider?.id) return;
+
+    const channel = supabase
+      .channel(`provider-docs-${provider.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'provider_documents',
+          filter: `provider_id=eq.${provider.id}`
+        },
+        (payload) => {
+          // Mettre à jour le document modifié en temps réel
+          setDocuments(prev => prev.map(doc => 
+            doc.id === payload.new.id 
+              ? { ...doc, ...payload.new } as Document
+              : doc
+          ));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [provider?.id]);
+
   const loadProviderDocuments = async () => {
     try {
       // Récupérer le profil prestataire
