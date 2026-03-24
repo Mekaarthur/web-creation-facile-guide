@@ -286,19 +286,19 @@ const Navbar = () => {
             ) : (
               <div className="flex items-center space-x-1.5">
                 <Link to="/services">
-                  <Button size="sm" className="bg-gradient-primary hover:opacity-90 transition-opacity text-xs xl:text-sm px-2.5 xl:px-3">
+                  <Button size="sm" className="bg-gradient-primary hover:opacity-90 transition-opacity text-xs 2xl:text-sm px-2.5 2xl:px-3">
                     <Sparkles className="mr-1 h-3 w-3" />
                     {t('cta.book')}
                   </Button>
                 </Link>
-                <Link to="/nous-recrutons">
-                  <Button variant="outline" size="sm" className="hover:bg-accent hover:text-accent-foreground border-primary/20 text-primary hover:border-primary text-xs xl:text-sm px-2.5 xl:px-3 hidden xl:inline-flex">
+                <Link to="/nous-recrutons" className="hidden 2xl:block">
+                  <Button variant="outline" size="sm" className="hover:bg-accent hover:text-accent-foreground border-primary/20 text-primary hover:border-primary text-xs 2xl:text-sm px-2.5 2xl:px-3">
                     {t('cta.becomeProvider')}
                   </Button>
                 </Link>
-                <div className="h-5 w-px bg-border mx-1" />
+                <div className="h-5 w-px bg-border mx-0.5" />
                 <Link to="/auth">
-                  <Button variant="ghost" size="sm" className="hover:bg-accent hover:text-accent-foreground text-xs xl:text-sm px-2 xl:px-3">
+                  <Button variant="ghost" size="sm" className="hover:bg-accent hover:text-accent-foreground text-xs 2xl:text-sm px-2 2xl:px-3">
                     {t('auth.login')}
                   </Button>
                 </Link>
