@@ -35,7 +35,7 @@ const ProviderEvaluationsTab = ({ reviews }: ProviderEvaluationsTabProps) => {
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        className={`h-4 w-4 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                        className={`h-4 w-4 ${i < review.rating ? 'fill-warning text-warning' : 'text-muted-foreground/40'}`}
                       />
                     ))}
                   </div>

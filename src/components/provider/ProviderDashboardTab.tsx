@@ -70,7 +70,7 @@ const ProviderDashboardTab = ({ stats, opportunities, missions, applyToMission }
               </div>
             </div>
             <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-              <div className={`flex items-center gap-1 ${stats.earningsGrowth >= 0 ? 'text-green-600' : 'text-red-500'} text-xs sm:text-sm font-medium`}>
+              <div className={`flex items-center gap-1 ${stats.earningsGrowth >= 0 ? 'text-success' : 'text-destructive'} text-xs sm:text-sm font-medium`}>
                 {stats.earningsGrowth >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                 {stats.earningsGrowth >= 0 ? '+' : ''}{stats.earningsGrowth}%
               </div>
@@ -114,7 +114,7 @@ const ProviderDashboardTab = ({ stats, opportunities, missions, applyToMission }
             </div>
             <div className="flex items-center gap-0.5 sm:gap-1">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} className={`h-3 w-3 sm:h-4 sm:w-4 ${i < Math.floor(stats.averageRating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
+                <Star key={i} className={`h-3 w-3 sm:h-4 sm:w-4 ${i < Math.floor(stats.averageRating) ? 'fill-warning text-warning' : 'text-muted-foreground/40'}`} />
               ))}
             </div>
           </CardContent>
