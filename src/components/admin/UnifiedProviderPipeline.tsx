@@ -491,7 +491,18 @@ export const UnifiedProviderPipeline = () => {
                           {stageCfg.label}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground truncate">{person.email}</p>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span className="truncate">{person.email}</span>
+                        {person.serviceCategories.length > 0 ? (
+                          <Badge variant="outline" className="text-xs">
+                            {person.serviceCategories.length} service(s)
+                          </Badge>
+                        ) : person.stage !== "candidature" ? (
+                          <Badge variant="destructive" className="text-xs">
+                            ⚠ Aucun service
+                          </Badge>
+                        ) : null}
+                      </div>
                     </div>
 
                     {/* Doc progress mini */}
