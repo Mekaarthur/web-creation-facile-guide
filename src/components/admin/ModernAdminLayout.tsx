@@ -35,7 +35,8 @@ import {
   CreditCard,
   FileText,
   PieChart,
-  Gift
+  Gift,
+  MessageSquareWarning
 } from "lucide-react";
 import { Mail } from "lucide-react";
 import { NotificationBell } from './NotificationBell';
@@ -86,6 +87,12 @@ const navigationGroups = [
         title: "Urgences", 
         href: "/modern-admin/urgences", 
         icon: AlertTriangle,
+        badge: null
+      },
+      { 
+        title: "Réclamations", 
+        href: "/modern-admin/reclamations", 
+        icon: MessageSquareWarning,
         badge: null
       }
     ]
