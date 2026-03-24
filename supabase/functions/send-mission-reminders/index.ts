@@ -27,8 +27,7 @@ serve(async (req) => {
       .select(`
         id, booking_date, start_time, end_time, address, total_price,
         provider_id, status,
-        services(name),
-        providers(user_id, profiles:user_id(first_name, last_name))
+        services(name)
       `)
       .eq('booking_date', tomorrowStr)
       .in('status', ['confirmed', 'assigned'])
