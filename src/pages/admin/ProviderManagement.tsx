@@ -22,6 +22,7 @@ import {
 import { ApplicationDetails } from '@/components/admin/ApplicationDetails';
 import { ProviderOnboardingTracker } from '@/components/admin/ProviderOnboardingTracker';
 import { ApplicationDocumentsValidator } from '@/components/admin/ApplicationDocumentsValidator';
+import { ProviderDocumentsReview } from '@/components/admin/ProviderDocumentsReview';
 import ApplicationsKanban from '@/components/admin/ApplicationsKanban';
 
 export default function ProviderManagement() {
@@ -289,12 +290,15 @@ export default function ProviderManagement() {
 
       {/* Onglets */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="pending_applications">
             Candidatures ({stats.pending})
           </TabsTrigger>
           <TabsTrigger value="documents_validation">
-            Documents ({filterApplications('documents_pending').length})
+            Docs candidatures ({filterApplications('documents_pending').length})
+          </TabsTrigger>
+          <TabsTrigger value="provider_documents">
+            Docs prestataires
           </TabsTrigger>
           <TabsTrigger value="onboarding">
             Onboarding ({stats.onboarding})
@@ -360,6 +364,12 @@ export default function ProviderManagement() {
               </CardContent>
             </Card>
           ))}
+        </TabsContent>
+
+
+        {/* Documents prestataires (provider_documents) */}
+        <TabsContent value="provider_documents" className="space-y-4">
+          <ProviderDocumentsReview />
         </TabsContent>
 
         {/* Onboarding */}
