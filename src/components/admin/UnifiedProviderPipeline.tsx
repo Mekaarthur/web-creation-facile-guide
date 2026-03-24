@@ -50,6 +50,9 @@ interface UnifiedPerson {
   provider?: any;
   // All documents (merged)
   allDocuments: DocumentItem[];
+  // Services count
+  servicesCount: number;
+  serviceCategories: string[];
 }
 
 interface DocumentItem {
@@ -146,6 +149,8 @@ export const UnifiedProviderPipeline = () => {
           createdAt: app.created_at,
           application: app,
           allDocuments: appDocs,
+          servicesCount: 0,
+          serviceCategories: app.service_categories || [app.category].filter(Boolean),
         });
       }
 
@@ -205,6 +210,8 @@ export const UnifiedProviderPipeline = () => {
             createdAt: prov.created_at,
             provider: prov,
             allDocuments: providerDocs,
+            servicesCount: 0,
+            serviceCategories: matchingApp?.service_categories || [],
           });
         }
       }
@@ -484,7 +491,18 @@ export const UnifiedProviderPipeline = () => {
                           {stageCfg.label}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground truncate">{person.email}</p>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span className="truncate">{person.email}</span>
+                        {person.serviceCategories.length > 0 ? (
+                          <Badge variant="outline" className="text-xs">
+                            {person.serviceCategories.length} service(s)
+                          </Badge>
+                        ) : person.stage !== "candidature" ? (
+                          <Badge variant="destructive" className="text-xs">
+                            ⚠ Aucun service
+                          </Badge>
+                        ) : null}
+                      </div>
                     </div>
 
                     {/* Doc progress mini */}
