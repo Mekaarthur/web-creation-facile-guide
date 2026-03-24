@@ -1,4 +1,5 @@
 import { EmergencyDashboard } from "@/components/admin/EmergencyDashboard";
+import { IncidentsPanel } from "@/components/admin/IncidentsPanel";
 
 const Urgences = () => {
   return (
@@ -10,6 +11,7 @@ const Urgences = () => {
             Dashboard temps réel, pool backup et protocole d'escalade
           </p>
         </div>
+        <IncidentsPanel />
         <EmergencyDashboard />
       </div>
     </div>
