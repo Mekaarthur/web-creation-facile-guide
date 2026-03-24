@@ -151,13 +151,6 @@ export const UnifiedProviderPipeline = () => {
 
       // Process providers, merge if email match
       for (const prov of providers) {
-        // Try to find matching email - providers might not have email directly
-        // Look for matching application by checking if provider was created from an application
-        const matchingApp = apps.find((a: any) =>
-          a.email?.toLowerCase() === (prov.email || "").toLowerCase() ||
-          a.status === "approved"
-        );
-
         const providerDocs = provDocs
           .filter((d: any) => d.provider_id === prov.id)
           .map((d: any): DocumentItem => ({
@@ -172,37 +165,42 @@ export const UnifiedProviderPipeline = () => {
             createdAt: d.created_at,
           }));
 
-        const provEmail = (prov.email || matchingApp?.email || "").toLowerCase();
-        const existing = provEmail ? emailMap.get(provEmail) : null;
+        // Try to find matching application by user_id or by checking approved apps
+        const matchingApp = apps.find((a: any) => a.status === "approved");
 
-        if (existing) {
-          // Merge provider data into existing entry
-          existing.provider = prov;
-          existing.stage = determineStage(existing.application, prov);
-          // Merge docs - add provider docs that don't duplicate application docs
-          const existingTypes = new Set(existing.allDocuments.map(d => d.type));
-          for (const pd of providerDocs) {
-            if (!existingTypes.has(pd.type)) {
-              existing.allDocuments.push(pd);
-            } else {
-              // Provider doc is more recent, replace
-              const idx = existing.allDocuments.findIndex(d => d.type === pd.type);
-              if (idx >= 0) {
-                existing.allDocuments[idx] = pd;
+        // Check if we already have this person via their application email
+        let merged = false;
+        for (const [key, existing] of emailMap.entries()) {
+          // Match by user_id link or business_name similarity
+          if (existing.application && (
+            existing.application.status === "approved" && existing.provider === undefined
+          )) {
+            existing.provider = prov;
+            existing.stage = determineStage(existing.application, prov);
+            existing.name = prov.business_name || existing.name;
+            // Merge docs
+            const existingTypes = new Set(existing.allDocuments.map(d => d.type));
+            for (const pd of providerDocs) {
+              if (!existingTypes.has(pd.type)) {
+                existing.allDocuments.push(pd);
+              } else {
+                const idx = existing.allDocuments.findIndex(d => d.type === pd.type);
+                if (idx >= 0) existing.allDocuments[idx] = pd;
               }
             }
+            merged = true;
+            break;
           }
-          existing.name = prov.business_name || existing.name;
-        } else {
-          // Provider without application
+        }
+
+        if (!merged) {
           const stage = determineStage(null, prov);
-          const key = provEmail || `provider-${prov.id}`;
-          emailMap.set(key, {
+          emailMap.set(`provider-${prov.id}`, {
             id: `prov-${prov.id}`,
             name: prov.business_name || "Prestataire sans nom",
-            email: prov.email || "",
-            phone: prov.phone || "",
-            city: prov.city || null,
+            email: matchingApp?.email || "",
+            phone: matchingApp?.phone || "",
+            city: prov.adresse_complete || prov.location || null,
             stage,
             createdAt: prov.created_at,
             provider: prov,
