@@ -4923,6 +4923,27 @@ export type Database = {
       get_matching_providers:
         | {
             Args: {
+              p_date_time?: string
+              p_limit?: number
+              p_location: string
+              p_service_type: string
+            }
+            Returns: {
+              availability_slots: Json
+              business_name: string
+              distance_km: number
+              hourly_rate: number
+              last_activity_at: string
+              location: string
+              match_score: number
+              missions_completed: number
+              provider_id: string
+              rating: number
+              services_offered: Json
+            }[]
+          }
+        | {
+            Args: {
               p_limit?: number
               p_location: string
               p_service_type: string
