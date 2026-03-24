@@ -920,27 +920,29 @@ export default function EnhancedModernDashboard() {
         {/* Panneau d'alertes visible sur tous les onglets */}
         <AdminAlertsPanel onNavigate={() => {}} />
         
-        <TabsList className="grid w-full grid-cols-6 lg:grid-cols-12">
-          <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
-          <TabsTrigger value="kanban">Kanban</TabsTrigger>
-          <TabsTrigger value="matching">🤖 Matching IA</TabsTrigger>
-          <TabsTrigger value="users">Utilisateurs</TabsTrigger>
-          <TabsTrigger value="providers">Prestataires</TabsTrigger>
-          <TabsTrigger value="applications">Candidatures</TabsTrigger>
-          <TabsTrigger value="requests">Demandes clients</TabsTrigger>
-          <TabsTrigger value="manual_assignment">Attribution manuelle</TabsTrigger>
-          <TabsTrigger value="enhanced_requests">Gestion avancée</TabsTrigger>
-          <TabsTrigger value="messaging">Messagerie</TabsTrigger>
-          <TabsTrigger value="reviews">
-            Modération
-            {(adminStats.pending_reviews + adminStats.flagged_reviews) > 0 && (
-              <Badge variant="destructive" className="ml-2">
-                {adminStats.pending_reviews + adminStats.flagged_reviews}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="reports">📊 Rapports</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0 pb-2">
+          <TabsList className="inline-flex w-max sm:grid sm:w-full sm:grid-cols-6 lg:grid-cols-12 gap-0.5">
+            <TabsTrigger value="overview" className="text-xs sm:text-sm whitespace-nowrap">Vue d'ensemble</TabsTrigger>
+            <TabsTrigger value="kanban" className="text-xs sm:text-sm whitespace-nowrap">Kanban</TabsTrigger>
+            <TabsTrigger value="matching" className="text-xs sm:text-sm whitespace-nowrap">🤖 Matching IA</TabsTrigger>
+            <TabsTrigger value="users" className="text-xs sm:text-sm whitespace-nowrap">Utilisateurs</TabsTrigger>
+            <TabsTrigger value="providers" className="text-xs sm:text-sm whitespace-nowrap">Prestataires</TabsTrigger>
+            <TabsTrigger value="applications" className="text-xs sm:text-sm whitespace-nowrap">Candidatures</TabsTrigger>
+            <TabsTrigger value="requests" className="text-xs sm:text-sm whitespace-nowrap">Demandes clients</TabsTrigger>
+            <TabsTrigger value="manual_assignment" className="text-xs sm:text-sm whitespace-nowrap">Attribution</TabsTrigger>
+            <TabsTrigger value="enhanced_requests" className="text-xs sm:text-sm whitespace-nowrap">Gestion avancée</TabsTrigger>
+            <TabsTrigger value="messaging" className="text-xs sm:text-sm whitespace-nowrap">Messagerie</TabsTrigger>
+            <TabsTrigger value="reviews" className="text-xs sm:text-sm whitespace-nowrap">
+              Modération
+              {(adminStats.pending_reviews + adminStats.flagged_reviews) > 0 && (
+                <Badge variant="destructive" className="ml-1 text-[9px] px-1">
+                  {adminStats.pending_reviews + adminStats.flagged_reviews}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="text-xs sm:text-sm whitespace-nowrap">📊 Rapports</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="overview" className="space-y-6">
           {/* Charts Section */}
