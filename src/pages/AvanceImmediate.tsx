@@ -29,6 +29,9 @@ const AvanceImmediate = () => {
                 vos services Bikawo. Un service officiel mis en place par <strong className="text-foreground">l'Urssaf</strong> et la{" "}
                 <strong className="text-foreground">Direction générale des Finances publiques (DGFiP)</strong>.
               </p>
+              <p className="text-sm text-muted-foreground">
+                Bikawo — Organisme SAP déclaré n° <strong className="text-foreground">SAP 880491436</strong>
+              </p>
             </div>
           </div>
         </section>
