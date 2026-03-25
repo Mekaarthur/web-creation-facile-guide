@@ -50,19 +50,17 @@ serve(async (req) => {
     const urssafSiret = Deno.env.get("URSSAF_SIRET");
 
     if (!urssafApiUrl || !urssafClientId || !urssafClientSecret || !urssafSiret) {
-      logStep("URSSAF credentials not configured - simulation mode");
+      logStep("CRITICAL: URSSAF credentials not configured - blocking registration");
       
-      // Simulation mode: Return success without actual API call
+      // BLOCK registration in simulation mode - do not promise what we can't deliver
       return new Response(JSON.stringify({ 
-        success: true,
+        success: false,
         simulation: true,
-        message: "URSSAF registration simulated (credentials not configured)",
-        registrationId: `SIM-${Date.now()}`,
-        clientAmount,
-        stateAmount
+        error: "Le service d'avance immédiate n'est pas encore disponible. L'intégration URSSAF est en cours de configuration. Vous pouvez réserver sans l'avance immédiate et bénéficier du crédit d'impôt classique sur votre déclaration de revenus.",
+        message: "URSSAF API credentials not configured. Registration blocked to prevent false promises.",
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
+        status: 503,
       });
     }
 

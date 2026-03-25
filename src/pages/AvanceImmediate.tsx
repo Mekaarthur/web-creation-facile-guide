@@ -83,10 +83,16 @@ const AvanceImmediate = () => {
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-4 h-4 text-primary shrink-0 mt-1" />
                     <span>
-                      Activer votre compte sur{" "}
+                      Activer votre espace sur le portail URSSAF indiqué par Bikawo ({" "}
                       <a href="https://www.cesu.urssaf.fr" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">
-                        cesu.urssaf.fr
-                      </a>
+                        CESU
+                      </a>,{" "}
+                      <a href="https://www.letese.urssaf.fr" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">
+                        TESE
+                      </a>{" "}ou{" "}
+                      <a href="https://nova.urssaf.fr" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">
+                        Nova
+                      </a>)
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
@@ -97,19 +103,29 @@ const AvanceImmediate = () => {
               </div>
 
               <div className="bg-primary/5 border border-primary/20 rounded-xl p-6 space-y-4">
-                <h3 className="font-semibold text-foreground text-lg">💰 Plafond du crédit d'impôt</h3>
+                <h3 className="font-semibold text-foreground text-lg">💰 Plafonds du crédit d'impôt</h3>
                 <p className="text-muted-foreground leading-relaxed">
                   Le crédit d'impôt est de <strong className="text-primary">50% des sommes versées</strong>, dans la limite de :
                 </p>
                 <div className="bg-card border border-border rounded-lg p-4 space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Plafond de dépenses annuel</span>
-                    <span className="font-bold text-foreground text-lg">12 000 €</span>
+                    <span className="text-muted-foreground">Plafond de base</span>
+                    <span className="font-bold text-foreground">12 000 € <span className="text-sm font-normal text-muted-foreground">(soit 6 000 € de crédit)</span></span>
                   </div>
                   <div className="h-px bg-border" />
                   <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Crédit d'impôt maximum</span>
-                    <span className="font-bold text-primary text-lg">6 000 €</span>
+                    <span className="text-muted-foreground">1ère année de recours aux SAP</span>
+                    <span className="font-bold text-foreground">15 000 € <span className="text-sm font-normal text-muted-foreground">(soit 7 500 € de crédit)</span></span>
+                  </div>
+                  <div className="h-px bg-border" />
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Enfant à charge / membre du foyer &gt; 65 ans</span>
+                    <span className="font-bold text-foreground">15 000 € <span className="text-sm font-normal text-muted-foreground">(+1 500 € par personne)</span></span>
+                  </div>
+                  <div className="h-px bg-border" />
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Invalidité (titulaire carte ou bénéficiaire APA)</span>
+                    <span className="font-bold text-primary text-lg">20 000 € <span className="text-sm font-normal text-muted-foreground">(soit 10 000 € de crédit)</span></span>
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -136,13 +152,13 @@ const AvanceImmediate = () => {
                 },
                 {
                   step: "2",
-                  title: "Activez votre compte CESU",
-                  description: "Activez votre compte sur cesu.urssaf.fr (vous recevrez un email avec le lien d'activation).",
+                  title: "Activez votre espace URSSAF",
+                  description: "Selon votre situation, activez votre compte sur le portail indiqué par Bikawo : CESU (cesu.urssaf.fr), TESE ou Nova. Vous recevrez un email avec le lien d'activation correspondant.",
                 },
                 {
                   step: "3",
                   title: "Demande de paiement",
-                  description: "Après chaque prestation, vous recevez une demande de paiement sur votre compte.",
+                  description: "Après chaque prestation, vous recevez une demande de paiement sur votre espace URSSAF.",
                 },
                 {
                   step: "4",
@@ -220,15 +236,10 @@ const AvanceImmediate = () => {
                   <strong className="text-foreground">L'URSSAF gère uniquement le versement du crédit d'impôt.</strong>
                 </p>
                 <p className="text-muted-foreground leading-relaxed mt-1">
-                  Pour des questions techniques sur votre compte CESU :{" "}
-                  <a
-                    href="https://www.cesu.urssaf.fr"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary underline hover:text-primary/80"
-                  >
-                    cesu.urssaf.fr
-                  </a>{" "}
+                  Pour des questions techniques sur votre espace URSSAF :{" "}
+                  <a href="https://www.cesu.urssaf.fr" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">CESU</a>,{" "}
+                  <a href="https://www.letese.urssaf.fr" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">TESE</a>{" "}ou{" "}
+                  <a href="https://nova.urssaf.fr" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">Nova</a>{" "}
                   (rubrique "Contact")
                 </p>
               </div>
