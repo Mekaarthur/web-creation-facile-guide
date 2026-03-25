@@ -57,9 +57,20 @@ const MentionsLegales = () => {
                   entreprise individuelle (auto-entreprise), immatriculée sous le numéro <strong>880 491 436</strong>.
                 </p>
                 
-                <div className="border-l-4 border-primary pl-4">
+                <div className="border-l-4 border-primary pl-4 space-y-1">
                   <p className="font-semibold text-foreground">Siège social :</p>
                   <p className="text-muted-foreground">231 rue Saint-Honoré, 75001 Paris</p>
+                </div>
+
+                <div className="border-l-4 border-primary pl-4 space-y-1">
+                  <p className="font-semibold text-foreground">Déclaration SAP :</p>
+                  <p className="text-muted-foreground">
+                    Organisme de services à la personne déclaré sous le n° <strong className="text-foreground">SAP 880491436</strong>, 
+                    enregistré auprès de la DRIEETS – Unité Départementale de Paris le 8 décembre 2025.
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    Récépissé délivré le 21 janvier 2025 par le Préfet de Paris. Déclaration à portée nationale, non limitée dans le temps.
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -85,8 +96,9 @@ const MentionsLegales = () => {
               <div className="space-y-6">
                 <p className="text-foreground leading-relaxed">
                   La société Bikawo exerce à titre exclusif des activités de <strong>services à la personne</strong>, 
-                  conformément à sa déclaration effectuée sur la plateforme NOVA auprès de la Direction Départementale 
-                  de l'Emploi, du Travail et des Solidarités de Paris (DDETS 75).
+                  déclarée sous le <strong className="text-primary">n° SAP 880491436</strong>, 
+                  conformément à sa déclaration effectuée sur la plateforme NOVA auprès de la DRIEETS – 
+                  Unité Départementale de Paris (récépissé du Préfet de Paris du 21 janvier 2025).
                 </p>
 
                 <div className="bg-muted/30 rounded-xl p-6">
