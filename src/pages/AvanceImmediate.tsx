@@ -236,15 +236,10 @@ const AvanceImmediate = () => {
                   <strong className="text-foreground">L'URSSAF gère uniquement le versement du crédit d'impôt.</strong>
                 </p>
                 <p className="text-muted-foreground leading-relaxed mt-1">
-                  Pour des questions techniques sur votre compte CESU :{" "}
-                  <a
-                    href="https://www.cesu.urssaf.fr"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary underline hover:text-primary/80"
-                  >
-                    cesu.urssaf.fr
-                  </a>{" "}
+                  Pour des questions techniques sur votre espace URSSAF :{" "}
+                  <a href="https://www.cesu.urssaf.fr" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">CESU</a>,{" "}
+                  <a href="https://www.letese.urssaf.fr" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">TESE</a>{" "}ou{" "}
+                  <a href="https://nova.urssaf.fr" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">Nova</a>{" "}
                   (rubrique "Contact")
                 </p>
               </div>
