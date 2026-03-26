@@ -92,7 +92,7 @@ const ProviderSignup = () => {
   const onSubmit = async (data: ProviderCandidateForm) => {
     try {
       // D'abord, télécharger tous les fichiers
-      const userId = crypto.randomUUID(); // Identifiant temporaire
+      const applicationId = crypto.randomUUID(); // Identifiant unique pour cette candidature
       const uploadedDocs: Record<string, string> = {};
       
       // Upload documents obligatoires
@@ -109,16 +109,16 @@ const ProviderSignup = () => {
       
       for (const doc of documentsToUpload) {
         if (doc.file) {
-          const fileName = `${userId}/${doc.folder}/${Date.now()}_${doc.file.name}`;
+          const fileName = `${applicationId}/${doc.folder}/${Date.now()}_${doc.file.name}`;
           const { error: uploadError } = await supabase.storage
-            .from('provider-documents')
+            .from('provider-applications')
             .upload(fileName, doc.file);
           
           if (uploadError) {
             throw new Error(`Erreur upload ${doc.folder}: ${uploadError.message}`);
           }
           
-          // Stocker le chemin du fichier, pas l'URL publique (bucket privé)
+          // Stocker le chemin du fichier
           uploadedDocs[doc.key] = fileName;
         }
       }
