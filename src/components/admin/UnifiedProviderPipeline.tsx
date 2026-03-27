@@ -674,7 +674,7 @@ export const UnifiedProviderPipeline = () => {
                                 <div className="flex items-center gap-1.5 flex-shrink-0">
                                   {getStatusBadge(doc.status)}
                                   {doc.url && (
-                                    <Button size="sm" variant="ghost" onClick={() => viewDocument(doc.url!)}>
+                                    <Button size="sm" variant="ghost" onClick={() => viewDocument(doc.url!, doc.source)}>
                                       <ExternalLink className="w-3.5 h-3.5" />
                                     </Button>
                                   )}
