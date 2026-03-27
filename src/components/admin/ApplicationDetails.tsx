@@ -38,9 +38,12 @@ export const ApplicationDetails = ({
     );
   };
 
-  const viewDocument = (url: string) => {
+  const viewDocument = async (url: string) => {
     if (!url) return;
-    window.open(url, '_blank');
+    const success = await openDocument(url, 'provider-applications');
+    if (!success) {
+      console.error('Impossible d\'ouvrir le document');
+    }
   };
 
   return (

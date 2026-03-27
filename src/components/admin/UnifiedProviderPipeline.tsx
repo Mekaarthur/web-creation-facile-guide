@@ -406,18 +406,12 @@ export const UnifiedProviderPipeline = () => {
     }
   };
 
-  const viewDocument = async (url: string) => {
+  const viewDocument = async (url: string, source?: string) => {
     if (!url) return;
-    if (url.startsWith("http")) {
-      window.open(url, "_blank");
-    } else {
-      try {
-        const { data, error } = await supabase.storage.from("provider-documents").createSignedUrl(url, 3600);
-        if (error) throw error;
-        window.open(data.signedUrl, "_blank");
-      } catch {
-        toast.error("Impossible d'ouvrir le document");
-      }
+    const bucket = source === "provider" ? "provider-documents" : "provider-applications";
+    const success = await openDocument(url, bucket);
+    if (!success) {
+      toast.error("Impossible d'ouvrir le document");
     }
   };
 
