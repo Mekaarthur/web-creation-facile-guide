@@ -182,7 +182,14 @@ export const ProviderDocumentsReview = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => window.open(doc.file_url, "_blank")}
+                          onClick={() => {
+                            const url = doc.file_url;
+                            if (url && !url.startsWith('http')) {
+                              window.open(`https://cgrosjzmbgxmtvwxictr.supabase.co/storage/v1/object/public/provider-documents/${url}`, '_blank');
+                            } else {
+                              window.open(url, '_blank');
+                            }
+                          }}
                         >
                           <ExternalLink className="h-4 w-4 mr-1" />
                           Voir
