@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { openDocument } from "@/utils/storageHelpers";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -406,18 +407,12 @@ export const UnifiedProviderPipeline = () => {
     }
   };
 
-  const viewDocument = async (url: string) => {
+  const viewDocument = async (url: string, source?: string) => {
     if (!url) return;
-    if (url.startsWith("http")) {
-      window.open(url, "_blank");
-    } else {
-      try {
-        const { data, error } = await supabase.storage.from("provider-documents").createSignedUrl(url, 3600);
-        if (error) throw error;
-        window.open(data.signedUrl, "_blank");
-      } catch {
-        toast.error("Impossible d'ouvrir le document");
-      }
+    const bucket = source === "provider" ? "provider-documents" : "provider-applications";
+    const success = await openDocument(url, bucket);
+    if (!success) {
+      toast.error("Impossible d'ouvrir le document");
     }
   };
 
@@ -679,7 +674,7 @@ export const UnifiedProviderPipeline = () => {
                                 <div className="flex items-center gap-1.5 flex-shrink-0">
                                   {getStatusBadge(doc.status)}
                                   {doc.url && (
-                                    <Button size="sm" variant="ghost" onClick={() => viewDocument(doc.url!)}>
+                                    <Button size="sm" variant="ghost" onClick={() => viewDocument(doc.url!, doc.source)}>
                                       <ExternalLink className="w-3.5 h-3.5" />
                                     </Button>
                                   )}

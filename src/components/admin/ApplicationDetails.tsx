@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { openDocument } from '@/utils/storageHelpers';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -38,9 +39,12 @@ export const ApplicationDetails = ({
     );
   };
 
-  const viewDocument = (url: string) => {
+  const viewDocument = async (url: string) => {
     if (!url) return;
-    window.open(url, '_blank');
+    const success = await openDocument(url, 'provider-applications');
+    if (!success) {
+      console.error('Impossible d\'ouvrir le document');
+    }
   };
 
   return (

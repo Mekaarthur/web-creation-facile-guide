@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { openDocument } from '@/utils/storageHelpers';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -297,25 +298,13 @@ export const ApplicationDocumentsValidator = ({
   };
 
   const viewDocument = async (url: string) => {
-    if (url.startsWith('http')) {
-      window.open(url, '_blank');
-    } else {
-      // C'est un chemin de storage, on doit générer l'URL signée
-      try {
-        const { data, error } = await supabase.storage
-          .from('provider-documents')
-          .createSignedUrl(url, 3600); // 1 heure
-        
-        if (error) throw error;
-        window.open(data.signedUrl, '_blank');
-      } catch (error) {
-        console.error('Erreur ouverture document:', error);
-        toast({
-          title: "Erreur",
-          description: "Impossible d'ouvrir le document.",
-          variant: "destructive"
-        });
-      }
+    const success = await openDocument(url, 'provider-applications');
+    if (!success) {
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ouvrir le document.",
+        variant: "destructive"
+      });
     }
   };
 
