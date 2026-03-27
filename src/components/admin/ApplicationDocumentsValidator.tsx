@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { openDocument } from '@/utils/storageHelpers';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
