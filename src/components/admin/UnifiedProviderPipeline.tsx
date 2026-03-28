@@ -142,7 +142,7 @@ export const UnifiedProviderPipeline = () => {
         const appValidations = validations.filter((v: any) => v.application_id === app.id);
         const appDocs = buildApplicationDocs(app, appValidations);
 
-        const stage = determineStage(app, null);
+        const stage = determineStage(app, null, appDocs);
         emailMap.set(email, {
           id: `app-${app.id}`,
           name: `${app.first_name} ${app.last_name}`,
@@ -196,7 +196,7 @@ export const UnifiedProviderPipeline = () => {
             existing.application.status === "approved" && existing.provider === undefined
           )) {
             existing.provider = prov;
-            existing.stage = determineStage(existing.application, prov);
+            existing.stage = determineStage(existing.application, prov, existing.allDocuments);
             existing.name = prov.business_name || existing.name;
             existing.servicesCount = thisProvServices.length;
             existing.serviceCategories = provServiceCategories.length > 0 
@@ -219,7 +219,7 @@ export const UnifiedProviderPipeline = () => {
         }
 
         if (!merged) {
-          const stage = determineStage(null, prov);
+          const stage = determineStage(null, prov, providerDocs);
           emailMap.set(`provider-${prov.id}`, {
             id: `prov-${prov.id}`,
             name: prov.business_name || "Prestataire sans nom",
@@ -282,9 +282,14 @@ export const UnifiedProviderPipeline = () => {
     return docs;
   };
 
-  const determineStage = (app: any | null, provider: any | null): PipelineStage => {
+  const determineStage = (app: any | null, provider: any | null, docs?: DocumentItem[]): PipelineStage => {
     if (provider?.status === "active" && provider?.is_verified) return "actif";
     if (provider) {
+      // Check if all documents are approved
+      if (docs && docs.length > 0) {
+        const allApproved = docs.every(d => d.status === "approved");
+        if (!allApproved) return "documents";
+      }
       const needsOnboarding = !provider.mandat_facturation_accepte || !provider.formation_completed || !provider.identity_verified;
       if (needsOnboarding) return "onboarding";
       return "actif";
