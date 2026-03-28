@@ -253,11 +253,14 @@ serve(async (req) => {
         }
       }
 
-      // Assigner rôle provider
-      await supabase.rpc('add_user_role', {
-        target_user_id: userId,
-        new_role: 'provider',
-      });
+      // Assigner rôle provider (direct insert with service role - bypasses RLS)
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .upsert({ user_id: userId, role: 'provider' }, { onConflict: 'user_id,role', ignoreDuplicates: true });
+      
+      if (roleError) {
+        console.error('Error assigning provider role:', roleError);
+      }
 
       // Mettre à jour la candidature
       await supabase
