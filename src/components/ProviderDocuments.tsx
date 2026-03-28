@@ -93,8 +93,8 @@ const ProviderDocuments = () => {
     },
     {
       type: 'certification',
-      label: 'Certification ou accréditation',
-      description: 'Certification professionnelle ou accréditation officielle (optionnel)',
+      label: 'Agrément Nova',
+      description: 'Agrément Nova ou accréditation officielle (optionnel)',
       icon: Shield,
       required: false
     }
