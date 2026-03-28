@@ -84,8 +84,8 @@ const DOC_LABELS: Record<string, string> = {
   siren: "SIREN",
   rib_iban: "RIB / IBAN",
   cv: "CV",
-  certification: "Certification",
-  certifications: "Certifications",
+  certification: "Agrément Nova",
+  certifications: "Agrément Nova",
   insurance: "Assurance",
 };
 

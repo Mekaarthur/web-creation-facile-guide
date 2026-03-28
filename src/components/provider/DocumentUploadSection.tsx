@@ -27,7 +27,7 @@ const DOCUMENT_TYPES = [
   { value: 'siret_document', label: 'Document SIRET / KBIS', required: true },
   { value: 'rib_iban', label: 'RIB/IBAN', required: true },
   
-  { value: 'certification', label: 'Certifications professionnelles', required: false },
+  { value: 'certification', label: 'Agrément Nova', required: false },
   { value: 'insurance', label: 'Assurance RC Pro', required: false },
   { value: 'diploma', label: 'Diplômes', required: false },
 ];

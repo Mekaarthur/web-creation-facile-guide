@@ -30,7 +30,7 @@ const DOC_LABELS: Record<string, string> = {
   criminal_record: "Casier judiciaire",
   siret_document: "SIRET / SIREN",
   rib_iban: "RIB / IBAN",
-  certification: "Certification",
+  certification: "Agrément Nova",
   cv: "CV",
   insurance: "Assurance",
 };
