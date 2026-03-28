@@ -78,6 +78,16 @@ export const ProviderDocumentsReview = () => {
       toast.error("Erreur lors de l'approbation");
     } else {
       toast.success(`Document "${DOC_LABELS[doc.document_type] || doc.document_type}" approuvé`);
+      
+      // Check if all docs for this provider are now approved
+      const providerDocs = documents.filter(d => d.provider_id === doc.provider_id && d.id !== doc.id);
+      const allOtherApproved = providerDocs.every(d => d.status === "approved");
+      if (allOtherApproved) {
+        await supabase.from("providers")
+          .update({ documents_submitted: true, documents_submitted_at: new Date().toISOString() })
+          .eq("id", doc.provider_id);
+      }
+      
       loadDocuments();
     }
   };

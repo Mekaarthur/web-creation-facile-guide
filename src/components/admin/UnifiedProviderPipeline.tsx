@@ -366,7 +366,17 @@ export const UnifiedProviderPipeline = () => {
   const handleApproveDoc = async (doc: DocumentItem, person: UnifiedPerson) => {
     try {
       if (doc.source === "provider") {
-        await supabase.from("provider_documents").update({ status: "approved", approved_at: new Date().toISOString(), rejection_reason: null }).eq("id", doc.id);
+        const { error } = await supabase.from("provider_documents").update({ status: "approved", approved_at: new Date().toISOString(), rejection_reason: null }).eq("id", doc.id);
+        if (error) throw error;
+        
+        // Check if all provider docs are now approved
+        const otherDocs = person.allDocuments.filter(d => d.source === "provider" && d.id !== doc.id);
+        const allOtherApproved = otherDocs.every(d => d.status === "approved");
+        if (allOtherApproved && person.provider) {
+          await supabase.from("providers")
+            .update({ documents_submitted: true, documents_submitted_at: new Date().toISOString() })
+            .eq("id", person.provider.id);
+        }
       } else if (person.application) {
         const { data: { user } } = await supabase.auth.getUser();
         await supabase.from("application_document_validations").upsert({
