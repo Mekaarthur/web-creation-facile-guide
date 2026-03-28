@@ -142,7 +142,7 @@ export const UnifiedProviderPipeline = () => {
         const appValidations = validations.filter((v: any) => v.application_id === app.id);
         const appDocs = buildApplicationDocs(app, appValidations);
 
-        const stage = determineStage(app, null);
+        const stage = determineStage(app, null, appDocs);
         emailMap.set(email, {
           id: `app-${app.id}`,
           name: `${app.first_name} ${app.last_name}`,
@@ -196,7 +196,7 @@ export const UnifiedProviderPipeline = () => {
             existing.application.status === "approved" && existing.provider === undefined
           )) {
             existing.provider = prov;
-            existing.stage = determineStage(existing.application, prov);
+            existing.stage = determineStage(existing.application, prov, existing.allDocuments);
             existing.name = prov.business_name || existing.name;
             existing.servicesCount = thisProvServices.length;
             existing.serviceCategories = provServiceCategories.length > 0 
@@ -219,7 +219,7 @@ export const UnifiedProviderPipeline = () => {
         }
 
         if (!merged) {
-          const stage = determineStage(null, prov);
+          const stage = determineStage(null, prov, providerDocs);
           emailMap.set(`provider-${prov.id}`, {
             id: `prov-${prov.id}`,
             name: prov.business_name || "Prestataire sans nom",
@@ -282,9 +282,14 @@ export const UnifiedProviderPipeline = () => {
     return docs;
   };
 
-  const determineStage = (app: any | null, provider: any | null): PipelineStage => {
+  const determineStage = (app: any | null, provider: any | null, docs?: DocumentItem[]): PipelineStage => {
     if (provider?.status === "active" && provider?.is_verified) return "actif";
     if (provider) {
+      // Check if all documents are approved
+      if (docs && docs.length > 0) {
+        const allApproved = docs.every(d => d.status === "approved");
+        if (!allApproved) return "documents";
+      }
       const needsOnboarding = !provider.mandat_facturation_accepte || !provider.formation_completed || !provider.identity_verified;
       if (needsOnboarding) return "onboarding";
       return "actif";
@@ -361,7 +366,17 @@ export const UnifiedProviderPipeline = () => {
   const handleApproveDoc = async (doc: DocumentItem, person: UnifiedPerson) => {
     try {
       if (doc.source === "provider") {
-        await supabase.from("provider_documents").update({ status: "approved", approved_at: new Date().toISOString(), rejection_reason: null }).eq("id", doc.id);
+        const { error } = await supabase.from("provider_documents").update({ status: "approved", approved_at: new Date().toISOString(), rejection_reason: null }).eq("id", doc.id);
+        if (error) throw error;
+        
+        // Check if all provider docs are now approved
+        const otherDocs = person.allDocuments.filter(d => d.source === "provider" && d.id !== doc.id);
+        const allOtherApproved = otherDocs.every(d => d.status === "approved");
+        if (allOtherApproved && person.provider) {
+          await supabase.from("providers")
+            .update({ documents_submitted: true, documents_submitted_at: new Date().toISOString() })
+            .eq("id", person.provider.id);
+        }
       } else if (person.application) {
         const { data: { user } } = await supabase.auth.getUser();
         await supabase.from("application_document_validations").upsert({
