@@ -185,16 +185,22 @@ export const UnifiedProviderPipeline = () => {
             .filter(Boolean)
         )] as string[];
 
-        // Try to find matching application by user_id or by checking approved apps
-        const matchingApp = apps.find((a: any) => a.status === "approved");
-
+        // Try to find matching application by email or user_id
+        const providerEmail = prov.user_id ? null : null; // will match via emailMap
+        
         // Check if we already have this person via their application email
         let merged = false;
         for (const [key, existing] of emailMap.entries()) {
-          // Match by user_id link or business_name similarity
-          if (existing.application && (
-            existing.application.status === "approved" && existing.provider === undefined
-          )) {
+          // Match by email (key is lowercase email) or by user_id
+          const emailMatch = key === (existing.application?.email?.toLowerCase());
+          const appMatchesProvider = existing.application && (
+            existing.application.status === "approved" && existing.provider === undefined &&
+            (existing.application.email?.toLowerCase() === prov.business_name?.toLowerCase() ||
+             prov.user_id === existing.application?.user_id ||
+             // Match profiles by checking if provider user_id created from this application
+             emailMatch)
+          );
+          if (appMatchesProvider) {
             existing.provider = prov;
             existing.stage = determineStage(existing.application, prov, existing.allDocuments);
             existing.name = prov.business_name || existing.name;
@@ -253,10 +259,10 @@ export const UnifiedProviderPipeline = () => {
     const docDefs = [
       { type: "identity_document", label: "Pièce d'identité", url: app.identity_document_url },
       { type: "criminal_record", label: "Casier judiciaire", url: app.criminal_record_url },
-      { type: "siren", label: "SIREN", url: null, value: app.siren_number },
+      { type: "siret_document", label: "SIREN / SIRET", url: null, value: app.siren_number },
       { type: "rib_iban", label: "RIB / IBAN", url: app.rib_iban_url },
       { type: "cv", label: "CV", url: app.cv_file_url },
-      { type: "certifications", label: "Certifications", url: app.certifications_url },
+      { type: "certifications", label: "Agrément Nova", url: app.certifications_url },
     ];
 
     for (const def of docDefs) {
