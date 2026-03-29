@@ -149,7 +149,7 @@ export const ApplicationDetails = ({
               { label: 'SIREN', value: application.siren_number },
               { label: 'RIB/IBAN', url: application.rib_iban_url },
               { label: 'CV', url: application.cv_file_url },
-              { label: 'Certifications', url: application.certifications_url },
+              { label: 'Agrément Nova', url: application.certifications_url },
             ].map((doc) => (
               <div key={doc.label} className="flex items-center justify-between p-2 rounded-lg border">
                 <div className="flex items-center gap-2">
