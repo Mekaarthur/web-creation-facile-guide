@@ -85,18 +85,18 @@ const ProviderDocuments = () => {
       required: true
     },
     {
-      type: 'cv',
-      label: 'Curriculum Vitae (CV)',
-      description: 'Votre CV détaillant votre parcours et vos compétences',
-      icon: FileText,
-      required: true
-    },
-    {
       type: 'certification',
       label: 'Agrément Nova',
       description: 'Agrément Nova ou accréditation officielle (obligatoire)',
       icon: Shield,
       required: true
+    },
+    {
+      type: 'insurance',
+      label: 'Assurance RC Pro',
+      description: 'Attestation d\'assurance responsabilité civile professionnelle',
+      icon: Award,
+      required: false
     }
   ];
 
@@ -243,6 +243,10 @@ const ProviderDocuments = () => {
             file_url: urlData.publicUrl,
             status: 'pending',
             upload_date: new Date().toISOString(),
+            approved_at: null,
+            rejected_at: null,
+            rejection_reason: null,
+            reviewed_by: null,
           })
           .eq('id', existingDoc.id);
         if (updateError) throw updateError;
@@ -300,6 +304,9 @@ const ProviderDocuments = () => {
       const { error } = await supabase
         .from('providers')
         .update({ 
+          documents_submitted: false,
+          documents_submitted_at: null,
+          status: 'documents_pending',
           updated_at: new Date().toISOString()
         })
         .eq('id', provider.id);

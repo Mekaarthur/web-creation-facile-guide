@@ -14,6 +14,9 @@ interface Document {
   status: string;
   upload_date: string;
   notes?: string;
+  rejection_reason?: string | null;
+  approved_at?: string | null;
+  rejected_at?: string | null;
 }
 
 interface DocumentUploadSectionProps {
@@ -26,10 +29,8 @@ const DOCUMENT_TYPES = [
   { value: 'criminal_record', label: 'Casier judiciaire (< 3 mois)', required: true },
   { value: 'siret_document', label: 'Document SIRET / KBIS', required: true },
   { value: 'rib_iban', label: 'RIB/IBAN', required: true },
-  
   { value: 'certification', label: 'Agrément Nova', required: true },
   { value: 'insurance', label: 'Assurance RC Pro', required: false },
-  { value: 'diploma', label: 'Diplômes', required: false },
 ];
 
 export const DocumentUploadSection = ({ providerId, onDocumentsUpdated }: DocumentUploadSectionProps) => {
@@ -119,7 +120,8 @@ export const DocumentUploadSection = ({ providerId, onDocumentsUpdated }: Docume
         const { error: statusError } = await supabase
           .from('providers')
           .update({
-            documents_submitted: true,
+            documents_submitted: false,
+            documents_submitted_at: null,
             status: 'documents_pending'
           })
           .eq('id', providerId);
@@ -167,6 +169,14 @@ export const DocumentUploadSection = ({ providerId, onDocumentsUpdated }: Docume
     }
   };
 
+  const allRequiredUploaded = DOCUMENT_TYPES
+    .filter(docType => docType.required)
+    .every(docType => documents.some(doc => doc.document_type === docType.value));
+
+  const allRequiredApproved = DOCUMENT_TYPES
+    .filter(docType => docType.required)
+    .every(docType => documents.some(doc => doc.document_type === docType.value && doc.status === 'approved'));
+
   return (
     <Card>
       <CardHeader>
@@ -202,9 +212,9 @@ export const DocumentUploadSection = ({ providerId, onDocumentsUpdated }: Docume
                 <Badge variant={status.variant}>{status.label}</Badge>
               </div>
 
-              {doc?.notes && status.status === 'rejected' && (
-                <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-700">
-                  <strong>Motif du refus:</strong> {doc.notes}
+              {doc?.rejection_reason && status.status === 'rejected' && (
+                <div className="mt-2 rounded border border-destructive/20 bg-destructive/5 p-2 text-sm text-destructive">
+                  <strong>Motif du refus:</strong> {doc.rejection_reason}
                 </div>
               )}
 
@@ -252,8 +262,16 @@ export const DocumentUploadSection = ({ providerId, onDocumentsUpdated }: Docume
           );
         })}
 
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm text-blue-700">
+        {allRequiredUploaded && !allRequiredApproved && (
+          <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+            <p className="text-sm text-foreground">
+              <strong>Dossier transmis :</strong> vos documents sont bien envoyés à l'administration et restent en attente de validation.
+            </p>
+          </div>
+        )}
+
+        <div className="mt-6 rounded-lg border border-primary/20 bg-primary/5 p-4">
+          <p className="text-sm text-foreground">
             <strong>Note:</strong> Formats acceptés: PDF, JPG, PNG (max 5MB par fichier)
           </p>
         </div>
