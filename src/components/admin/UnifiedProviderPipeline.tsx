@@ -273,7 +273,7 @@ export const UnifiedProviderPipeline = () => {
     for (const def of docDefs) {
       const validation = validations.find((v: any) => v.document_type === def.type);
       let status: DocumentItem["status"] = "missing";
-      if (def.type === "siren" && def.value) {
+      if (def.type === "siret_document" && def.value) {
         status = "approved";
       } else if (def.url) {
         status = validation?.status || "pending";
