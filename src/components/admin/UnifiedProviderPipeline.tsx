@@ -101,6 +101,17 @@ const DOC_ICONS: Record<string, any> = {
   insurance: Shield,
 };
 
+const REQUIRED_APPLICATION_DOCUMENT_TYPES = ["identity_document", "criminal_record", "siret_document", "rib_iban", "cv", "certifications"];
+const REQUIRED_PROVIDER_DOCUMENT_TYPES = ["identity_document", "criminal_record", "siret_document", "rib_iban", "certification"];
+
+const normalizeKey = (value?: string | null) =>
+  (value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+
 export const UnifiedProviderPipeline = () => {
   const [people, setPeople] = useState<UnifiedPerson[]>([]);
   const [loading, setLoading] = useState(true);
@@ -117,12 +128,13 @@ export const UnifiedProviderPipeline = () => {
   const loadAll = async () => {
     setLoading(true);
     try {
-      const [appsRes, providersRes, provDocsRes, validationsRes, provServicesRes] = await Promise.all([
+      const [appsRes, providersRes, provDocsRes, validationsRes, provServicesRes, profilesRes] = await Promise.all([
         supabase.from("job_applications").select("*").order("created_at", { ascending: false }),
         supabase.from("providers").select("*").order("created_at", { ascending: false }),
         supabase.from("provider_documents").select("*").order("created_at", { ascending: false }),
         supabase.from("application_document_validations").select("*"),
         supabase.from("provider_services").select("*, services(id, name, category)"),
+        supabase.from("profiles").select("user_id, email, first_name, last_name"),
       ]);
 
       const apps = appsRes.data || [];
@@ -130,6 +142,8 @@ export const UnifiedProviderPipeline = () => {
       const provDocs = provDocsRes.data || [];
       const validations = validationsRes.data || [];
       const provServices = provServicesRes.data || [];
+      const profiles = profilesRes.data || [];
+      const profilesByUserId = new Map(profiles.map((profile: any) => [profile.user_id, profile]));
 
       // Build unified list
       const emailMap = new Map<string, UnifiedPerson>();
@@ -185,56 +199,52 @@ export const UnifiedProviderPipeline = () => {
             .filter(Boolean)
         )] as string[];
 
-        // Try to find matching application by email or user_id
-        const providerEmail = prov.user_id ? null : null; // will match via emailMap
-        
-        // Check if we already have this person via their application email
-        let merged = false;
-        for (const [key, existing] of emailMap.entries()) {
-          // Match by email (key is lowercase email) or by user_id
-          const emailMatch = key === (existing.application?.email?.toLowerCase());
-          const appMatchesProvider = existing.application && (
-            existing.application.status === "approved" && existing.provider === undefined &&
-            (existing.application.email?.toLowerCase() === prov.business_name?.toLowerCase() ||
-             prov.user_id === existing.application?.user_id ||
-             // Match profiles by checking if provider user_id created from this application
-             emailMatch)
+        const providerProfile = prov.user_id ? profilesByUserId.get(prov.user_id) : null;
+        const providerEmail = providerProfile?.email?.toLowerCase() || null;
+        const providerNameKey = normalizeKey(
+          providerProfile?.first_name && providerProfile?.last_name
+            ? `${providerProfile.first_name} ${providerProfile.last_name}`
+            : prov.business_name
+        );
+
+        let existing = providerEmail ? emailMap.get(providerEmail) : undefined;
+        if (!existing && providerNameKey) {
+          existing = Array.from(emailMap.values()).find((candidate) =>
+            normalizeKey(`${candidate.application?.first_name || ""} ${candidate.application?.last_name || ""}`) === providerNameKey
           );
-          if (appMatchesProvider) {
-            existing.provider = prov;
-            existing.stage = determineStage(existing.application, prov, existing.allDocuments);
-            existing.name = prov.business_name || existing.name;
-            existing.servicesCount = thisProvServices.length;
-            existing.serviceCategories = provServiceCategories.length > 0 
-              ? provServiceCategories 
-              : existing.serviceCategories;
-            existing.providerServices = provServiceNames;
-            // Merge docs
-            const existingTypes = new Set(existing.allDocuments.map(d => d.type));
-            for (const pd of providerDocs) {
-              if (!existingTypes.has(pd.type)) {
-                existing.allDocuments.push(pd);
-              } else {
-                const idx = existing.allDocuments.findIndex(d => d.type === pd.type);
-                if (idx >= 0) existing.allDocuments[idx] = pd;
-              }
+        }
+
+        let merged = false;
+        if (existing?.application) {
+          existing.provider = prov;
+          existing.name = prov.business_name || existing.name;
+          existing.email = providerEmail || existing.email;
+          existing.servicesCount = thisProvServices.length;
+          existing.serviceCategories = provServiceCategories.length > 0 ? provServiceCategories : existing.serviceCategories;
+          existing.providerServices = provServiceNames;
+
+          const existingTypes = new Set(existing.allDocuments.map(d => `${d.source}-${d.type}`));
+          for (const pd of providerDocs) {
+            const compoundType = `${pd.source}-${pd.type}`;
+            if (!existingTypes.has(compoundType)) {
+              existing.allDocuments.push(pd);
+            } else {
+              const idx = existing.allDocuments.findIndex(d => d.source === pd.source && d.type === pd.type);
+              if (idx >= 0) existing.allDocuments[idx] = pd;
             }
-            merged = true;
-            break;
           }
+
+          existing.stage = determineStage(existing.application, prov, existing.allDocuments);
+          merged = true;
         }
 
         if (!merged) {
-          // Try to find a matching app by checking profiles table link
-          const relatedApp = apps.find((a: any) => 
-            a.email?.toLowerCase() === prov.business_name?.toLowerCase() ||
-            a.status === "approved"
-          );
+          const relatedApp = apps.find((a: any) => a.email?.toLowerCase() === providerEmail);
           const stage = determineStage(null, prov, providerDocs);
-          emailMap.set(`provider-${prov.id}`, {
+          emailMap.set(providerEmail || `provider-${prov.id}`, {
             id: `prov-${prov.id}`,
             name: prov.business_name || "Prestataire sans nom",
-            email: relatedApp?.email || "",
+            email: providerEmail || relatedApp?.email || "",
             phone: relatedApp?.phone || "",
             city: prov.adresse_complete || prov.location || null,
             stage,
@@ -274,7 +284,7 @@ export const UnifiedProviderPipeline = () => {
       const validation = validations.find((v: any) => v.document_type === def.type);
       let status: DocumentItem["status"] = "missing";
       if (def.type === "siret_document" && def.value) {
-        status = "approved";
+        status = validation?.status || "pending";
       } else if (def.url) {
         status = validation?.status || "pending";
       }
@@ -296,18 +306,19 @@ export const UnifiedProviderPipeline = () => {
   const determineStage = (app: any | null, provider: any | null, docs?: DocumentItem[]): PipelineStage => {
     if (provider?.status === "active" && provider?.is_verified) return "actif";
     if (provider) {
-      // Check if all documents are approved
-      if (docs && docs.length > 0) {
-        const allApproved = docs.every(d => d.status === "approved");
-        if (!allApproved) return "documents";
-      }
+      const providerDocs = (docs || []).filter(d => d.source === "provider");
+      const hasAllRequiredDocs = REQUIRED_PROVIDER_DOCUMENT_TYPES.every(type => providerDocs.some(doc => doc.type === type));
+      const allApproved = REQUIRED_PROVIDER_DOCUMENT_TYPES.every(type => providerDocs.some(doc => doc.type === type && doc.status === "approved"));
+      if (!hasAllRequiredDocs || !allApproved) return "documents";
       const needsOnboarding = !provider.mandat_facturation_accepte || !provider.formation_completed || !provider.identity_verified;
       if (needsOnboarding) return "onboarding";
       return "actif";
     }
     if (app) {
+      const applicationDocs = (docs || []).filter(d => d.source === "application");
+      const hasDocumentActivity = REQUIRED_APPLICATION_DOCUMENT_TYPES.some(type => applicationDocs.some(doc => doc.type === type && doc.status !== "missing"));
       if (app.status === "approved") return "onboarding";
-      if (app.status === "documents_pending") return "documents";
+      if (app.status === "documents_pending" || hasDocumentActivity) return "documents";
       if (app.status === "rejected") return "candidature";
       return "candidature";
     }
@@ -377,20 +388,19 @@ export const UnifiedProviderPipeline = () => {
   const handleApproveDoc = async (doc: DocumentItem, person: UnifiedPerson) => {
     try {
       if (doc.source === "provider") {
-        const { error } = await supabase.from("provider_documents").update({ status: "approved", approved_at: new Date().toISOString(), rejection_reason: null }).eq("id", doc.id);
+        const { data: { user } } = await supabase.auth.getUser();
+        const { error } = await supabase.from("provider_documents").update({ status: "approved", approved_at: new Date().toISOString(), rejected_at: null, reviewed_by: user?.id, rejection_reason: null }).eq("id", doc.id);
         if (error) throw error;
-        
-        // Check if all provider docs are now approved
-        const otherDocs = person.allDocuments.filter(d => d.source === "provider" && d.id !== doc.id);
-        const allOtherApproved = otherDocs.every(d => d.status === "approved");
-        if (allOtherApproved && person.provider) {
-          await supabase.from("providers")
-            .update({ documents_submitted: true, documents_submitted_at: new Date().toISOString() })
-            .eq("id", person.provider.id);
+        if (person.provider) {
+          const providerDocs = person.allDocuments
+            .filter(d => d.source === "provider")
+            .map(d => d.id === doc.id ? { ...d, status: "approved" as const, rejectionReason: null } : d);
+          const allRequiredApproved = REQUIRED_PROVIDER_DOCUMENT_TYPES.every(type => providerDocs.some(item => item.type === type && item.status === "approved"));
+          await supabase.from("providers").update({ documents_submitted: allRequiredApproved, documents_submitted_at: allRequiredApproved ? new Date().toISOString() : null }).eq("id", person.provider.id);
         }
       } else if (person.application) {
         const { data: { user } } = await supabase.auth.getUser();
-        await supabase.from("application_document_validations").upsert({
+        const { error } = await supabase.from("application_document_validations").upsert({
           application_id: person.application.id,
           document_type: doc.type,
           status: "approved",
@@ -398,6 +408,18 @@ export const UnifiedProviderPipeline = () => {
           validated_at: new Date().toISOString(),
           rejection_reason: null,
         }, { onConflict: "application_id,document_type" });
+        if (error) throw error;
+
+        const applicationDocs = person.allDocuments
+          .filter(d => d.source === "application")
+          .map(d => d.id === doc.id ? { ...d, status: "approved" as const, rejectionReason: null } : d);
+        const allRequiredApproved = REQUIRED_APPLICATION_DOCUMENT_TYPES.every(type => applicationDocs.some(item => item.type === type && item.status === "approved"));
+        const hasAllRequiredDocs = REQUIRED_APPLICATION_DOCUMENT_TYPES.every(type => applicationDocs.some(item => item.type === type && item.status !== "missing"));
+        await supabase.from("job_applications").update({
+          documents_complete: allRequiredApproved,
+          documents_validated_at: allRequiredApproved ? new Date().toISOString() : null,
+          status: ["approved", "rejected"].includes(person.application.status) ? person.application.status : (hasAllRequiredDocs ? "documents_pending" : "pending"),
+        }).eq("id", person.application.id);
       }
       toast.success(`Document "${doc.label}" approuvé`);
       await loadAll();
@@ -410,12 +432,17 @@ export const UnifiedProviderPipeline = () => {
     if (!rejectDialog || !rejectionReason.trim()) return;
     try {
       if (rejectDialog.source === "provider") {
-        await supabase.from("provider_documents").update({ status: "rejected", rejected_at: new Date().toISOString(), rejection_reason: rejectionReason }).eq("id", rejectDialog.docId);
+        const { data: { user } } = await supabase.auth.getUser();
+        const { error } = await supabase.from("provider_documents").update({ status: "rejected", approved_at: null, rejected_at: new Date().toISOString(), reviewed_by: user?.id, rejection_reason: rejectionReason }).eq("id", rejectDialog.docId);
+        if (error) throw error;
+        const relatedPerson = people.find(person => person.allDocuments.some(doc => doc.id === rejectDialog.docId));
+        if (relatedPerson?.provider) {
+          await supabase.from("providers").update({ documents_submitted: false, documents_submitted_at: null }).eq("id", relatedPerson.provider.id);
+        }
       } else if (rejectDialog.applicationId) {
         const { data: { user } } = await supabase.auth.getUser();
-        // Extract doc type from id
         const docType = rejectDialog.docId.replace("app-doc-", "");
-        await supabase.from("application_document_validations").upsert({
+        const { error } = await supabase.from("application_document_validations").upsert({
           application_id: rejectDialog.applicationId,
           document_type: docType,
           status: "rejected",
@@ -423,6 +450,8 @@ export const UnifiedProviderPipeline = () => {
           validated_at: new Date().toISOString(),
           rejection_reason: rejectionReason,
         }, { onConflict: "application_id,document_type" });
+        if (error) throw error;
+        await supabase.from("job_applications").update({ documents_complete: false, documents_validated_at: null, status: "documents_pending" }).eq("id", rejectDialog.applicationId);
       }
       toast.success("Document rejeté");
       setRejectDialog(null);
