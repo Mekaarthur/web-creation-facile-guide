@@ -225,12 +225,17 @@ export const UnifiedProviderPipeline = () => {
         }
 
         if (!merged) {
+          // Try to find a matching app by checking profiles table link
+          const relatedApp = apps.find((a: any) => 
+            a.email?.toLowerCase() === prov.business_name?.toLowerCase() ||
+            a.status === "approved"
+          );
           const stage = determineStage(null, prov, providerDocs);
           emailMap.set(`provider-${prov.id}`, {
             id: `prov-${prov.id}`,
             name: prov.business_name || "Prestataire sans nom",
-            email: matchingApp?.email || "",
-            phone: matchingApp?.phone || "",
+            email: relatedApp?.email || "",
+            phone: relatedApp?.phone || "",
             city: prov.adresse_complete || prov.location || null,
             stage,
             createdAt: prov.created_at,
@@ -239,7 +244,7 @@ export const UnifiedProviderPipeline = () => {
             servicesCount: thisProvServices.length,
             serviceCategories: provServiceCategories.length > 0 
               ? provServiceCategories 
-              : matchingApp?.service_categories || [],
+              : relatedApp?.service_categories || [],
             providerServices: provServiceNames,
           });
         }
