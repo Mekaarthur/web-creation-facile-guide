@@ -49,6 +49,7 @@ interface DocumentInfo {
 interface ApplicationDocumentsValidatorProps {
   application: {
     id: string;
+    status?: string;
     identity_document_url: string | null;
     criminal_record_url: string | null;
     criminal_record_date: string | null;
@@ -72,6 +73,15 @@ export const ApplicationDocumentsValidator = ({
   const [currentDocType, setCurrentDocType] = useState('');
   const [validations, setValidations] = useState<DocumentValidation[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const requiredDocumentTypes = [
+    'identity_document',
+    'criminal_record',
+    'siret_document',
+    'rib_iban',
+    'cv',
+    'certifications',
+  ];
 
   useEffect(() => {
     loadValidations();
@@ -111,8 +121,8 @@ export const ApplicationDocumentsValidator = ({
       url: application.criminal_record_url,
     },
     {
-      type: 'siren',
-      label: 'SIREN',
+      type: 'siret_document',
+      label: 'SIREN / SIRET',
       description: application.siren_number || 'Non renseigné',
       icon: Building,
       required: true,
@@ -136,17 +146,19 @@ export const ApplicationDocumentsValidator = ({
     },
     {
       type: 'certifications',
-      label: 'Certifications',
-      description: 'Diplômes et certifications professionnelles',
+      label: 'Agrément Nova',
+      description: 'Agrément Nova ou justificatif équivalent',
       icon: Award,
-      required: false,
+      required: true,
       url: application.certifications_url,
     },
   ];
 
   const getDocumentStatus = (doc: DocumentInfo): 'missing' | 'pending' | 'approved' | 'rejected' => {
-    if (doc.type === 'siren') {
-      return application.siren_number ? 'approved' : 'missing';
+    if (doc.type === 'siret_document') {
+      if (!application.siren_number) return 'missing';
+      const validation = validations.find(v => v.document_type === doc.type);
+      return validation?.status || 'pending';
     }
     if (!doc.url) {
       return 'missing';
@@ -164,6 +176,56 @@ export const ApplicationDocumentsValidator = ({
   const getDocumentRejectionReason = (docType: string): string | null => {
     const validation = validations.find(v => v.document_type === docType);
     return validation?.rejection_reason || null;
+  };
+
+  const buildNextValidations = (
+    docType: string,
+    status: DocumentValidation['status'],
+    reason: string | null,
+    userId?: string
+  ) => {
+    const nextValidation: DocumentValidation = {
+      id: validations.find(v => v.document_type === docType)?.id || `local-${docType}`,
+      document_type: docType,
+      status,
+      rejection_reason: reason,
+      validated_at: new Date().toISOString(),
+      validated_by: userId || null,
+    };
+
+    return validations.some(v => v.document_type === docType)
+      ? validations.map(v => (v.document_type === docType ? nextValidation : v))
+      : [...validations, nextValidation];
+  };
+
+  const syncApplicationState = async (nextValidations: DocumentValidation[]) => {
+    const allRequiredPresent = requiredDocumentTypes.every((docType) => {
+      if (docType === 'siret_document') return Boolean(application.siren_number);
+      const document = documents.find(doc => doc.type === docType);
+      return Boolean(document?.url);
+    });
+
+    const allRequiredApproved = requiredDocumentTypes.every((docType) => {
+      const validation = nextValidations.find(v => v.document_type === docType);
+      return validation?.status === 'approved';
+    });
+
+    const nextStatus = application.status === 'approved' || application.status === 'rejected'
+      ? application.status
+      : allRequiredPresent
+        ? 'documents_pending'
+        : 'pending';
+
+    const { error } = await supabase
+      .from('job_applications')
+      .update({
+        documents_complete: allRequiredApproved,
+        documents_validated_at: allRequiredApproved ? new Date().toISOString() : null,
+        status: nextStatus,
+      })
+      .eq('id', application.id);
+
+    if (error) throw error;
   };
 
   const getStatusBadge = (status: string) => {
@@ -201,6 +263,10 @@ export const ApplicationDocumentsValidator = ({
         });
 
       if (error) throw error;
+
+      const nextValidations = buildNextValidations(docType, 'approved', null, user?.id);
+      setValidations(nextValidations);
+      await syncApplicationState(nextValidations);
 
       // Envoyer notification email au candidat
       await supabase.functions.invoke('send-document-validation-email', {
@@ -259,6 +325,10 @@ export const ApplicationDocumentsValidator = ({
         });
 
       if (error) throw error;
+
+      const nextValidations = buildNextValidations(currentDocType, 'rejected', rejectionReason, user?.id);
+      setValidations(nextValidations);
+      await syncApplicationState(nextValidations);
 
       // Envoyer notification email au candidat
       await supabase.functions.invoke('send-document-validation-email', {

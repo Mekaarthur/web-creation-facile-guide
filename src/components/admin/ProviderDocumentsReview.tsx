@@ -35,6 +35,14 @@ const DOC_LABELS: Record<string, string> = {
   insurance: "Assurance",
 };
 
+const REQUIRED_PROVIDER_DOCUMENT_TYPES = [
+  "identity_document",
+  "criminal_record",
+  "siret_document",
+  "rib_iban",
+  "certification",
+];
+
 export const ProviderDocumentsReview = () => {
   const [documents, setDocuments] = useState<ProviderDoc[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,11 +73,14 @@ export const ProviderDocumentsReview = () => {
   };
 
   const handleApprove = async (doc: ProviderDoc) => {
+    const { data: { user } } = await supabase.auth.getUser();
     const { error } = await supabase
       .from("provider_documents")
       .update({
         status: "approved",
         approved_at: new Date().toISOString(),
+        rejected_at: null,
+        reviewed_by: user?.id,
         rejection_reason: null,
       })
       .eq("id", doc.id);
@@ -80,13 +91,19 @@ export const ProviderDocumentsReview = () => {
       toast.success(`Document "${DOC_LABELS[doc.document_type] || doc.document_type}" approuvé`);
       
       // Check if all docs for this provider are now approved
-      const providerDocs = documents.filter(d => d.provider_id === doc.provider_id && d.id !== doc.id);
-      const allOtherApproved = providerDocs.every(d => d.status === "approved");
-      if (allOtherApproved) {
-        await supabase.from("providers")
-          .update({ documents_submitted: true, documents_submitted_at: new Date().toISOString() })
-          .eq("id", doc.provider_id);
-      }
+      const nextDocs = documents
+        .filter(d => d.provider_id === doc.provider_id)
+        .map(d => d.id === doc.id ? { ...d, status: 'approved' } : d);
+      const allRequiredApproved = REQUIRED_PROVIDER_DOCUMENT_TYPES.every(type =>
+        nextDocs.some(item => item.document_type === type && item.status === 'approved')
+      );
+
+      await supabase.from("providers")
+        .update({
+          documents_submitted: allRequiredApproved,
+          documents_submitted_at: allRequiredApproved ? new Date().toISOString() : null,
+        })
+        .eq("id", doc.provider_id);
       
       loadDocuments();
     }
@@ -98,11 +115,14 @@ export const ProviderDocumentsReview = () => {
       return;
     }
 
+    const { data: { user } } = await supabase.auth.getUser();
     const { error } = await supabase
       .from("provider_documents")
       .update({
         status: "rejected",
+        approved_at: null,
         rejected_at: new Date().toISOString(),
+        reviewed_by: user?.id,
         rejection_reason: rejectionReason,
       })
       .eq("id", rejectingDoc.id);
@@ -110,6 +130,10 @@ export const ProviderDocumentsReview = () => {
     if (error) {
       toast.error("Erreur lors du rejet");
     } else {
+      await supabase.from("providers")
+        .update({ documents_submitted: false, documents_submitted_at: null })
+        .eq("id", rejectingDoc.provider_id);
+
       toast.success("Document rejeté");
       setRejectingDoc(null);
       setRejectionReason("");
