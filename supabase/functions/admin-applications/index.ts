@@ -170,23 +170,37 @@ serve(async (req) => {
 
       let userId = existingProfile?.user_id;
 
-      // Si pas de compte, créer un profil temporaire
+      // Si pas de compte, créer un vrai compte auth + profil
       if (!userId) {
-        // Générer un UUID temporaire
-        const tempUserId = crypto.randomUUID();
-        
+        // Créer un utilisateur auth avec un mot de passe temporaire
+        const tempPassword = crypto.randomUUID().slice(0, 16) + 'A1!';
+        const { data: newUser, error: createUserError } = await supabase.auth.admin.createUser({
+          email: application.email,
+          password: tempPassword,
+          email_confirm: true,
+          user_metadata: {
+            first_name: application.first_name,
+            last_name: application.last_name,
+          },
+        });
+
+        if (createUserError) throw createUserError;
+        userId = newUser.user.id;
+
+        // Créer le profil associé
         const { error: profileError } = await supabase
           .from('profiles')
           .insert({
-            user_id: tempUserId,
+            user_id: userId,
             first_name: application.first_name,
             last_name: application.last_name,
             email: application.email,
-            phone_number: application.phone,
+            phone: application.phone,
           });
 
-        if (profileError) throw profileError;
-        userId = tempUserId;
+        if (profileError) {
+          console.error('Profile creation error (non-blocking):', profileError);
+        }
       }
 
       // Créer le prestataire avec statut pending_onboarding
