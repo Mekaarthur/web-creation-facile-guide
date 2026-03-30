@@ -305,6 +305,51 @@ serve(async (req) => {
 
       console.log('Application approved, provider created:', provider.id);
 
+      // Envoyer email d'invitation avec lien de création de mot de passe
+      try {
+        const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+          type: 'recovery',
+          email: application.email,
+          options: {
+            redirectTo: `${supabaseUrl.replace('.supabase.co', '.lovable.app')}/update-password`,
+          },
+        });
+
+        if (linkError) {
+          console.error('Error generating recovery link:', linkError);
+        } else {
+          const setupLink = linkData?.properties?.action_link;
+          console.log('Recovery link generated for:', application.email);
+
+          // Envoyer l'email via send-transactional-email
+          const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseKey}`,
+            },
+            body: JSON.stringify({
+              type: 'password_setup',
+              recipientEmail: application.email,
+              recipientName: `${application.first_name} ${application.last_name}`,
+              data: {
+                clientName: application.first_name,
+                setupLink: setupLink,
+              },
+            }),
+          });
+
+          if (!emailResponse.ok) {
+            const errText = await emailResponse.text();
+            console.error('Error sending invitation email:', errText);
+          } else {
+            console.log('Invitation email sent to:', application.email);
+          }
+        }
+      } catch (emailErr) {
+        console.error('Non-blocking email error:', emailErr);
+      }
+
       return new Response(JSON.stringify({ 
         success: true, 
         providerId: provider.id,
