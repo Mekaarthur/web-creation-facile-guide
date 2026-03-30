@@ -187,19 +187,19 @@ serve(async (req) => {
         if (createUserError) throw createUserError;
         userId = newUser.user.id;
 
-        // Créer le profil associé
+        // Mettre à jour le profil créé automatiquement par le trigger
         const { error: profileError } = await supabase
           .from('profiles')
-          .insert({
-            user_id: userId,
+          .update({
             first_name: application.first_name,
             last_name: application.last_name,
             email: application.email,
             phone: application.phone,
-          });
+          })
+          .eq('user_id', userId);
 
         if (profileError) {
-          console.error('Profile creation error (non-blocking):', profileError);
+          console.error('Profile update error (non-blocking):', profileError);
         }
       }
 

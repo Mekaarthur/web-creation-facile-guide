@@ -346,7 +346,18 @@ export const UnifiedProviderPipeline = () => {
       const { data, error } = await supabase.functions.invoke("admin-applications", {
         body: { action: "approve", applicationId: person.application.id, adminComments: "Candidature approuvée" },
       });
-      if (error) throw error;
+      if (error) {
+        // Try to extract detailed error from response
+        let detail = error.message;
+        try {
+          const ctx = (error as any).context;
+          if (ctx && typeof ctx.json === 'function') {
+            const body = await ctx.json();
+            detail = body?.error || detail;
+          }
+        } catch {}
+        throw new Error(detail);
+      }
       if (data?.error) throw new Error(data.error);
       toast.success("Candidature approuvée — compte prestataire créé");
       await loadAll();
