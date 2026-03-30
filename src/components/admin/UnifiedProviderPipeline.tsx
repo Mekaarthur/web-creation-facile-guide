@@ -343,14 +343,16 @@ export const UnifiedProviderPipeline = () => {
   const handleApproveApplication = async (person: UnifiedPerson) => {
     if (!person.application) return;
     try {
-      const { error } = await supabase.functions.invoke("admin-applications", {
+      const { data, error } = await supabase.functions.invoke("admin-applications", {
         body: { action: "approve", applicationId: person.application.id, adminComments: "Candidature approuvée" },
       });
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
       toast.success("Candidature approuvée — compte prestataire créé");
       await loadAll();
     } catch (error: any) {
-      toast.error("Erreur: " + error.message);
+      console.error("Approve error:", error);
+      toast.error("Erreur d'approbation: " + (error.message || "Erreur inconnue"));
     }
   };
 
