@@ -76,8 +76,8 @@ serve(async (req) => {
         cleaned: oldPendingBookings.length,
         bookings: oldPendingBookings.map(b => ({
           id: b.id,
-          service_name: b.service_name,
-          client_name: b.client_name,
+          service_id: b.service_id,
+          client_id: b.client_id,
           created_at: b.created_at
         })),
         message: `${oldPendingBookings.length} réservations pending nettoyées`
