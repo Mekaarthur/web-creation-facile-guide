@@ -112,7 +112,7 @@ serve(async (req) => {
       // Chercher un utilisateur existant avec cet email
       const { data: existingUser } = await supabaseClient
         .from('profiles')
-        .select('id')
+        .select('user_id')
         .eq('email', clientInfo.email)
         .single();
 
