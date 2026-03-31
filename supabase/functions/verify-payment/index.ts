@@ -117,7 +117,7 @@ serve(async (req) => {
         .single();
 
       if (existingUser) {
-        userId = existingUser.id;
+        userId = existingUser.user_id;
         console.log('Compte existant trouvé:', userId);
       } else {
         // Créer un compte automatiquement pour le guest
