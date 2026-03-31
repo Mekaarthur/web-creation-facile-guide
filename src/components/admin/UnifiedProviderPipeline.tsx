@@ -101,7 +101,7 @@ const DOC_ICONS: Record<string, any> = {
   insurance: Shield,
 };
 
-const REQUIRED_APPLICATION_DOCUMENT_TYPES = ["identity_document", "criminal_record", "siret_document", "rib_iban", "cv", "certifications"];
+const REQUIRED_APPLICATION_DOCUMENT_TYPES = ["identity_document", "criminal_record", "siret_document", "rib_iban", "certifications"];
 const REQUIRED_PROVIDER_DOCUMENT_TYPES = ["identity_document", "criminal_record", "siret_document", "rib_iban", "certification"];
 
 const normalizeKey = (value?: string | null) =>

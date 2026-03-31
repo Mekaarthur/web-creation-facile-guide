@@ -112,12 +112,12 @@ serve(async (req) => {
       // Chercher un utilisateur existant avec cet email
       const { data: existingUser } = await supabaseClient
         .from('profiles')
-        .select('id')
+        .select('user_id')
         .eq('email', clientInfo.email)
         .single();
 
       if (existingUser) {
-        userId = existingUser.id;
+        userId = existingUser.user_id;
         console.log('Compte existant trouvé:', userId);
       } else {
         // Créer un compte automatiquement pour le guest
@@ -167,7 +167,7 @@ serve(async (req) => {
                 phone: clientInfo.phone,
                 email: clientInfo.email,
               })
-              .eq('id', userId);
+              .eq('user_id', userId);
 
             if (profileError) {
               console.error('Erreur mise à jour profil:', profileError);
@@ -175,14 +175,25 @@ serve(async (req) => {
             
             // Envoyer un email de bienvenue avec instructions de connexion
             try {
-              await supabaseClient.functions.invoke('send-welcome-email', {
+              // Générer un lien de réinitialisation au lieu d'envoyer le mdp en clair
+              const { data: linkData } = await supabaseAdmin.auth.admin.generateLink({
+                type: 'recovery',
+                email: clientInfo.email,
+              });
+              const setupLink = linkData?.properties?.action_link;
+              
+              await supabaseAdmin.functions.invoke('send-transactional-email', {
                 body: {
-                  email: clientInfo.email,
-                  firstName: clientInfo.firstName,
-                  tempPassword: tempPassword,
+                  type: 'password_setup',
+                  recipientEmail: clientInfo.email,
+                  recipientName: `${clientInfo.firstName} ${clientInfo.lastName}`,
+                  data: {
+                    clientName: clientInfo.firstName,
+                    setupLink: setupLink,
+                  },
                 }
               });
-              console.log('Email de bienvenue envoyé');
+              console.log('Email de création de mot de passe envoyé');
             } catch (emailError) {
               console.error('Erreur envoi email de bienvenue:', emailError);
               // Ne pas bloquer le processus si l'email échoue
