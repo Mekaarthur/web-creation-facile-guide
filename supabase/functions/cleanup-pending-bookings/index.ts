@@ -24,9 +24,8 @@ serve(async (req) => {
     
     const { data: oldPendingBookings, error: fetchError } = await supabase
       .from('bookings')
-      .select('id, created_at, client_name, service_name')
+      .select('id, created_at, client_id, service_id, notes')
       .eq('status', 'pending')
-      .is('stripe_payment_intent_id', null)
       .lt('created_at', twoHoursAgo);
 
     if (fetchError) {
