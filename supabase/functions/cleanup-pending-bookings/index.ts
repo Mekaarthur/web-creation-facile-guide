@@ -65,7 +65,7 @@ serve(async (req) => {
 
     // Logger l'action
     oldPendingBookings.forEach(booking => {
-      console.log(`  ✓ Supprimé: ${booking.service_name} - ${booking.client_name} (créé le ${new Date(booking.created_at).toLocaleString('fr-FR')})`);
+      console.log(`  ✓ Supprimé: service=${booking.service_id} - client=${booking.client_id} (créé le ${new Date(booking.created_at).toLocaleString('fr-FR')})`);
     });
 
     console.log(`✅ ${oldPendingBookings.length} réservations pending nettoyées`);
