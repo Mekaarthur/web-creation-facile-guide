@@ -167,7 +167,7 @@ serve(async (req) => {
                 phone: clientInfo.phone,
                 email: clientInfo.email,
               })
-              .eq('id', userId);
+              .eq('user_id', userId);
 
             if (profileError) {
               console.error('Erreur mise à jour profil:', profileError);
