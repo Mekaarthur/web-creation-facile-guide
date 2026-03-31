@@ -24,9 +24,8 @@ serve(async (req) => {
     
     const { data: oldPendingBookings, error: fetchError } = await supabase
       .from('bookings')
-      .select('id, created_at, client_name, service_name')
+      .select('id, created_at, client_id, service_id, notes')
       .eq('status', 'pending')
-      .is('stripe_payment_intent_id', null)
       .lt('created_at', twoHoursAgo);
 
     if (fetchError) {
@@ -66,7 +65,7 @@ serve(async (req) => {
 
     // Logger l'action
     oldPendingBookings.forEach(booking => {
-      console.log(`  ✓ Supprimé: ${booking.service_name} - ${booking.client_name} (créé le ${new Date(booking.created_at).toLocaleString('fr-FR')})`);
+      console.log(`  ✓ Supprimé: service=${booking.service_id} - client=${booking.client_id} (créé le ${new Date(booking.created_at).toLocaleString('fr-FR')})`);
     });
 
     console.log(`✅ ${oldPendingBookings.length} réservations pending nettoyées`);
@@ -77,8 +76,8 @@ serve(async (req) => {
         cleaned: oldPendingBookings.length,
         bookings: oldPendingBookings.map(b => ({
           id: b.id,
-          service_name: b.service_name,
-          client_name: b.client_name,
+          service_id: b.service_id,
+          client_id: b.client_id,
           created_at: b.created_at
         })),
         message: `${oldPendingBookings.length} réservations pending nettoyées`

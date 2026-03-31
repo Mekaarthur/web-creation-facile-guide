@@ -1818,6 +1818,7 @@ export type Database = {
           payment_date: string | null
           service_description: string | null
           status: string
+          stripe_payment_id: string | null
           updated_at: string
         }
         Insert: {
@@ -1833,6 +1834,7 @@ export type Database = {
           payment_date?: string | null
           service_description?: string | null
           status?: string
+          stripe_payment_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -1848,6 +1850,7 @@ export type Database = {
           payment_date?: string | null
           service_description?: string | null
           status?: string
+          stripe_payment_id?: string | null
           updated_at?: string
         }
         Relationships: [
