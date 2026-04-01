@@ -16,11 +16,12 @@ export const FloatingBackButton = () => {
       size="icon"
       onClick={() => navigate(-1)}
       className={cn(
-        "fixed bottom-6 left-6 z-40 rounded-full shadow-lg",
-        "bg-background/90 backdrop-blur-sm border-border/50",
+        "fixed bottom-20 left-4 z-50 rounded-full shadow-lg",
+        "bg-background/95 backdrop-blur-sm border-border/50",
         "hover:bg-primary hover:text-primary-foreground hover:border-primary",
         "transition-all duration-200 hover:scale-105",
-        "h-11 w-11 md:h-10 md:w-10"
+        "h-12 w-12 md:h-11 md:w-11",
+        "print:hidden"
       )}
       aria-label="Retour à la page précédente"
     >
