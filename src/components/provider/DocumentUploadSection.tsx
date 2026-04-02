@@ -90,19 +90,14 @@ export const DocumentUploadSection = ({ providerId, onDocumentsUpdated }: Docume
 
       if (uploadError) throw uploadError;
 
-      // Obtenir URL publique
-      const { data: { publicUrl } } = supabase.storage
-        .from('provider-documents')
-        .getPublicUrl(fileName);
-
-      // Créer entrée dans la base de données
+      // Store relative path for private bucket
       const { error: dbError } = await supabase
         .from('provider_documents')
         .insert({
           provider_id: providerId,
           document_type: documentType,
           file_name: file.name,
-          file_url: publicUrl,
+          file_url: fileName,
           status: 'pending'
         });
 

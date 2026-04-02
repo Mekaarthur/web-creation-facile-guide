@@ -104,13 +104,21 @@ export const EnhancedFileUpload: React.FC<EnhancedFileUploadProps> = ({
         throw uploadError;
       }
 
-      const { data } = supabase.storage.from(bucketName).getPublicUrl(filePath);
+      // For private buckets, store relative path
+      const PRIVATE_BUCKETS = ['provider-documents', 'provider-applications', 'attestations'];
+      let fileUrl: string;
+      if (PRIVATE_BUCKETS.includes(bucketName)) {
+        fileUrl = filePath;
+      } else {
+        const { data } = supabase.storage.from(bucketName).getPublicUrl(filePath);
+        fileUrl = data.publicUrl;
+      }
       
       clearInterval(progressInterval);
       setUploadProgress(100);
 
       return {
-        url: data.publicUrl,
+        url: fileUrl,
         name: file.name,
         size: file.size
       };

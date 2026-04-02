@@ -142,11 +142,8 @@ const ProviderProfileForm = () => {
         throw uploadError;
       }
 
-      const { data } = supabase.storage
-        .from('provider-applications')
-        .getPublicUrl(filePath);
-
-      handleInputChange('avatar_url', data.publicUrl);
+      // Store relative path for private bucket
+      handleInputChange('avatar_url', filePath);
       
       toast({
         title: "Photo mise à jour",
