@@ -106,10 +106,17 @@ const FileUpload = ({
 
       if (error) throw error;
 
-      // Obtenir l'URL publique
-      const { data: { publicUrl } } = supabase.storage
-        .from(bucketName)
-        .getPublicUrl(fileName);
+      // For private buckets, store relative path; for public, use public URL
+      const PRIVATE_BUCKETS = ['provider-documents', 'provider-applications', 'attestations'];
+      let fileUrl: string;
+      if (PRIVATE_BUCKETS.includes(bucketName)) {
+        fileUrl = fileName;
+      } else {
+        const { data: { publicUrl } } = supabase.storage
+          .from(bucketName)
+          .getPublicUrl(fileName);
+        fileUrl = publicUrl;
+      }
 
       setTimeout(() => {
         toast({
@@ -117,7 +124,7 @@ const FileUpload = ({
           description: "Votre fichier a été téléchargé avec succès",
         });
         
-        onUploadComplete?.(publicUrl);
+        onUploadComplete?.(fileUrl);
         setUploadProgress(0);
         setUploading(false);
       }, 500);
