@@ -229,18 +229,13 @@ const ProviderDocuments = () => {
 
       setUploadProgress(70);
 
-      // Obtenir l'URL publique
-      const { data: urlData } = supabase.storage
-        .from('provider-documents')
-        .getPublicUrl(fileName);
-
       if (existingDoc) {
         // Mettre à jour l'entrée existante
         const { error: updateError } = await supabase
           .from('provider_documents')
           .update({
             file_name: file.name,
-            file_url: urlData.publicUrl,
+            file_url: fileName,
             status: 'pending',
             upload_date: new Date().toISOString(),
             approved_at: null,
