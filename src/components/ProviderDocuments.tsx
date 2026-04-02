@@ -253,7 +253,7 @@ const ProviderDocuments = () => {
             provider_id: provider.id,
             document_type: documentType,
             file_name: file.name,
-            file_url: urlData.publicUrl,
+            file_url: fileName,
             status: 'pending'
           });
         if (dbError) throw dbError;

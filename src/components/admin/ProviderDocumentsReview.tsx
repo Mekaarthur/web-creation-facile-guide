@@ -216,13 +216,9 @@ export const ProviderDocumentsReview = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => {
-                            const url = doc.file_url;
-                            if (url && !url.startsWith('http')) {
-                              window.open(`https://cgrosjzmbgxmtvwxictr.supabase.co/storage/v1/object/public/provider-documents/${url}`, '_blank');
-                            } else {
-                              window.open(url, '_blank');
-                            }
+                          onClick={async () => {
+                            const { openDocument } = await import('@/utils/storageHelpers');
+                            await openDocument(doc.file_url, 'provider-documents');
                           }}
                         >
                           <ExternalLink className="h-4 w-4 mr-1" />

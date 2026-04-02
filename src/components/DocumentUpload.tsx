@@ -61,11 +61,8 @@ export const DocumentUpload = ({
 
       if (uploadError) throw uploadError;
 
-      const { data } = supabase.storage
-        .from('provider-documents')
-        .getPublicUrl(fileName);
-
-      onUploadComplete(data.publicUrl);
+      // Store relative path for private bucket
+      onUploadComplete(fileName);
 
       toast({
         title: "Document uploadé",
