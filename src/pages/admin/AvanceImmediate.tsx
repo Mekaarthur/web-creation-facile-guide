@@ -58,8 +58,8 @@ const HabilitationStatus = () => {
           </div>
           <div className="p-4 rounded-lg border">
             <p className="text-sm text-muted-foreground mb-1">Environnement</p>
-            <Badge variant={environment === "production" ? "default" : "secondary"}>
-              {environment === "production" ? "Production" : "Sandbox"}
+            <Badge variant={environment as string === "production" ? "default" : "secondary"}>
+              {(environment as string) === "production" ? "Production" : "Sandbox"}
             </Badge>
           </div>
           <div className="p-4 rounded-lg border">
