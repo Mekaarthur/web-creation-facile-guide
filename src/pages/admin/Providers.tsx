@@ -487,6 +487,11 @@ const AdminProviders = () => {
           loadStats();
         }}
       />
+        </TabsContent>
+        <TabsContent value="nova" className="mt-4">
+          <NovaStatusTab />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
