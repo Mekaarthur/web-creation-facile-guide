@@ -269,6 +269,13 @@ const AdminProviders = () => {
         <p className="text-muted-foreground text-xs sm:text-sm md:text-base">Gestion des prestataires de la plateforme</p>
       </div>
 
+      <Tabs defaultValue="list" className="w-full">
+        <TabsList>
+          <TabsTrigger value="list">Liste des prestataires</TabsTrigger>
+          <TabsTrigger value="nova">Statut Nova</TabsTrigger>
+        </TabsList>
+        <TabsContent value="list" className="mt-4 space-y-6">
+
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
