@@ -278,8 +278,9 @@ const App = () => (
                   <Route path="security" element={<AdminSecurity />} />
                   <Route path="securite" element={<AdminSecurity />} />
                   <Route path="finance" element={<AdminFinance />} />
+                  <Route path="avance-immediate" element={<AdminAvanceImmediate />} />
                   <Route path="urgences" element={<AdminUrgences />} />
-                  <Route path="brand" element={<AdminBrand />} />
+                  <Route path="brand" element={<AdminMarque />} />
                   <Route path="reclamations" element={<AdminReclamations />} />
                   <Route path="acces" element={<AdminAccessTracking />} />
                 </Route>
