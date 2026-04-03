@@ -224,7 +224,7 @@ export function AdminSidebar() {
           title: "Marque", 
           url: "/modern-admin/marque", 
           icon: Building2,
-          description: "Gestion de la marque"
+          description: "Gestion de l'identité visuelle et communications"
         },
         { 
           title: "Paramètres", 
