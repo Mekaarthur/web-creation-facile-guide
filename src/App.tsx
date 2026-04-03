@@ -111,7 +111,6 @@ const Monitoring = lazy(() => import("./pages/admin/Monitoring"));
 const AdminSecurity = lazy(() => import("./pages/admin/Security"));
 const AdminFinance = lazy(() => import("./pages/admin/Finance"));
 const AdminUrgences = lazy(() => import("./pages/admin/Urgences"));
-const AdminBrand = lazy(() => import("./pages/admin/Brand"));
 const AdminAvanceImmediate = lazy(() => import("./pages/admin/AvanceImmediate"));
 const AdminReclamations = lazy(() => import("./pages/admin/Reclamations"));
 const AdminAccessTracking = lazy(() => import("./pages/admin/AdminAccessTracking"));
