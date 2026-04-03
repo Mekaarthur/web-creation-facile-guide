@@ -111,7 +111,7 @@ const Monitoring = lazy(() => import("./pages/admin/Monitoring"));
 const AdminSecurity = lazy(() => import("./pages/admin/Security"));
 const AdminFinance = lazy(() => import("./pages/admin/Finance"));
 const AdminUrgences = lazy(() => import("./pages/admin/Urgences"));
-const AdminBrand = lazy(() => import("./pages/admin/Brand"));
+const AdminAvanceImmediate = lazy(() => import("./pages/admin/AvanceImmediate"));
 const AdminReclamations = lazy(() => import("./pages/admin/Reclamations"));
 const AdminAccessTracking = lazy(() => import("./pages/admin/AdminAccessTracking"));
 const AuditReport = lazy(() => import("./components/AuditReport"));
@@ -277,8 +277,9 @@ const App = () => (
                   <Route path="security" element={<AdminSecurity />} />
                   <Route path="securite" element={<AdminSecurity />} />
                   <Route path="finance" element={<AdminFinance />} />
+                  <Route path="avance-immediate" element={<AdminAvanceImmediate />} />
                   <Route path="urgences" element={<AdminUrgences />} />
-                  <Route path="brand" element={<AdminBrand />} />
+                  <Route path="brand" element={<AdminMarque />} />
                   <Route path="reclamations" element={<AdminReclamations />} />
                   <Route path="acces" element={<AdminAccessTracking />} />
                 </Route>

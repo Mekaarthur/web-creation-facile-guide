@@ -3575,6 +3575,9 @@ export type Database = {
           missions_completed: number | null
           missions_this_week: number | null
           monthly_earnings: number | null
+          nova_expires_at: string | null
+          nova_status: string | null
+          nova_validated_at: string | null
           payout_frequency: string | null
           performance_score: number | null
           postal_codes: string[] | null
@@ -3642,6 +3645,9 @@ export type Database = {
           missions_completed?: number | null
           missions_this_week?: number | null
           monthly_earnings?: number | null
+          nova_expires_at?: string | null
+          nova_status?: string | null
+          nova_validated_at?: string | null
           payout_frequency?: string | null
           performance_score?: number | null
           postal_codes?: string[] | null
@@ -3709,6 +3715,9 @@ export type Database = {
           missions_completed?: number | null
           missions_this_week?: number | null
           monthly_earnings?: number | null
+          nova_expires_at?: string | null
+          nova_status?: string | null
+          nova_validated_at?: string | null
           payout_frequency?: string | null
           performance_score?: number | null
           postal_codes?: string[] | null
@@ -4215,6 +4224,98 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      urssaf_declarations: {
+        Row: {
+          booking_id: string | null
+          client_amount: number
+          client_email: string
+          client_name: string | null
+          created_at: string
+          declared_at: string | null
+          error_code: string | null
+          error_message: string | null
+          id: string
+          provider_id: string | null
+          rejection_reason: string | null
+          retry_count: number | null
+          state_amount: number
+          status: string
+          total_amount: number
+          updated_at: string
+          urssaf_reference: string | null
+          validated_at: string | null
+        }
+        Insert: {
+          booking_id?: string | null
+          client_amount?: number
+          client_email: string
+          client_name?: string | null
+          created_at?: string
+          declared_at?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          provider_id?: string | null
+          rejection_reason?: string | null
+          retry_count?: number | null
+          state_amount?: number
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          urssaf_reference?: string | null
+          validated_at?: string | null
+        }
+        Update: {
+          booking_id?: string | null
+          client_amount?: number
+          client_email?: string
+          client_name?: string | null
+          created_at?: string
+          declared_at?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          provider_id?: string | null
+          rejection_reason?: string | null
+          retry_count?: number | null
+          state_amount?: number
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          urssaf_reference?: string | null
+          validated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "urssaf_declarations_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "urssaf_declarations_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "missions_without_providers_in_zone"
+            referencedColumns: ["booking_id"]
+          },
+          {
+            foreignKeyName: "urssaf_declarations_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "urssaf_declarations_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public_view"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_consents: {
         Row: {

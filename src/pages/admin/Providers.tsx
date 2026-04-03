@@ -18,6 +18,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ProviderDetailsModal } from "@/components/admin/ProviderDetailsModal";
 import { universeServices } from "@/utils/universeServices";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import NovaStatusTab from "@/components/admin/NovaStatusTab";
 
 interface Provider {
   id: string;
@@ -267,6 +269,13 @@ const AdminProviders = () => {
         <p className="text-muted-foreground text-xs sm:text-sm md:text-base">Gestion des prestataires de la plateforme</p>
       </div>
 
+      <Tabs defaultValue="list" className="w-full">
+        <TabsList>
+          <TabsTrigger value="list">Liste des prestataires</TabsTrigger>
+          <TabsTrigger value="nova">Statut Nova</TabsTrigger>
+        </TabsList>
+        <TabsContent value="list" className="mt-4 space-y-6">
+
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
@@ -478,6 +487,11 @@ const AdminProviders = () => {
           loadStats();
         }}
       />
+        </TabsContent>
+        <TabsContent value="nova" className="mt-4">
+          <NovaStatusTab />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
