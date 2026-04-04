@@ -19,11 +19,13 @@ interface EmailRequest {
 
 const documentLabels: Record<string, string> = {
   identity_document: 'Pièce d\'identité',
-  criminal_record: 'Casier judiciaire',
-  siret_document: 'Document SIRET',
+  criminal_record: 'Casier judiciaire (facultatif)',
+  siret_document: 'Numéro SIREN',
   rib_iban: 'RIB / IBAN',
+  certification: 'Agrément Nova',
+  certifications_other: 'Certifications',
   cv: 'Curriculum Vitae',
-  certifications: 'Certifications'
+  insurance: 'Assurance RC Pro'
 };
 
 const handler = async (req: Request): Promise<Response> => {
