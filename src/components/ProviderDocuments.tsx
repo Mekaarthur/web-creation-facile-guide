@@ -58,21 +58,21 @@ const ProviderDocuments = () => {
   const documentRequirements: DocumentRequirement[] = [
     {
       type: 'identity_document',
-      label: 'Pièce d\'identité',
+      label: 'Pièce d\'identité (CNI, passeport)',
       description: 'Carte d\'identité, passeport ou permis de conduire recto-verso',
       icon: UserIcon,
       required: true
     },
     {
       type: 'criminal_record',
-      label: 'Casier judiciaire',
-      description: 'Extrait de casier judiciaire (bulletin n°3) de moins de 3 mois',
+      label: 'Casier judiciaire (moins de 3 mois)',
+      description: 'Extrait de casier judiciaire (bulletin n°3) — facultatif',
       icon: Shield,
-      required: true
+      required: false
     },
     {
       type: 'siret_document',
-      label: 'SIRET Auto-entrepreneur',
+      label: 'Numéro SIREN',
       description: 'Extrait KBIS ou attestation URSSAF pour auto-entrepreneur',
       icon: Building,
       required: true
@@ -90,6 +90,13 @@ const ProviderDocuments = () => {
       description: 'Agrément Nova ou accréditation officielle (obligatoire)',
       icon: Shield,
       required: true
+    },
+    {
+      type: 'certifications_other',
+      label: 'Certifications',
+      description: 'Diplômes, formations, certificats professionnels (optionnel)',
+      icon: Award,
+      required: false
     },
     {
       type: 'insurance',

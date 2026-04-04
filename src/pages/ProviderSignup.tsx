@@ -487,7 +487,7 @@ const ProviderSignup = () => {
                   Documents obligatoires
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  Documents obligatoires pour traiter votre candidature (CV facultatif)
+                  Documents obligatoires pour traiter votre candidature
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -514,7 +514,7 @@ const ProviderSignup = () => {
                   )}
                 />
 
-                {/* Casier judiciaire */}
+                {/* Casier judiciaire (facultatif) */}
                 <FormField
                   control={form.control}
                   name="criminal_record"
@@ -522,7 +522,7 @@ const ProviderSignup = () => {
                     <FormItem>
                       <FormLabel className="flex items-center gap-2">
                         <Upload className="h-4 w-4" />
-                        Casier judiciaire (moins de 3 mois) *
+                        Casier judiciaire (moins de 3 mois) — facultatif
                       </FormLabel>
                       <FormControl>
                         <Input

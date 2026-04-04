@@ -25,11 +25,12 @@ interface DocumentUploadSectionProps {
 }
 
 const DOCUMENT_TYPES = [
-  { value: 'identity_document', label: 'Pièce d\'identité', required: true },
-  { value: 'criminal_record', label: 'Casier judiciaire (< 3 mois)', required: true },
-  { value: 'siret_document', label: 'Document SIRET / KBIS', required: true },
-  { value: 'rib_iban', label: 'RIB/IBAN', required: true },
+  { value: 'identity_document', label: 'Pièce d\'identité (CNI, passeport)', required: true },
+  { value: 'criminal_record', label: 'Casier judiciaire (moins de 3 mois)', required: false },
+  { value: 'siret_document', label: 'Numéro SIREN', required: true },
+  { value: 'rib_iban', label: 'RIB / IBAN', required: true },
   { value: 'certification', label: 'Agrément Nova', required: true },
+  { value: 'certifications_other', label: 'Certifications (diplômes, formations, certificats)', required: false },
   { value: 'insurance', label: 'Assurance RC Pro', required: false },
 ];
 
