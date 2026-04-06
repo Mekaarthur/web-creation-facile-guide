@@ -224,24 +224,42 @@ const DeclarationsTracking = () => {
                   <th className="pb-2 font-medium">Part client</th>
                   <th className="pb-2 font-medium">Part État</th>
                   <th className="pb-2 font-medium">Référence</th>
+                  <th className="pb-2 font-medium">Deadline 48h</th>
+                  <th className="pb-2 font-medium">Tentatives</th>
                   <th className="pb-2 font-medium">Statut</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((d) => (
-                  <tr key={d.id} className="border-b last:border-0 hover:bg-muted/30">
-                    <td className="py-2">{new Date(d.created_at).toLocaleDateString("fr-FR")}</td>
-                    <td className="py-2">
-                      <div>{d.client_name || "—"}</div>
-                      <div className="text-xs text-muted-foreground">{d.client_email}</div>
-                    </td>
-                    <td className="py-2 font-medium">{Number(d.total_amount).toFixed(2)}€</td>
-                    <td className="py-2">{Number(d.client_amount).toFixed(2)}€</td>
-                    <td className="py-2 text-green-600">{Number(d.state_amount).toFixed(2)}€</td>
-                    <td className="py-2 font-mono text-xs">{d.urssaf_reference || "—"}</td>
-                    <td className="py-2">{getStatusBadge(d.status)}</td>
-                  </tr>
-                ))}
+                {filtered.map((d) => {
+                  const deadlineDate = d.client_validation_deadline ? new Date(d.client_validation_deadline) : null;
+                  const isUrgent = deadlineDate && deadlineDate.getTime() - Date.now() < 12 * 60 * 60 * 1000 && deadlineDate.getTime() > Date.now();
+                  const isExpiredDeadline = deadlineDate && deadlineDate.getTime() < Date.now();
+                  
+                  return (
+                    <tr key={d.id} className={`border-b last:border-0 hover:bg-muted/30 ${isUrgent ? 'bg-amber-50' : ''} ${isExpiredDeadline && d.status !== 'expired' ? 'bg-red-50' : ''}`}>
+                      <td className="py-2">{new Date(d.created_at).toLocaleDateString("fr-FR")}</td>
+                      <td className="py-2">
+                        <div>{d.client_name || "—"}</div>
+                        <div className="text-xs text-muted-foreground">{d.client_email}</div>
+                      </td>
+                      <td className="py-2 font-medium">{Number(d.total_amount).toFixed(2)}€</td>
+                      <td className="py-2">{Number(d.client_amount).toFixed(2)}€</td>
+                      <td className="py-2 text-green-600">{Number(d.state_amount).toFixed(2)}€</td>
+                      <td className="py-2 font-mono text-xs">{d.urssaf_reference || "—"}</td>
+                      <td className="py-2 text-xs">
+                        {deadlineDate ? (
+                          <span className={isExpiredDeadline ? 'text-red-600 font-semibold' : isUrgent ? 'text-amber-600 font-semibold' : ''}>
+                            {deadlineDate.toLocaleString("fr-FR", { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                            {isUrgent && ' ⚠️'}
+                            {isExpiredDeadline && ' ❌'}
+                          </span>
+                        ) : "—"}
+                      </td>
+                      <td className="py-2 text-xs">{d.retry_count ?? 0}/3</td>
+                      <td className="py-2">{getStatusBadge(d.status)}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
