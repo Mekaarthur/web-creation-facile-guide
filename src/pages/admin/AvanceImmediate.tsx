@@ -187,10 +187,15 @@ const DeclarationsTracking = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tous les statuts</SelectItem>
+              <SelectItem value="created">Créée</SelectItem>
               <SelectItem value="sent">Envoyée</SelectItem>
-              <SelectItem value="pending_validation">En attente</SelectItem>
+              <SelectItem value="pending_client_validation">Attente validation</SelectItem>
               <SelectItem value="validated">Validée</SelectItem>
               <SelectItem value="rejected">Rejetée</SelectItem>
+              <SelectItem value="expired">Expirée</SelectItem>
+              <SelectItem value="retry">Relance</SelectItem>
+              <SelectItem value="paid">Payée</SelectItem>
+              <SelectItem value="archived">Archivée</SelectItem>
               <SelectItem value="error">Erreur</SelectItem>
             </SelectContent>
           </Select>
