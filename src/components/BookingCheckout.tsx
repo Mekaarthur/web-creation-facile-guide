@@ -248,26 +248,10 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       const clientAmount = urssafEnabled ? totalAmount * 0.5 : totalAmount;
       const stateAmount = urssafEnabled ? totalAmount * 0.5 : 0;
 
-      // If URSSAF enabled, register with URSSAF first
-      if (urssafEnabled) {
-        const { data: urssafData, error: urssafError } = await supabase.functions.invoke('urssaf-register-service', {
-          body: {
-            clientInfo,
-            services,
-            totalAmount,
-            clientAmount,
-            stateAmount,
-            preferredDate,
-            preferredTime
-          }
-        });
-
-        if (urssafError) {
-          throw new Error(`Erreur URSSAF : ${urssafError.message}`);
-        }
-
-        console.log('URSSAF registration:', urssafData);
-      }
+      // NOTE: La déclaration URSSAF est désormais déclenchée de manière asynchrone
+      // APRÈS confirmation du paiement Stripe (dans verify-payment), pas avant.
+      // Cela évite le risque d'encaisser un paiement sans déclaration URSSAF valide.
+      console.log('[CHECKOUT] URSSAF enabled:', urssafEnabled, '- déclaration sera faite après paiement Stripe');
 
       // Create Stripe payment session (only for client amount)
       const { data: paymentData, error: paymentError } = await supabase.functions.invoke('create-payment', {
