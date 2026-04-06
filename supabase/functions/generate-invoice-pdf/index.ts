@@ -1,3 +1,18 @@
+// ============================================================================
+// ⚠️ SOLUTION TRANSITOIRE — À remplacer par l'intégration NeedMe
+// 
+// Ce générateur de factures interne est temporaire. Pour être conformes à
+// l'URSSAF et générer des attestations fiscales officielles, les factures
+// doivent être émises par NeedMe (organisme mandataire/intermédiaire).
+//
+// Flux cible :
+//   Mission terminée → Données envoyées à NeedMe → NeedMe génère facture
+//   → NeedMe déclare à l'URSSAF → NeedMe renvoie PDF + ref à Bikawô
+//   → Bikawô stocke le lien NeedMe dans la table invoices
+//   → Client télécharge le PDF NeedMe depuis son espace Bikawô
+//
+// TODO: Contacter NeedMe pour connaître les options d'intégration API.
+// ============================================================================
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import jsPDF from "https://esm.sh/jspdf@2.5.1";

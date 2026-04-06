@@ -11,6 +11,11 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
   apiVersion: "2023-10-16",
 });
 
+const logStep = (step: string, details?: any) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  console.log(`[VERIFY-PAYMENT] ${step}${detailsStr}`);
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -22,20 +27,25 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
     const { sessionId } = await req.json();
 
     if (!sessionId) {
       throw new Error("Session ID manquant");
     }
 
-    console.log('Vérification paiement pour session:', sessionId);
+    logStep('Vérification paiement pour session', { sessionId });
 
     // Récupérer la session Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
       expand: ['payment_intent', 'line_items']
     });
 
-    console.log('Session Stripe récupérée:', {
+    logStep('Session Stripe récupérée', {
       id: session.id,
       status: session.payment_status,
       amount: session.amount_total,
@@ -68,7 +78,7 @@ serve(async (req) => {
       throw new Error("Données de réservation incomplètes dans les métadonnées");
     }
 
-    console.log('Métadonnées extraites:', {
+    logStep('Métadonnées extraites', {
       clientInfo,
       servicesCount: services.length,
       urssafEnabled,
@@ -82,7 +92,7 @@ serve(async (req) => {
       .ilike('notes', `%stripe_session:${sessionId}%`);
 
     if (existingBookings && existingBookings.length > 0) {
-      console.log('Réservations déjà existantes:', existingBookings.map(b => b.id));
+      logStep('Réservations déjà existantes', { ids: existingBookings.map(b => b.id) });
       return new Response(
         JSON.stringify({
           success: true,
@@ -107,9 +117,8 @@ serve(async (req) => {
 
     // Si pas d'user_id, chercher ou créer automatiquement un compte
     if (!userId && clientInfo.email) {
-      console.log('Guest checkout détecté, vérification compte existant...');
+      logStep('Guest checkout détecté, vérification compte existant...');
       
-      // Chercher un utilisateur existant avec cet email
       const { data: existingUser } = await supabaseClient
         .from('profiles')
         .select('user_id')
@@ -118,26 +127,17 @@ serve(async (req) => {
 
       if (existingUser) {
         userId = existingUser.user_id;
-        console.log('Compte existant trouvé:', userId);
+        logStep('Compte existant trouvé', { userId });
       } else {
-        // Créer un compte automatiquement pour le guest
-        console.log('Création automatique de compte pour:', clientInfo.email);
+        logStep('Création automatique de compte pour', { email: clientInfo.email });
         
-        // Utiliser le service role key pour créer l'utilisateur
-        const supabaseAdmin = createClient(
-          Deno.env.get("SUPABASE_URL") ?? "",
-          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-        );
-
-        // Générer un mot de passe temporaire sécurisé
         const tempPassword = crypto.randomUUID() + Math.random().toString(36);
         
         try {
-          // Créer l'utilisateur avec auto-confirmation
           const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
             email: clientInfo.email,
             password: tempPassword,
-            email_confirm: true, // Auto-confirmer l'email
+            email_confirm: true,
             user_metadata: {
               first_name: clientInfo.firstName,
               last_name: clientInfo.lastName,
@@ -147,19 +147,17 @@ serve(async (req) => {
           });
 
           if (createError) {
-            console.error('Erreur création utilisateur:', createError);
+            logStep('Erreur création utilisateur', { error: createError });
             throw createError;
           }
 
           if (newUser.user) {
             userId = newUser.user.id;
-            console.log('Compte créé avec succès:', userId);
+            logStep('Compte créé avec succès', { userId });
 
-            // Attendre un peu pour que le trigger crée le profil
             await new Promise(resolve => setTimeout(resolve, 1000));
             
-            // Vérifier et mettre à jour le profil avec les informations complètes
-            const { error: profileError } = await supabaseAdmin
+            await supabaseAdmin
               .from('profiles')
               .update({
                 first_name: clientInfo.firstName,
@@ -168,14 +166,8 @@ serve(async (req) => {
                 email: clientInfo.email,
               })
               .eq('user_id', userId);
-
-            if (profileError) {
-              console.error('Erreur mise à jour profil:', profileError);
-            }
             
-            // Envoyer un email de bienvenue avec instructions de connexion
             try {
-              // Générer un lien de réinitialisation au lieu d'envoyer le mdp en clair
               const { data: linkData } = await supabaseAdmin.auth.admin.generateLink({
                 type: 'recovery',
                 email: clientInfo.email,
@@ -193,20 +185,18 @@ serve(async (req) => {
                   },
                 }
               });
-              console.log('Email de création de mot de passe envoyé');
+              logStep('Email de création de mot de passe envoyé');
             } catch (emailError) {
-              console.error('Erreur envoi email de bienvenue:', emailError);
-              // Ne pas bloquer le processus si l'email échoue
+              logStep('Erreur envoi email de bienvenue', { error: String(emailError) });
             }
           }
         } catch (error) {
-          console.error('Erreur lors de la création du compte:', error);
-          // Ne pas bloquer la réservation si la création de compte échoue
+          logStep('Erreur lors de la création du compte', { error: String(error) });
         }
       }
     }
 
-    console.log('User ID pour la réservation:', userId);
+    logStep('User ID pour la réservation', { userId });
 
     // Créer les réservations dans la table bookings
     const bookingIds: string[] = [];
@@ -218,7 +208,6 @@ serve(async (req) => {
       const endTime = customBooking.endTime || '17:00';
       const hours = customBooking.hours || 1;
 
-      // Récupérer le service_id depuis la table services
       const { data: serviceData } = await supabaseClient
         .from('services')
         .select('id')
@@ -228,11 +217,10 @@ serve(async (req) => {
       const serviceId = serviceData?.id;
 
       if (!serviceId) {
-        console.warn('Service non trouvé:', service.serviceName);
+        logStep('Service non trouvé', { name: service.serviceName });
         continue;
       }
 
-      // Trouver un prestataire vérifié disponible (premier disponible pour l'instant)
       const { data: availableProvider } = await supabaseClient
         .from('providers')
         .select('id')
@@ -241,13 +229,15 @@ serve(async (req) => {
         .single();
 
       if (!availableProvider) {
-        console.error('Aucun prestataire vérifié disponible');
+        logStep('Aucun prestataire vérifié disponible');
         throw new Error('Aucun prestataire disponible pour cette réservation');
       }
 
-      console.log('Prestataire assigné:', availableProvider.id);
+      logStep('Prestataire assigné', { id: availableProvider.id });
 
-      // Créer la réservation
+      // Statut initial : si URSSAF activé, la mission est en attente de déclaration
+      const initialStatus = urssafEnabled ? 'pending_urssaf' : 'confirmed';
+
       const { data: booking, error: bookingError } = await supabaseClient
         .from('bookings')
         .insert({
@@ -258,10 +248,10 @@ serve(async (req) => {
           start_time: startTime,
           end_time: endTime,
           total_price: service.price * service.quantity,
-          status: 'confirmed',
-          confirmed_at: new Date().toISOString(),
+          status: initialStatus,
+          confirmed_at: urssafEnabled ? null : new Date().toISOString(),
           address: clientInfo.address,
-          notes: `stripe_session:${sessionId}\nEmail: ${clientInfo.email}\nTél: ${clientInfo.phone}\nNom: ${clientInfo.firstName} ${clientInfo.lastName}${customBooking.notes ? '\n' + customBooking.notes : ''}`,
+          notes: `stripe_session:${sessionId}\nEmail: ${clientInfo.email}\nTél: ${clientInfo.phone}\nNom: ${clientInfo.firstName} ${clientInfo.lastName}${urssafEnabled ? '\nURSSAF: en attente de déclaration' : ''}${customBooking.notes ? '\n' + customBooking.notes : ''}`,
           custom_duration: hours,
           hourly_rate: service.price,
         })
@@ -269,19 +259,18 @@ serve(async (req) => {
         .single();
 
       if (bookingError) {
-        console.error('Erreur création réservation:', bookingError);
+        logStep('Erreur création réservation', { error: bookingError.message });
         throw new Error(`Erreur lors de la création de la réservation: ${bookingError.message}`);
       }
 
-      console.log('Réservation créée:', booking.id);
+      logStep('Réservation créée', { id: booking.id, status: initialStatus });
       bookingIds.push(booking.id);
     }
 
-    // Attendre que toutes les transactions financières soient créées par le trigger
-    console.log('Attente de la création des transactions financières...');
+    // Mettre à jour les transactions financières
+    logStep('Attente de la création des transactions financières...');
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    // Mettre à jour toutes les transactions financières pour les bookings créés
     for (const bookingId of bookingIds) {
       const { data: existingTransaction, error: checkError } = await supabaseClient
         .from('financial_transactions')
@@ -290,29 +279,147 @@ serve(async (req) => {
         .single();
 
       if (checkError) {
-        console.error('Transaction non trouvée pour booking:', bookingId, checkError);
+        logStep('Transaction non trouvée pour booking', { bookingId, error: checkError.message });
         continue;
       }
 
-      console.log('Transaction trouvée:', existingTransaction.id, 'status actuel:', existingTransaction.payment_status);
+      logStep('Transaction trouvée', { id: existingTransaction.id, status: existingTransaction.payment_status });
 
-      const { error: transactionError } = await supabaseClient
+      await supabaseClient
         .from('financial_transactions')
         .update({
           payment_status: 'paid',
           client_paid_at: new Date().toISOString(),
         })
         .eq('booking_id', bookingId);
+    }
 
-      if (transactionError) {
-        console.error('Erreur mise à jour transaction pour booking', bookingId, ':', transactionError);
-      } else {
-        console.log('Transaction financière mise à jour avec succès pour booking:', bookingId);
+    // === DÉCLARATION URSSAF ASYNCHRONE ===
+    // La déclaration est faite APRÈS la confirmation du paiement Stripe,
+    // indépendamment du flux de paiement. Si elle échoue, la réservation
+    // existe quand même et l'admin est alerté.
+    if (urssafEnabled && bookingIds.length > 0) {
+      logStep('Déclenchement asynchrone de la déclaration URSSAF');
+
+      try {
+        const { data: urssafData, error: urssafError } = await supabaseAdmin.functions.invoke('urssaf-register-service', {
+          body: {
+            clientInfo,
+            services,
+            totalAmount,
+            clientAmount,
+            stateAmount,
+            preferredDate: metadata.preferredDate,
+            preferredTime: metadata.preferredTime,
+            bookingIds,
+          }
+        });
+
+        if (urssafError) {
+          logStep('Erreur déclaration URSSAF (non bloquante)', { error: urssafError.message });
+          
+          // Créer une déclaration en statut "created" pour suivi
+          for (const bookingId of bookingIds) {
+            await supabaseAdmin
+              .from('urssaf_declarations')
+              .insert({
+                booking_id: bookingId,
+                client_email: clientInfo.email,
+                client_name: `${clientInfo.firstName} ${clientInfo.lastName}`,
+                total_amount: totalAmount,
+                client_amount: clientAmount,
+                state_amount: stateAmount,
+                status: 'created',
+                error_message: urssafError.message,
+                retry_count: 0,
+              });
+          }
+
+          // Alerter l'admin
+          await supabaseAdmin.functions.invoke('create-admin-notification', {
+            body: {
+              type: 'urssaf_error',
+              title: '⚠️ Échec déclaration URSSAF',
+              message: `La déclaration URSSAF pour ${clientInfo.firstName} ${clientInfo.lastName} (${totalAmount}€) a échoué. Intervention manuelle requise. Réservations: ${bookingIds.join(', ')}`,
+              data: { booking_ids: bookingIds, error: urssafError.message },
+              priority: 'urgent',
+            }
+          });
+        } else {
+          logStep('Déclaration URSSAF réussie', { data: urssafData });
+          
+          // Si succès, créer déclaration avec deadline 48h et mettre à jour les bookings
+          const deadline = new Date();
+          deadline.setHours(deadline.getHours() + 48);
+
+          for (const bookingId of bookingIds) {
+            await supabaseAdmin
+              .from('urssaf_declarations')
+              .insert({
+                booking_id: bookingId,
+                client_email: clientInfo.email,
+                client_name: `${clientInfo.firstName} ${clientInfo.lastName}`,
+                total_amount: totalAmount,
+                client_amount: clientAmount,
+                state_amount: stateAmount,
+                status: 'sent',
+                declared_at: new Date().toISOString(),
+                urssaf_reference: urssafData?.registrationId || null,
+                client_validation_deadline: deadline.toISOString(),
+                retry_count: 0,
+              });
+
+            // Confirmer la mission maintenant que la déclaration est envoyée
+            await supabaseAdmin
+              .from('bookings')
+              .update({ 
+                status: 'confirmed', 
+                confirmed_at: new Date().toISOString(),
+                notes: `stripe_session:${sessionId}\nEmail: ${clientInfo.email}\nTél: ${clientInfo.phone}\nNom: ${clientInfo.firstName} ${clientInfo.lastName}\nURSSAF: déclaration envoyée - ref ${urssafData?.registrationId || 'N/A'}`,
+              })
+              .eq('id', bookingId);
+          }
+
+          // Envoyer notification client pour valider dans les 48h
+          try {
+            await supabaseAdmin.functions.invoke('send-notification-email', {
+              body: {
+                to: clientInfo.email,
+                subject: '✅ Validez votre avance immédiate URSSAF (48h)',
+                html: `
+                  <p>Bonjour ${clientInfo.firstName},</p>
+                  <p>Votre demande d'avance immédiate a été envoyée à l'URSSAF avec succès.</p>
+                  <p><strong>Montant total :</strong> ${totalAmount}€</p>
+                  <p><strong>Votre part (50%) :</strong> ${clientAmount}€ (déjà payé)</p>
+                  <p><strong>Part État (50%) :</strong> ${stateAmount}€</p>
+                  <p><strong>⏰ Action requise :</strong> Vous devez valider cette demande sur <a href="https://www.particulier.urssaf.fr">particulier.urssaf.fr</a> dans les <strong>48 heures</strong>.</p>
+                  <p>Sans validation de votre part, la demande expirera et vous devrez régler le solde restant.</p>
+                  <p>L'équipe Bikawo</p>
+                `,
+              },
+            });
+            logStep('Notification 48h envoyée au client');
+          } catch (emailErr) {
+            logStep('Erreur envoi notification 48h', { error: String(emailErr) });
+          }
+        }
+      } catch (urssafCritical) {
+        logStep('Erreur critique URSSAF (non bloquante pour le paiement)', { error: String(urssafCritical) });
+        
+        // La réservation existe, on crée un suivi pour intervention manuelle
+        await supabaseAdmin.functions.invoke('create-admin-notification', {
+          body: {
+            type: 'urssaf_critical',
+            title: '🔴 Erreur critique URSSAF',
+            message: `Erreur critique lors de la déclaration URSSAF. Paiement Stripe confirmé mais pas de déclaration. Réservations: ${bookingIds.join(', ')}. Erreur: ${String(urssafCritical)}`,
+            data: { booking_ids: bookingIds },
+            priority: 'urgent',
+          }
+        });
       }
     }
 
-    // Nettoyer le localStorage côté client après confirmation du paiement
-    console.log('Nettoyage du localStorage pour le panier');
+    logStep('Nettoyage du localStorage pour le panier');
 
     return new Response(
       JSON.stringify({
@@ -326,7 +433,7 @@ serve(async (req) => {
         urssafEnabled,
         paymentStatus: session.payment_status,
         sessionId: session.id,
-        clearCart: true, // Signal pour vider le panier
+        clearCart: true,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -335,7 +442,7 @@ serve(async (req) => {
     );
 
   } catch (error: any) {
-    console.error("Erreur vérification paiement:", error);
+    logStep("Erreur vérification paiement", { error: error.message });
     return new Response(
       JSON.stringify({ 
         error: error.message,

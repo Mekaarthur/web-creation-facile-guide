@@ -132,10 +132,15 @@ const DeclarationsTracking = () => {
 
   const getStatusBadge = (status: string) => {
     const map: Record<string, { variant: any; label: string; icon: any }> = {
+      created: { variant: "outline", label: "Créée", icon: Clock },
       sent: { variant: "secondary", label: "Envoyée", icon: Send },
-      pending_validation: { variant: "outline", label: "En attente", icon: Clock },
+      pending_client_validation: { variant: "outline", label: "Attente validation client", icon: Clock },
       validated: { variant: "default", label: "Validée", icon: CheckCircle },
       rejected: { variant: "destructive", label: "Rejetée", icon: XCircle },
+      expired: { variant: "destructive", label: "Expirée (48h)", icon: Ban },
+      retry: { variant: "secondary", label: "Relance", icon: RefreshCw },
+      paid: { variant: "default", label: "Payée", icon: Euro },
+      archived: { variant: "secondary", label: "Archivée", icon: CheckCircle },
       error: { variant: "destructive", label: "Erreur", icon: AlertTriangle },
     };
     const config = map[status] || { variant: "secondary", label: status, icon: Clock };
@@ -182,10 +187,15 @@ const DeclarationsTracking = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tous les statuts</SelectItem>
+              <SelectItem value="created">Créée</SelectItem>
               <SelectItem value="sent">Envoyée</SelectItem>
-              <SelectItem value="pending_validation">En attente</SelectItem>
+              <SelectItem value="pending_client_validation">Attente validation</SelectItem>
               <SelectItem value="validated">Validée</SelectItem>
               <SelectItem value="rejected">Rejetée</SelectItem>
+              <SelectItem value="expired">Expirée</SelectItem>
+              <SelectItem value="retry">Relance</SelectItem>
+              <SelectItem value="paid">Payée</SelectItem>
+              <SelectItem value="archived">Archivée</SelectItem>
               <SelectItem value="error">Erreur</SelectItem>
             </SelectContent>
           </Select>
@@ -214,24 +224,42 @@ const DeclarationsTracking = () => {
                   <th className="pb-2 font-medium">Part client</th>
                   <th className="pb-2 font-medium">Part État</th>
                   <th className="pb-2 font-medium">Référence</th>
+                  <th className="pb-2 font-medium">Deadline 48h</th>
+                  <th className="pb-2 font-medium">Tentatives</th>
                   <th className="pb-2 font-medium">Statut</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((d) => (
-                  <tr key={d.id} className="border-b last:border-0 hover:bg-muted/30">
-                    <td className="py-2">{new Date(d.created_at).toLocaleDateString("fr-FR")}</td>
-                    <td className="py-2">
-                      <div>{d.client_name || "—"}</div>
-                      <div className="text-xs text-muted-foreground">{d.client_email}</div>
-                    </td>
-                    <td className="py-2 font-medium">{Number(d.total_amount).toFixed(2)}€</td>
-                    <td className="py-2">{Number(d.client_amount).toFixed(2)}€</td>
-                    <td className="py-2 text-green-600">{Number(d.state_amount).toFixed(2)}€</td>
-                    <td className="py-2 font-mono text-xs">{d.urssaf_reference || "—"}</td>
-                    <td className="py-2">{getStatusBadge(d.status)}</td>
-                  </tr>
-                ))}
+                {filtered.map((d) => {
+                  const deadlineDate = d.client_validation_deadline ? new Date(d.client_validation_deadline) : null;
+                  const isUrgent = deadlineDate && deadlineDate.getTime() - Date.now() < 12 * 60 * 60 * 1000 && deadlineDate.getTime() > Date.now();
+                  const isExpiredDeadline = deadlineDate && deadlineDate.getTime() < Date.now();
+                  
+                  return (
+                    <tr key={d.id} className={`border-b last:border-0 hover:bg-muted/30 ${isUrgent ? 'bg-amber-50' : ''} ${isExpiredDeadline && d.status !== 'expired' ? 'bg-red-50' : ''}`}>
+                      <td className="py-2">{new Date(d.created_at).toLocaleDateString("fr-FR")}</td>
+                      <td className="py-2">
+                        <div>{d.client_name || "—"}</div>
+                        <div className="text-xs text-muted-foreground">{d.client_email}</div>
+                      </td>
+                      <td className="py-2 font-medium">{Number(d.total_amount).toFixed(2)}€</td>
+                      <td className="py-2">{Number(d.client_amount).toFixed(2)}€</td>
+                      <td className="py-2 text-green-600">{Number(d.state_amount).toFixed(2)}€</td>
+                      <td className="py-2 font-mono text-xs">{d.urssaf_reference || "—"}</td>
+                      <td className="py-2 text-xs">
+                        {deadlineDate ? (
+                          <span className={isExpiredDeadline ? 'text-red-600 font-semibold' : isUrgent ? 'text-amber-600 font-semibold' : ''}>
+                            {deadlineDate.toLocaleString("fr-FR", { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                            {isUrgent && ' ⚠️'}
+                            {isExpiredDeadline && ' ❌'}
+                          </span>
+                        ) : "—"}
+                      </td>
+                      <td className="py-2 text-xs">{d.retry_count ?? 0}/3</td>
+                      <td className="py-2">{getStatusBadge(d.status)}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
