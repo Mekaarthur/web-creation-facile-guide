@@ -132,10 +132,15 @@ const DeclarationsTracking = () => {
 
   const getStatusBadge = (status: string) => {
     const map: Record<string, { variant: any; label: string; icon: any }> = {
+      created: { variant: "outline", label: "Créée", icon: Clock },
       sent: { variant: "secondary", label: "Envoyée", icon: Send },
-      pending_validation: { variant: "outline", label: "En attente", icon: Clock },
+      pending_client_validation: { variant: "outline", label: "Attente validation client", icon: Clock },
       validated: { variant: "default", label: "Validée", icon: CheckCircle },
       rejected: { variant: "destructive", label: "Rejetée", icon: XCircle },
+      expired: { variant: "destructive", label: "Expirée (48h)", icon: Ban },
+      retry: { variant: "secondary", label: "Relance", icon: RefreshCw },
+      paid: { variant: "default", label: "Payée", icon: Euro },
+      archived: { variant: "secondary", label: "Archivée", icon: CheckCircle },
       error: { variant: "destructive", label: "Erreur", icon: AlertTriangle },
     };
     const config = map[status] || { variant: "secondary", label: status, icon: Clock };
