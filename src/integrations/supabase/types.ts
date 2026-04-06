@@ -4231,6 +4231,7 @@ export type Database = {
           client_amount: number
           client_email: string
           client_name: string | null
+          client_validation_deadline: string | null
           created_at: string
           declared_at: string | null
           error_code: string | null
@@ -4251,6 +4252,7 @@ export type Database = {
           client_amount?: number
           client_email: string
           client_name?: string | null
+          client_validation_deadline?: string | null
           created_at?: string
           declared_at?: string | null
           error_code?: string | null
@@ -4271,6 +4273,7 @@ export type Database = {
           client_amount?: number
           client_email?: string
           client_name?: string | null
+          client_validation_deadline?: string | null
           created_at?: string
           declared_at?: string | null
           error_code?: string | null
