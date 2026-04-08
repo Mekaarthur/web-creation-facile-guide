@@ -152,10 +152,10 @@ export function AdminSidebar() {
           description: "Facturation et comptabilité"
         },
         { 
-          title: "Avance Immédiate", 
-          url: "/modern-admin/avance-immediate", 
+          title: "Déclarations URSSAF", 
+          url: "/modern-admin/urssaf-declarations", 
           icon: Shield,
-          description: "Déclarations URSSAF et suivi avance immédiate"
+          description: "Avance immédiate, déclarations URSSAF et incidents"
         },
       ]
     },
