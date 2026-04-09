@@ -1,13 +1,11 @@
 import { lazy, Suspense } from 'react';
 import Navbar from "@/components/Navbar";
 import NewHero from "@/components/NewHero";
-import SEOComponent from "@/components/SEOComponent";
 import SEOOptimization from "@/components/SEOOptimization";
-import { seoStructuredData } from "@/utils/seoData";
 import { useTranslation } from 'react-i18next';
 import { ServicesGridSkeleton, TestimonialSkeleton } from "@/components/ui/skeleton";
 
-// Lazy load components below the fold for better LCP/TBT
+// Lazy load components below the fold
 const ServicesGrid = lazy(() => import("@/components/ServicesGrid"));
 const HowItWorks = lazy(() => import("@/components/HowItWorks"));
 const WhyBikawo = lazy(() => import("@/components/WhyBikawo"));
@@ -16,12 +14,11 @@ const FinalCTABiface = lazy(() => import("@/components/FinalCTABiface"));
 const Footer = lazy(() => import("@/components/Footer"));
 const ChatBot = lazy(() => import("@/components/ChatBot"));
 
-// Defer non-critical SEO/tracking components
+// Deferred SEO/tracking
 const TrackingManager = lazy(() => import("@/components/TrackingManager"));
 const RetargetingPixels = lazy(() => import("@/components/RetargetingPixels"));
 const GoogleSuggestOptimizer = lazy(() => import("@/components/GoogleSuggestOptimizer"));
 
-// Skeleton loaders style Shein
 const SectionSkeleton = ({ height = "h-96" }: { height?: string }) => (
   <div className={`${height} bg-muted/20 animate-pulse rounded-lg`} />
 );
@@ -45,17 +42,11 @@ const Index = () => {
   
   return (
     <div className="min-h-screen bg-background">
-      {/* Critical SEO - loaded immediately */}
+      {/* Single SEO component - no duplicates */}
       <SEOOptimization 
         title="Bikawo - Débordé(e) par le quotidien ? | Assistant Personnel Paris"
-        description="★ Déléguer vos missions quotidiennes n'a jamais été aussi simple ! Garde enfants, aide seniors, courses, démarches admin. La charge mentale en moins, la sérénité en plus."
-        keywords="débordé quotidien, déléguer missions, charge mentale, assistant personnel Paris, services domicile, garde enfants, aide seniors, sérénité famille"
-      />
-      <SEOComponent 
-        title="Bikawo - La charge mentale en moins, la sérénité en plus"
-        description="Créé par une maman qui comprend. Bikawo vous libère de la charge mentale avec des services combinés : garde enfants, aide seniors, courses, démarches admin. Votre assistant personnel au quotidien."
-        keywords="charge mentale, délégation tâches, assistant personnel, maman entrepreneur, services famille, sérénité quotidien, aide domicile"
-        structuredData={seoStructuredData.organization}
+        description="★ Déléguer vos missions quotidiennes n'a jamais été aussi simple ! Garde enfants, aide seniors, courses, démarches admin. La charge mentale en moins, la sérénité en plus. Crédit d'impôt 50%."
+        keywords="débordé quotidien, déléguer missions, charge mentale, assistant personnel Paris, services domicile, garde enfants, aide seniors, sérénité famille, crédit impôt 50%"
       />
       
       {/* Deferred tracking/SEO components */}
@@ -68,19 +59,17 @@ const Index = () => {
         />
       </Suspense>
       
-      {/* Navigation - Critical */}
+      {/* Navigation */}
       <header className="sticky top-0 z-50 w-full backdrop-blur-sm bg-background/80 border-b border-border/40">
         <Navbar />
       </header>
       
       {/* Main Content */}
       <main className="w-full">
-        {/* Hero Section - Critical, loaded immediately */}
         <section className="relative overflow-hidden">
           <NewHero />
         </section>
         
-        {/* Services Section - Lazy loaded */}
         <section className="py-16 lg:py-24 bg-muted/30">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
@@ -97,28 +86,24 @@ const Index = () => {
           </div>
         </section>
 
-        {/* How It Works Section - NEW */}
         <section className="py-16 lg:py-24 bg-background">
           <Suspense fallback={<SectionSkeleton />}>
             <HowItWorks />
           </Suspense>
         </section>
         
-        {/* Why Choose Us Section - Lazy loaded with content-visibility */}
         <section className="py-16 lg:py-24 bg-muted/30 content-visibility-auto">
           <Suspense fallback={<SectionSkeleton />}>
             <WhyBikawo />
           </Suspense>
         </section>
         
-        {/* Testimonials Section - Lazy loaded with skeleton */}
         <section className="py-16 lg:py-24 bg-muted/20 content-visibility-auto">
           <Suspense fallback={<TestimonialsSkeleton />}>
             <TestimonialsSection />
           </Suspense>
         </section>
         
-        {/* Call to Action Section - Lazy loaded with content-visibility */}
         <section className="py-16 lg:py-24 bg-gradient-to-br from-primary/5 via-background to-secondary/5 content-visibility-auto">
           <Suspense fallback={<SectionSkeleton height="h-64" />}>
             <FinalCTABiface />
@@ -126,14 +111,12 @@ const Index = () => {
         </section>
       </main>
       
-      {/* Footer - Lazy loaded */}
       <footer className="bg-muted/50">
         <Suspense fallback={<SectionSkeleton height="h-48" />}>
           <Footer />
         </Suspense>
       </footer>
       
-      {/* Chat Bot - Lazy loaded with delay */}
       <Suspense fallback={null}>
         <ChatBot />
       </Suspense>

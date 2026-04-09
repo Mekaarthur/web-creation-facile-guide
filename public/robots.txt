@@ -20,10 +20,10 @@ Allow: /
 Crawl-delay: 2
 
 # Sitemaps
-Sitemap: https://bikawo.com/sitemap-index.xml
-Sitemap: https://bikawo.com/sitemap.xml
-Sitemap: https://bikawo.com/sitemap-local.xml
-Sitemap: https://bikawo.com/sitemap-blog.xml
+Sitemap: https://bikawo.fr/sitemap-index.xml
+Sitemap: https://bikawo.fr/sitemap.xml
+Sitemap: https://bikawo.fr/sitemap-local.xml
+Sitemap: https://bikawo.fr/sitemap-blog.xml
 
 # Sections importantes
 Allow: /services
@@ -34,5 +34,7 @@ Allow: /contact
 # Pages à faible valeur SEO
 Disallow: /admin
 Disallow: /auth
+Disallow: /espace-personnel
+Disallow: /espace-prestataire
 Disallow: /*?*utm_*
 Disallow: /*?*ref=*
