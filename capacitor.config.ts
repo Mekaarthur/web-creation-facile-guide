@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'bikawo',
   webDir: 'dist',
   server: {
-    url: "https://bikawo.com",
+    url: "https://bikawo.fr",
     cleartext: true
   },
   plugins: {
