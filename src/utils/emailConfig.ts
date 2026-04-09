@@ -179,8 +179,8 @@ export const COMPANY_CONFIG = {
   domain: "bikawo.com",
   email: "contact@bikawo.com",
   supportEmail: "support@bikawo.com",
-  websiteUrl: "https://bikawo.com",
-  logoUrl: "https://bikawo.com/logo.png",
+  websiteUrl: "https://bikawo.fr",
+  logoUrl: "https://bikawo.fr/logo.png",
   colors: {
     primary: "#667eea",
     secondary: "#764ba2",
