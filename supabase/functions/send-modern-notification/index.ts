@@ -110,7 +110,7 @@ const getModernEmailTemplate = (type: string, recipient: any, data: any) => {
               </div>
               
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.com'}" 
+                <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.fr'}" 
                    style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
                   🚀 Découvrir nos services
                 </a>
@@ -187,7 +187,7 @@ const getModernEmailTemplate = (type: string, recipient: any, data: any) => {
             </div>
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.com'}/espace-personnel" 
+              <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.fr'}/espace-personnel" 
                  style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 12px 25px; text-decoration: none; border-radius: 20px; font-weight: 600;">
                 📱 Gérer mes réservations
               </a>
@@ -319,7 +319,7 @@ const getModernEmailTemplate = (type: string, recipient: any, data: any) => {
             </div>
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.com'}/espace-prestataire" 
+              <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.fr'}/espace-prestataire" 
                  style="display: inline-block; background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: 600; font-size: 16px;">
                 🏠 Accéder à mon espace
               </a>
@@ -381,11 +381,11 @@ const getModernEmailTemplate = (type: string, recipient: any, data: any) => {
             </div>
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.com'}/espace-prestataire" 
+              <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.fr'}/espace-prestataire" 
                  style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: 600; font-size: 16px; margin-right: 10px;">
                 ✅ Accepter la mission
               </a>
-              <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.com'}/espace-prestataire" 
+              <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.fr'}/espace-prestataire" 
                  style="display: inline-block; background: #6b7280; color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: 600; font-size: 16px;">
                 ❌ Décliner
               </a>
@@ -412,7 +412,7 @@ const getModernEmailTemplate = (type: string, recipient: any, data: any) => {
             </p>
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.com'}" 
+              <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.fr'}" 
                  style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 25px; text-decoration: none; border-radius: 20px; font-weight: 600;">
                 Voir sur Bikawo
               </a>

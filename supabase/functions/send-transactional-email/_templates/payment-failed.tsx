@@ -23,7 +23,7 @@ interface PaymentFailedEmailProps {
   retryUrl: string;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.fr/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
 
 export const PaymentFailedEmail = ({
   clientName = 'Client',
@@ -31,7 +31,7 @@ export const PaymentFailedEmail = ({
   amount = '50,00€',
   bookingDate = '01/01/2024',
   errorReason = 'Carte refusée',
-  retryUrl = 'https://bikawo.com/payment',
+  retryUrl = 'https://bikawo.fr/payment',
 }: PaymentFailedEmailProps) => {
   return (
     <Html>
@@ -115,7 +115,7 @@ export const PaymentFailedEmail = ({
 
           <Text style={footer}>
             Bikawo - Votre assistant personnel au quotidien<br />
-            <Link href="https://bikawo.com" style={link}>bikawo.com</Link> | 
+            <Link href="https://bikawo.fr" style={link}>bikawo.com</Link> | 
             <Link href="tel:+33609085390" style={link}> 06 09 08 53 90</Link>
           </Text>
         </Container>

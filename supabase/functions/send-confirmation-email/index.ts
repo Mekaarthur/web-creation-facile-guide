@@ -54,7 +54,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Compute base URL for redirect
     const baseUrl = supabaseUrl.includes("sandbox")
       ? `https://ed681ca2-74aa-4970-8c41-139ffb8c8152.sandbox.lovable.dev`
-      : `https://bikawo.com`;
+      : `https://bikawo.fr`;
 
     // Try to generate magic link instead of signup link (works for existing users)
     let confirmationUrl: string;

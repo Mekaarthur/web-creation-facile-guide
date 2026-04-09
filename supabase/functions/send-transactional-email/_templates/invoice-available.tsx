@@ -21,7 +21,7 @@ interface InvoiceAvailableEmailProps {
   invoiceLink?: string;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.fr/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
 
 export const InvoiceAvailableEmail = ({
   clientName = 'Client',
@@ -29,7 +29,7 @@ export const InvoiceAvailableEmail = ({
   serviceName = 'Service',
   totalAmount = 0,
   invoiceDate = new Date().toLocaleDateString('fr-FR'),
-  invoiceLink = 'https://bikawo.com/espace-personnel'
+  invoiceLink = 'https://bikawo.fr/espace-personnel'
 }: InvoiceAvailableEmailProps) => (
   <Html>
     <Head />

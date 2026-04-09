@@ -17,9 +17,9 @@ interface AccountCreatedEmailProps {
   appUrl?: string;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.fr/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
 
-export const AccountCreatedEmail = ({ clientName, appUrl = 'https://bikawo.com' }: AccountCreatedEmailProps) => (
+export const AccountCreatedEmail = ({ clientName, appUrl = 'https://bikawo.fr' }: AccountCreatedEmailProps) => (
   <Html>
     <Head />
     <Preview>Bienvenue chez Bikawo</Preview>
