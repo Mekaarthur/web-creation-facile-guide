@@ -71,8 +71,8 @@ const AdminMarque = () => {
       welcome_message: 'Bienvenue sur Bikawo, votre plateforme de services à domicile !',
       about_text: 'Fondée en 2024, Bikawo révolutionne les services à domicile en connectant directement les particuliers avec des prestataires qualifiés.',
       contact_info: 'Pour toute question, contactez-nous à contact@bikawo.com ou au 06 09 08 53 90',
-      terms_url: 'https://bikawo.com/terms',
-      privacy_url: 'https://bikawo.com/privacy'
+      terms_url: 'https://bikawo.fr/terms',
+      privacy_url: 'https://bikawo.fr/privacy'
     }
   });
   const [loading, setLoading] = useState(false);

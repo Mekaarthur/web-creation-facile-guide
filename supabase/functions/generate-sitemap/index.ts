@@ -5,7 +5,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Blog posts data (centralized)
 const blogPosts = [
   {
     slug: "10-signes-charge-mentale",
@@ -54,13 +53,10 @@ Deno.serve(async (req) => {
       { url: '/a-propos-de-nous', priority: '0.8', changefreq: 'monthly' },
       { url: '/blog', priority: '0.9', changefreq: 'weekly' },
       { url: '/contact', priority: '0.7', changefreq: 'monthly' },
-      { url: '/espace-personnel', priority: '0.6', changefreq: 'monthly' },
-      { url: '/espace-prestataire', priority: '0.6', changefreq: 'monthly' },
       { url: '/nous-recrutons', priority: '0.5', changefreq: 'monthly' },
       { url: '/aide', priority: '0.4', changefreq: 'monthly' }
     ];
 
-    // Generate blog posts URLs dynamically
     const blogPostsUrls = blogPosts.map(post => ({
       url: `/blog/${post.slug}`,
       priority: '0.8',
@@ -71,7 +67,6 @@ Deno.serve(async (req) => {
 
     const allPages = [...staticPages, ...blogPostsUrls];
 
-    // Generate main sitemap
     const mainSitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
@@ -86,7 +81,6 @@ ${allPages.map(page => `  <url>
   </url>`).join('\n')}
 </urlset>`;
 
-    // Generate blog-specific sitemap with images
     const blogSitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">

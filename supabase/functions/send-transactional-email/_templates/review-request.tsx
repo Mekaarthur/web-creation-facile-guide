@@ -20,14 +20,14 @@ interface ReviewRequestEmailProps {
   reviewLink?: string;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.fr/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
 
 export const ReviewRequestEmail = ({
   clientName = 'Client',
   serviceName = 'Service',
   providerName = 'Prestataire',
   bookingDate = new Date().toLocaleDateString('fr-FR'),
-  reviewLink = 'https://bikawo.com/espace-personnel'
+  reviewLink = 'https://bikawo.fr/espace-personnel'
 }: ReviewRequestEmailProps) => (
   <Html>
     <Head />

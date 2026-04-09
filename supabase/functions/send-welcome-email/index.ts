@@ -38,7 +38,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const loginUrl = Deno.env.get("SUPABASE_URL")?.includes("sandbox")
       ? `https://ed681ca2-74aa-4970-8c41-139ffb8c8152.sandbox.lovable.dev/auth`
-      : `https://bikawo.com/auth`;
+      : `https://bikawo.fr/auth`;
 
     const emailHtml = await renderAsync(
       React.createElement(WelcomeEmail, {

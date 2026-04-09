@@ -29,7 +29,7 @@ interface BookingModificationEmailProps {
   reason?: string;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.fr/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
 
 export const BookingModificationEmail = ({
   clientName = 'Client',
@@ -107,7 +107,7 @@ export const BookingModificationEmail = ({
           </Section>
 
           <Section style={buttonContainer}>
-            <Button style={button} href="https://bikawo.com/espace-personnel">
+            <Button style={button} href="https://bikawo.fr/espace-personnel">
               Voir ma réservation
             </Button>
           </Section>
@@ -121,7 +121,7 @@ export const BookingModificationEmail = ({
 
           <Text style={footer}>
             Bikawo - Votre assistant personnel au quotidien<br />
-            <Link href="https://bikawo.com" style={link}>bikawo.com</Link> | 
+            <Link href="https://bikawo.fr" style={link}>bikawo.com</Link> | 
             <Link href="tel:+33609085390" style={link}> 06 09 08 53 90</Link>
           </Text>
         </Container>

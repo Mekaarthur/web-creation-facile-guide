@@ -20,7 +20,7 @@ interface MissionCompletedEmailProps {
   bookingId: string;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.fr/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
 
 export const MissionCompletedEmail = ({
   clientName,
@@ -63,7 +63,7 @@ export const MissionCompletedEmail = ({
             Votre retour est précieux ! Il aide les autres utilisateurs et permet aux prestataires de s'améliorer.
           </Text>
           <Button
-            href={`https://bikawo.com/espace-personnel`}
+            href={`https://bikawo.fr/espace-personnel`}
             style={button}
           >
             Laisser un avis

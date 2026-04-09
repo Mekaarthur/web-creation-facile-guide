@@ -26,7 +26,7 @@ serve(async (req) => {
     const { data, error } = await supabase.auth.admin.generateLink({
       type: 'signup',
       email,
-      options: { redirectTo: 'https://bikawo.com/auth/complete' }
+      options: { redirectTo: 'https://bikawo.fr/auth/complete' }
     });
 
     // Si erreur code email_exists, l'email est déjà enregistré

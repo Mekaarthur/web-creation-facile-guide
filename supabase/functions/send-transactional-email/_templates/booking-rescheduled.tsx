@@ -23,7 +23,7 @@ interface BookingRescheduledEmailProps {
   reason?: string;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.fr/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
 
 export const BookingRescheduledEmail = ({
   clientName = 'Client',
@@ -87,7 +87,7 @@ export const BookingRescheduledEmail = ({
         </Text>
 
         <Section style={ctaSection}>
-          <Link href={`https://bikawo.com/espace-personnel`} style={button}>
+          <Link href={`https://bikawo.fr/espace-personnel`} style={button}>
             Voir ma réservation
           </Link>
         </Section>

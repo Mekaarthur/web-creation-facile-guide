@@ -53,7 +53,7 @@ const MentionsLegales = () => {
               
               <div className="bg-muted/30 rounded-xl p-6 space-y-4">
                 <p className="text-foreground">
-                  Le site <strong className="text-primary">https://bikawo.com/</strong> est édité par <strong>Bikawo</strong>, 
+                  Le site <strong className="text-primary">https://bikawo.fr/</strong> est édité par <strong>Bikawo</strong>, 
                   entreprise individuelle (auto-entreprise), immatriculée sous le numéro <strong>880 491 436</strong>.
                 </p>
                 

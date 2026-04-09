@@ -35,7 +35,7 @@ export const seoStructuredData = {
     "logo": "https://bikawo.fr/lovable-uploads/3496ff80-ec42-436d-8734-200bcb42494f.png",
     "contactPoint": {
       "@type": "ContactPoint",
-      "telephone": "+33-1-23-45-67-89",
+      "telephone": "+33609085390",
       "contactType": "customer service",
       "availableLanguage": "French"
     },

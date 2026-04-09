@@ -30,7 +30,7 @@ export const ConfirmationEmail = ({
       <Container style={container}>
         <Section style={logoContainer}>
           <Img
-            src="https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png"
+            src="https://bikawo.fr/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png"
             width="200"
             height="auto"
             alt="Bikawo"
@@ -76,7 +76,7 @@ export const ConfirmationEmail = ({
         </Text>
 
         <Text style={footer}>
-          <Link href="https://bikawo.com" style={footerLink}>
+          <Link href="https://bikawo.fr" style={footerLink}>
             Bikawo
           </Link>
           <br />

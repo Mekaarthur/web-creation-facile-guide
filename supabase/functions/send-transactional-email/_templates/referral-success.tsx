@@ -34,7 +34,7 @@ export const ReferralSuccessEmail = ({
       <Body style={main}>
         <Container style={container}>
           <Img
-            src="https://bikawo.com/logo.png"
+            src="https://bikawo.fr/logo.png"
             width="150"
             height="50"
             alt="Bikawo"
@@ -69,7 +69,7 @@ export const ReferralSuccessEmail = ({
           </Text>
 
           <Section style={buttonContainer}>
-            <Button style={button} href="https://bikawo.com/services">
+            <Button style={button} href="https://bikawo.fr/services">
               Réserver maintenant
             </Button>
           </Section>
@@ -82,7 +82,7 @@ export const ReferralSuccessEmail = ({
           </Text>
 
           <Section style={buttonContainer}>
-            <Button style={secondaryButton} href="https://bikawo.com/espace-personnel">
+            <Button style={secondaryButton} href="https://bikawo.fr/espace-personnel">
               Voir mon code parrainage
             </Button>
           </Section>
@@ -91,7 +91,7 @@ export const ReferralSuccessEmail = ({
 
           <Text style={footer}>
             Bikawo - Votre assistant personnel au quotidien<br />
-            <Link href="https://bikawo.com" style={link}>bikawo.com</Link> | 
+            <Link href="https://bikawo.fr" style={link}>bikawo.com</Link> | 
             <Link href="tel:+33609085390" style={link}> 06 09 08 53 90</Link>
           </Text>
         </Container>

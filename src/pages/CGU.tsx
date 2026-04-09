@@ -25,7 +25,7 @@ const CGU = () => {
 • « Prestation Récurrente » : désigne une Prestation souscrite par un Client avec une régularité (hebdomadaire, bimensuelle, mensuelle, plusieurs fois par semaine), réalisée par un Partenaire déterminé.
 • « Services » : désigne les services fournis par Bikawo aux Utilisateurs, incluant notamment la mise en relation et les services permettant d'organiser et coordonner des Services à la Personne (ex. information, intermédiation, suivi, facturation, envoi d'attestation fiscale).
 • « Service à la Personne » : désigne exclusivement les activités relevant des articles L.7231-1 et suivants et D.7231-1 et suivants du Code du travail (ex. entretien de la maison et travaux ménagers), à l'exclusion de toute activité soumise à agrément, conformément à la loi.
-• « Site » : désigne le site internet accessible à l'adresse https://bikawo.com/ ainsi que l'ensemble de ses sous-domaines.
+• « Site » : désigne le site internet accessible à l'adresse https://bikawo.fr/ ainsi que l'ensemble de ses sous-domaines.
 • « Utilisateur » : désigne indifféremment un Client ou un Partenaire utilisant la Plateforme.
 • « Bikawo » : désigne l'auto-entreprise enregistrée à l'INPI sous le numéro 880 491 436, domiciliée 231 rue Saint-Honoré, Paris. L'activité de Bikawo est dédiée aux services à la personne (notamment : ménage, garde d'enfants, gestion animalière, accompagnement de personnes âgées, etc.).
 

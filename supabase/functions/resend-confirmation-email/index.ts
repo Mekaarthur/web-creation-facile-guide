@@ -67,7 +67,7 @@ serve(async (req) => {
       type: 'signup',
       email: email,
       options: {
-        emailRedirectTo: 'https://bikawo.com/auth/complete'
+        emailRedirectTo: 'https://bikawo.fr/auth/complete'
       }
     });
 

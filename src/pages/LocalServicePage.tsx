@@ -34,7 +34,7 @@ const LocalServicePage = () => {
   const description = generateLocalSEODescription(service, city);
   const keywords = generateLocalKeywords(service, city);
   const structuredData = generateLocalStructuredData(service, city);
-  const canonicalUrl = `https://bikawo.com/services/${service.slug}/${city.slug}`;
+  const canonicalUrl = `https://bikawo.fr/services/${service.slug}/${city.slug}`;
 
   // Villes du même département pour le maillage interne
   const nearbyCities = getCitiesByDepartment(city.departmentCode)
