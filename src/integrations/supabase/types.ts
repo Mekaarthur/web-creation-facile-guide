@@ -1757,6 +1757,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "internal_conversations_client_request_id_fkey"
+            columns: ["client_request_id"]
+            isOneToOne: false
+            referencedRelation: "client_requests_provider_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "internal_conversations_job_application_id_fkey"
             columns: ["job_application_id"]
             isOneToOne: false
@@ -2136,6 +2143,13 @@ export type Database = {
             columns: ["client_request_id"]
             isOneToOne: false
             referencedRelation: "client_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mission_assignments_client_request_id_fkey"
+            columns: ["client_request_id"]
+            isOneToOne: false
+            referencedRelation: "client_requests_provider_view"
             referencedColumns: ["id"]
           },
         ]
@@ -2611,6 +2625,13 @@ export type Database = {
             columns: ["client_request_id"]
             isOneToOne: false
             referencedRelation: "client_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prestations_realisees_client_request_id_fkey"
+            columns: ["client_request_id"]
+            isOneToOne: false
+            referencedRelation: "client_requests_provider_view"
             referencedColumns: ["id"]
           },
         ]
@@ -4632,6 +4653,57 @@ export type Database = {
           revenue_30d: number | null
         }
         Relationships: []
+      }
+      client_requests_provider_view: {
+        Row: {
+          assigned_provider_id: string | null
+          created_at: string | null
+          id: string | null
+          location: string | null
+          preferred_date: string | null
+          preferred_time: string | null
+          service_description: string | null
+          service_type: string | null
+          status: string | null
+        }
+        Insert: {
+          assigned_provider_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          location?: string | null
+          preferred_date?: string | null
+          preferred_time?: string | null
+          service_description?: string | null
+          service_type?: string | null
+          status?: string | null
+        }
+        Update: {
+          assigned_provider_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          location?: string | null
+          preferred_date?: string | null
+          preferred_time?: string | null
+          service_description?: string | null
+          service_type?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_requests_assigned_provider_id_fkey"
+            columns: ["assigned_provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_requests_assigned_provider_id_fkey"
+            columns: ["assigned_provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public_view"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       complaint_statistics: {
         Row: {
