@@ -101,8 +101,8 @@ const DOC_ICONS: Record<string, any> = {
   insurance: Shield,
 };
 
-const REQUIRED_APPLICATION_DOCUMENT_TYPES = ["identity_document", "criminal_record", "siret_document", "rib_iban", "certifications"];
-const REQUIRED_PROVIDER_DOCUMENT_TYPES = ["identity_document", "criminal_record", "siret_document", "rib_iban", "certification"];
+const REQUIRED_APPLICATION_DOCUMENT_TYPES = ["identity_document", "siret_document", "rib_iban", "certifications"];
+const REQUIRED_PROVIDER_DOCUMENT_TYPES = ["identity_document", "siret_document", "rib_iban", "certification"];
 
 const normalizeKey = (value?: string | null) =>
   (value || "")
@@ -273,11 +273,10 @@ export const UnifiedProviderPipeline = () => {
     const docs: DocumentItem[] = [];
     const docDefs = [
       { type: "identity_document", label: "Pièce d'identité", url: app.identity_document_url },
-      { type: "criminal_record", label: "Casier judiciaire", url: app.criminal_record_url },
       { type: "siret_document", label: "SIREN / SIRET", url: null, value: app.siren_number },
       { type: "rib_iban", label: "RIB / IBAN", url: app.rib_iban_url },
-      { type: "cv", label: "CV", url: app.cv_file_url },
       { type: "certifications", label: "Agrément Nova", url: app.certifications_url },
+      { type: "criminal_record", label: "Casier judiciaire (facultatif)", url: app.criminal_record_url },
     ];
 
     for (const def of docDefs) {
@@ -436,8 +435,9 @@ export const UnifiedProviderPipeline = () => {
       }
       toast.success(`Document "${doc.label}" approuvé`);
       await loadAll();
-    } catch {
-      toast.error("Erreur approbation");
+    } catch (err: any) {
+      console.error("Erreur approbation document:", err);
+      toast.error("Erreur approbation: " + (err?.message || "Erreur inconnue"));
     }
   };
 
