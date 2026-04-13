@@ -38,6 +38,7 @@ import BikawoCart from '@/components/BikawoCart';
 import { ChatWidget } from '@/components/chat';
 import { TaxCreditSavings } from '@/components/client/TaxCreditSavings';
 import { PendingReviews } from '@/components/client/PendingReviews';
+import { AvanceImmediateActivation } from '@/components/client/AvanceImmediateActivation';
 import { useTranslation } from 'react-i18next';
 
 const EspacePersonnel = () => {
@@ -240,6 +241,7 @@ const EspacePersonnel = () => {
 
             {/* Dashboard */}
             <TabsContent value="dashboard" className="space-y-6">
+              <AvanceImmediateActivation />
               <EnhancedClientDashboard onNavigateToTab={setSelectedTab} />
               <PendingReviews />
             </TabsContent>
