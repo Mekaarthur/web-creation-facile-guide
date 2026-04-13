@@ -153,7 +153,7 @@ const ProviderSignup = () => {
           criminal_record_url: uploadedDocs.criminal_record_url,
           criminal_record_date: data.criminal_record_date?.toISOString(),
           rib_iban_url: uploadedDocs.rib_iban_url,
-          cv_file_url: uploadedDocs.cv_file_url,
+          certifications_url: uploadedDocs.certifications_url,
           certifications_url: uploadedDocs.certifications_url,
           documents_complete: true
         });
