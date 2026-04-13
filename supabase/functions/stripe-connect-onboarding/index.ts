@@ -7,13 +7,94 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const jsonHeaders = {
+  ...corsHeaders,
+  "Content-Type": "application/json",
+};
+
+interface ApiResponse<T> {
+  ok: boolean;
+  data?: T;
+  error?: string;
+  diagnostics?: {
+    error_stage: string;
+    processing_time_ms: number;
+  };
+}
+
+interface StripeStatusResponse {
+  connected: boolean;
+  onboarding_complete: boolean;
+  details_submitted?: boolean;
+  charges_enabled?: boolean;
+  payouts_enabled?: boolean;
+}
+
+interface StripeOnboardingResponse {
+  url: string;
+  accountId?: string;
+}
+
+function respond<T>(ok: boolean, payload: Omit<ApiResponse<T>, "ok">): Response {
+  return new Response(JSON.stringify({ ok, ...payload }), {
+    status: 200,
+    headers: jsonHeaders,
+  });
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (typeof error === "string") {
+    return error;
+  }
+
+  return "Erreur Stripe Connect";
+}
+
+function getErrorType(error: unknown): string {
+  if (typeof error === "object" && error !== null && "type" in error) {
+    return String((error as { type?: unknown }).type ?? "");
+  }
+
+  return "";
+}
+
 serve(async (req) => {
+  const startTime = Date.now();
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    const authHeader = req.headers.get("Authorization");
+
+    if (!authHeader?.startsWith("Bearer ")) {
+      return respond(false, {
+        error: "Utilisateur non authentifié",
+        diagnostics: {
+          error_stage: "missing_authorization",
+          processing_time_ms: Date.now() - startTime,
+        },
+      });
+    }
+
+    const stripeSecretKey = (Deno.env.get("STRIPE_SECRET_KEY") ?? "").trim();
+
+    if (!stripeSecretKey) {
+      return respond(false, {
+        error: "Configuration Stripe manquante",
+        diagnostics: {
+          error_stage: "missing_stripe_secret",
+          processing_time_ms: Date.now() - startTime,
+        },
+      });
+    }
+
+    const stripe = new Stripe(stripeSecretKey, {
       apiVersion: "2025-08-27.basil",
     });
 
@@ -22,32 +103,52 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user } } = await supabaseClient.auth.getUser(token);
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
 
-    if (!user) {
-      throw new Error("User not authenticated");
+    if (userError || !user) {
+      return respond(false, {
+        error: "Utilisateur non authentifié",
+        diagnostics: {
+          error_stage: "invalid_user",
+          processing_time_ms: Date.now() - startTime,
+        },
+      });
     }
 
-    const { action } = await req.json();
+    const body = await req.json().catch(() => null);
+    const action = body?.action;
+
+    if (action !== "create_account" && action !== "check_status") {
+      return respond(false, {
+        error: "Action invalide",
+        diagnostics: {
+          error_stage: "invalid_action",
+          processing_time_ms: Date.now() - startTime,
+        },
+      });
+    }
+
     const origin = req.headers.get("origin") || "https://bikawo.lovable.app";
 
-    // Get provider record
     const { data: provider, error: providerError } = await supabaseClient
       .from("providers")
       .select("id, stripe_account_id, stripe_onboarding_complete")
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
 
     if (providerError || !provider) {
-      throw new Error("Provider profile not found");
+      return respond(false, {
+        error: "Profil prestataire introuvable",
+        diagnostics: {
+          error_stage: "provider_not_found",
+          processing_time_ms: Date.now() - startTime,
+        },
+      });
     }
 
     if (action === "create_account") {
-      // Check if already has a Stripe Connect account
       if (provider.stripe_account_id) {
-        // Generate new account link for existing account
         const accountLink = await stripe.accountLinks.create({
           account: provider.stripe_account_id,
           refresh_url: `${origin}/provider/dashboard?stripe=refresh`,
@@ -55,12 +156,15 @@ serve(async (req) => {
           type: "account_onboarding",
         });
 
-        return new Response(JSON.stringify({ url: accountLink.url }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        return respond<StripeOnboardingResponse>(true, {
+          data: { url: accountLink.url },
+          diagnostics: {
+            error_stage: "existing_account_link_created",
+            processing_time_ms: Date.now() - startTime,
+          },
         });
       }
 
-      // Create Express connected account
       const account = await stripe.accounts.create({
         type: "express",
         country: "FR",
@@ -70,20 +174,18 @@ serve(async (req) => {
         },
         business_type: "individual",
         business_profile: {
-          mcc: "7299", // Miscellaneous personal services
+          mcc: "7299",
           url: "https://bikawo.lovable.app",
         },
       });
 
       console.log("Created Stripe Connect account:", account.id);
 
-      // Save account ID to provider
       await supabaseClient
         .from("providers")
         .update({ stripe_account_id: account.id })
         .eq("id", provider.id);
 
-      // Create onboarding link
       const accountLink = await stripe.accountLinks.create({
         account: account.id,
         refresh_url: `${origin}/provider/dashboard?stripe=refresh`,
@@ -91,50 +193,70 @@ serve(async (req) => {
         type: "account_onboarding",
       });
 
-      return new Response(JSON.stringify({ url: accountLink.url, accountId: account.id }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      return respond<StripeOnboardingResponse>(true, {
+        data: {
+          url: accountLink.url,
+          accountId: account.id,
+        },
+        diagnostics: {
+          error_stage: "new_account_created",
+          processing_time_ms: Date.now() - startTime,
+        },
       });
     }
 
-    if (action === "check_status") {
-      if (!provider.stripe_account_id) {
-        return new Response(JSON.stringify({ 
-          connected: false, 
-          onboarding_complete: false 
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
+    if (!provider.stripe_account_id) {
+      return respond<StripeStatusResponse>(true, {
+        data: {
+          connected: false,
+          onboarding_complete: false,
+        },
+        diagnostics: {
+          error_stage: "no_connected_account",
+          processing_time_ms: Date.now() - startTime,
+        },
+      });
+    }
 
-      const account = await stripe.accounts.retrieve(provider.stripe_account_id);
-      const isComplete = account.details_submitted && account.charges_enabled;
+    const account = await stripe.accounts.retrieve(provider.stripe_account_id);
+    const isComplete = Boolean(account.details_submitted && account.charges_enabled);
 
-      // Update onboarding status if changed
-      if (isComplete !== provider.stripe_onboarding_complete) {
-        await supabaseClient
-          .from("providers")
-          .update({ stripe_onboarding_complete: isComplete })
-          .eq("id", provider.id);
-      }
+    if (isComplete !== provider.stripe_onboarding_complete) {
+      await supabaseClient
+        .from("providers")
+        .update({ stripe_onboarding_complete: isComplete })
+        .eq("id", provider.id);
+    }
 
-      return new Response(JSON.stringify({
+    return respond<StripeStatusResponse>(true, {
+      data: {
         connected: true,
         onboarding_complete: isComplete,
         details_submitted: account.details_submitted,
         charges_enabled: account.charges_enabled,
         payouts_enabled: account.payouts_enabled,
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    throw new Error("Invalid action");
-
+      },
+      diagnostics: {
+        error_stage: "status_checked",
+        processing_time_ms: Date.now() - startTime,
+      },
+    });
   } catch (error) {
     console.error("Stripe Connect error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
+
+    const errorMessage = getErrorMessage(error);
+    const errorType = getErrorType(error);
+    const isStripeAuthError =
+      errorType === "StripeAuthenticationError" || /Invalid API Key/i.test(errorMessage);
+
+    return respond(false, {
+      error: isStripeAuthError
+        ? "La clé Stripe configurée est invalide ou expirée. Vérifiez STRIPE_SECRET_KEY avec la Secret key Stripe (sk_test_... ou sk_live_...)."
+        : errorMessage,
+      diagnostics: {
+        error_stage: isStripeAuthError ? "stripe_authentication_error" : "unhandled_error",
+        processing_time_ms: Date.now() - startTime,
+      },
     });
   }
 });

@@ -14,6 +14,17 @@ interface StripeStatus {
   payouts_enabled?: boolean;
 }
 
+interface StripeConnectResponse<T> {
+  ok?: boolean;
+  data?: T;
+  error?: string;
+}
+
+interface StripeOnboardingData {
+  url?: string;
+  accountId?: string;
+}
+
 export const StripeConnectCard = () => {
   const [status, setStatus] = useState<StripeStatus | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,6 +45,26 @@ export const StripeConnectCard = () => {
     }
   }, []);
 
+  const invokeStripeAction = async <T,>(action: "check_status" | "create_account") => {
+    const { data, error } = await supabase.functions.invoke("stripe-connect-onboarding", {
+      body: { action },
+    });
+
+    if (error) throw error;
+
+    const response = (data ?? null) as StripeConnectResponse<T> | null;
+
+    if (response?.ok === false) {
+      throw new Error(response.error || "Erreur Stripe Connect");
+    }
+
+    if (response?.ok === true) {
+      return response.data as T;
+    }
+
+    return data as T;
+  };
+
   const loadPayoutFrequency = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -51,11 +82,8 @@ export const StripeConnectCard = () => {
 
   const checkStatus = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke("stripe-connect-onboarding", {
-        body: { action: "check_status" },
-      });
-      if (error) throw error;
-      setStatus(data);
+      const statusData = await invokeStripeAction<StripeStatus>("check_status");
+      setStatus(statusData);
     } catch (error: any) {
       console.error("Error checking Stripe status:", error);
     } finally {
@@ -66,14 +94,12 @@ export const StripeConnectCard = () => {
   const handleConnect = async () => {
     setConnecting(true);
     try {
-      const { data, error } = await supabase.functions.invoke("stripe-connect-onboarding", {
-        body: { action: "create_account" },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      if (data?.url) window.location.href = data.url;
+      const connectData = await invokeStripeAction<StripeOnboardingData>("create_account");
+      if (!connectData?.url) throw new Error("Lien Stripe introuvable");
+      window.location.href = connectData.url;
     } catch (error: any) {
       toast.error(error.message || "Erreur lors de la connexion Stripe");
+    } finally {
       setConnecting(false);
     }
   };
