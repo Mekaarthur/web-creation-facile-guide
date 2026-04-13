@@ -92,17 +92,17 @@ const EspacePersonnel = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="pt-20 pb-16 bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="pt-14 pb-10 bg-gradient-to-br from-background via-background to-muted/20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header moderne */}
-          <div className="mb-6 sm:mb-12 text-center">
+          <div className="mb-4 sm:mb-8 text-center">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-3xl blur-3xl transform -rotate-1"></div>
-              <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl p-4 sm:p-8 shadow-lg border">
-                <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2 sm:mb-4">
+              <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl p-3 sm:p-6 shadow-lg border">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-1 sm:mb-2">
                   {t('personalSpace.title')}
                 </h1>
-                <p className="text-muted-foreground text-sm sm:text-xl">
+                <p className="text-muted-foreground text-sm sm:text-lg">
                   {user ? t('personalSpace.welcome', { name: user.email?.split('@')[0] }) : t('personalSpace.pleaseLogin')}
                 </p>
               </div>
