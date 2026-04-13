@@ -166,7 +166,6 @@ export const ApplicationDetails = ({
                     Voir
                   </Button>
                 ) : (
-                ) : (
                   <Badge variant="secondary">Non fourni</Badge>
                 )}
               </div>
