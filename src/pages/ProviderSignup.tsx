@@ -100,7 +100,7 @@ const ProviderSignup = () => {
         { file: data.identity_document, key: 'identity_document_url', folder: 'identity' },
         { file: data.criminal_record, key: 'criminal_record_url', folder: 'criminal_record' },
         { file: data.rib_iban, key: 'rib_iban_url', folder: 'rib' },
-        { file: data.certification_nova, key: 'certifications_url', folder: 'certification_nova' },
+        { file: data.certification_nova, key: 'certification_nova_url', folder: 'certification_nova' },
       ];
       
       if (data.certifications) {
@@ -153,8 +153,7 @@ const ProviderSignup = () => {
           criminal_record_url: uploadedDocs.criminal_record_url,
           criminal_record_date: data.criminal_record_date?.toISOString(),
           rib_iban_url: uploadedDocs.rib_iban_url,
-          certifications_url: uploadedDocs.certifications_url,
-          certifications_url: uploadedDocs.certifications_url,
+          certifications_url: uploadedDocs.certification_nova_url || uploadedDocs.certifications_url,
           documents_complete: true
         });
 
