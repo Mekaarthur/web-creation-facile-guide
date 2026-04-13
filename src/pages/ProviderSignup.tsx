@@ -75,7 +75,7 @@ const ProviderSignup = () => {
       criminal_record_date: undefined,
       siren_number: '',
       rib_iban: null,
-      cv_file: null,
+      certification_nova: null,
       certifications: null
     }
   });
@@ -575,15 +575,15 @@ const ProviderSignup = () => {
                   )}
                 />
 
-                {/* CV */}
+                {/* Agrément Nova */}
                 <FormField
                   control={form.control}
-                  name="cv_file"
+                  name="certification_nova"
                   render={({ field: { onChange, value, ...field } }) => (
                     <FormItem>
                       <FormLabel className="flex items-center gap-2">
                         <Upload className="h-4 w-4" />
-                        CV (facultatif)
+                        Agrément Nova *
                       </FormLabel>
                       <FormControl>
                         <Input
