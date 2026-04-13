@@ -280,7 +280,7 @@ const App = () => (
                   <Route path="avance-immediate" element={<AdminAvanceImmediate />} />
                   <Route path="urssaf-declarations" element={<AdminAvanceImmediate />} />
                   <Route path="urgences" element={<AdminUrgences />} />
-                  <Route path="brand" element={<AdminMarque />} />
+                  {/* /brand redirige vers /marque */}
                   <Route path="reclamations" element={<AdminReclamations />} />
                   <Route path="acces" element={<AdminAccessTracking />} />
                 </Route>
