@@ -72,8 +72,8 @@ const ProviderDocuments = () => {
     },
     {
       type: 'siret_document',
-      label: 'Numéro SIREN',
-      description: 'Extrait KBIS ou attestation URSSAF pour auto-entrepreneur',
+      label: 'Justificatif auto-entrepreneur',
+      description: 'Attestation URSSAF, extrait KBIS ou certificat d\'inscription',
       icon: Building,
       required: true
     },
