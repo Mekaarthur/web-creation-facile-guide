@@ -36,7 +36,8 @@ import {
   FileText,
   PieChart,
   Gift,
-  MessageSquareWarning
+  MessageSquareWarning,
+  Landmark
 } from "lucide-react";
 import { Mail } from "lucide-react";
 import { NotificationBell } from './NotificationBell';
@@ -176,7 +177,7 @@ const navigationGroups = [
       { 
         title: "Avance Immédiate", 
         href: "/modern-admin/urssaf-declarations", 
-        icon: Shield,
+        icon: Landmark,
         badge: null
       }
     ]
