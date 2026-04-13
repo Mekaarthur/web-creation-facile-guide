@@ -1,216 +1,159 @@
 project_id = "cgrosjzmbgxmtvwxictr"
 
 [api]
-enabled = true
-port = 54321
-schemas = ["public", "graphql_public"]
-extra_search_path = ["public", "extensions"]
-max_rows = 1000
-
-[db]
-port = 54322
-
-[studio]
-enabled = true
-port = 54323
-
-[inbucket]
-enabled = true
-port = 54324
-# the smtp server with port 54325
-smtp_port = 54325
-pop3_port = 54326
-
-[storage]
-enabled = true
-port = 54327
-file_size_limit = "50MiB"
+  enabled = true
+  extra_search_path = ["public", "extensions"]
+  max_rows = 1000
+  port = 54321
+  schemas = ["public", "graphql_public"]
 
 [auth]
-enabled = true
-port = 54328
-site_url = "https://bikawo.com"
-additional_redirect_urls = ["http://localhost:3000", "http://localhost:5173", "https://bikawo.com", "https://ed681ca2-74aa-4970-8c41-139ffb8c8152.sandbox.lovable.dev"]
-jwt_expiry = 3600
-refresh_token_rotation_enabled = true
-secure_password_change_enabled = true
-enable_signup = true
-enable_email_confirmations = true
-enable_email_autoconfirm = false
+  additional_redirect_urls = ["http://localhost:3000", "http://localhost:5173", "https://bikawo.com", "https://ed681ca2-74aa-4970-8c41-139ffb8c8152.sandbox.lovable.dev"]
+  enable_email_autoconfirm = false
+  enable_email_confirmations = true
+  enable_signup = true
+  enabled = true
+  jwt_expiry = 3600
+  port = 54328
+  refresh_token_rotation_enabled = true
+  secure_password_change_enabled = true
+  site_url = "https://bikawo.com"
+  [auth.email]
+    double_confirm_changes = true
+    enable_confirmations = true
+    enable_signup = true
 
-[auth.email]
-enable_signup = true
-double_confirm_changes = true
-enable_confirmations = true
+[db]
+  port = 54322
 
 [edge_functions]
-enabled = true
+  enabled = true
 
-# Security: Enable JWT verification for all edge functions by default
-# Only public webhooks should have verify_jwt = false
+[functions]
+  [functions.admin-applications]
+    verify_jwt = true
+  [functions.admin-assignment]
+    verify_jwt = true
+  [functions.admin-carts]
+    verify_jwt = true
+  [functions.admin-cleanup-duplicates]
+    verify_jwt = true
+  [functions.admin-clients]
+    verify_jwt = true
+  [functions.admin-communications]
+    verify_jwt = true
+  [functions.admin-dashboard]
+    verify_jwt = true
+  [functions.admin-manage-roles]
+    verify_jwt = true
+  [functions.admin-moderation]
+    verify_jwt = true
+  [functions.admin-payments]
+    verify_jwt = true
+  [functions.admin-providers]
+    verify_jwt = true
+  [functions.admin-reservations]
+    verify_jwt = true
+  [functions.admin-reviews]
+    verify_jwt = true
+  [functions.admin-users-management]
+    verify_jwt = true
+  [functions.admin-zones]
+    verify_jwt = true
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.check-email-exists]
+    verify_jwt = false
+  [functions.check-timeouts]
+    verify_jwt = false
+  [functions.check-zone-alerts]
+    verify_jwt = false
+  [functions.cleanup-pending-bookings]
+    verify_jwt = false
+  [functions.convert-request-to-booking]
+    verify_jwt = true
+  [functions.create-admin-notification]
+    verify_jwt = false
+  [functions.create-booking]
+    verify_jwt = false
+  [functions.create-payment]
+    verify_jwt = true
+  [functions.create-payment-method]
+    verify_jwt = true
+  [functions.create-subscription]
+    verify_jwt = true
+  [functions.export-conversation-history]
+    verify_jwt = true
+  [functions.generate-invoice-pdf]
+    verify_jwt = true
+  [functions.generate-mandate-pdf]
+    verify_jwt = true
+  [functions.get-payment-methods]
+    verify_jwt = true
+  [functions.get-user-role]
+    verify_jwt = true
+  [functions.google-forms-webhook]
+    verify_jwt = false
+  [functions.handle-cancellation]
+    verify_jwt = true
+  [functions.intelligent-chatbot]
+    verify_jwt = false
+  [functions.intelligent-matching]
+    verify_jwt = true
+  [functions.match-providers]
+    verify_jwt = true
+  [functions.monitor-conversation-keywords]
+    verify_jwt = false
+  [functions.process-refund]
+    verify_jwt = true
+  [functions.provider-zones]
+    verify_jwt = true
+  [functions.rate-limit-check]
+    verify_jwt = false
+  [functions.resend-confirmation-email]
+    verify_jwt = false
+  [functions.retry-failed-emails]
+    verify_jwt = true
+  [functions.send-booking-confirmation]
+    verify_jwt = false
+  [functions.send-confirmation-email]
+    verify_jwt = false
+  [functions.send-contact-email]
+    verify_jwt = false
+  [functions.send-invoice-email]
+    verify_jwt = true
+  [functions.send-message-notification]
+    verify_jwt = false
+  [functions.send-notification]
+    verify_jwt = true
+  [functions.send-notification-email]
+    verify_jwt = true
+  [functions.send-password-reset]
+    verify_jwt = false
+  [functions.send-review-request]
+    verify_jwt = false
+  [functions.send-scheduled-emails]
+    verify_jwt = false
+  [functions.send-transactional-email]
+    verify_jwt = true
+  [functions.stripe-webhook]
+    verify_jwt = false
+  [functions.verify-payment]
+    verify_jwt = false
+  [functions.verify-user-role]
+    verify_jwt = true
 
-[functions.google-forms-webhook]
-verify_jwt = false  # Public webhook - needs to be accessible without auth
+[inbucket]
+  enabled = true
+  pop3_port = 54326
+  port = 54324
+  smtp_port = 54325
 
-# SECURITY FIX: Enable JWT verification for critical functions
-[functions.match-providers]
-verify_jwt = true  # Now requires authentication
+[storage]
+  enabled = true
+  file_size_limit = "50MiB"
+  port = 54327
 
-[functions.convert-request-to-booking]
-verify_jwt = true  # Now requires authentication
-
-[functions.send-notification]
-verify_jwt = true  # Now requires authentication
-
-[functions.send-notification-email]
-verify_jwt = true  # Now requires authentication
-
-[functions.send-confirmation-email]
-verify_jwt = false  # Email confirmation needs to work without auth
-
-[functions.check-email-exists]
-verify_jwt = false  # Public endpoint to pre-check email existence
-
-[functions.resend-confirmation-email]
-verify_jwt = false  # Public endpoint to resend confirmation email
-
-[functions.send-password-reset]
-verify_jwt = false  # Public endpoint if used from unauthenticated pages
-
-[functions.admin-assignment]
-verify_jwt = true
-
-[functions.admin-carts]
-verify_jwt = true
-
-[functions.admin-communications]
-verify_jwt = true
-
-[functions.admin-dashboard]
-verify_jwt = true
-
-[functions.admin-moderation]
-verify_jwt = true
-
-[functions.admin-payments]
-verify_jwt = true
-
-[functions.admin-users-management]
-verify_jwt = true
-
-[functions.admin-reviews]
-verify_jwt = true
-
-[functions.admin-reservations]
-verify_jwt = true
-
-[functions.admin-providers]
-verify_jwt = true
-
-[functions.admin-clients]
-verify_jwt = true
-
-[functions.admin-applications]
-verify_jwt = true
-
-[functions.admin-zones]
-verify_jwt = true
-
-[functions.intelligent-chatbot]
-verify_jwt = false  # Public chatbot accessible to all users
-
-[functions.handle-cancellation]
-verify_jwt = true  # Requires authentication
-
-[functions.process-refund]
-verify_jwt = true  # Requires authentication - admin or system only
-
-[functions.rate-limit-check]
-verify_jwt = false  # Public endpoint for rate limiting
-
-[functions.send-transactional-email]
-verify_jwt = true  # Requires authentication for sending emails
-
-[functions.send-scheduled-emails]
-verify_jwt = false  # Called by cron job - uses service role key
-
-[functions.generate-mandate-pdf]
-verify_jwt = true  # Requires authentication
-
-[functions.intelligent-matching]
-verify_jwt = true  # Requires authentication
-
-[functions.check-timeouts]
-verify_jwt = false  # Called by cron job - uses service role key
-
-[functions.retry-failed-emails]
-verify_jwt = true  # Requires admin authentication
-
-[functions.get-user-role]
-verify_jwt = true  # Requires authentication to check user role
-
-[functions.admin-manage-roles]
-verify_jwt = true  # Requires admin authentication to manage roles
-
-[functions.send-contact-email]
-verify_jwt = false  # Public contact form accessible to all users
-
-[functions.stripe-webhook]
-verify_jwt = false  # Public webhook - Stripe needs to call this without auth
-
-[functions.create-payment]
-verify_jwt = true  # Requires authentication
-
-[functions.create-subscription]
-verify_jwt = true  # Requires authentication
-
-[functions.get-payment-methods]
-verify_jwt = true  # Requires authentication
-
-[functions.create-payment-method]
-verify_jwt = true  # Requires authentication
-
-[functions.create-booking]
-verify_jwt = false  # Can be called by anonymous users
-
-[functions.send-booking-confirmation]
-verify_jwt = false  # Email sending - no auth required
-
-[functions.verify-user-role]
-verify_jwt = true  # Requires authentication to verify roles
-
-[functions.export-conversation-history]
-verify_jwt = true  # Requires admin authentication to export conversation history
-
-[functions.monitor-conversation-keywords]
-verify_jwt = false  # Called automatically by message triggers - uses service role key
-
-[functions.send-invoice-email]
-verify_jwt = true  # Requires admin authentication to send invoice emails
-
-[functions.generate-invoice-pdf]
-verify_jwt = true  # Requires admin authentication to generate invoice PDFs
-
-[functions.send-message-notification]
-verify_jwt = false  # Called automatically by message triggers - uses service role key
-
-[functions.create-admin-notification]
-verify_jwt = false  # Called automatically by system triggers - uses service role key
-
-[functions.send-review-request]
-verify_jwt = false  # Called automatically when mission completes - uses service role key
-
-[functions.check-zone-alerts]
-verify_jwt = false  # Called by cron job or manually - uses service role key
-
-[functions.provider-zones]
-verify_jwt = true  # Requires provider authentication
-
-[functions.admin-cleanup-duplicates]
-verify_jwt = true  # Requires admin authentication to cleanup duplicates
-
-[functions.cleanup-pending-bookings]
-verify_jwt = false  # Called by cron job - uses service role key
-
-[functions.verify-payment]
-verify_jwt = false  # Public endpoint - Stripe redirect needs to verify payment status
+[studio]
+  enabled = true
+  port = 54323
