@@ -238,8 +238,8 @@ export const ApplicationDocumentsValidator = ({
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // Upsert la validation dans la DB
-      const { error } = await supabase
+      // Étape 1: Upsert la validation dans la DB
+      const { error: upsertError } = await supabase
         .from('application_document_validations')
         .upsert({
           application_id: application.id,
@@ -252,19 +252,31 @@ export const ApplicationDocumentsValidator = ({
           onConflict: 'application_id,document_type'
         });
 
-      if (error) throw error;
+      if (upsertError) {
+        console.error('Erreur upsert validation:', upsertError);
+        throw new Error(`Validation: ${upsertError.message}`);
+      }
 
+      // Étape 2: Sync application state
       const nextValidations = buildNextValidations(docType, 'approved', null, user?.id);
       setValidations(nextValidations);
-      await syncApplicationState(nextValidations);
+      
+      try {
+        await syncApplicationState(nextValidations);
+      } catch (syncError: any) {
+        console.error('Erreur sync état candidature:', syncError);
+        // Ne pas bloquer - la validation est déjà enregistrée
+      }
 
-      // Envoyer notification email au candidat
-      await supabase.functions.invoke('send-document-validation-email', {
+      // Étape 3: Envoyer notification email (non-bloquant)
+      supabase.functions.invoke('send-document-validation-email', {
         body: {
           applicationId: application.id,
           documentType: docType,
           status: 'approved'
         }
+      }).catch((emailErr: any) => {
+        console.warn('Email notification non envoyée:', emailErr);
       });
       
       toast({
@@ -274,11 +286,11 @@ export const ApplicationDocumentsValidator = ({
 
       await loadValidations();
       onDocumentUpdated?.();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur approbation document:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible d'approuver le document.",
+        title: "Erreur d'approbation",
+        description: error?.message || "Impossible d'approuver le document.",
         variant: "destructive"
       });
     } finally {
@@ -300,8 +312,8 @@ export const ApplicationDocumentsValidator = ({
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // Upsert la validation dans la DB
-      const { error } = await supabase
+      // Étape 1: Upsert la validation dans la DB
+      const { error: upsertError } = await supabase
         .from('application_document_validations')
         .upsert({
           application_id: application.id,
@@ -314,20 +326,31 @@ export const ApplicationDocumentsValidator = ({
           onConflict: 'application_id,document_type'
         });
 
-      if (error) throw error;
+      if (upsertError) {
+        console.error('Erreur upsert rejet:', upsertError);
+        throw new Error(`Rejet: ${upsertError.message}`);
+      }
 
+      // Étape 2: Sync application state (non-bloquant)
       const nextValidations = buildNextValidations(currentDocType, 'rejected', rejectionReason, user?.id);
       setValidations(nextValidations);
-      await syncApplicationState(nextValidations);
+      
+      try {
+        await syncApplicationState(nextValidations);
+      } catch (syncError: any) {
+        console.error('Erreur sync état candidature:', syncError);
+      }
 
-      // Envoyer notification email au candidat
-      await supabase.functions.invoke('send-document-validation-email', {
+      // Étape 3: Email (non-bloquant)
+      supabase.functions.invoke('send-document-validation-email', {
         body: {
           applicationId: application.id,
           documentType: currentDocType,
           status: 'rejected',
           rejectionReason
         }
+      }).catch((emailErr: any) => {
+        console.warn('Email notification non envoyée:', emailErr);
       });
       
       toast({
@@ -340,11 +363,11 @@ export const ApplicationDocumentsValidator = ({
       setCurrentDocType('');
       await loadValidations();
       onDocumentUpdated?.();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur rejet document:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de rejeter le document.",
+        title: "Erreur de rejet",
+        description: error?.message || "Impossible de rejeter le document.",
         variant: "destructive"
       });
     } finally {
