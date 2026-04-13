@@ -108,18 +108,26 @@ const ProviderSignup = () => {
       }
       
       for (const doc of documentsToUpload) {
-        if (doc.file) {
-          const fileName = `${applicationId}/${doc.folder}/${Date.now()}_${doc.file.name}`;
+        if (doc.file && doc.file instanceof File) {
+          const fileExt = doc.file.name.split('.').pop()?.toLowerCase() || 'pdf';
+          const safeFileName = `${applicationId}/${doc.folder}/${Date.now()}.${fileExt}`;
+          
+          console.log(`Uploading ${doc.folder}: ${safeFileName}, size: ${doc.file.size}, type: ${doc.file.type}`);
+          
           const { error: uploadError } = await supabase.storage
             .from('provider-applications')
-            .upload(fileName, doc.file);
+            .upload(safeFileName, doc.file, {
+              cacheControl: '3600',
+              upsert: false,
+              contentType: doc.file.type || 'application/octet-stream'
+            });
           
           if (uploadError) {
+            console.error(`Upload error for ${doc.folder}:`, uploadError);
             throw new Error(`Erreur upload ${doc.folder}: ${uploadError.message}`);
           }
           
-          // Stocker le chemin du fichier
-          uploadedDocs[doc.key] = fileName;
+          uploadedDocs[doc.key] = safeFileName;
         }
       }
       
