@@ -48,17 +48,37 @@ export const BinomesDashboard = () => {
   const loadBinomes = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      // First fetch binomes with provider data
+      const { data: binomesRaw, error } = await supabase
         .from('binomes')
         .select(`
           *,
-          client_profile:profiles!binomes_client_id_fkey(first_name, last_name),
           primary_provider:providers!binomes_primary_provider_id_fkey(
             business_name,
             profiles(first_name, last_name)
           )
         `)
         .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Fetch client profiles separately since there's no FK to profiles
+      const clientIds = [...new Set((binomesRaw || []).map(b => b.client_id))];
+      let profilesMap: Record<string, any> = {};
+      
+      if (clientIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name')
+          .in('id', clientIds);
+        
+        (profiles || []).forEach(p => { profilesMap[p.id] = p; });
+      }
+
+      const data = (binomesRaw || []).map(b => ({
+        ...b,
+        client_profile: profilesMap[b.client_id] || null
+      }));
 
       if (error) throw error;
       setBinomesData(data || []);
