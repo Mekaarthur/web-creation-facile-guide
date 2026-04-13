@@ -100,7 +100,7 @@ const ProviderSignup = () => {
         { file: data.identity_document, key: 'identity_document_url', folder: 'identity' },
         { file: data.criminal_record, key: 'criminal_record_url', folder: 'criminal_record' },
         { file: data.rib_iban, key: 'rib_iban_url', folder: 'rib' },
-        { file: data.cv_file, key: 'cv_file_url', folder: 'cv' },
+        { file: data.certification_nova, key: 'certifications_url', folder: 'certification_nova' },
       ];
       
       if (data.certifications) {
