@@ -172,6 +172,12 @@ const navigationGroups = [
         href: "/modern-admin/invoices", 
         icon: FileText,
         badge: null
+      },
+      { 
+        title: "Avance Immédiate", 
+        href: "/modern-admin/urssaf-declarations", 
+        icon: Shield,
+        badge: null
       }
     ]
   },
@@ -211,7 +217,7 @@ const navigationGroups = [
       },
       { 
         title: "Marque", 
-        href: "/modern-admin/brand", 
+        href: "/modern-admin/marque", 
         icon: Palette,
         badge: null
       },
