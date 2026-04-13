@@ -30,7 +30,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { email, first_name, last_name, services, type }: NotificationRequest = await req.json();
 
-    const fromAddress = "Bikawo <onboarding@resend.dev>";
+    const fromAddress = "Bikawo <contact@bikawo.com>";
 
     if (type === 'candidate') {
       const res = await fetch("https://api.resend.com/emails", {
