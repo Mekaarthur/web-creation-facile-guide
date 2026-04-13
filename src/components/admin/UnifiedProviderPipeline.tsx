@@ -619,6 +619,17 @@ export const UnifiedProviderPipeline = () => {
                           </Button>
                         </>
                       )}
+                      {person.stage === "documents" && person.application && !person.provider && (() => {
+                        const appDocs = person.allDocuments.filter(d => d.source === "application");
+                        const allRequiredApproved = REQUIRED_APPLICATION_DOCUMENT_TYPES.every(type =>
+                          appDocs.some(doc => doc.type === type && doc.status === "approved")
+                        );
+                        return allRequiredApproved;
+                      })() && (
+                        <Button size="sm" onClick={() => handleApproveApplication(person)} className="gap-1 bg-emerald-600 hover:bg-emerald-700">
+                          <CheckCircle className="w-3 h-3" /> Approuver & Créer prestataire
+                        </Button>
+                      )}
                       {person.stage === "onboarding" && person.provider && (
                         <Button size="sm" variant="outline" onClick={() => handleActivateProvider(person)} className="gap-1">
                           <UserCheck className="w-3 h-3" /> Activer
