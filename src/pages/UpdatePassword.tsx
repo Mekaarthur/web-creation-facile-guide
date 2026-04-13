@@ -72,8 +72,8 @@ const UpdatePassword = () => {
     
     if (!isPasswordValid) {
       toast({
-        title: "Mot de passe trop court",
-        description: "Le mot de passe doit contenir au moins 8 caractères",
+        title: "Mot de passe non conforme",
+        description: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial",
         variant: "destructive",
       });
       return;
