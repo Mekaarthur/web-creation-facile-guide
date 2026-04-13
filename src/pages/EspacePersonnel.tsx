@@ -269,7 +269,7 @@ const EspacePersonnel = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Button onClick={() => setIsCartOpen(true)} className="w-full">
+                  <Button onClick={() => navigate('/panier')} className="w-full">
                     Ouvrir mon panier
                   </Button>
                 </CardContent>
