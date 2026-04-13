@@ -212,15 +212,25 @@ const UpdatePassword = () => {
                   )}
                 </button>
               </div>
-              <div className="flex items-center space-x-2 text-sm">
-                {isPasswordValid ? (
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
-                )}
-                <span className={isPasswordValid ? "text-green-700" : "text-red-700"}>
-                  Au moins 8 caractères
-                </span>
+              <div className="space-y-1">
+                {[
+                  { check: hasMinLength, label: "Au moins 8 caractères" },
+                  { check: hasUppercase, label: "Une lettre majuscule" },
+                  { check: hasLowercase, label: "Une lettre minuscule" },
+                  { check: hasNumber, label: "Un chiffre" },
+                  { check: hasSpecial, label: "Un caractère spécial (!@#$%...)" },
+                ].map(({ check, label }) => (
+                  <div key={label} className="flex items-center space-x-2 text-sm">
+                    {check ? (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-red-500" />
+                    )}
+                    <span className={check ? "text-green-700" : "text-red-700"}>
+                      {label}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
 
