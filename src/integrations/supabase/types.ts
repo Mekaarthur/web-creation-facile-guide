@@ -2643,64 +2643,85 @@ export type Database = {
         Row: {
           account_status: string | null
           address: string | null
+          avance_immediate_activated_at: string | null
+          avance_immediate_active: boolean | null
+          avance_immediate_pending: boolean | null
           avatar_url: string | null
           block_reason: string | null
           blocked_at: string | null
           blocked_by: string | null
           created_at: string
+          date_naissance: string | null
           date_of_birth: string | null
           email: string | null
           first_name: string | null
           gender: string | null
+          iban_avance_immediate: string | null
           id: string
           last_name: string | null
+          numero_fiscal: string | null
           personal_description: string | null
           phone: string | null
           total_bookings: number | null
           total_spent: number | null
           updated_at: string
+          urssaf_particulier_id: string | null
           user_id: string
         }
         Insert: {
           account_status?: string | null
           address?: string | null
+          avance_immediate_activated_at?: string | null
+          avance_immediate_active?: boolean | null
+          avance_immediate_pending?: boolean | null
           avatar_url?: string | null
           block_reason?: string | null
           blocked_at?: string | null
           blocked_by?: string | null
           created_at?: string
+          date_naissance?: string | null
           date_of_birth?: string | null
           email?: string | null
           first_name?: string | null
           gender?: string | null
+          iban_avance_immediate?: string | null
           id?: string
           last_name?: string | null
+          numero_fiscal?: string | null
           personal_description?: string | null
           phone?: string | null
           total_bookings?: number | null
           total_spent?: number | null
           updated_at?: string
+          urssaf_particulier_id?: string | null
           user_id: string
         }
         Update: {
           account_status?: string | null
           address?: string | null
+          avance_immediate_activated_at?: string | null
+          avance_immediate_active?: boolean | null
+          avance_immediate_pending?: boolean | null
           avatar_url?: string | null
           block_reason?: string | null
           blocked_at?: string | null
           blocked_by?: string | null
           created_at?: string
+          date_naissance?: string | null
           date_of_birth?: string | null
           email?: string | null
           first_name?: string | null
           gender?: string | null
+          iban_avance_immediate?: string | null
           id?: string
           last_name?: string | null
+          numero_fiscal?: string | null
           personal_description?: string | null
           phone?: string | null
           total_bookings?: number | null
           total_spent?: number | null
           updated_at?: string
+          urssaf_particulier_id?: string | null
           user_id?: string
         }
         Relationships: []
