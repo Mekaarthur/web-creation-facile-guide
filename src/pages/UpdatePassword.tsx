@@ -59,7 +59,12 @@ const UpdatePassword = () => {
     };
   }, []);
 
-  const isPasswordValid = password.length >= 8;
+  const hasMinLength = password.length >= 8;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const hasSpecial = /[^A-Za-z0-9]/.test(password);
+  const isPasswordValid = hasMinLength && hasUppercase && hasLowercase && hasNumber && hasSpecial;
   const doPasswordsMatch = password === confirmPassword && password.length > 0;
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
