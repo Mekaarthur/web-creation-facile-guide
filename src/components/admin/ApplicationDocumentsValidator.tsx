@@ -124,7 +124,7 @@ export const ApplicationDocumentsValidator = ({
       description: 'Attestation URSSAF / extrait KBIS',
       icon: Building,
       required: true,
-      url: application.siret_document_url,
+      url: (application as any).siret_document_url,
     },
     {
       type: 'rib_iban',
