@@ -177,7 +177,7 @@ const navigationGroups = [
       { 
         title: "Avance Immédiate", 
         href: "/modern-admin/urssaf-declarations", 
-        icon: Shield,
+        icon: Landmark,
         badge: null
       }
     ]
