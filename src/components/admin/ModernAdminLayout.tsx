@@ -36,7 +36,8 @@ import {
   FileText,
   PieChart,
   Gift,
-  MessageSquareWarning
+  MessageSquareWarning,
+  Landmark
 } from "lucide-react";
 import { Mail } from "lucide-react";
 import { NotificationBell } from './NotificationBell';
