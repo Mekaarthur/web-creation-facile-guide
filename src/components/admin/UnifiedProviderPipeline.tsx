@@ -80,7 +80,7 @@ const STAGE_CONFIG: Record<PipelineStage, { label: string; color: string; bgColo
 const DOC_LABELS: Record<string, string> = {
   identity_document: "Pièce d'identité",
   criminal_record: "Casier judiciaire",
-  siret_document: "SIRET / SIREN",
+  siret_document: "Justificatif auto-entrepreneur",
   siren: "SIREN",
   rib_iban: "RIB / IBAN",
   cv: "CV",
@@ -273,7 +273,7 @@ export const UnifiedProviderPipeline = () => {
     const docs: DocumentItem[] = [];
     const docDefs = [
       { type: "identity_document", label: "Pièce d'identité", url: app.identity_document_url },
-      { type: "siret_document", label: "SIREN / SIRET", url: null, value: app.siren_number },
+      { type: "siret_document", label: "Justificatif auto-entrepreneur", url: app.siret_document_url },
       { type: "rib_iban", label: "RIB / IBAN", url: app.rib_iban_url },
       { type: "certifications", label: "Agrément Nova", url: app.certifications_url },
       { type: "criminal_record", label: "Casier judiciaire (facultatif)", url: app.criminal_record_url },
@@ -282,9 +282,7 @@ export const UnifiedProviderPipeline = () => {
     for (const def of docDefs) {
       const validation = validations.find((v: any) => v.document_type === def.type);
       let status: DocumentItem["status"] = "missing";
-      if (def.type === "siret_document" && def.value) {
-        status = validation?.status || "pending";
-      } else if (def.url) {
+      if (def.url) {
         status = validation?.status || "pending";
       }
 

@@ -73,7 +73,7 @@ const ProviderSignup = () => {
       identity_document: null,
       criminal_record: null,
       criminal_record_date: undefined,
-      siren_number: '',
+      siret_document: null,
       rib_iban: null,
       certification_nova: null,
       certifications: null
@@ -99,6 +99,7 @@ const ProviderSignup = () => {
       const documentsToUpload = [
         { file: data.identity_document, key: 'identity_document_url', folder: 'identity' },
         { file: data.criminal_record, key: 'criminal_record_url', folder: 'criminal_record' },
+        { file: data.siret_document, key: 'siret_document_url', folder: 'siret_document' },
         { file: data.rib_iban, key: 'rib_iban_url', folder: 'rib' },
         { file: data.certification_nova, key: 'certification_nova_url', folder: 'certification_nova' },
       ];
@@ -148,7 +149,7 @@ const ProviderSignup = () => {
           coverage_radius: 20,
           status: 'pending',
           category: 'multi-services',
-          siren_number: data.siren_number,
+          siret_document_url: uploadedDocs.siret_document_url,
           identity_document_url: uploadedDocs.identity_document_url,
           criminal_record_url: uploadedDocs.criminal_record_url,
           criminal_record_date: data.criminal_record_date?.toISOString(),
@@ -544,16 +545,25 @@ const ProviderSignup = () => {
                   )}
                 />
 
-                {/* Numéro SIREN */}
+                {/* Justificatif auto-entrepreneur */}
                 <FormField
                   control={form.control}
-                  name="siren_number"
-                  render={({ field }) => (
+                  name="siret_document"
+                  render={({ field: { onChange, value, ...field } }) => (
                     <FormItem>
-                      <FormLabel>Numéro SIREN *</FormLabel>
+                      <FormLabel className="flex items-center gap-2">
+                        <Upload className="h-4 w-4" />
+                        Justificatif auto-entrepreneur (SIREN/SIRET) *
+                      </FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="123456789" maxLength={9} />
+                        <Input
+                          {...field}
+                          type="file"
+                          accept="image/*,application/pdf"
+                          onChange={(e) => onChange(e.target.files?.[0])}
+                        />
                       </FormControl>
+                      <p className="text-xs text-muted-foreground">Attestation URSSAF, extrait KBIS ou certificat d'inscription auto-entrepreneur</p>
                       <FormMessage />
                     </FormItem>
                   )}

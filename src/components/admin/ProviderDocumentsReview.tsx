@@ -28,7 +28,7 @@ interface ProviderDoc {
 const DOC_LABELS: Record<string, string> = {
   identity_document: "Pièce d'identité",
   criminal_record: "Casier judiciaire (facultatif)",
-  siret_document: "SIREN (9 chiffres)",
+  siret_document: "Justificatif auto-entrepreneur",
   rib_iban: "RIB / IBAN",
   certification: "Agrément Nova",
   certifications_other: "Certifications",
