@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,34 +16,48 @@ const UpdatePassword = () => {
   const [validToken, setValidToken] = useState<boolean | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    // Vérifier si nous avons un token valide dans l'URL
-    const checkToken = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Erreur session:', error);
+    // Listen for the PASSWORD_RECOVERY event from Supabase
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth event on UpdatePassword:', event);
+      if (event === 'PASSWORD_RECOVERY') {
+        // Supabase has successfully exchanged the recovery token
+        setValidToken(true);
+      }
+    });
+
+    // Also check if we already have a session (e.g., user refreshed the page after token exchange)
+    const checkExistingSession = async () => {
+      // Give Supabase a moment to process hash fragments
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      // If we still don't know the token status after waiting
+      if (validToken === null) {
+        if (session) {
+          // We have a session - check if there's a recovery indicator in the URL
+          const hash = window.location.hash;
+          const params = new URLSearchParams(hash.replace('#', ''));
+          const type = params.get('type');
+          
+          if (type === 'recovery' || session) {
+            setValidToken(true);
+          }
+        } else {
+          // No session and no recovery event - invalid link
           setValidToken(false);
-          return;
         }
-
-        // Vérifier si nous avons une session ou des paramètres de reset
-        const hasToken = session || 
-          searchParams.get('access_token') || 
-          searchParams.get('refresh_token') ||
-          window.location.hash.includes('access_token');
-
-        setValidToken(!!hasToken);
-      } catch (error) {
-        console.error('Erreur vérification token:', error);
-        setValidToken(false);
       }
     };
 
-    checkToken();
-  }, [searchParams]);
+    checkExistingSession();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const isPasswordValid = password.length >= 8;
   const doPasswordsMatch = password === confirmPassword && password.length > 0;
@@ -83,7 +97,6 @@ const UpdatePassword = () => {
         description: "Votre mot de passe a été modifié avec succès. Vous allez être redirigé...",
       });
 
-      // Redirection après succès
       setTimeout(() => {
         navigate('/espace-personnel');
       }, 2000);
