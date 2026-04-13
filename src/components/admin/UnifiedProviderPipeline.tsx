@@ -292,7 +292,6 @@ export const UnifiedProviderPipeline = () => {
         type: def.type,
         label: def.label,
         url: def.url,
-        value: def.value,
         status,
         rejectionReason: validation?.rejection_reason,
       });

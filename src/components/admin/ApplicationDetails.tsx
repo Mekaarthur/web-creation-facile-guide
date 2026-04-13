@@ -165,8 +165,7 @@ export const ApplicationDetails = ({
                     <ExternalLink className="h-4 w-4 mr-2" />
                     Voir
                   </Button>
-                ) : doc.value ? (
-                  <span className="text-sm text-muted-foreground">{doc.value}</span>
+                ) : (
                 ) : (
                   <Badge variant="secondary">Non fourni</Badge>
                 )}
