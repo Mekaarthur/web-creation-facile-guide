@@ -59,7 +59,12 @@ const UpdatePassword = () => {
     };
   }, []);
 
-  const isPasswordValid = password.length >= 8;
+  const hasMinLength = password.length >= 8;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const hasSpecial = /[^A-Za-z0-9]/.test(password);
+  const isPasswordValid = hasMinLength && hasUppercase && hasLowercase && hasNumber && hasSpecial;
   const doPasswordsMatch = password === confirmPassword && password.length > 0;
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
@@ -67,8 +72,8 @@ const UpdatePassword = () => {
     
     if (!isPasswordValid) {
       toast({
-        title: "Mot de passe trop court",
-        description: "Le mot de passe doit contenir au moins 8 caractères",
+        title: "Mot de passe non conforme",
+        description: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial",
         variant: "destructive",
       });
       return;
@@ -207,15 +212,25 @@ const UpdatePassword = () => {
                   )}
                 </button>
               </div>
-              <div className="flex items-center space-x-2 text-sm">
-                {isPasswordValid ? (
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
-                )}
-                <span className={isPasswordValid ? "text-green-700" : "text-red-700"}>
-                  Au moins 8 caractères
-                </span>
+              <div className="space-y-1">
+                {[
+                  { check: hasMinLength, label: "Au moins 8 caractères" },
+                  { check: hasUppercase, label: "Une lettre majuscule" },
+                  { check: hasLowercase, label: "Une lettre minuscule" },
+                  { check: hasNumber, label: "Un chiffre" },
+                  { check: hasSpecial, label: "Un caractère spécial (!@#$%...)" },
+                ].map(({ check, label }) => (
+                  <div key={label} className="flex items-center space-x-2 text-sm">
+                    {check ? (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-red-500" />
+                    )}
+                    <span className={check ? "text-green-700" : "text-red-700"}>
+                      {label}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
 
