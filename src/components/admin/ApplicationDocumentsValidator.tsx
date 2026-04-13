@@ -76,10 +76,8 @@ export const ApplicationDocumentsValidator = ({
 
   const requiredDocumentTypes = [
     'identity_document',
-    'criminal_record',
     'siret_document',
     'rib_iban',
-    'cv',
     'certifications',
   ];
 
@@ -114,10 +112,10 @@ export const ApplicationDocumentsValidator = ({
     },
     {
       type: 'criminal_record',
-      label: 'Casier judiciaire',
+      label: 'Casier judiciaire (facultatif)',
       description: `Bulletin n°3 - ${application.criminal_record_date ? `Date: ${new Date(application.criminal_record_date).toLocaleDateString('fr-FR')}` : 'Date non renseignée'}`,
       icon: Shield,
-      required: true,
+      required: false,
       url: application.criminal_record_url,
     },
     {
@@ -126,7 +124,7 @@ export const ApplicationDocumentsValidator = ({
       description: application.siren_number || 'Non renseigné',
       icon: Building,
       required: true,
-      url: null, // Le SIREN est un numéro, pas un fichier
+      url: null,
     },
     {
       type: 'rib_iban',
@@ -135,14 +133,6 @@ export const ApplicationDocumentsValidator = ({
       icon: CreditCard,
       required: true,
       url: application.rib_iban_url,
-    },
-    {
-      type: 'cv',
-      label: 'Curriculum Vitae',
-      description: 'CV du candidat',
-      icon: FileText,
-      required: true,
-      url: application.cv_file_url,
     },
     {
       type: 'certifications',
