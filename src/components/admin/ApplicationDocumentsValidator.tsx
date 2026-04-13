@@ -120,11 +120,11 @@ export const ApplicationDocumentsValidator = ({
     },
     {
       type: 'siret_document',
-      label: 'SIREN / SIRET',
-      description: application.siren_number || 'Non renseigné',
+      label: 'Justificatif auto-entrepreneur',
+      description: 'Attestation URSSAF / extrait KBIS',
       icon: Building,
       required: true,
-      url: null,
+      url: (application as any).siret_document_url,
     },
     {
       type: 'rib_iban',
@@ -145,11 +145,6 @@ export const ApplicationDocumentsValidator = ({
   ];
 
   const getDocumentStatus = (doc: DocumentInfo): 'missing' | 'pending' | 'approved' | 'rejected' => {
-    if (doc.type === 'siret_document') {
-      if (!application.siren_number) return 'missing';
-      const validation = validations.find(v => v.document_type === doc.type);
-      return validation?.status || 'pending';
-    }
     if (!doc.url) {
       return 'missing';
     }
@@ -190,7 +185,6 @@ export const ApplicationDocumentsValidator = ({
 
   const syncApplicationState = async (nextValidations: DocumentValidation[]) => {
     const allRequiredPresent = requiredDocumentTypes.every((docType) => {
-      if (docType === 'siret_document') return Boolean(application.siren_number);
       const document = documents.find(doc => doc.type === docType);
       return Boolean(document?.url);
     });

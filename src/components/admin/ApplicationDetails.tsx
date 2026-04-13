@@ -146,7 +146,7 @@ export const ApplicationDetails = ({
             {[
               { label: 'Pièce d\'identité', url: application.identity_document_url },
               { label: 'Casier judiciaire', url: application.criminal_record_url },
-              { label: 'SIREN', value: application.siren_number },
+              { label: 'Justificatif auto-entrepreneur', url: application.siret_document_url },
               { label: 'RIB/IBAN', url: application.rib_iban_url },
               { label: 'CV', url: application.cv_file_url },
               { label: 'Agrément Nova', url: application.certifications_url },
@@ -165,8 +165,6 @@ export const ApplicationDetails = ({
                     <ExternalLink className="h-4 w-4 mr-2" />
                     Voir
                   </Button>
-                ) : doc.value ? (
-                  <span className="text-sm text-muted-foreground">{doc.value}</span>
                 ) : (
                   <Badge variant="secondary">Non fourni</Badge>
                 )}

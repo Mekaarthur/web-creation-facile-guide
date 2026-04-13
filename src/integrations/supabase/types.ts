@@ -1917,6 +1917,7 @@ export type Database = {
           rib_iban_url: string | null
           service_categories: string[] | null
           siren_number: string | null
+          siret_document_url: string | null
           siret_number: string | null
           status: string
           updated_at: string
@@ -1960,6 +1961,7 @@ export type Database = {
           rib_iban_url?: string | null
           service_categories?: string[] | null
           siren_number?: string | null
+          siret_document_url?: string | null
           siret_number?: string | null
           status?: string
           updated_at?: string
@@ -2003,6 +2005,7 @@ export type Database = {
           rib_iban_url?: string | null
           service_categories?: string[] | null
           siren_number?: string | null
+          siret_document_url?: string | null
           siret_number?: string | null
           status?: string
           updated_at?: string

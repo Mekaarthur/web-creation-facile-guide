@@ -17,7 +17,7 @@ interface EmailRequest {
 const documentLabels: Record<string, string> = {
   identity_document: 'Pièce d\'identité',
   criminal_record: 'Casier judiciaire (facultatif)',
-  siret_document: 'Numéro SIREN',
+  siret_document: 'Justificatif auto-entrepreneur',
   rib_iban: 'RIB / IBAN',
   certifications: 'Agrément Nova',
   certifications_other: 'Certifications',
