@@ -77,7 +77,7 @@ project_id = "cgrosjzmbgxmtvwxictr"
   [functions.create-booking]
     verify_jwt = false
   [functions.create-payment]
-    verify_jwt = true
+    verify_jwt = false
   [functions.create-payment-method]
     verify_jwt = true
   [functions.create-subscription]
