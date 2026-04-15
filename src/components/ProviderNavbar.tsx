@@ -86,7 +86,11 @@ const ProviderNavbar = () => {
             <img 
               src={bikawoLogo} 
               alt="Bikawô Logo" 
-              className="h-10 sm:h-12 w-auto bg-transparent transition-all duration-300 group-hover:scale-105"
+              className="h-9 sm:h-11 lg:h-12 w-auto bg-transparent transition-all duration-300 group-hover:scale-105"
+              loading="eager"
+              fetchPriority="high"
+              width="48"
+              height="48"
             />
           </div>
 
