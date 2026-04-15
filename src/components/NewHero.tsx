@@ -73,7 +73,7 @@ const NewHero = () => {
             className="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors"
           >
             <Phone className="w-4 h-4" />
-            <span className="text-sm">Besoin d'aide ? Appelez le 06 09 08 53 90</span>
+            <span className="text-sm whitespace-nowrap">Besoin d'aide ? Appelez le 06 09 08 53 90</span>
           </a>
         </div>
 
