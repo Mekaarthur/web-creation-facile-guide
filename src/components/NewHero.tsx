@@ -4,7 +4,7 @@ import { Clock, Phone } from "lucide-react";
 
 const NewHero = () => {
   return (
-    <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden pt-24 pb-12 sm:pt-28 sm:pb-16">
+    <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden pt-16 pb-12 sm:pt-20 sm:pb-16">
       {/* Background */}
       <div className="absolute inset-0">
         {/* Responsive Hero Image - Mobile first for LCP */}

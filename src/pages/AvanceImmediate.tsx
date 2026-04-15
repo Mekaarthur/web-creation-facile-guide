@@ -16,7 +16,7 @@ const AvanceImmediate = () => {
       <Navbar />
       <main className="min-h-screen bg-background">
         {/* Hero */}
-        <section className="relative bg-gradient-to-br from-primary/10 via-background to-accent/10 pt-28 pb-16">
+        <section className="relative bg-gradient-to-br from-primary/10 via-background to-accent/10 pt-20 pb-16">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
             <div className="flex flex-col items-center text-center space-y-6">
               <LogoUrssaf width={140} />

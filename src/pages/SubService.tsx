@@ -30,7 +30,7 @@ const SubServicePage = () => {
     return (
       <div className="min-h-screen">
         <Navbar />
-        <div className="pt-24 max-w-3xl mx-auto px-4 text-center">
+        <div className="pt-20 max-w-3xl mx-auto px-4 text-center">
           <h1 className="text-2xl font-bold mb-2">{t('subService.notFound')}</h1>
           <p className="text-muted-foreground mb-6">{t('subService.notFoundDesc')}</p>
           <Button asChild>

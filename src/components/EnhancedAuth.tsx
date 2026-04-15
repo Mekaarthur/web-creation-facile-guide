@@ -133,7 +133,7 @@ const EnhancedAuth = () => {
       </nav>
 
       {/* Content */}
-      <div className="flex-1 flex items-center justify-center p-4 pt-24">
+      <div className="flex-1 flex items-center justify-center p-4 pt-20">
         <div className="w-full max-w-6xl grid lg:grid-cols-5 gap-8 items-start">
           
           {/* Left side - Trust indicators (hidden on mobile for step !== userType) */}
