@@ -151,9 +151,13 @@ const Navbar = () => {
               <img 
                 src={bikawoLogo} 
                 alt="Bikawo Logo" 
-                className="h-8 sm:h-10 w-auto transition-smooth group-hover:scale-105"
+                className="h-9 sm:h-11 lg:h-12 w-auto transition-smooth group-hover:scale-105"
+                loading="eager"
+                fetchPriority="high"
+                width="48"
+                height="48"
               />
-              <span className="font-bold text-lg sm:text-xl text-foreground hidden sm:inline">Bikawo</span>
+              <span className="font-bold text-lg sm:text-xl text-foreground">Bikawô</span>
             </Link>
           </div>
 
