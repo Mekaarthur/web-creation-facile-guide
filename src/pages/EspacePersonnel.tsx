@@ -39,6 +39,7 @@ import { ChatWidget } from '@/components/chat';
 import { TaxCreditSavings } from '@/components/client/TaxCreditSavings';
 import { PendingReviews } from '@/components/client/PendingReviews';
 import { AvanceImmediateActivation } from '@/components/client/AvanceImmediateActivation';
+import { ClientPrestationsHistory } from '@/components/client/ClientPrestationsHistory';
 import { useTranslation } from 'react-i18next';
 
 const EspacePersonnel = () => {
@@ -246,19 +247,9 @@ const EspacePersonnel = () => {
               <PendingReviews />
             </TabsContent>
 
-            {/* Mes Rendez-vous à Venir */}
+            {/* Historique complet des prestations */}
             <TabsContent value="rendez-vous" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-primary" />
-                    {t('personalSpace.upcomingAppointments')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <SmartBookingsList userType="client" />
-                </CardContent>
-              </Card>
+              <ClientPrestationsHistory />
             </TabsContent>
 
             {/* Panier */}

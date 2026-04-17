@@ -118,6 +118,8 @@ project_id = "cgrosjzmbgxmtvwxictr"
     verify_jwt = false
   [functions.send-confirmation-email]
     verify_jwt = false
+  [functions.send-anomaly-report]
+    verify_jwt = true
   [functions.send-contact-email]
     verify_jwt = false
   [functions.send-invoice-email]
