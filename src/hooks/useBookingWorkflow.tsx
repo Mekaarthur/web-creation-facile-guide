@@ -41,13 +41,6 @@ export const useBookingWorkflow = () => {
     return { refundAmount, refundPercentage };
   };
 
-  // Raisons autorisant un remboursement (politique stricte : remboursement = dernier recours)
-  export type RefundReason =
-    | 'client_refuses_all_alternatives'
-    | 'no_replacement_found_48h'
-    | 'client_initiated_cancellation'
-    | 'admin_manual_override';
-
   const cancelBooking = async (
     bookingId: string,
     reason: string,
