@@ -41,10 +41,18 @@ export const useBookingWorkflow = () => {
     return { refundAmount, refundPercentage };
   };
 
+  // Raisons autorisant un remboursement (politique stricte : remboursement = dernier recours)
+  export type RefundReason =
+    | 'client_refuses_all_alternatives'
+    | 'no_replacement_found_48h'
+    | 'client_initiated_cancellation'
+    | 'admin_manual_override';
+
   const cancelBooking = async (
     bookingId: string,
     reason: string,
-    cancelledBy: 'client' | 'provider'
+    cancelledBy: 'client' | 'provider' | 'admin',
+    refundReason?: RefundReason
   ) => {
     setLoading(true);
     try {
@@ -57,34 +65,63 @@ export const useBookingWorkflow = () => {
 
       if (bookingError) throw bookingError;
 
-      // Calculer le remboursement
+      // Calculer le remboursement potentiel
       const { refundAmount, refundPercentage } = calculateRefundAmount(
         booking.booking_date,
         booking.start_time,
         booking.total_price
       );
 
-      // Appeler l'edge function pour gérer l'annulation
+      // Auto-déduire la refundReason quand l'annulation vient du client
+      const finalRefundReason: RefundReason | undefined =
+        refundReason ?? (cancelledBy === 'client' ? 'client_initiated_cancellation' : undefined);
+
+      // Appeler l'edge function (gère remplaçant + politique de remboursement)
       const { data, error } = await supabase.functions.invoke('handle-cancellation', {
         body: {
           bookingId,
           reason,
           cancelledBy,
           refundAmount,
-          refundPercentage
+          refundPercentage,
+          refundReason: finalRefundReason
         }
       });
 
       if (error) throw error;
 
-      toast({
-        title: "Réservation annulée",
-        description: refundAmount > 0 
-          ? `Un remboursement de ${refundAmount.toFixed(2)}€ (${refundPercentage}%) sera effectué`
-          : "Aucun remboursement applicable selon les conditions d'annulation",
-      });
+      // Toast adapté à la réponse de l'edge function
+      if (data?.replacementFound) {
+        toast({
+          title: "Mission maintenue",
+          description: "Un nouveau prestataire a été assigné au même créneau.",
+        });
+      } else if (data?.alternativesProposed) {
+        toast({
+          title: "Alternatives proposées",
+          description: data?.voucherIssued
+            ? "Choisissez un nouveau créneau ou utilisez votre bon de réduction de 20%."
+            : "Consultez les créneaux alternatifs avant tout remboursement.",
+        });
+      } else if (data?.refundProcessed) {
+        toast({
+          title: "Réservation annulée",
+          description: `Remboursement de ${refundAmount.toFixed(2)}€ (${refundPercentage}%) en cours.`,
+        });
+      } else {
+        toast({
+          title: "Réservation annulée",
+          description: "Aucun remboursement applicable selon les conditions.",
+        });
+      }
 
-      return { success: true, refundAmount, refundPercentage };
+      return { 
+        success: true, 
+        refundAmount: data?.refundAmount ?? 0, 
+        refundPercentage: data?.refundPercentage ?? 0,
+        replacementFound: data?.replacementFound ?? false,
+        alternativesProposed: data?.alternativesProposed ?? false
+      };
     } catch (error) {
       console.error('Erreur lors de l\'annulation:', error);
       toast({
