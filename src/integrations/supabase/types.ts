@@ -413,10 +413,12 @@ export type Database = {
           flexible_hours: boolean | null
           hourly_rate: number | null
           id: string
+          no_show_reported_at: string | null
           notes: string | null
           provider_id: string
           provider_notes: string | null
           reminder_sent: string | null
+          replacement_search_status: string | null
           review_request_sent: string | null
           service_id: string
           start_time: string
@@ -445,10 +447,12 @@ export type Database = {
           flexible_hours?: boolean | null
           hourly_rate?: number | null
           id?: string
+          no_show_reported_at?: string | null
           notes?: string | null
           provider_id: string
           provider_notes?: string | null
           reminder_sent?: string | null
+          replacement_search_status?: string | null
           review_request_sent?: string | null
           service_id: string
           start_time: string
@@ -477,10 +481,12 @@ export type Database = {
           flexible_hours?: boolean | null
           hourly_rate?: number | null
           id?: string
+          no_show_reported_at?: string | null
           notes?: string | null
           provider_id?: string
           provider_notes?: string | null
           reminder_sent?: string | null
+          replacement_search_status?: string | null
           review_request_sent?: string | null
           service_id?: string
           start_time?: string
