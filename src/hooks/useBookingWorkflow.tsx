@@ -14,6 +14,13 @@ const DEFAULT_POLICY: CancellationPolicy = {
   lessThan2h: 0
 };
 
+// Raisons autorisant un remboursement (politique stricte : remboursement = dernier recours)
+export type RefundReason =
+  | 'client_refuses_all_alternatives'
+  | 'no_replacement_found_48h'
+  | 'client_initiated_cancellation'
+  | 'admin_manual_override';
+
 export const useBookingWorkflow = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
