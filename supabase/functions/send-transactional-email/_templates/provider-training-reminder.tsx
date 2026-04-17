@@ -1,4 +1,4 @@
-import * as React from 'react';
+import * as React from 'npm:react@18.3.1';
 import {
   Body,
   Container,
@@ -11,7 +11,7 @@ import {
   Text,
   Button,
   Hr,
-} from '@react-email/components';
+} from 'npm:@react-email/components@0.0.22';
 
 const LOGO_URL = 'https://bikawo.fr/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
 
