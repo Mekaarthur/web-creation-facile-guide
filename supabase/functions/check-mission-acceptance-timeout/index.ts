@@ -70,16 +70,16 @@ serve(async (req) => {
           (id: string) => !respondedIds.has(id)
         );
 
-        // 3. Pénalité (avertissement) pour les non-répondants
+        // 3. Avertissement (sanction non-financière) pour les non-répondants
         for (const providerId of nonResponders) {
           await supabase.from("provider_penalties").insert({
             provider_id: providerId,
-            penalty_type: "no_response",
-            severity: "low",
+            penalty_type: "warning",
             reason: "Aucune réponse à une mission dans le délai de 2h",
-            amount: 0,
+            amount: 0, // Pas de pénalité financière — simple avertissement
+            status: "applied",
           }).then((res) => {
-            if (res.error) console.warn(`Pénalité ignorée pour ${providerId}:`, res.error.message);
+            if (res.error) console.warn(`Avertissement ignoré pour ${providerId}:`, res.error.message);
           });
         }
 
