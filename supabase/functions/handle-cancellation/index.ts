@@ -111,7 +111,8 @@ serve(async (req) => {
           .eq('id', bookingId);
       }
 
-      // Pénalité prestataire (1ère = avertissement, 2e+ = suspension)
+      // Sanction non-financière : avertissement (1er) ou retrait de points (2e+)
+      // Aucun montant prélevé — uniquement scoring & réputation
       const { data: existingPenalties } = await supabase
         .from('provider_penalties')
         .select('id')
@@ -119,15 +120,18 @@ serve(async (req) => {
         .gte('created_at', new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()); // 90j
 
       const penaltyCount = (existingPenalties?.length || 0) + 1;
-      const penaltyType = penaltyCount === 1 ? 'warning' : 'suspension';
+      const penaltyType = penaltyCount === 1 ? 'warning' : 'points_deduction';
 
       await supabase.from('provider_penalties').insert({
         provider_id: booking.provider_id,
         booking_id: bookingId,
-        type: penaltyType,
+        penalty_type: penaltyType,
         reason: `Annulation prestataire: ${reason}`,
-        severity: penaltyCount >= 2 ? 'high' : 'low'
-      }).then(() => {}, err => console.warn('provider_penalties insert failed (table may differ):', err));
+        amount: 0, // Pas de pénalité financière
+        status: 'applied',
+      }).then((res) => {
+        if (res.error) console.warn('provider_penalties insert failed:', res.error.message);
+      });
     }
 
     // 3. Si remplaçant trouvé → pas de remboursement, mission maintenue
