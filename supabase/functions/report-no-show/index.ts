@@ -112,14 +112,14 @@ serve(async (req) => {
 
     console.log("✅ Incident created:", incident?.id);
 
-    // 5. Pénalité automatique au prestataire défaillant
+    // 5. Sanction non-financière : retrait de points pour no-show (sévère, pas de montant prélevé)
     await supabase.from("provider_penalties").insert({
       provider_id: booking.provider_id,
       booking_id: bookingId,
-      penalty_type: "no_show",
-      severity: "high",
-      reason: `Absence non justifiée signalée par le client après ${minutesLate} min`,
-      amount: booking.total_price * 0.5, // 50% du montant en pénalité
+      penalty_type: "points_deduction",
+      reason: `No-show signalé par le client après ${minutesLate} min de retard`,
+      amount: 0, // Pas de pénalité financière — uniquement impact sur la réputation/score
+      status: "applied",
     }).then((res) => {
       if (res.error) console.warn("Pénalité non enregistrée:", res.error.message);
     });
