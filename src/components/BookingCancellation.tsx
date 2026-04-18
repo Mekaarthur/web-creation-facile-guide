@@ -13,14 +13,21 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { XCircle, AlertTriangle, Euro } from 'lucide-react';
-import { useBookingWorkflow } from '@/hooks/useBookingWorkflow';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useBookingWorkflow, type RefundReason } from '@/hooks/useBookingWorkflow';
 
 interface BookingCancellationProps {
   bookingId: string;
   bookingDate: string;
   startTime: string;
   totalPrice: number;
-  cancelledBy: 'client' | 'provider';
+  cancelledBy: 'client' | 'provider' | 'admin';
   onCancelled?: () => void;
 }
 
@@ -34,6 +41,7 @@ export const BookingCancellation = ({
 }: BookingCancellationProps) => {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState('');
+  const [refundReason, setRefundReason] = useState<RefundReason | ''>('');
   const { loading, cancelBooking, calculateRefundAmount } = useBookingWorkflow();
 
   const { refundAmount, refundPercentage } = calculateRefundAmount(
@@ -47,10 +55,16 @@ export const BookingCancellation = ({
       return;
     }
 
-    const result = await cancelBooking(bookingId, reason, cancelledBy);
+    const result = await cancelBooking(
+      bookingId,
+      reason,
+      cancelledBy,
+      cancelledBy === 'admin' && refundReason ? (refundReason as RefundReason) : undefined
+    );
     if (result.success) {
       setOpen(false);
       setReason('');
+      setRefundReason('');
       onCancelled?.();
     }
   };
@@ -102,6 +116,40 @@ export const BookingCancellation = ({
             </AlertDescription>
           </Alert>
 
+          {/* Sélecteur RefundReason — admin uniquement */}
+          {cancelledBy === 'admin' && (
+            <div className="space-y-2">
+              <Label htmlFor="refund-reason">
+                Motif de remboursement (override admin)
+              </Label>
+              <Select
+                value={refundReason}
+                onValueChange={(v) => setRefundReason(v as RefundReason)}
+              >
+                <SelectTrigger id="refund-reason">
+                  <SelectValue placeholder="Aucun (suivre la politique automatique)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="client_refuses_all_alternatives">
+                    Client refuse toutes les alternatives
+                  </SelectItem>
+                  <SelectItem value="no_replacement_found_48h">
+                    Aucun remplaçant trouvé sous 48h
+                  </SelectItem>
+                  <SelectItem value="client_initiated_cancellation">
+                    Annulation initiée par le client
+                  </SelectItem>
+                  <SelectItem value="admin_manual_override">
+                    Décision manuelle admin
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Sans motif, aucun remboursement automatique ne sera émis.
+              </p>
+            </div>
+          )}
+
           {/* Raison de l'annulation */}
           <div className="space-y-2">
             <Label htmlFor="cancel-reason">
@@ -120,8 +168,8 @@ export const BookingCancellation = ({
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription className="text-sm">
-              <strong>Attention :</strong> L'annulation sera immédiate et le {cancelledBy === 'client' ? 'prestataire' : 'client'} sera notifié.
-              {refundAmount > 0 && ' Le remboursement sera traité sous 3-5 jours ouvrés.'}
+              <strong>Attention :</strong> L'annulation sera immédiate et les parties concernées seront notifiées.
+              {refundAmount > 0 && ' Le remboursement, si applicable, sera traité sous 3-5 jours ouvrés.'}
             </AlertDescription>
           </Alert>
         </div>
