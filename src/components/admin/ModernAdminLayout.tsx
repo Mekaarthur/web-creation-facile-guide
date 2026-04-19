@@ -253,6 +253,12 @@ const navigationGroups = [
     description: "Monitoring et tests techniques",
     items: [
       { 
+        title: "Centre d'anomalies", 
+        href: "/modern-admin/anomalies", 
+        icon: AlertTriangle,
+        badge: null
+      },
+      { 
         title: "Monitoring", 
         href: "/modern-admin/monitoring", 
         icon: TrendingUp,
