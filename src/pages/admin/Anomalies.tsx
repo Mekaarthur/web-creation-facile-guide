@@ -233,7 +233,7 @@ const Anomalies = () => {
           ) : filtered.length === 0 ? (
             <Card>
               <CardContent className="py-12 flex flex-col items-center justify-center text-center">
-                <CheckCircle2 className="h-12 w-12 text-green-500 mb-3" />
+                <CheckCircle2 className="h-12 w-12 text-emerald-500 mb-3" aria-hidden="true" />
                 <h3 className="text-lg font-semibold">Aucune anomalie</h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   Tout fonctionne normalement dans cette catégorie.
