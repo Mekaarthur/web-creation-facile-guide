@@ -107,6 +107,7 @@ const AdminNotifications = lazy(() => import("./pages/admin/Notifications"));
 const AdminUtilisateurs = lazy(() => import("./pages/admin/Utilisateurs"));
 const TestsCritiques = lazy(() => import("./pages/admin/TestsCritiques"));
 const TestsEmails = lazy(() => import("./pages/admin/TestsEmails"));
+const AdminAnomalies = lazy(() => import("./pages/admin/Anomalies"));
 const Monitoring = lazy(() => import("./pages/admin/Monitoring"));
 const AdminSecurity = lazy(() => import("./pages/admin/Security"));
 const AdminFinance = lazy(() => import("./pages/admin/Finance"));
@@ -271,6 +272,7 @@ const App = () => (
                   <Route path="settings" element={<AdminSettings />} />
                   <Route path="parametres" element={<AdminSettings />} />
                   <Route path="monitoring" element={<Monitoring />} />
+                  <Route path="anomalies" element={<AdminAnomalies />} />
                   <Route path="tests-critiques" element={<TestsCritiques />} />
                   <Route path="tests-emails" element={<TestsEmails />} />
                   <Route path="audit" element={<AuditReport />} />
