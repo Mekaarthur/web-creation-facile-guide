@@ -43,6 +43,10 @@ export const useAnomaliesCenter = () => {
       const cutoff24h = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
       const cutoff30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
+      const cutoff7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const cutoff60d = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000).toISOString();
+      const in30dIso = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
       const [
         systemAlertsRes,
         failedEmailsRes,
@@ -57,6 +61,15 @@ export const useAnomaliesCenter = () => {
         expiredCounterPropsRes,
         unresolvedIncidentsRes,
         escalatedChatbotRes,
+        novaExpiredRes,
+        novaExpiringRes,
+        urssafErrorsRes,
+        rejectedDocsRes,
+        pendingDocsOldRes,
+        expiredAttestationsRes,
+        inactiveBinomesRes,
+        oldOpenComplaintsRes,
+        unrespondedMissionsRes,
       ] = await Promise.all([
         supabase
           .from('system_alerts')
@@ -120,7 +133,63 @@ export const useAnomaliesCenter = () => {
           .select('id', { count: 'exact', head: true })
           .eq('escalated_to_human', true)
           .is('resolved_at', null),
+        // Nova expiré sur prestataires actifs
+        supabase
+          .from('providers')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'active')
+          .not('nova_expires_at', 'is', null)
+          .lt('nova_expires_at', nowIso),
+        // Nova expirant dans les 30j
+        supabase
+          .from('providers')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'active')
+          .gte('nova_expires_at', nowIso)
+          .lt('nova_expires_at', in30dIso),
+        // URSSAF en erreur
+        supabase
+          .from('urssaf_declarations')
+          .select('id', { count: 'exact', head: true })
+          .in('status', ['error', 'rejected', 'failed']),
+        // Documents prestataires rejetés non remplacés
+        supabase
+          .from('provider_documents')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'rejected'),
+        // Documents en attente de validation depuis +7j
+        supabase
+          .from('provider_documents')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'pending')
+          .lt('upload_date', cutoff7d),
+        // Attestations Nova expirées
+        supabase
+          .from('provider_attestations')
+          .select('id', { count: 'exact', head: true })
+          .not('expiry_date', 'is', null)
+          .lt('expiry_date', nowIso),
+        // Binômes inactifs (aucune mission depuis 60j)
+        supabase
+          .from('binomes')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'active')
+          .or(`last_mission_date.is.null,last_mission_date.lt.${cutoff60d}`),
+        // Réclamations sans réponse depuis +24h
+        supabase
+          .from('complaints')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'open')
+          .lt('created_at', cutoff24h),
+        // Missions confirmées sans assignation provider depuis +1h (pas dans le statut pending)
+        supabase
+          .from('bookings')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'confirmed')
+          .is('assigned_at', null)
+          .lt('created_at', cutoff2h),
       ]);
+
 
       const anomalies: Anomaly[] = [];
 
@@ -285,6 +354,108 @@ export const useAnomaliesCenter = () => {
         actionLabel: 'Répondre',
         actionHref: '/modern-admin/messages',
       });
+
+      // === NOUVELLES DÉTECTIONS — Conformité & Qualité ===
+
+      push((novaExpiredRes.count || 0) > 0, {
+        id: 'nova-expired',
+        severity: 'critical',
+        category: 'compliance',
+        title: 'Agréments Nova expirés',
+        description: `${novaExpiredRes.count} prestataire(s) actif(s) avec agrément Nova expiré — bloquer immédiatement les missions.`,
+        count: novaExpiredRes.count || 0,
+        actionLabel: 'Régulariser',
+        actionHref: '/modern-admin/providers',
+      });
+
+      push((novaExpiringRes.count || 0) > 0, {
+        id: 'nova-expiring',
+        severity: 'high',
+        category: 'compliance',
+        title: 'Agréments Nova expirant <30j',
+        description: `${novaExpiringRes.count} agrément(s) Nova arrivent à échéance dans le mois.`,
+        count: novaExpiringRes.count || 0,
+        actionLabel: 'Anticiper',
+        actionHref: '/modern-admin/providers',
+      });
+
+      push((urssafErrorsRes.count || 0) > 0, {
+        id: 'urssaf-errors',
+        severity: 'high',
+        category: 'compliance',
+        title: 'Déclarations URSSAF en erreur',
+        description: `${urssafErrorsRes.count} déclaration(s) URSSAF rejetée(s) ou en échec.`,
+        count: urssafErrorsRes.count || 0,
+        actionLabel: 'Corriger',
+        actionHref: '/modern-admin/urssaf-declarations',
+      });
+
+      push((rejectedDocsRes.count || 0) > 0, {
+        id: 'rejected-docs',
+        severity: 'medium',
+        category: 'compliance',
+        title: 'Documents prestataires rejetés',
+        description: `${rejectedDocsRes.count} document(s) rejeté(s) en attente de remplacement.`,
+        count: rejectedDocsRes.count || 0,
+        actionLabel: 'Voir',
+        actionHref: '/modern-admin/applications',
+      });
+
+      push((pendingDocsOldRes.count || 0) > 0, {
+        id: 'pending-docs-old',
+        severity: 'high',
+        category: 'compliance',
+        title: 'Documents en attente >7j',
+        description: `${pendingDocsOldRes.count} document(s) à valider depuis plus de 7 jours.`,
+        count: pendingDocsOldRes.count || 0,
+        actionLabel: 'Valider',
+        actionHref: '/modern-admin/applications',
+      });
+
+      push((expiredAttestationsRes.count || 0) > 0, {
+        id: 'expired-attestations',
+        severity: 'high',
+        category: 'compliance',
+        title: 'Attestations officielles expirées',
+        description: `${expiredAttestationsRes.count} attestation(s) prestataire au-delà de leur date d'expiration.`,
+        count: expiredAttestationsRes.count || 0,
+        actionLabel: 'Renouveler',
+        actionHref: '/modern-admin/providers',
+      });
+
+      push((inactiveBinomesRes.count || 0) > 0, {
+        id: 'inactive-binomes',
+        severity: 'info',
+        category: 'business',
+        title: 'Binômes inactifs (>60j)',
+        description: `${inactiveBinomesRes.count} binôme(s) actif(s) sans mission depuis plus de 60 jours.`,
+        count: inactiveBinomesRes.count || 0,
+        actionLabel: 'Réviser',
+        actionHref: '/modern-admin/binomes',
+      });
+
+      push((oldOpenComplaintsRes.count || 0) > 0, {
+        id: 'old-complaints',
+        severity: 'critical',
+        category: 'business',
+        title: 'Réclamations sans réponse >24h',
+        description: `${oldOpenComplaintsRes.count} réclamation(s) ouverte(s) sans traitement depuis plus de 24h.`,
+        count: oldOpenComplaintsRes.count || 0,
+        actionLabel: 'Traiter',
+        actionHref: '/modern-admin/reclamations',
+      });
+
+      push((unrespondedMissionsRes.count || 0) > 0, {
+        id: 'unassigned-confirmed',
+        severity: 'critical',
+        category: 'mission',
+        title: 'Missions confirmées non assignées',
+        description: `${unrespondedMissionsRes.count} mission(s) confirmée(s) sans prestataire assigné depuis +2h.`,
+        count: unrespondedMissionsRes.count || 0,
+        actionLabel: 'Assigner',
+        actionHref: '/modern-admin/missions',
+      });
+
 
       // Tri : sévérité puis date
       anomalies.sort((a, b) => {
