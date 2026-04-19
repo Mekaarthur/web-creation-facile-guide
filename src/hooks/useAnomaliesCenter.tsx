@@ -43,6 +43,10 @@ export const useAnomaliesCenter = () => {
       const cutoff24h = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
       const cutoff30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
+      const cutoff7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const cutoff60d = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000).toISOString();
+      const in30dIso = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
       const [
         systemAlertsRes,
         failedEmailsRes,
@@ -57,6 +61,15 @@ export const useAnomaliesCenter = () => {
         expiredCounterPropsRes,
         unresolvedIncidentsRes,
         escalatedChatbotRes,
+        novaExpiredRes,
+        novaExpiringRes,
+        urssafErrorsRes,
+        rejectedDocsRes,
+        pendingDocsOldRes,
+        expiredAttestationsRes,
+        inactiveBinomesRes,
+        oldOpenComplaintsRes,
+        unrespondedMissionsRes,
       ] = await Promise.all([
         supabase
           .from('system_alerts')
@@ -120,7 +133,63 @@ export const useAnomaliesCenter = () => {
           .select('id', { count: 'exact', head: true })
           .eq('escalated_to_human', true)
           .is('resolved_at', null),
+        // Nova expiré sur prestataires actifs
+        supabase
+          .from('providers')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'active')
+          .not('nova_expires_at', 'is', null)
+          .lt('nova_expires_at', nowIso),
+        // Nova expirant dans les 30j
+        supabase
+          .from('providers')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'active')
+          .gte('nova_expires_at', nowIso)
+          .lt('nova_expires_at', in30dIso),
+        // URSSAF en erreur
+        supabase
+          .from('urssaf_declarations')
+          .select('id', { count: 'exact', head: true })
+          .in('status', ['error', 'rejected', 'failed']),
+        // Documents prestataires rejetés non remplacés
+        supabase
+          .from('provider_documents')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'rejected'),
+        // Documents en attente de validation depuis +7j
+        supabase
+          .from('provider_documents')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'pending')
+          .lt('upload_date', cutoff7d),
+        // Attestations Nova expirées
+        supabase
+          .from('provider_attestations')
+          .select('id', { count: 'exact', head: true })
+          .not('expiry_date', 'is', null)
+          .lt('expiry_date', nowIso),
+        // Binômes inactifs (aucune mission depuis 60j)
+        supabase
+          .from('binomes')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'active')
+          .or(`last_mission_date.is.null,last_mission_date.lt.${cutoff60d}`),
+        // Réclamations sans réponse depuis +24h
+        supabase
+          .from('complaints')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'open')
+          .lt('created_at', cutoff24h),
+        // Missions confirmées sans assignation provider depuis +1h (pas dans le statut pending)
+        supabase
+          .from('bookings')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'confirmed')
+          .is('assigned_at', null)
+          .lt('created_at', cutoff2h),
       ]);
+
 
       const anomalies: Anomaly[] = [];
 
