@@ -140,6 +140,39 @@ export type Database = {
         }
         Relationships: []
       }
+      anomaly_alerts_sent: {
+        Row: {
+          anomaly_key: string
+          category: string | null
+          count_at_send: number | null
+          created_at: string
+          id: string
+          last_sent_at: string
+          send_count: number
+          severity: string
+        }
+        Insert: {
+          anomaly_key: string
+          category?: string | null
+          count_at_send?: number | null
+          created_at?: string
+          id?: string
+          last_sent_at?: string
+          send_count?: number
+          severity: string
+        }
+        Update: {
+          anomaly_key?: string
+          category?: string | null
+          count_at_send?: number | null
+          created_at?: string
+          id?: string
+          last_sent_at?: string
+          send_count?: number
+          severity?: string
+        }
+        Relationships: []
+      }
       application_document_validations: {
         Row: {
           application_id: string
