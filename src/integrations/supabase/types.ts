@@ -140,6 +140,63 @@ export type Database = {
         }
         Relationships: []
       }
+      anomalies: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          description: string | null
+          id: string
+          metadata: Json | null
+          resolution_note: string | null
+          resolved_at: string | null
+          severity: string
+          sla_breached: boolean
+          sla_deadline: string | null
+          source_id: string | null
+          source_table: string | null
+          status: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          resolution_note?: string | null
+          resolved_at?: string | null
+          severity?: string
+          sla_breached?: boolean
+          sla_deadline?: string | null
+          source_id?: string | null
+          source_table?: string | null
+          status?: string
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          resolution_note?: string | null
+          resolved_at?: string | null
+          severity?: string
+          sla_breached?: boolean
+          sla_deadline?: string | null
+          source_id?: string | null
+          source_table?: string | null
+          status?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       anomaly_alerts_sent: {
         Row: {
           anomaly_key: string
@@ -815,6 +872,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      chat_sessions: {
+        Row: {
+          context: Json | null
+          created_at: string
+          escalated_to: string | null
+          id: string
+          status: string
+          updated_at: string
+          user_id: string | null
+          user_type: string | null
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string
+          escalated_to?: string | null
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          user_type?: string | null
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string
+          escalated_to?: string | null
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          user_type?: string | null
+        }
+        Relationships: []
       }
       chatbot_conversations: {
         Row: {
@@ -1860,12 +1950,17 @@ export type Database = {
           id: string
           invoice_number: string
           issued_date: string
+          needme_invoice_id: string | null
+          needme_pdf_url: string | null
           notes: string | null
           payment_date: string | null
           service_description: string | null
           status: string
           stripe_payment_id: string | null
+          stripe_payment_intent_id: string | null
           updated_at: string
+          urssaf_declaration_id: string | null
+          urssaf_status: string | null
         }
         Insert: {
           amount?: number
@@ -1876,12 +1971,17 @@ export type Database = {
           id?: string
           invoice_number: string
           issued_date?: string
+          needme_invoice_id?: string | null
+          needme_pdf_url?: string | null
           notes?: string | null
           payment_date?: string | null
           service_description?: string | null
           status?: string
           stripe_payment_id?: string | null
+          stripe_payment_intent_id?: string | null
           updated_at?: string
+          urssaf_declaration_id?: string | null
+          urssaf_status?: string | null
         }
         Update: {
           amount?: number
@@ -1892,12 +1992,17 @@ export type Database = {
           id?: string
           invoice_number?: string
           issued_date?: string
+          needme_invoice_id?: string | null
+          needme_pdf_url?: string | null
           notes?: string | null
           payment_date?: string | null
           service_description?: string | null
           status?: string
           stripe_payment_id?: string | null
+          stripe_payment_intent_id?: string | null
           updated_at?: string
+          urssaf_declaration_id?: string | null
+          urssaf_status?: string | null
         }
         Relationships: [
           {
@@ -2097,6 +2202,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      mission_ratings: {
+        Row: {
+          authorized_testimonial: boolean
+          booking_id: string
+          client_id: string
+          comment: string | null
+          created_at: string
+          friendliness: number | null
+          id: string
+          overall_rating: number
+          provider_id: string
+          punctuality: number | null
+          quality: number | null
+          updated_at: string
+        }
+        Insert: {
+          authorized_testimonial?: boolean
+          booking_id: string
+          client_id: string
+          comment?: string | null
+          created_at?: string
+          friendliness?: number | null
+          id?: string
+          overall_rating: number
+          provider_id: string
+          punctuality?: number | null
+          quality?: number | null
+          updated_at?: string
+        }
+        Update: {
+          authorized_testimonial?: boolean
+          booking_id?: string
+          client_id?: string
+          comment?: string | null
+          created_at?: string
+          friendliness?: number | null
+          id?: string
+          overall_rating?: number
+          provider_id?: string
+          punctuality?: number | null
+          quality?: number | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       missions: {
         Row: {
