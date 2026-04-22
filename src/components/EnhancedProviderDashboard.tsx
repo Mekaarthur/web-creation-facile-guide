@@ -1,15 +1,27 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useProviderDashboard } from '@/hooks/useProviderDashboard';
+import { useToast } from '@/hooks/use-toast';
 import {
-  LayoutDashboard, Briefcase, User, CheckCircle, Phone, Settings, RefreshCw, MessageSquare, TrendingUp, ShieldAlert
+  useDashboardProfile,
+  useDashboardMissions,
+  useDashboardOpportunities,
+  useDashboardReviews,
+  useDashboardEarnings,
+  useDashboardStats,
+  useApplyToOpportunity,
+  useUpdateMissionStatus,
+  useInvalidateProviderDashboard,
+} from '@/hooks/queries/useProviderDashboardV2';
+import {
+  LayoutDashboard, Briefcase, User, CheckCircle, Phone, Settings, RefreshCw, MessageSquare, TrendingUp,
 } from 'lucide-react';
 import { EmergencyReportButton } from '@/components/provider/EmergencyReportButton';
-import { LoadingSkeleton, DashboardLoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { DashboardLoadingSkeleton } from '@/components/ui/loading-skeleton';
+import type { BookingStatus } from '@/services/bookingService';
 
 // Tab components
 import ProviderDashboardTab from '@/components/provider/ProviderDashboardTab';
@@ -30,23 +42,86 @@ import ProviderAttestationsTab from '@/components/provider/ProviderAttestationsT
 
 const EnhancedProviderDashboard = () => {
   const { t } = useTranslation();
+  const { toast } = useToast();
+
+  // ── Données via React Query ──────────────────────────────────
   const {
-    provider,
-    missions,
-    opportunities,
-    reviews,
-    stats,
-    loading,
-    refreshing,
-    error,
-    refresh,
-    applyToMission,
-    updateMissionStatus
-  } = useProviderDashboard();
+    data: provider,
+    isLoading: providerLoading,
+    isFetching: providerFetching,
+    error: providerError,
+  } = useDashboardProfile();
+
+  const providerId = provider?.id;
+
+  const { data: missions, isLoading: missionsLoading, isFetching: missionsFetching } = useDashboardMissions(providerId);
+  const { data: opportunities, isFetching: oppsFetching } = useDashboardOpportunities(providerId);
+  const { data: reviews, isFetching: reviewsFetching } = useDashboardReviews(providerId);
+  const { data: earnings, isFetching: earningsFetching } = useDashboardEarnings(providerId);
+
+  const stats = useDashboardStats({ provider, missions, reviews, earnings });
+
+  // ── Mutations ────────────────────────────────────────────────
+  const applyMutation = useApplyToOpportunity();
+  const updateStatusMutation = useUpdateMissionStatus();
+  const invalidateAll = useInvalidateProviderDashboard();
 
   const [activeTab, setActiveTab] = useState('accueil');
 
-  if (loading && !provider) {
+  // Indicateurs globaux
+  const initialLoading = providerLoading || (providerId && missionsLoading);
+  const refreshing =
+    providerFetching || missionsFetching || oppsFetching || reviewsFetching || earningsFetching;
+
+  // ── Handlers ─────────────────────────────────────────────────
+  const handleRefresh = () => invalidateAll(providerId);
+
+  const applyToMission = (opportunityId: string) => {
+    if (!providerId) return;
+    applyMutation.mutate(
+      { providerId, opportunityId, responseType: 'accepted' },
+      {
+        onSuccess: () => {
+          toast({
+            title: 'Candidature envoyée ✅',
+            description: "Votre candidature a été soumise. L'équipe Bikawo va l'examiner.",
+          });
+        },
+        onError: (err: any) => {
+          toast({
+            title: 'Erreur',
+            description: err?.message || 'Erreur lors de la candidature',
+            variant: 'destructive',
+          });
+        },
+      }
+    );
+  };
+
+  const updateMissionStatus = (missionId: string, status: string, notes?: string) => {
+    if (!providerId) return;
+    updateStatusMutation.mutate(
+      { missionId, providerId, status: status as BookingStatus, notes },
+      {
+        onSuccess: () => {
+          toast({
+            title: 'Mission mise à jour',
+            description: 'Le statut de la mission a été mis à jour avec succès',
+          });
+        },
+        onError: (err: any) => {
+          toast({
+            title: 'Erreur',
+            description: err?.message || 'Erreur lors de la mise à jour',
+            variant: 'destructive',
+          });
+        },
+      }
+    );
+  };
+
+  // ── États de chargement / erreur ─────────────────────────────
+  if (initialLoading && !provider) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
         <div className="max-w-7xl mx-auto p-6">
@@ -56,7 +131,7 @@ const EnhancedProviderDashboard = () => {
     );
   }
 
-  if (error && !provider) {
+  if (providerError && !provider) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="w-full max-w-md">
@@ -64,8 +139,8 @@ const EnhancedProviderDashboard = () => {
             <CardTitle className="text-center text-destructive">{t('providerDashboard.loadingError')}</CardTitle>
           </CardHeader>
           <CardContent className="text-center">
-            <p className="text-muted-foreground mb-4">{error}</p>
-            <Button onClick={() => refresh()} variant="outline">
+            <p className="text-muted-foreground mb-4">{(providerError as any)?.message || ''}</p>
+            <Button onClick={handleRefresh} variant="outline">
               <RefreshCw className="w-4 h-4 mr-2" />
               {t('providerDashboard.retry')}
             </Button>
@@ -99,14 +174,17 @@ const EnhancedProviderDashboard = () => {
             </div>
             <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
               <Badge
-                variant={provider?.is_verified ? "default" : "secondary"}
-                className={`text-xs sm:text-sm whitespace-nowrap flex-shrink-0 ${provider?.is_verified
-                  ? 'bg-success/10 text-success border-success/20'
-                  : 'bg-warning/10 text-warning border-warning/20'
+                variant={provider?.is_verified ? 'default' : 'secondary'}
+                className={`text-xs sm:text-sm whitespace-nowrap flex-shrink-0 ${
+                  provider?.is_verified
+                    ? 'bg-success/10 text-success border-success/20'
+                    : 'bg-warning/10 text-warning border-warning/20'
                 }`}
               >
                 <CheckCircle className="h-3 w-3 mr-1" />
-                <span className="hidden sm:inline">{provider?.is_verified ? t('providerDashboard.verified') : t('providerDashboard.inVerification')}</span>
+                <span className="hidden sm:inline">
+                  {provider?.is_verified ? t('providerDashboard.verified') : t('providerDashboard.inVerification')}
+                </span>
               </Badge>
               <div className="hidden lg:flex items-center gap-2 text-xs lg:text-sm text-muted-foreground bg-muted/50 px-2.5 lg:px-3 py-1.5 lg:py-2 rounded-lg whitespace-nowrap">
                 <Phone className="h-3.5 w-3.5 lg:h-4 lg:w-4 flex-shrink-0" />
@@ -116,16 +194,14 @@ const EnhancedProviderDashboard = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={refresh}
+                onClick={handleRefresh}
                 disabled={refreshing}
                 className="hover:bg-primary/10 h-8 sm:h-9 px-2 sm:px-3"
               >
                 <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2 ${refreshing ? 'animate-spin' : ''}`} />
                 <span className="hidden sm:inline text-xs sm:text-sm">{t('providerDashboard.refresh')}</span>
               </Button>
-              {provider?.id && (
-                <EmergencyReportButton providerId={provider.id} />
-              )}
+              {provider?.id && <EmergencyReportButton providerId={provider.id} />}
               <Button
                 variant="outline"
                 size="sm"
@@ -191,8 +267,8 @@ const EnhancedProviderDashboard = () => {
           <TabsContent value="accueil" className="mt-4 sm:mt-6 lg:mt-8">
             <ProviderDashboardTab
               stats={stats}
-              opportunities={opportunities}
-              missions={missions}
+              opportunities={opportunities ?? []}
+              missions={missions ?? []}
               applyToMission={applyToMission}
             />
           </TabsContent>
@@ -212,9 +288,9 @@ const EnhancedProviderDashboard = () => {
               </TabsContent>
               <TabsContent value="gestion">
                 <ProviderMissionManager
-                  missions={missions}
+                  missions={missions ?? []}
                   onUpdateStatus={updateMissionStatus}
-                  loading={loading}
+                  loading={missionsLoading || updateStatusMutation.isPending}
                 />
               </TabsContent>
               <TabsContent value="planning">
@@ -236,12 +312,12 @@ const EnhancedProviderDashboard = () => {
               <TabsContent value="revenus">
                 <ProviderKPIsDashboard
                   stats={stats}
-                  reviews={reviews}
-                  missions={missions}
+                  reviews={reviews ?? []}
+                  missions={missions ?? []}
                 />
               </TabsContent>
               <TabsContent value="evaluations">
-                <ProviderEvaluationsTab reviews={reviews} />
+                <ProviderEvaluationsTab reviews={reviews ?? []} />
               </TabsContent>
               <TabsContent value="recompenses">
                 <ProviderPerformanceRewards />
