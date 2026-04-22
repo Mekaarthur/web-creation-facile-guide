@@ -323,22 +323,20 @@ export const providerService = {
   },
 
   /**
-   * Postuler à une opportunité (candidature). Source = "booking" ou "matching".
+   * Postuler à une opportunité (candidature).
+   * response_type: "accepted" par défaut (le prestataire postule = accepte la mission).
    */
   async applyToOpportunity(params: {
     providerId: string;
     opportunityId: string;
-    source: "booking" | "matching";
-    message?: string;
+    responseType?: "accepted" | "declined" | "interested";
   }): Promise<void> {
-    const { providerId, opportunityId, source, message } = params;
+    const { providerId, opportunityId, responseType = "accepted" } = params;
     const { error } = await supabase.from("candidatures_prestataires").insert({
       provider_id: providerId,
       mission_assignment_id: opportunityId,
-      source,
-      message: message || null,
-      status: "pending",
-    } as any);
+      response_type: responseType,
+    });
     if (error) throw new ServiceError("Candidature impossible", error.code, error);
   },
 };
