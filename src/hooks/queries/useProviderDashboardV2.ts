@@ -9,15 +9,20 @@
  *   const { data: missions } = useDashboardMissions(provider?.id);
  *   const { data: opportunities } = useDashboardOpportunities(provider?.id);
  *   const { data: earnings } = useDashboardEarnings(provider?.id);
+ *   const stats = useDashboardStats({ provider, missions, reviews, earnings });
  *   const apply = useApplyToOpportunity();
+ *   const updateStatus = useUpdateMissionStatus();
  *
  * L'ancien hook reste fonctionnel pour ne rien casser.
  */
 
+import { useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { providerService } from "@/services/providerService";
+import { bookingService, type BookingStatus } from "@/services/bookingService";
 import { providerKeys } from "./useProviders";
+import { bookingKeys } from "./useBookings";
 
 // Clés dédiées au dashboard (séparées des clés admin/list)
 export const providerDashboardKeys = {
@@ -96,9 +101,80 @@ export const useDashboardEarnings = (providerId: string | undefined) => {
   });
 };
 
+// ============================================================
+// Stats agrégées (hook dérivé, pas de fetch)
+// ============================================================
+
+export interface DashboardStats {
+  monthlyEarnings: number;
+  previousMonthEarnings: number;
+  earningsGrowth: number;
+  totalEarnings: number;
+  activeMissions: number;
+  completedMissions: number;
+  averageRating: number;
+  acceptanceRate: number;
+  totalReviews: number;
+  responseTime: number;
+}
+
+/**
+ * Stats agrégées calculées à partir des données déjà en cache.
+ * Ne déclenche aucune requête réseau supplémentaire.
+ */
+export const useDashboardStats = (input: {
+  provider?: any | null;
+  missions?: any[] | null;
+  reviews?: any[] | null;
+  earnings?: {
+    monthlyEarnings: number;
+    previousMonthEarnings: number;
+    totalEarnings: number;
+    earningsGrowth: number;
+  } | null;
+}): DashboardStats => {
+  const { provider, missions, reviews, earnings } = input;
+
+  return useMemo(() => {
+    const m = missions ?? [];
+    const r = reviews ?? [];
+    const e = earnings ?? { monthlyEarnings: 0, previousMonthEarnings: 0, totalEarnings: 0, earningsGrowth: 0 };
+
+    const completedMissions = m.filter((x: any) => x.status === "completed");
+    const activeMissions = m.filter((x: any) => ["pending", "confirmed", "in_progress"].includes(x.status));
+    const confirmedMissions = m.filter((x: any) => x.status === "confirmed" || x.status === "completed");
+
+    const averageRating = r.length > 0
+      ? r.reduce((sum: number, x: any) => sum + (x.rating || 0), 0) / r.length
+      : 0;
+
+    const responseTime = confirmedMissions.length > 0
+      ? Math.round((confirmedMissions.length / Math.max(m.length, 1)) * 30)
+      : 0;
+
+    return {
+      monthlyEarnings: e.monthlyEarnings,
+      previousMonthEarnings: e.previousMonthEarnings,
+      earningsGrowth: e.earningsGrowth,
+      totalEarnings: e.totalEarnings,
+      activeMissions: activeMissions.length,
+      completedMissions: completedMissions.length,
+      averageRating,
+      acceptanceRate: provider?.acceptance_rate || 0,
+      totalReviews: r.length,
+      responseTime,
+    };
+  }, [provider, missions, reviews, earnings]);
+};
+
+// ============================================================
+// Mutations
+// ============================================================
+
 /**
  * Mutation : postuler à une opportunité.
- * Invalide les opportunités et missions après succès.
+ * Optimistic update : retire l'opportunité de la liste avant le retour serveur,
+ * rollback si erreur. Invalide opportunités + missions après succès.
  */
 export const useApplyToOpportunity = () => {
   const qc = useQueryClient();
@@ -108,9 +184,55 @@ export const useApplyToOpportunity = () => {
       opportunityId: string;
       responseType?: "accepted" | "declined" | "interested";
     }) => providerService.applyToOpportunity(params),
-    onSuccess: (_data, variables) => {
+
+    onMutate: async (variables) => {
+      const key = providerDashboardKeys.opportunities(variables.providerId);
+      await qc.cancelQueries({ queryKey: key });
+      const previous = qc.getQueryData<any[]>(key);
+      if (previous) {
+        qc.setQueryData<any[]>(key, previous.filter((o) => o.id !== variables.opportunityId));
+      }
+      return { previous };
+    },
+
+    onError: (_err, variables, context) => {
+      if (context?.previous) {
+        qc.setQueryData(providerDashboardKeys.opportunities(variables.providerId), context.previous);
+      }
+    },
+
+    onSettled: (_data, _err, variables) => {
       qc.invalidateQueries({ queryKey: providerDashboardKeys.opportunities(variables.providerId) });
       qc.invalidateQueries({ queryKey: providerDashboardKeys.missions(variables.providerId) });
+    },
+  });
+};
+
+/**
+ * Mutation : changer le statut d'une mission (booking).
+ * Met automatiquement à jour started_at / completed_at selon le nouveau statut.
+ * Invalide les missions du dashboard ET le cache booking standard.
+ */
+export const useUpdateMissionStatus = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: {
+      missionId: string;
+      providerId: string;
+      status: BookingStatus;
+      notes?: string;
+    }) => {
+      const extra: any = {};
+      if (params.notes) extra.provider_notes = params.notes;
+      if (params.status === "in_progress") extra.started_at = new Date().toISOString();
+      if (params.status === "completed") extra.completed_at = new Date().toISOString();
+      return bookingService.updateStatus(params.missionId, params.status, extra);
+    },
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: providerDashboardKeys.missions(variables.providerId) });
+      qc.invalidateQueries({ queryKey: providerDashboardKeys.earnings(variables.providerId) });
+      qc.invalidateQueries({ queryKey: bookingKeys.detail(variables.missionId) });
+      qc.invalidateQueries({ queryKey: bookingKeys.lists() });
     },
   });
 };
