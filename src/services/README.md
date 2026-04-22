@@ -27,7 +27,7 @@ Supabase Client / Edge Functions
 | Service                    | Hook                  | Statut          | Notes |
 |----------------------------|-----------------------|-----------------|-------|
 | `bookingService`           | `useBookings`         | ✅ Disponible   | CRUD + optimistic updates |
-| `providerService`          | `useProviders`        | ✅ Disponible   | Filtres status/zone/rating |
+| `providerService`          | `useProviders` + `useProviderDashboardV2` | ✅ Disponible | Admin (list/filtres) + Dashboard prestataire (profile, missions, opportunities, earnings, reviews) |
 | `paymentService`           | `usePayments`         | ✅ Disponible   | Stripe via edge functions |
 | `notificationServiceV2`    | `useNotificationsV2`  | ✅ Disponible   | Hub multi-canal (push/email/sms) |
 | `anomalyService`           | `useAnomalies`        | ✅ Disponible   | Centre unifié, refresh 30s |
