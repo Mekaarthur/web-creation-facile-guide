@@ -507,6 +507,13 @@
     /* Reserve space for the fixed mobile checkout bar + iOS safe area */
     padding-bottom: calc(env(safe-area-inset-bottom) + 96px);
   }
+  .pb-mobile-nav {
+    /* Reserve space for the fixed bottom navigation on mobile (lg:hidden) */
+    padding-bottom: calc(env(safe-area-inset-bottom) + 72px);
+  }
+  @media (min-width: 1024px) {
+    .pb-mobile-nav { padding-bottom: 0; }
+  }
   .min-h-dvh {
     /* Dynamic viewport height for mobile browsers (prevents cut-off under browser UI) */
     min-height: 100dvh;
