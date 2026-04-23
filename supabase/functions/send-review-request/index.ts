@@ -88,23 +88,26 @@ serve(async (req) => {
         priority: 'normal'
       });
 
-    // TODO: Envoyer un email avec Resend
-    const emailData = {
-      to: booking.client?.email,
-      subject: '⭐ Notez votre expérience avec Bikawo',
-      html: `
+    // Envoi email Resend
+    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    const SITE_URL = Deno.env.get("SITE_URL") ?? "https://bikawo.com";
+    const recipient = booking.client?.email;
+
+    let emailSent = false;
+    if (RESEND_API_KEY && recipient) {
+      const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: #3b82f6; color: white; padding: 20px; text-align: center;">
-            <h1>BIKAWO</h1>
+          <div style="background: linear-gradient(135deg,#667eea,#764ba2); color: white; padding: 24px; text-align: center; border-radius: 8px 8px 0 0;">
+            <h1 style="margin:0;">⭐ Notez votre expérience</h1>
           </div>
-          <div style="padding: 30px; background: #f9fafb;">
-            <h2>Bonjour ${clientName},</h2>
+          <div style="padding: 30px; background: #f9fafb; border-radius: 0 0 8px 8px;">
+            <h2 style="color:#1f2937;">Bonjour ${clientName},</h2>
             <p>Merci d'avoir fait confiance à Bikawo !</p>
             <p><strong>Pouvez-vous noter votre expérience avec ${providerName} ?</strong></p>
             <p>Votre avis aide d'autres familles à faire le bon choix. 🙏</p>
             <p style="text-align: center; margin: 30px 0;">
-              <a href="${Deno.env.get("SITE_URL")}/review/${bookingId}" 
-                 style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">
+              <a href="${SITE_URL}/espace-personnel?tab=bookings&rate=${bookingId}"
+                 style="display: inline-block; background: #667eea; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight:600;">
                 ⭐ Laisser un avis
               </a>
             </p>
@@ -114,16 +117,48 @@ serve(async (req) => {
             </p>
           </div>
         </div>
-      `
-    };
+      `;
 
-    console.log("📧 Email de demande d'avis préparé:", emailData);
+      const resp = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "Bikawo <contact@bikawo.com>",
+          to: recipient,
+          subject: "⭐ Notez votre expérience avec Bikawo",
+          html,
+        }),
+      });
+
+      emailSent = resp.ok;
+      if (!resp.ok) console.error("Resend error", await resp.text());
+    }
+
+    // Trace dans communications
+    if (recipient) {
+      await supabaseAdmin.from("communications").insert({
+        type: "email",
+        destinataire_id: clientId,
+        destinataire_email: recipient,
+        sujet: "Demande de notation",
+        contenu: `review-request:${bookingId}`,
+        template_name: "review-request",
+        status: emailSent ? "sent" : "failed",
+        sent_at: new Date().toISOString(),
+        related_entity_type: "booking",
+        related_entity_id: bookingId,
+      });
+    }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         message: "Demande d'avis envoyée",
-        notification_sent: true
+        notification_sent: true,
+        email_sent: emailSent,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
