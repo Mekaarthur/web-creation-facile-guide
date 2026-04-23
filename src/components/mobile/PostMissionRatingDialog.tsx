@@ -60,7 +60,7 @@ const RatingInput = ({ label, value, onChange, size = "sm" }: RatingInputProps) 
               className={cn(
                 starClass,
                 "transition-colors",
-                n <= display ? "fill-amber-400 text-amber-400" : "text-muted-foreground/40"
+                n <= display ? "fill-primary text-primary" : "text-muted-foreground/40"
               )}
             />
           </button>

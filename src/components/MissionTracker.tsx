@@ -1,235 +1,103 @@
-import { useState, useEffect } from 'react';
+/**
+ * MissionTracker
+ * Suivi visuel d'une mission cliente — étapes, horodatage, géolocalisation.
+ * Données chargées via useMissionTracking (React Query + Realtime).
+ */
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Clock, MapPin, CheckCircle, AlertTriangle, PlayCircle, StopCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useMissionTracking, type MissionTrackingData } from '@/hooks/queries/useMissionTracking';
+import { cn } from '@/lib/utils';
 
 interface MissionTrackerProps {
   bookingId: string;
 }
 
-interface MissionStatus {
-  id: string;
-  status: string;
-  booking_date: string;
-  start_time: string;
-  end_time: string;
-  assigned_at: string | null;
-  confirmed_at: string | null;
-  started_at: string | null;
-  completed_at: string | null;
-  address: string;
-  check_in_location: string | null;
-  check_out_location: string | null;
-  provider_notes: string | null;
-  services: {
-    name: string;
-  };
-  providers: {
-    business_name: string;
-    profiles: {
-      first_name: string;
-      last_name: string;
-    };
-  };
-}
+const PROGRESS_BY_STATUS: Record<string, number> = {
+  pending: 25,
+  assigned: 25,
+  confirmed: 50,
+  in_progress: 75,
+  completed: 100,
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  pending: 'En attente',
+  assigned: 'Assigné',
+  confirmed: 'Confirmé',
+  in_progress: 'En cours',
+  completed: 'Terminé',
+  cancelled: 'Annulé',
+};
+
+const STATUS_COLOR: Record<string, string> = {
+  pending: 'bg-amber-500',
+  assigned: 'bg-amber-500',
+  confirmed: 'bg-blue-500',
+  in_progress: 'bg-primary',
+  completed: 'bg-emerald-500',
+  cancelled: 'bg-destructive',
+};
+
+const formatTime = (iso: string | null) =>
+  iso ? format(new Date(iso), 'HH:mm', { locale: fr }) : null;
+
+const buildSteps = (mission: MissionTrackingData) => [
+  {
+    key: 'assigned',
+    label: 'Prestataire assigné',
+    icon: <CheckCircle className="w-4 h-4" />,
+    completed: !!mission.assigned_at,
+    time: formatTime(mission.assigned_at),
+  },
+  {
+    key: 'confirmed',
+    label: 'Prestation confirmée',
+    icon: <CheckCircle className="w-4 h-4" />,
+    completed: !!mission.confirmed_at,
+    time: formatTime(mission.confirmed_at),
+  },
+  {
+    key: 'started',
+    label: 'Prestation commencée',
+    icon: <PlayCircle className="w-4 h-4" />,
+    completed: !!mission.started_at,
+    time: formatTime(mission.started_at),
+    location: mission.check_in_location,
+  },
+  {
+    key: 'completed',
+    label: 'Prestation terminée',
+    icon: <StopCircle className="w-4 h-4" />,
+    completed: !!mission.completed_at,
+    time: formatTime(mission.completed_at),
+    location: mission.check_out_location,
+  },
+];
 
 const MissionTracker = ({ bookingId }: MissionTrackerProps) => {
-  const [mission, setMission] = useState<MissionStatus | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: mission, isLoading, error } = useMissionTracking(bookingId);
 
-  useEffect(() => {
-    loadMissionStatus();
-    
-    // Écouter les mises à jour en temps réel
-    const channel = supabase
-      .channel('mission-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'bookings',
-          filter: `id=eq.${bookingId}`
-        },
-        (payload) => {
-          console.log('Mission status updated:', payload);
-          loadMissionStatus();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [bookingId]);
-
-  const loadMissionStatus = async () => {
-    try {
-      const { data: bookingData } = await supabase
-        .from('bookings')
-        .select(`
-          *,
-          services(name)
-        `)
-        .eq('id', bookingId)
-        .single();
-
-      if (bookingData?.provider_id) {
-        // Charger les infos du prestataire séparément
-        const { data: providerData } = await supabase
-          .from('providers')
-          .select(`
-            business_name,
-            user_id
-          `)
-          .eq('id', bookingData.provider_id)
-          .single();
-
-        let providerInfo = { business_name: '', profiles: { first_name: '', last_name: '' } };
-        
-        if (providerData) {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('first_name, last_name')
-            .eq('user_id', providerData.user_id)
-            .single();
-
-          providerInfo = {
-            business_name: providerData.business_name,
-            profiles: profileData || { first_name: '', last_name: '' }
-          };
-        }
-
-        setMission({
-          ...bookingData,
-          providers: providerInfo
-        });
-      } else {
-        setMission({
-          ...bookingData,
-          providers: { business_name: '', profiles: { first_name: '', last_name: '' } }
-        });
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement du statut de mission:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getProgressValue = (status: string) => {
-    switch (status) {
-      case 'pending':
-      case 'assigned':
-        return 25;
-      case 'confirmed':
-        return 50;
-      case 'in_progress':
-        return 75;
-      case 'completed':
-        return 100;
-      default:
-        return 0;
-    }
-  };
-
-  const getStatusSteps = (mission: MissionStatus) => {
-    const baseSteps = [
-      {
-        key: 'assigned',
-        label: 'Prestataire assigné',
-        icon: <CheckCircle className="w-4 h-4" />,
-        completed: !!mission.assigned_at,
-        time: mission.assigned_at ? format(new Date(mission.assigned_at), 'HH:mm', { locale: fr }) : null
-      },
-      {
-        key: 'confirmed',
-        label: 'Prestation confirmée',
-        icon: <CheckCircle className="w-4 h-4" />,
-        completed: !!mission.confirmed_at,
-        time: mission.confirmed_at ? format(new Date(mission.confirmed_at), 'HH:mm', { locale: fr }) : null
-      },
-      {
-        key: 'started',
-        label: 'Prestation commencée',
-        icon: <PlayCircle className="w-4 h-4" />,
-        completed: !!mission.started_at,
-        time: mission.started_at ? format(new Date(mission.started_at), 'HH:mm', { locale: fr }) : null,
-        location: mission.check_in_location
-      },
-      {
-        key: 'completed',
-        label: 'Prestation terminée',
-        icon: <StopCircle className="w-4 h-4" />,
-        completed: !!mission.completed_at,
-        time: mission.completed_at ? format(new Date(mission.completed_at), 'HH:mm', { locale: fr }) : null,
-        location: mission.check_out_location
-      }
-    ];
-
-    return baseSteps;
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-      case 'assigned':
-        return 'bg-yellow-500';
-      case 'confirmed':
-        return 'bg-blue-500';
-      case 'in_progress':
-        return 'bg-primary';
-      case 'completed':
-        return 'bg-green-500';
-      case 'cancelled':
-        return 'bg-red-500';
-      default:
-        return 'bg-gray-500';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'En attente';
-      case 'assigned':
-        return 'Assigné';
-      case 'confirmed':
-        return 'Confirmé';
-      case 'in_progress':
-        return 'En cours';
-      case 'completed':
-        return 'Terminé';
-      case 'cancelled':
-        return 'Annulé';
-      default:
-        return status;
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <Card className="animate-pulse">
-        <CardContent className="p-6">
-          <div className="space-y-4">
-            <div className="h-4 bg-muted rounded w-3/4"></div>
-            <div className="h-2 bg-muted rounded"></div>
-            <div className="space-y-2">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-8 bg-muted rounded"></div>
-              ))}
-            </div>
+        <CardContent className="p-6 space-y-4">
+          <div className="h-4 bg-muted rounded w-3/4" />
+          <div className="h-2 bg-muted rounded" />
+          <div className="space-y-2">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="h-8 bg-muted rounded" />
+            ))}
           </div>
         </CardContent>
       </Card>
     );
   }
 
-  if (!mission) {
+  if (error || !mission) {
     return (
       <Card>
         <CardContent className="p-6 text-center">
@@ -240,8 +108,9 @@ const MissionTracker = ({ bookingId }: MissionTrackerProps) => {
     );
   }
 
-  const steps = getStatusSteps(mission);
-  const progressValue = getProgressValue(mission.status);
+  const steps = buildSteps(mission);
+  const progressValue = PROGRESS_BY_STATUS[mission.status] ?? 0;
+  const nextIndex = steps.findIndex((s) => !s.completed);
 
   return (
     <Card>
@@ -251,16 +120,15 @@ const MissionTracker = ({ bookingId }: MissionTrackerProps) => {
             <Clock className="h-5 w-5 text-primary" />
             Suivi de votre prestation
           </span>
-          <Badge className={`${getStatusColor(mission.status)} text-white`}>
-            {getStatusText(mission.status)}
+          <Badge className={cn(STATUS_COLOR[mission.status] ?? 'bg-muted', 'text-white')}>
+            {STATUS_LABEL[mission.status] ?? mission.status}
           </Badge>
         </CardTitle>
       </CardHeader>
-      
+
       <CardContent className="space-y-6">
-        {/* Informations de base */}
         <div className="bg-muted/50 rounded-lg p-4">
-          <h4 className="font-medium mb-2">{mission.services.name}</h4>
+          <h4 className="font-medium mb-2">{mission.service?.name ?? 'Prestation'}</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <Clock className="w-4 h-4" />
@@ -270,14 +138,15 @@ const MissionTracker = ({ bookingId }: MissionTrackerProps) => {
               <Clock className="w-4 h-4" />
               <span>{mission.start_time} - {mission.end_time}</span>
             </div>
-            <div className="flex items-center gap-1 col-span-full">
-              <MapPin className="w-4 h-4" />
-              <span>{mission.address}</span>
-            </div>
+            {mission.address && (
+              <div className="flex items-center gap-1 col-span-full">
+                <MapPin className="w-4 h-4" />
+                <span>{mission.address}</span>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Barre de progression */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Progression</span>
@@ -286,60 +155,62 @@ const MissionTracker = ({ bookingId }: MissionTrackerProps) => {
           <Progress value={progressValue} className="h-2" />
         </div>
 
-        {/* Étapes du processus */}
         <div className="space-y-4">
           <h4 className="font-medium">Étapes de la prestation</h4>
-          
           <div className="space-y-3">
-            {steps.map((step, index) => (
-              <div 
-                key={step.key}
-                className={`flex items-start gap-3 p-3 rounded-lg transition-colors ${
-                  step.completed 
-                    ? 'bg-green-50 border border-green-200' 
-                    : index === steps.findIndex(s => !s.completed)
-                    ? 'bg-blue-50 border border-blue-200'
-                    : 'bg-muted/30'
-                }`}
-              >
-                <div className={`p-1 rounded-full ${
-                  step.completed 
-                    ? 'bg-green-500 text-white' 
-                    : index === steps.findIndex(s => !s.completed)
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-muted text-muted-foreground'
-                }`}>
-                  {step.icon}
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className={`font-medium ${
-                      step.completed ? 'text-green-700' : 'text-foreground'
-                    }`}>
-                      {step.label}
-                    </p>
-                    
-                    {step.time && (
-                      <span className="text-xs text-muted-foreground">
-                        {step.time}
-                      </span>
+            {steps.map((step, index) => {
+              const isCurrent = index === nextIndex;
+              return (
+                <div
+                  key={step.key}
+                  className={cn(
+                    'flex items-start gap-3 p-3 rounded-lg transition-colors border',
+                    step.completed
+                      ? 'bg-emerald-500/5 border-emerald-500/30'
+                      : isCurrent
+                      ? 'bg-primary/5 border-primary/30'
+                      : 'bg-muted/30 border-transparent'
+                  )}
+                >
+                  <div
+                    className={cn(
+                      'p-1 rounded-full',
+                      step.completed
+                        ? 'bg-emerald-500 text-white'
+                        : isCurrent
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground'
+                    )}
+                  >
+                    {step.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <p
+                        className={cn(
+                          'font-medium',
+                          step.completed ? 'text-emerald-700 dark:text-emerald-300' : 'text-foreground'
+                        )}
+                      >
+                        {step.label}
+                      </p>
+                      {step.time && (
+                        <span className="text-xs text-muted-foreground">{step.time}</span>
+                      )}
+                    </div>
+                    {step.location && (
+                      <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+                        <MapPin className="w-3 h-3" />
+                        <span>{step.location}</span>
+                      </div>
                     )}
                   </div>
-                  
-                  {step.location && (
-                    <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
-                      <MapPin className="w-3 h-3" />
-                      <span>{step.location}</span>
-                    </div>
-                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
-        {/* Notes du prestataire */}
         {mission.provider_notes && (
           <div className="border-t pt-4">
             <h4 className="font-medium mb-2">Notes du prestataire</h4>
