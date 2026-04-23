@@ -166,9 +166,9 @@ const MissionTracker = ({ bookingId }: MissionTrackerProps) => {
                   className={cn(
                     'flex items-start gap-3 p-3 rounded-lg transition-colors border',
                     step.completed
-                      ? 'bg-emerald-500/5 border-emerald-500/30'
-                      : isCurrent
                       ? 'bg-primary/5 border-primary/30'
+                      : isCurrent
+                      ? 'bg-primary/10 border-primary/50'
                       : 'bg-muted/30 border-transparent'
                   )}
                 >
@@ -176,9 +176,9 @@ const MissionTracker = ({ bookingId }: MissionTrackerProps) => {
                     className={cn(
                       'p-1 rounded-full',
                       step.completed
-                        ? 'bg-emerald-500 text-white'
-                        : isCurrent
                         ? 'bg-primary text-primary-foreground'
+                        : isCurrent
+                        ? 'bg-primary/80 text-primary-foreground'
                         : 'bg-muted text-muted-foreground'
                     )}
                   >
@@ -189,7 +189,7 @@ const MissionTracker = ({ bookingId }: MissionTrackerProps) => {
                       <p
                         className={cn(
                           'font-medium',
-                          step.completed ? 'text-emerald-700 dark:text-emerald-300' : 'text-foreground'
+                          step.completed ? 'text-primary' : 'text-foreground'
                         )}
                       >
                         {step.label}
