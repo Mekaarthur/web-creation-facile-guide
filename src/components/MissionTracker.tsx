@@ -34,11 +34,11 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_COLOR: Record<string, string> = {
-  pending: 'bg-amber-500',
-  assigned: 'bg-amber-500',
-  confirmed: 'bg-blue-500',
+  pending: 'bg-muted-foreground',
+  assigned: 'bg-muted-foreground',
+  confirmed: 'bg-secondary',
   in_progress: 'bg-primary',
-  completed: 'bg-emerald-500',
+  completed: 'bg-primary',
   cancelled: 'bg-destructive',
 };
 
