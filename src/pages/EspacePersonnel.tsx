@@ -40,6 +40,7 @@ import { TaxCreditSavings } from '@/components/client/TaxCreditSavings';
 import { PendingReviews } from '@/components/client/PendingReviews';
 import { AvanceImmediateActivation } from '@/components/client/AvanceImmediateActivation';
 import { ClientPrestationsHistory } from '@/components/client/ClientPrestationsHistory';
+import { AutoRatingPrompt } from '@/components/mobile/AutoRatingPrompt';
 import { useTranslation } from 'react-i18next';
 
 const EspacePersonnel = () => {
@@ -308,6 +309,7 @@ const EspacePersonnel = () => {
       <Footer />
       <BikawoCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
       {user && <ChatWidget />}
+      {user && <AutoRatingPrompt />}
     </div>
   );
 };

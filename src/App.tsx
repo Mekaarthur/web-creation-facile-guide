@@ -10,6 +10,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "./hooks/useAuth";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { OfflineBanner } from "@/components/pwa/OfflineBanner";
+import { MobileBottomNav } from "@/components/mobile/MobileBottomNav";
 
 import { HomeTutorial, TutorialHelpButton } from "@/components/tutorial/HomeTutorial";
 import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
@@ -290,6 +291,7 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
+            <MobileBottomNav />
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>
