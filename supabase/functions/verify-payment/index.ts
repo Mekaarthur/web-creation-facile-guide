@@ -74,6 +74,16 @@ serve(async (req) => {
     const clientAmount = parseFloat(metadata.clientAmount || '0');
     const stateAmount = parseFloat(metadata.stateAmount || '0');
 
+    // Split Bikawô — stocké par create-payment
+    const splitServiceType  = metadata.service_type  || null;
+    const splitHours        = parseFloat(metadata.hours || '1');
+    const splitStripeComm   = parseFloat(metadata.stripe_commission || '0');
+    const splitProviderAmt  = parseFloat(metadata.provider_amount   || '0');
+    const splitBikawoNet    = parseFloat(metadata.bikawo_net        || '0');
+    logStep('Split depuis métadonnées Stripe', {
+      splitServiceType, splitHours, splitStripeComm, splitProviderAmt, splitBikawoNet,
+    });
+
     if (!clientInfo || services.length === 0) {
       throw new Error("Données de réservation incomplètes dans les métadonnées");
     }
@@ -268,28 +278,56 @@ serve(async (req) => {
     }
 
     // Mettre à jour les transactions financières
-    logStep('Attente de la création des transactions financières...');
+    // Le trigger DB a déjà créé la transaction avec le bon split (provider, stripe_commission, bikawo_net).
+    // On attend qu'il s'exécute puis on marque le paiement client comme reçu.
+    logStep('Attente création transactions financières par trigger...');
     await new Promise(resolve => setTimeout(resolve, 2000));
-    
+
+    const now = new Date().toISOString();
+
     for (const bookingId of bookingIds) {
-      const { data: existingTransaction, error: checkError } = await supabaseClient
+      const { data: existingTransaction, error: checkError } = await supabaseAdmin
         .from('financial_transactions')
-        .select('id, payment_status')
+        .select('id, payment_status, provider_payment, company_commission, stripe_commission')
         .eq('booking_id', bookingId)
         .single();
 
-      if (checkError) {
-        logStep('Transaction non trouvée pour booking', { bookingId, error: checkError.message });
+      if (checkError || !existingTransaction) {
+        logStep('Transaction non trouvée — création manuelle', { bookingId });
+
+        // Fallback : créer la transaction si le trigger n'a pas fonctionné
+        await supabaseAdmin
+          .from('financial_transactions')
+          .upsert({
+            booking_id:        bookingId,
+            client_id:         userId,
+            provider_id:       null,
+            service_category:  splitServiceType || 'bika_maison',
+            client_price:      totalAmount,
+            provider_payment:  splitProviderAmt / 100,     // centimes → euros
+            company_commission: splitBikawoNet  / 100,
+            stripe_commission: splitStripeComm  / 100,
+            hours:             splitHours,
+            payment_status:    'paid',
+            client_paid_at:    now,
+          }, { onConflict: 'booking_id' });
+
         continue;
       }
 
-      logStep('Transaction trouvée', { id: existingTransaction.id, status: existingTransaction.payment_status });
+      logStep('Transaction trouvée — marquage paid', {
+        id:               existingTransaction.id,
+        provider_payment: existingTransaction.provider_payment,
+        stripe_commission: existingTransaction.stripe_commission,
+        company_commission: existingTransaction.company_commission,
+      });
 
-      await supabaseClient
+      // Utiliser supabaseAdmin pour contourner les politiques RLS restrictives
+      await supabaseAdmin
         .from('financial_transactions')
         .update({
           payment_status: 'paid',
-          client_paid_at: new Date().toISOString(),
+          client_paid_at: now,
         })
         .eq('booking_id', bookingId);
     }
