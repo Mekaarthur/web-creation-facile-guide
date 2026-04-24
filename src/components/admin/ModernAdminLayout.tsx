@@ -1,31 +1,28 @@
-import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAdminCounts } from "@/hooks/useAdminCounts";
-import { 
-  SidebarProvider, 
-  Sidebar, 
-  SidebarContent, 
-  SidebarGroup, 
-  SidebarGroupContent, 
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarMenu, 
-  SidebarMenuButton, 
+  SidebarMenu,
+  SidebarMenuButton,
   SidebarMenuItem,
   SidebarTrigger,
-  useSidebar 
+  useSidebar
 } from "@/components/ui/sidebar";
-import { 
-  BarChart3, 
-  Users, 
-  UserCheck, 
-  Target, 
-  Euro, 
-  TrendingUp, 
+import {
+  BarChart3,
+  Users,
+  UserCheck,
+  Target,
+  Euro,
+  Activity,
   Settings,
   Palette,
-  Wrench,
   Bell,
   Shield,
   MessageSquare,
@@ -37,9 +34,18 @@ import {
   PieChart,
   Gift,
   MessageSquareWarning,
-  Landmark
+  Landmark,
+  Zap,
+  Star,
+  CheckSquare,
+  Flag,
+  FlaskConical,
+  Lock,
+  Mail,
+  TrendingUp,
+  UserCog,
+  Clock
 } from "lucide-react";
-import { Mail } from "lucide-react";
 import { NotificationBell } from './NotificationBell';
 import { SecureLogout } from '@/components/SecureLogout';
 import { cn } from "@/lib/utils";
@@ -48,243 +54,99 @@ const navigationGroups = [
   {
     label: "Vue d'ensemble",
     items: [
-      { 
-        title: "Dashboard", 
-        href: "/modern-admin/dashboard", 
-        icon: BarChart3,
-        badge: null
-      },
-      { 
-        title: "Analytics", 
-        href: "/modern-admin/analytics", 
-        icon: PieChart,
-        badge: null
-      },
-      { 
-        title: "Temps Réel", 
-        href: "/modern-admin/realtime", 
-        icon: TrendingUp,
-        badge: null
-      }
+      { title: "Dashboard",    href: "/modern-admin",            icon: BarChart3 },
+      { title: "Analytics",    href: "/modern-admin/analytics",  icon: PieChart },
+      { title: "Temps Réel",   href: "/modern-admin/realtime",   icon: Activity },
     ]
   },
   {
     label: "Sécurité & Finance",
-    description: "Gestion des accès et finances",
     items: [
-      { 
-        title: "Sécurité", 
-        href: "/modern-admin/security", 
-        icon: Shield,
-        badge: null
-      },
-      { 
-        title: "Finance", 
-        href: "/modern-admin/finance", 
-        icon: Euro,
-        badge: null
-      },
-      { 
-        title: "Urgences", 
-        href: "/modern-admin/urgences", 
-        icon: AlertTriangle,
-        badge: null
-      },
-      { 
-        title: "Réclamations", 
-        href: "/modern-admin/reclamations", 
-        icon: MessageSquareWarning,
-        badge: null
-      }
+      { title: "Sécurité",       href: "/modern-admin/security",       icon: Lock },
+      { title: "Finance",        href: "/modern-admin/finance",         icon: Euro },
+      { title: "Urgences",       href: "/modern-admin/urgences",        icon: AlertTriangle },
+      { title: "Réclamations",   href: "/modern-admin/reclamations",    icon: MessageSquareWarning },
     ]
   },
   {
     label: "Gestion Business",
-    description: "Suivi clients, prestataires et relations commerciales",
     items: [
-      { 
-        title: "Clients", 
-        href: "/modern-admin/clients", 
-        icon: Users,
-        badge: null
-      },
-      { 
-        title: "Prestataires", 
-        href: "/modern-admin/providers", 
-        icon: UserCheck,
-        badge: null
-      },
-      { 
-        title: "Candidatures", 
-        href: "/modern-admin/applications", 
-        icon: FileText,
-        badge: null
-      },
-      { 
-        title: "Binômes", 
-        href: "/modern-admin/binomes", 
-        icon: Gift,
-        badge: null
-      }
+      { title: "Utilisateurs",  href: "/modern-admin/utilisateurs",  icon: UserCog,   countKey: null },
+      { title: "Clients",       href: "/modern-admin/clients",       icon: Users,     countKey: null },
+      { title: "Prestataires",  href: "/modern-admin/providers",     icon: UserCheck, countKey: "prestatairesPending" as const },
+      { title: "Candidatures",  href: "/modern-admin/applications",  icon: FileText,  countKey: "candidatures" as const },
+      { title: "Binômes",       href: "/modern-admin/binomes",       icon: Star,      countKey: null },
+      { title: "Cooptation",    href: "/modern-admin/cooptation",    icon: Gift,      countKey: null },
     ]
   },
   {
     label: "Automatisation",
-    description: "Outils intelligents et automatisation",
     items: [
-      { 
-        title: "Onboarding", 
-        href: "/modern-admin/onboarding", 
-        icon: Target,
-        badge: null
-      },
-      { 
-        title: "Matching IA", 
-        href: "/modern-admin/matching", 
-        icon: TrendingUp,
-        badge: null
-      }
+      { title: "Onboarding",   href: "/modern-admin/onboarding", icon: CheckSquare },
+      { title: "Matching IA",  href: "/modern-admin/matching",   icon: Zap },
     ]
   },
   {
     label: "Opérations",
-    description: "Missions, réservations et facturation",
     items: [
-      { 
-        title: "Missions", 
-        href: "/modern-admin/missions", 
-        icon: Target,
-        badge: null
-      },
-      { 
-        title: "Réservations", 
-        href: "/modern-admin/reservations", 
-        icon: Calendar,
-        badge: null
-      },
-      { 
-        title: "Paiements", 
-        href: "/modern-admin/payments", 
-        icon: CreditCard,
-        badge: null
-      },
-      { 
-        title: "Factures", 
-        href: "/modern-admin/invoices", 
-        icon: FileText,
-        badge: null
-      },
-      { 
-        title: "Avance Immédiate", 
-        href: "/modern-admin/urssaf-declarations", 
-        icon: Landmark,
-        badge: null
-      }
+      { title: "Missions",          href: "/modern-admin/missions",            icon: Target,    countKey: "missionsPending" as const },
+      { title: "Réservations",      href: "/modern-admin/reservations",        icon: Calendar,  countKey: null },
+      { title: "Paiements",         href: "/modern-admin/payments",            icon: CreditCard,countKey: null },
+      { title: "Factures",          href: "/modern-admin/invoices",            icon: FileText,  countKey: null },
+      { title: "Avance Immédiate",  href: "/modern-admin/urssaf-declarations", icon: Landmark,  countKey: null },
+    ]
+  },
+  {
+    label: "Communication",
+    items: [
+      { title: "Messages",       href: "/modern-admin/messages",       icon: MessageSquare, countKey: "messages" as const },
+      { title: "Notifications",  href: "/modern-admin/notifications",  icon: Bell,          countKey: null },
+      { title: "Avis & Notes",   href: "/modern-admin/reviews",        icon: Star,          countKey: "moderation" as const },
     ]
   },
   {
     label: "Modération",
-    description: "Alertes, signalements et qualité",
     items: [
-      { 
-        title: "Alertes", 
-        href: "/modern-admin/alerts", 
-        icon: AlertTriangle,
-        badge: null
-      },
-      { 
-        title: "Signalements", 
-        href: "/modern-admin/reviews", 
-        icon: Shield,
-        badge: null
-      },
-      { 
-        title: "Qualité", 
-        href: "/modern-admin/quality", 
-        icon: Shield,
-        badge: null
-      }
+      { title: "Alertes",       href: "/modern-admin/alerts",   icon: AlertTriangle, countKey: "alerts" as const },
+      { title: "Signalements",  href: "/modern-admin/reports",  icon: Flag,          countKey: null },
+      { title: "Qualité",       href: "/modern-admin/quality",  icon: CheckSquare,   countKey: null },
     ]
   },
   {
     label: "Configuration",
-    description: "Paramètres et rapports",
     items: [
-      { 
-        title: "Zones", 
-        href: "/modern-admin/zones", 
-        icon: MapPin,
-        badge: null
-      },
-      { 
-        title: "Marque", 
-        href: "/modern-admin/marque", 
-        icon: Palette,
-        badge: null
-      },
-      { 
-        title: "Cooptation", 
-        href: "/modern-admin/cooptation", 
-        icon: Gift,
-        badge: null
-      },
-      { 
-        title: "Notifications", 
-        href: "/modern-admin/notifications", 
-        icon: Bell,
-        badge: null
-      },
-      { 
-        title: "Paramètres", 
-        href: "/modern-admin/settings", 
-        icon: Settings,
-        badge: null
-      },
-      { 
-        title: "Rapports", 
-        href: "/modern-admin/reports", 
-        icon: FileText,
-        badge: null
-      }
+      { title: "Zones",        href: "/modern-admin/zones",          icon: MapPin },
+      { title: "Marque",       href: "/modern-admin/marque",         icon: Palette },
+      { title: "Paramètres",   href: "/modern-admin/settings",       icon: Settings },
+      { title: "Rapports",     href: "/modern-admin/reports-data",   icon: TrendingUp },
     ]
   },
   {
     label: "Tests & Systèmes",
-    description: "Monitoring et tests techniques",
     items: [
-      { 
-        title: "Centre d'anomalies", 
-        href: "/modern-admin/anomalies", 
-        icon: AlertTriangle,
-        badge: null
-      },
-      { 
-        title: "Monitoring", 
-        href: "/modern-admin/monitoring", 
-        icon: TrendingUp,
-        badge: null
-      },
-      { 
-        title: "Tests Critiques", 
-        href: "/modern-admin/tests-critiques", 
-        icon: Shield,
-        badge: null
-      },
-      { 
-        title: "Tests Emails", 
-        href: "/modern-admin/tests-emails", 
-        icon: Mail,
-        badge: null
-      }
+      { title: "Anomalies",        href: "/modern-admin/anomalies",        icon: AlertTriangle },
+      { title: "Monitoring",       href: "/modern-admin/monitoring",        icon: Activity },
+      { title: "Tests Critiques",  href: "/modern-admin/tests-critiques",  icon: FlaskConical },
+      { title: "Tests Emails",     href: "/modern-admin/tests-emails",     icon: Mail },
+      { title: "Accès Admin",      href: "/modern-admin/acces",            icon: Clock },
     ]
   }
 ];
+
+type CountKey = "prestatairesPending" | "candidatures" | "missionsPending" | "messages" | "moderation" | "alerts";
 
 function AdminSidebar() {
   const location = useLocation();
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const { data: counts } = useAdminCounts();
+
+  const isActive = (href: string) => {
+    if (href === '/modern-admin') {
+      return location.pathname === '/modern-admin' || location.pathname === '/modern-admin/';
+    }
+    return location.pathname === href;
+  };
 
   return (
     <Sidebar className="border-r border-border">
@@ -306,49 +168,37 @@ function AdminSidebar() {
         {navigationGroups.map((group, groupIndex) => (
           <SidebarGroup key={groupIndex}>
             {!collapsed && (
-              <>
-                <SidebarGroupLabel className="text-xs font-semibold text-foreground uppercase tracking-wide mb-1 flex items-center gap-2">
-                  {group.label}
-                </SidebarGroupLabel>
-                {group.description && (
-                  <p className="text-[10px] text-muted-foreground px-2 mb-2">
-                    {group.description}
-                  </p>
-                )}
-              </>
+              <SidebarGroupLabel className="text-xs font-semibold text-foreground uppercase tracking-wide mb-1">
+                {group.label}
+              </SidebarGroupLabel>
             )}
             <SidebarGroupContent>
-              <SidebarMenu className="space-y-1">
-                {group.items.map((item, itemIndex) => {
-                  const isActive = location.pathname === item.href;
+              <SidebarMenu className="space-y-0.5">
+                {group.items.map((item) => {
+                  const active = isActive(item.href);
+                  const countKey = (item as any).countKey as CountKey | null;
+                  const badgeCount = countKey && counts ? counts[countKey] : 0;
                   return (
-                    <SidebarMenuItem key={itemIndex}>
+                    <SidebarMenuItem key={item.href}>
                       <SidebarMenuButton asChild>
-                        <Link 
+                        <Link
                           to={item.href}
                           className={cn(
-                            "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
+                            "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm",
                             "hover:bg-accent hover:text-accent-foreground",
-                            isActive && "bg-primary text-primary-foreground font-medium"
+                            active && "bg-primary text-primary-foreground font-medium"
                           )}
                         >
                           <item.icon className="w-4 h-4 flex-shrink-0" />
                           {!collapsed && (
                             <>
                               <span className="flex-1">{item.title}</span>
-                              {item.title === "Missions" && counts?.missionsPending ? (
-                                <Badge 
+                              {badgeCount > 0 && (
+                                <Badge
                                   variant="destructive"
-                                  className="text-xs px-1.5 py-0.5"
+                                  className="text-[10px] px-1.5 py-0 min-w-[18px] text-center"
                                 >
-                                  {counts.missionsPending}
-                                </Badge>
-                              ) : item.badge && (
-                                <Badge 
-                                  variant={item.badge.variant as any}
-                                  className="text-xs px-1.5 py-0.5"
-                                >
-                                  {item.badge.text}
+                                  {badgeCount}
                                 </Badge>
                               )}
                             </>
@@ -372,8 +222,8 @@ export default function ModernAdminLayout() {
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <AdminSidebar />
-        
-        <div className="flex-1 flex flex-col">
+
+        <div className="flex-1 flex flex-col min-w-0">
           {/* Header */}
           <header className="h-auto min-h-[56px] sm:h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
             <div className="flex items-center justify-between px-3 sm:px-6 py-2 sm:py-0 h-full gap-2">
@@ -384,19 +234,19 @@ export default function ModernAdminLayout() {
                   <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Gérez votre plateforme en temps réel</p>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
                 <NotificationBell />
-                
+
                 <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent">
                   <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
                     <Users className="w-3 h-3 text-primary-foreground" />
                   </div>
                   <span className="text-sm font-medium">Admin</span>
                 </div>
-                
-                <SecureLogout 
-                  variant="outline" 
+
+                <SecureLogout
+                  variant="outline"
                   size="sm"
                   showIcon={true}
                 />
