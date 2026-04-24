@@ -226,7 +226,21 @@ export const useUpdateMissionStatus = () => {
       if (params.notes) extra.provider_notes = params.notes;
       if (params.status === "in_progress") extra.started_at = new Date().toISOString();
       if (params.status === "completed") extra.completed_at = new Date().toISOString();
-      return bookingService.updateStatus(params.missionId, params.status, extra);
+      const result = await bookingService.updateStatus(params.missionId, params.status, extra);
+
+      // Notification email best-effort (in_progress / completed)
+      if (params.status === "in_progress" || params.status === "completed") {
+        try {
+          const { supabase } = await import("@/integrations/supabase/client");
+          await supabase.functions.invoke("send-mission-status-update", {
+            body: { bookingId: params.missionId, newStatus: params.status },
+          });
+        } catch (e) {
+          console.warn("send-mission-status-update failed (non-bloquant)", e);
+        }
+      }
+
+      return result;
     },
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: providerDashboardKeys.missions(variables.providerId) });
