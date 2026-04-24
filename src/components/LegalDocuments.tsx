@@ -154,7 +154,7 @@ RCS Paris B 123 456 789
 TVA Intracommunautaire : FR12345678901
 
 SIÈGE SOCIAL
-123 Rue de la Tech
+231 rue Saint-Honoré
 75001 Paris
 France
 

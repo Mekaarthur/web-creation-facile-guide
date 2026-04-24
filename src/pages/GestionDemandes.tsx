@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAdminRole } from "@/hooks/useAdminRole";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,6 +32,8 @@ interface RequestStats {
 }
 
 export const GestionDemandes = () => {
+  const { isAdmin, loading: adminLoading } = useAdminRole();
+  const navigate = useNavigate();
   const [stats, setStats] = useState<RequestStats>({
     total: 0,
     new: 0,
@@ -44,6 +48,12 @@ export const GestionDemandes = () => {
   const [topLocations, setTopLocations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (!adminLoading && !isAdmin) {
+      navigate('/');
+    }
+  }, [adminLoading, isAdmin, navigate]);
 
   const fetchStats = async () => {
     try {
@@ -184,6 +194,14 @@ export const GestionDemandes = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Chargement des données...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (adminLoading || !isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
       </div>
     );
   }

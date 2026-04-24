@@ -150,11 +150,13 @@ const Contact = () => {
             
             {contactMethods.map((method, index) => {
               const IconComponent = method.icon;
+              const isChat = method.icon === MessageSquare;
               return (
-                <Card 
+                <Card
                   key={method.title}
                   className="group p-8 hover:shadow-2xl transition-all duration-500 hover:scale-105 border-0 bg-card/80 backdrop-blur-sm cursor-pointer relative overflow-hidden"
                   style={{ animationDelay: `${index * 0.1}s` }}
+                  onClick={isChat ? () => window.dispatchEvent(new CustomEvent('open-chatbot')) : undefined}
                 >
                   {/* Background gradient effect */}
                   <div className={`absolute inset-0 bg-gradient-to-br ${method.bgColor} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />

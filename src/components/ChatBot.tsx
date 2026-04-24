@@ -52,6 +52,12 @@ const ChatBot = () => {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    const handler = () => setIsOpen(true);
+    window.addEventListener('open-chatbot', handler);
+    return () => window.removeEventListener('open-chatbot', handler);
+  }, []);
+
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
 
