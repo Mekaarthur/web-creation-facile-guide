@@ -40,7 +40,7 @@ const Footer = () => {
 
   const socialLinks = [
     { icon: Facebook, href: "https://facebook.com/bikawo", name: "Facebook" },
-    { icon: Instagram, href: "https://instagram.com/bikawo", name: "Instagram" },
+    { icon: Instagram, href: "https://www.instagram.com/bikawo_officiel", name: "Instagram" },
     { icon: Linkedin, href: "https://linkedin.com/company/bikawo", name: "LinkedIn" },
     { icon: Twitter, href: "https://twitter.com/bikawo", name: "Twitter" }
   ];
