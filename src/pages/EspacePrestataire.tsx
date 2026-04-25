@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import EnhancedProviderDashboard from '@/components/EnhancedProviderDashboard';
 
 import { useTranslation } from 'react-i18next';
-import { useToast } from '@/hooks/use-toast';
 
 const EspacePrestataire = () => {
   const { t } = useTranslation();

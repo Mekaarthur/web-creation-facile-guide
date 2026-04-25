@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -20,6 +20,7 @@ import {
   LayoutDashboard, Briefcase, User, CheckCircle, Phone, Settings, RefreshCw, MessageSquare, TrendingUp,
 } from 'lucide-react';
 import { EmergencyReportButton } from '@/components/provider/EmergencyReportButton';
+import { SecureLogout } from '@/components/SecureLogout';
 import { DashboardLoadingSkeleton } from '@/components/ui/loading-skeleton';
 import type { BookingStatus } from '@/services/bookingService';
 
@@ -69,7 +70,7 @@ const EnhancedProviderDashboard = () => {
   const [activeTab, setActiveTab] = useState('accueil');
 
   // Indicateurs globaux
-  const initialLoading = providerLoading || (providerId && missionsLoading);
+  const initialLoading = providerLoading || (!!providerId && missionsLoading);
   const refreshing =
     providerFetching || missionsFetching || oppsFetching || reviewsFetching || earningsFetching;
 
@@ -211,6 +212,7 @@ const EnhancedProviderDashboard = () => {
                 <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2" />
                 <span className="hidden sm:inline text-xs sm:text-sm">{t('providerDashboard.profile')}</span>
               </Button>
+              <SecureLogout variant="outline" size="sm" showIcon={true} />
             </div>
           </div>
         </div>
