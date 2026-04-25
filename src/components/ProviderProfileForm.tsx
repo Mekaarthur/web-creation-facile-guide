@@ -132,18 +132,18 @@ const ProviderProfileForm = () => {
 
       const fileExt = file.name.split('.').pop();
       const fileName = `${user?.id}.${fileExt}`;
-      const filePath = `provider-avatars/${fileName}`;
+      const filePath = `avatars/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('provider-applications')
+        .from('profiles')
         .upload(filePath, file, { upsert: true });
 
       if (uploadError) {
         throw uploadError;
       }
 
-      // Store relative path for private bucket
-      handleInputChange('avatar_url', filePath);
+      const { data } = supabase.storage.from('profiles').getPublicUrl(filePath);
+      handleInputChange('avatar_url', data.publicUrl);
       
       toast({
         title: "Photo mise à jour",
