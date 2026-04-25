@@ -131,11 +131,11 @@ const ServicePageLayout = ({
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
                 {secondaryCTA && (
-                  <Button 
-                    size="lg" 
-                    variant="outline"
+                  <Button
+                    size="lg"
+                    variant="ghost"
                     onClick={() => navigate('/nous-recrutons')}
-                    className="border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10 px-8 py-4 text-lg font-bold rounded-xl h-auto backdrop-blur-sm"
+                    className="bg-transparent border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground/20 px-8 py-4 text-lg font-bold rounded-xl h-auto"
                   >
                     {secondaryCTA}
                   </Button>
