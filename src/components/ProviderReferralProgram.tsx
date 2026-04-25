@@ -63,8 +63,9 @@ const ProviderReferralProgram = () => {
     try {
       const { data: newCode, error: rpcError } = await supabase.rpc('generate_referral_code');
       const code = newCode || Math.random().toString(36).substring(2, 10).toUpperCase();
+      // referrer_id must be auth.uid() — the RLS policy checks auth.uid() = referrer_id
       const { error: insertError } = await supabase.from('referrals' as any).insert({
-        referrer_id: providerId,
+        referrer_id: user?.id,
         referrer_type: 'provider',
         referral_code: code,
         status: 'pending'
@@ -102,11 +103,11 @@ const ProviderReferralProgram = () => {
       if (providerData) {
         setProvider(providerData);
 
-        // Get or create referral code
+        // Get or create referral code — use auth UID (RLS: auth.uid() = referrer_id)
         const { data: existingReferral } = await (supabase
           .from('referrals' as any) as any)
           .select('referral_code')
-          .eq('referrer_id', providerData.id)
+          .eq('referrer_id', user?.id)
           .eq('referrer_type', 'provider')
           .maybeSingle();
 
@@ -117,11 +118,11 @@ const ProviderReferralProgram = () => {
           await generateReferralCode(providerData.id);
         }
 
-        // Get referrals list
+        // Get referrals list — use auth UID (RLS: auth.uid() = referrer_id)
         const { data: referralsData } = await supabase
           .from('referrals')
           .select('*')
-          .eq('referrer_id', providerData.id)
+          .eq('referrer_id', user?.id)
           .eq('referrer_type', 'provider')
           .order('created_at', { ascending: false });
 
@@ -135,7 +136,7 @@ const ProviderReferralProgram = () => {
           const rewardsResponse = await supabase
             .from('provider_referral_rewards')
             .select('*')
-            .eq('referrer_id', providerData.id)
+            .eq('referrer_provider_id', providerData.id)
             .order('created_at', { ascending: false });
 
           if (rewardsResponse.data) {
