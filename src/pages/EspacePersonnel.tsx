@@ -1,40 +1,30 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
 import {
-  User, 
-  Calendar, 
-  FileText, 
-  Gift, 
-  Users, 
-  CreditCard, 
+  User,
+  Calendar,
+  FileText,
+  Users,
+  CreditCard,
   Lock,
-  Download,
   LayoutDashboard,
   Receipt,
-  UserCheck,
-  ShoppingCart,
   PiggyBank
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Auth from './Auth';
 import EnhancedClientDashboard from '@/components/EnhancedClientDashboard';
-import SmartBookingsList from '@/components/SmartBookingsList';
 import ModernInvoiceManagement from '@/components/ModernInvoiceManagement';
 import PaymentMethodsManager from '@/components/PaymentMethodsManager';
 import { RewardsSection } from '@/components/RewardsSection';
 import ReferralProgram from '@/components/ReferralProgram';
 import ProfileUpdateForm from '@/components/ProfileUpdateForm';
 import AttestationsManager from '@/components/AttestationsManager';
-import BikawoCart from '@/components/BikawoCart';
 import { ChatWidget } from '@/components/chat';
 import { TaxCreditSavings } from '@/components/client/TaxCreditSavings';
 import { PendingReviews } from '@/components/client/PendingReviews';
@@ -45,11 +35,9 @@ import { useTranslation } from 'react-i18next';
 
 const EspacePersonnel = () => {
   const { user, loading, primaryRole } = useAuth();
-  const { toast } = useToast();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [selectedTab, setSelectedTab] = useState(user ? "dashboard" : "connexion");
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [selectedTab, setSelectedTab] = useState("connexion");
 
   // Rediriger les non-clients vers leur espace approprié
   useEffect(() => {
@@ -63,7 +51,7 @@ const EspacePersonnel = () => {
   }, [user, loading, primaryRole, navigate]);
 
   // Liste unifiée des onglets protégés (nécessitant une authentification)
-  const protectedTabs = ["dashboard", "rendez-vous", "factures", "economies", "parrainage", "profil", "paiement", "attestations", "panier"];
+  const protectedTabs = ["dashboard", "rendez-vous", "factures", "economies", "parrainage", "profil", "paiement", "attestations"];
 
   // Rediriger vers connexion si pas authentifié et tentative d'accès à un onglet protégé
   useEffect(() => {
@@ -130,7 +118,7 @@ const EspacePersonnel = () => {
             window.history.replaceState({}, '', newUrl);
           }} className="w-full">
             <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 pb-2 mb-4 sm:mb-8">
-            <TabsList className={`inline-flex sm:grid gap-1.5 sm:gap-2 bg-white/80 backdrop-blur-sm p-1.5 sm:p-2 shadow-lg rounded-xl border-0 min-w-max sm:min-w-0 sm:w-full ${user ? 'sm:grid-cols-5 lg:grid-cols-9' : 'sm:grid-cols-1'}`}>
+            <TabsList className={`inline-flex sm:grid gap-1.5 sm:gap-2 bg-white/80 backdrop-blur-sm p-1.5 sm:p-2 shadow-lg rounded-xl border-0 min-w-max sm:min-w-0 sm:w-full ${user ? 'sm:grid-cols-4 lg:grid-cols-8' : 'sm:grid-cols-1'}`}>
               {!user && (
                 <TabsTrigger 
                   value="connexion" 
@@ -198,13 +186,6 @@ const EspacePersonnel = () => {
                     <Receipt className="w-4 h-4 flex-shrink-0" />
                     <span className="truncate font-medium">{t('personalSpace.attestations')}</span>
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="panier" 
-                    className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm py-3 px-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
-                  >
-                    <ShoppingCart className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate font-medium">{t('personalSpace.cart')}</span>
-                  </TabsTrigger>
                 </>
               )}
             </TabsList>
@@ -253,23 +234,6 @@ const EspacePersonnel = () => {
               <ClientPrestationsHistory />
             </TabsContent>
 
-            {/* Panier */}
-            <TabsContent value="panier" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <ShoppingCart className="w-5 h-5 text-primary" />
-                    {t('personalSpace.cart')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Button onClick={() => navigate('/panier')} className="w-full">
-                    Ouvrir mon panier
-                  </Button>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
             {/* Historique et Mes Factures */}
             <TabsContent value="factures" className="space-y-6">
               <ModernInvoiceManagement />
@@ -307,7 +271,6 @@ const EspacePersonnel = () => {
       </div>
 
       <Footer />
-      <BikawoCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
       {user && <ChatWidget />}
       {user && <AutoRatingPrompt />}
     </div>
