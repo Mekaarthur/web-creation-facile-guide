@@ -28,27 +28,27 @@ const About = () => {
 
   const stats = [
     {
-      icon: Users,
-      number: "5,000+",
-      label: t('about.statsLabel1'),
-      color: "from-emerald-500 to-teal-500"
-    },
-    {
       icon: Clock,
       number: "7j/7",
-      label: t('about.statsLabel2'),
+      label: "Disponibilité",
       color: "from-blue-500 to-cyan-500"
     },
     {
       icon: Trophy,
-      number: "98%",
-      label: t('about.statsLabel3'),
+      number: "50%",
+      label: "Avance immédiate URSSAF",
       color: "from-amber-500 to-orange-500"
     },
     {
+      icon: Users,
+      number: "SAP",
+      label: "Organisme déclaré officiel",
+      color: "from-emerald-500 to-teal-500"
+    },
+    {
       icon: Globe,
-      number: "95%",
-      label: t('about.statsLabel4'),
+      number: "Paris",
+      label: "Zone de service principale",
       color: "from-purple-500 to-pink-500"
     }
   ];
@@ -211,7 +211,7 @@ const About = () => {
               <div className="md:grid md:grid-cols-2 md:gap-12 items-center">
                 <div className="md:text-right md:pr-12">
                   <p className="text-lg text-muted-foreground leading-relaxed">
-                    Alors avec mon compagnon, nous avons décidé de créer <strong className="text-primary text-xl">Bikawô</strong>. Un service pensé pour accompagner toutes les vies du quotidien — sans jugement, avec douceur, souplesse et humanité.
+                    Alors avec mon compagnon, nous avons décidé de créer <strong className="text-primary text-xl">Bikawo</strong>. Un service pensé pour accompagner toutes les vies du quotidien — sans jugement, avec douceur, souplesse et humanité.
                   </p>
                 </div>
                 <div className="hidden md:flex items-center justify-start pl-12">
@@ -242,7 +242,7 @@ const About = () => {
           
           <div className="mt-12 space-y-3">
             <p className="text-2xl md:text-3xl font-bold text-primary-foreground">
-              Bikawô, c'est plus qu'un service.
+              Bikawo, c'est plus qu'un service.
             </p>
             <p className="text-xl text-primary-foreground/90">
               C'est une respiration. Un coup de main. Un « je suis là pour toi ».
