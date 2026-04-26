@@ -13,7 +13,7 @@ const ContactPage = () => {
         keywords="contact Bikawo, services domicile Paris, aide à domicile, téléphone Bikawo"
       />
       <Navbar />
-      <div className="pt-20">
+      <div className="pt-16 lg:pt-20">
         <Contact />
       </div>
       <Footer />

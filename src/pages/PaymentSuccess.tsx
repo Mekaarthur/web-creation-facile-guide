@@ -81,7 +81,7 @@ const PaymentSuccess = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="pt-20 pb-16 flex items-center justify-center min-h-[60vh]">
+        <div className="pt-16 lg:pt-20 pb-16 flex items-center justify-center min-h-[60vh]">
           <Card className="max-w-md w-full text-center">
             <CardContent className="pt-8 pb-8">
               <Loader2 className="w-16 h-16 mx-auto mb-4 animate-spin text-primary" />
@@ -101,7 +101,7 @@ const PaymentSuccess = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="pt-20 pb-16 flex items-center justify-center min-h-[60vh]">
+        <div className="pt-16 lg:pt-20 pb-16 flex items-center justify-center min-h-[60vh]">
           <Card className="max-w-md w-full border-destructive">
             <CardContent className="pt-8 pb-8 text-center">
               <AlertCircle className="w-16 h-16 mx-auto mb-4 text-destructive" />
@@ -137,7 +137,7 @@ const PaymentSuccess = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="pt-20 pb-16 px-4">
+      <div className="pt-16 lg:pt-20 pb-16 px-4">
         <div className="max-w-2xl mx-auto space-y-6">
           {/* En-tête de succès */}
           <Card className="border-green-200 bg-green-50/50">

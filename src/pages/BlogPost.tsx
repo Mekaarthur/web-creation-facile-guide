@@ -562,7 +562,7 @@ const BlogPost = () => {
           description="L'article que vous cherchez n'existe pas ou a été supprimé."
         />
         <Navbar />
-        <div className="pt-20 py-16">
+        <div className="pt-16 lg:pt-20 py-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-4xl font-bold text-foreground mb-4">Article non trouvé</h1>
             <p className="text-muted-foreground mb-8">L'article que vous cherchez n'existe pas ou a été supprimé.</p>
@@ -596,7 +596,7 @@ const BlogPost = () => {
         })}
       />
       <Navbar />
-      <div className="pt-20">
+      <div className="pt-16 lg:pt-20">
         {/* Hero Section */}
         <section className="py-16 bg-gradient-subtle">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

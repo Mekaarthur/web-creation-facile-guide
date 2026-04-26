@@ -73,7 +73,7 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
     setIsPaymentMode(true);
   };
 
-  if (!isOpen && cartItems.length === 0) {
+  if (!isOpen) {
     return null;
   }
 

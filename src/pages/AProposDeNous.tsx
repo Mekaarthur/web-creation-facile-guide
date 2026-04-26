@@ -12,7 +12,7 @@ const AProposDeNous = () => {
         keywords="à propos Bikawo, histoire Bikawo, services à la personne Paris, SAP déclaré, charge mentale famille"
       />
       <Navbar />
-      <div className="pt-20">
+      <div className="pt-16 lg:pt-20">
         <About />
       </div>
       <Footer />

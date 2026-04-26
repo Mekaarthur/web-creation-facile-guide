@@ -12,7 +12,7 @@ const AnalyticsSEO = () => {
         keywords="analytics seo, dashboard seo, mesure performance, kpi seo, suivi mots-clés, roi seo"
       />
       <Navbar />
-      <div className="pt-20">
+      <div className="pt-16 lg:pt-20">
         <SEODashboard />
       </div>
       <Footer />

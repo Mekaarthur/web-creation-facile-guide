@@ -107,7 +107,7 @@ const BikaPlus = () => {
       <Navbar />
       <ServiceBreadcrumb serviceName="Bika Plus - Service Premium 7j/7" />
       
-      <main className="pt-20">
+      <main className="pt-16 lg:pt-20">
         {/* Hero Section - Style Wecasa */}
         <section className="relative bg-gradient-hero py-20 overflow-hidden">
           <div className="container mx-auto px-4">

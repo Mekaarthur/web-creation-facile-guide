@@ -17,7 +17,7 @@ const ServicesPage = () => {
         keywords="services BIKAWO, bika kids, bika maison, bika seniors, bika travel, bika pro, bika plus"
       />
       <Navbar />
-      <div className="pt-20 bg-background">
+      <div className="pt-16 lg:pt-20 bg-background">
         {/* Header de la section */}
         <div className="text-center space-y-4 py-16 bg-gradient-to-b from-primary/5 to-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

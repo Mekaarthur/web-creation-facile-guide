@@ -71,7 +71,7 @@ const EspacePersonnel = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="pt-20 pb-16 flex items-center justify-center">
+        <div className="pt-16 lg:pt-20 pb-16 flex items-center justify-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
         </div>
         <Footer />

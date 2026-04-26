@@ -189,7 +189,7 @@ Et vous, prêt(e) à retrouver du temps pour l'essentiel ?
         keywords="réseaux sociaux, linkedin, instagram, contenu, marketing digital, templates posts"
       />
       <Navbar />
-      <div className="pt-20 py-16">
+      <div className="pt-16 lg:pt-20 py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Header */}
