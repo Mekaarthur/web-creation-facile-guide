@@ -877,11 +877,20 @@ export const ReservationDetailsModal = ({ reservation, onClose, onUpdate }: Rese
                   <Mail className="mr-2 h-4 w-4" />
                   Envoyer un email au client
                 </Button>
-                {reservation.provider_profile && (
-                  <Button 
-                    variant="outline" 
+                {reservation.provider_id && (
+                  <Button
+                    variant="outline"
                     className="w-full justify-start"
-                    onClick={() => {/* TODO: Implement provider email */}}
+                    onClick={async () => {
+                      const { data } = await supabase
+                        .from('providers')
+                        .select('contact_email, profiles!providers_user_id_fkey(email)')
+                        .eq('id', reservation.provider_id)
+                        .single();
+                      const email = data?.contact_email || (data?.profiles as any)?.email;
+                      if (email) window.location.href = `mailto:${email}`;
+                      else toast({ title: "Email introuvable", description: "Le prestataire n'a pas d'email renseigné", variant: "destructive" });
+                    }}
                   >
                     <Mail className="mr-2 h-4 w-4" />
                     Envoyer un email au prestataire

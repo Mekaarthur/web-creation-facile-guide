@@ -31,7 +31,7 @@ const FinalCTABiface = () => {
             </div>
             <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full backdrop-blur-sm">
               <Star className="w-4 h-4" />
-              <span className="text-sm font-medium">Satisfait ou remboursé</span>
+              <span className="text-sm font-medium">Note moyenne 4,9/5</span>
             </div>
           </div>
 
@@ -40,7 +40,7 @@ const FinalCTABiface = () => {
           </h2>
           
           <p className="text-xl md:text-2xl mb-4 opacity-90 animate-fade-in">
-            Rejoignez les 2500+ familles qui nous font confiance
+            Des familles parisiennes nous font confiance chaque jour
           </p>
           
           <p className="text-lg mb-8 opacity-80 animate-fade-in">

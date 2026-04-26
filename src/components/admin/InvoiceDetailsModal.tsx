@@ -32,20 +32,55 @@ export const InvoiceDetailsModal = ({ invoice, onClose, onUpdate }: InvoiceDetai
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
-  const handleDownloadPDF = () => {
-    toast({
-      title: "Génération PDF",
-      description: "Le PDF de la facture est en cours de génération...",
-    });
-    // TODO: Implémenter la génération PDF réelle
+  const handleDownloadPDF = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-invoice-pdf', {
+        body: { invoice_id: invoice.id, invoice_type: invoice.type || 'client' }
+      });
+
+      if (error) throw error;
+
+      if (data?.pdf_url) {
+        window.open(data.pdf_url, '_blank');
+      } else if (data?.pdf_base64) {
+        const link = document.createElement('a');
+        link.href = `data:application/pdf;base64,${data.pdf_base64}`;
+        link.download = `facture-${invoice.invoice_number}.pdf`;
+        link.click();
+      } else {
+        throw new Error('Aucun PDF retourné');
+      }
+
+      toast({ title: "PDF généré", description: "Le PDF a été téléchargé avec succès" });
+    } catch (error) {
+      console.error('Erreur génération PDF:', error);
+      toast({ title: "Erreur", description: "Impossible de générer le PDF", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSendEmail = () => {
-    toast({
-      title: "Envoi en cours",
-      description: "L'email est en cours d'envoi...",
-    });
-    // TODO: Implémenter l'envoi d'email via edge function
+  const handleSendEmail = async () => {
+    if (!invoice.client_profile?.email && !invoice.provider_profile?.business_name) {
+      toast({ title: "Erreur", description: "Aucun destinataire trouvé", variant: "destructive" });
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-invoice-email', {
+        body: { invoice_id: invoice.id }
+      });
+
+      if (error) throw error;
+
+      toast({ title: "Email envoyé", description: `Facture envoyée à ${invoice.client_profile?.email || invoice.provider_profile?.business_name}` });
+    } catch (error) {
+      console.error('Erreur envoi email:', error);
+      toast({ title: "Erreur", description: "Impossible d'envoyer l'email", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancelInvoice = async () => {

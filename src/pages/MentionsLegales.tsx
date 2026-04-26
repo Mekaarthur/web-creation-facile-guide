@@ -1,10 +1,16 @@
 import { ArrowLeft, Mail, Building2, FileText, Shield, Scale } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
+import SEOOptimization from "@/components/SEOOptimization";
 
 const MentionsLegales = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEOOptimization
+        title="Mentions légales - Bikawo | Services à domicile Paris"
+        description="Mentions légales de Bikawo, plateforme de services à la personne. SIRET 880491436, numéro SAP, informations légales de la société."
+        keywords="mentions légales Bikawo, services à la personne, SAP, SIRET"
+      />
       {/* Header */}
       <div className="bg-gradient-to-br from-primary/10 via-accent/5 to-background py-16">
         <div className="container mx-auto px-4">

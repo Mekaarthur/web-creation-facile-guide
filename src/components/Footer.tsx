@@ -69,8 +69,13 @@ const Footer = () => {
               </p>
 
               {/* Contact Cards */}
+              <div className="flex items-center gap-2 text-white/60 text-sm mb-2">
+                <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
+                <span>231 rue Saint-Honoré, 75001 Paris</span>
+              </div>
+
               <div className="grid sm:grid-cols-2 gap-4">
-                <a 
+                <a
                   href="tel:+33609085390"
                   className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:bg-white/10 transition-all duration-300 block"
                 >

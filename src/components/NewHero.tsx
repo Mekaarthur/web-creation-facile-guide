@@ -81,7 +81,7 @@ const NewHero = () => {
         <div className="mt-8">
           <div className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-2 sm:gap-4 text-white/90 text-xs sm:text-sm">
             <div className="flex items-center gap-1.5 sm:gap-2 bg-black/30 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full">
-              <span className="text-warning">⭐⭐⭐⭐⭐</span>
+              <span className="text-warning">⭐⭐⭐⭐½</span>
               <span className="font-medium">4,9/5</span>
             </div>
             <div className="flex items-center gap-1.5 sm:gap-2 bg-black/30 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full">

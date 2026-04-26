@@ -60,7 +60,7 @@ export const AvanceImmediateActivation = () => {
     if (!user) return;
     const { data } = await supabase
       .from('profiles')
-      .select('avance_immediate_active, avance_immediate_pending, numero_fiscal')
+      .select('avance_immediate_active, avance_immediate_pending')
       .eq('id', user.id)
       .single();
 
@@ -97,23 +97,18 @@ export const AvanceImmediateActivation = () => {
       });
 
       if (error || data?.simulation) {
-        // API not yet available - save data and guide user
+        // API not yet available - mark as pending only, do NOT store sensitive data
         await supabase
           .from('profiles')
-          .update({
-            numero_fiscal: parsed.data.numeroFiscal,
-            iban_avance_immediate: parsed.data.iban,
-            date_naissance: parsed.data.dateNaissance,
-            avance_immediate_pending: true,
-          })
+          .update({ avance_immediate_pending: true })
           .eq('id', user!.id);
 
         setStatus('pending');
         setOpen(false);
-        
+
         toast({
-          title: "Informations enregistrées",
-          description: "Vos informations ont été sauvegardées. Pour activer l'avance immédiate dès maintenant, rendez-vous sur particulier.urssaf.fr. Nous vous notifierons dès que l'activation automatique sera disponible.",
+          title: "Demande enregistrée",
+          description: "Pour activer l'avance immédiate, rendez-vous sur particulier.urssaf.fr avec votre numéro fiscal et votre IBAN. L'activation automatique sera bientôt disponible.",
         });
       } else if (data?.success) {
         // API available and registration succeeded
@@ -127,23 +122,17 @@ export const AvanceImmediateActivation = () => {
       }
     } catch (err) {
       console.error('Activation error:', err);
-      // Save data anyway
       await supabase
         .from('profiles')
-        .update({
-          numero_fiscal: parsed.data.numeroFiscal,
-          iban_avance_immediate: parsed.data.iban,
-          date_naissance: parsed.data.dateNaissance,
-          avance_immediate_pending: true,
-        })
+        .update({ avance_immediate_pending: true })
         .eq('id', user!.id);
 
       setStatus('pending');
       setOpen(false);
-      
+
       toast({
-        title: "Informations enregistrées",
-        description: "L'activation automatique n'est pas encore disponible. Rendez-vous sur particulier.urssaf.fr pour activer l'avance immédiate.",
+        title: "Demande enregistrée",
+        description: "Rendez-vous sur particulier.urssaf.fr pour activer l'avance immédiate avec votre numéro fiscal et votre IBAN.",
       });
     } finally {
       setIsSubmitting(false);
@@ -265,7 +254,7 @@ export const AvanceImmediateActivation = () => {
               <div className="bg-muted/50 rounded-lg p-3 flex gap-2">
                 <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-muted-foreground">
-                  Vos données fiscales sont chiffrées et transmises uniquement à l'URSSAF. Bikawo ne conserve pas votre numéro fiscal en clair.
+                  Vos données fiscales sont transmises directement à l'URSSAF via une connexion sécurisée (TLS). Bikawo ne stocke jamais votre numéro fiscal ni votre IBAN.
                 </p>
               </div>
 

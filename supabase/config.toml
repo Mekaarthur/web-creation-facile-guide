@@ -9,14 +9,9 @@ project_id = "cgrosjzmbgxmtvwxictr"
 
 [auth]
   additional_redirect_urls = ["http://localhost:3000", "http://localhost:5173", "https://bikawo.com", "https://ed681ca2-74aa-4970-8c41-139ffb8c8152.sandbox.lovable.dev"]
-  enable_email_autoconfirm = false
-  enable_email_confirmations = true
   enable_signup = true
   enabled = true
   jwt_expiry = 3600
-  port = 54328
-  refresh_token_rotation_enabled = true
-  secure_password_change_enabled = true
   site_url = "https://bikawo.com"
   [auth.email]
     double_confirm_changes = true
@@ -25,9 +20,6 @@ project_id = "cgrosjzmbgxmtvwxictr"
 
 [db]
   port = 54322
-
-[edge_functions]
-  enabled = true
 
 [functions]
   [functions.admin-applications]
@@ -154,7 +146,6 @@ project_id = "cgrosjzmbgxmtvwxictr"
 [storage]
   enabled = true
   file_size_limit = "50MiB"
-  port = 54327
 
 [studio]
   enabled = true

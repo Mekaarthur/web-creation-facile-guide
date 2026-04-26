@@ -92,11 +92,11 @@ export const ConversationDetailsModal = ({ conversation, onClose, onUpdate }: Co
   const loadMessages = async () => {
     try {
       if (conversation.type === 'client-provider') {
-        // Charger messages de chat_messages
         const { data, error } = await supabase
           .from('chat_messages')
           .select(`
             id,
+            sender_id,
             message_text,
             created_at,
             is_read,
@@ -107,10 +107,35 @@ export const ConversationDetailsModal = ({ conversation, onClose, onUpdate }: Co
 
         if (error) throw error;
 
+        const senderIds = [...new Set((data || []).map((m: any) => m.sender_id).filter(Boolean))];
+        const roleMap: Record<string, 'client' | 'provider' | 'admin'> = {};
+
+        if (senderIds.length > 0) {
+          const { data: roles } = await supabase
+            .from('user_roles')
+            .select('user_id, role')
+            .in('user_id', senderIds);
+
+          const { data: providerUsers } = await supabase
+            .from('providers')
+            .select('user_id')
+            .in('user_id', senderIds);
+
+          const providerSet = new Set((providerUsers || []).map(p => p.user_id));
+
+          (roles || []).forEach((r: any) => {
+            if (r.role === 'admin' || r.role === 'moderator') roleMap[r.user_id] = 'admin';
+          });
+
+          senderIds.forEach(id => {
+            if (!roleMap[id]) roleMap[id] = providerSet.has(id) ? 'provider' : 'client';
+          });
+        }
+
         const formattedMessages = (data || []).map((msg: any) => ({
           id: msg.id,
           sender_name: msg.sender ? `${msg.sender.first_name} ${msg.sender.last_name}` : 'Utilisateur',
-          sender_role: 'client' as const, // TODO: Déterminer le rôle réel
+          sender_role: roleMap[msg.sender_id] ?? 'client',
           message_text: msg.message_text,
           created_at: msg.created_at,
           is_read: msg.is_read
@@ -118,11 +143,11 @@ export const ConversationDetailsModal = ({ conversation, onClose, onUpdate }: Co
 
         setMessages(formattedMessages);
       } else {
-        // Charger messages de internal_messages
         const { data, error } = await supabase
           .from('internal_messages')
           .select(`
             id,
+            sender_id,
             message_text,
             created_at,
             is_read,
@@ -133,10 +158,26 @@ export const ConversationDetailsModal = ({ conversation, onClose, onUpdate }: Co
 
         if (error) throw error;
 
+        const senderIds = [...new Set((data || []).map((m: any) => m.sender_id).filter(Boolean))];
+        const roleMap: Record<string, 'client' | 'provider' | 'admin'> = {};
+
+        if (senderIds.length > 0) {
+          const { data: roles } = await supabase
+            .from('user_roles')
+            .select('user_id, role')
+            .in('user_id', senderIds);
+
+          (roles || []).forEach((r: any) => {
+            if (r.role === 'admin' || r.role === 'moderator') roleMap[r.user_id] = 'admin';
+            else if (r.role === 'provider') roleMap[r.user_id] = 'provider';
+            else roleMap[r.user_id] = 'client';
+          });
+        }
+
         const formattedMessages = (data || []).map((msg: any) => ({
           id: msg.id,
           sender_name: msg.sender ? `${msg.sender.first_name} ${msg.sender.last_name}` : 'Utilisateur',
-          sender_role: 'admin' as const, // TODO: Déterminer le rôle réel
+          sender_role: roleMap[msg.sender_id] ?? 'admin',
           message_text: msg.message_text,
           created_at: msg.created_at,
           is_read: msg.is_read

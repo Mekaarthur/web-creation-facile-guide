@@ -137,7 +137,7 @@ const ChatBot = () => {
       
       const errorMessage: Message = {
         id: 'error',
-        text: 'Désolé, je rencontre des difficultés techniques momentanées. 😅\n\nVous pouvez :\n📞 Nous appeler au 0609085390\n✉️ Nous écrire à contact@bikawo.fr\n🌐 Aller sur www.bikawo.fr\n\nNous sommes là pour vous aider !',
+        text: 'Désolé, je rencontre des difficultés techniques momentanées. 😅\n\nVous pouvez :\n📞 Nous appeler au 0609085390\n✉️ Nous écrire à contact@bikawo.com\n🌐 Aller sur www.bikawo.com\n\nNous sommes là pour vous aider !',
         sender: 'bot',
         timestamp: new Date()
       };
@@ -415,7 +415,7 @@ const ChatBot = () => {
                 </div>
                 <div className="flex items-center space-x-1">
                   <Mail className="w-3 h-3" />
-                  <span>contact@bikawo.fr</span>
+                  <span>contact@bikawo.com</span>
                 </div>
               </div>
               <div className="text-center mt-1">

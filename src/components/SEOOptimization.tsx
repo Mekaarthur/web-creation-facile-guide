@@ -17,8 +17,8 @@ const SEOOptimization = ({
   type = "website"
 }: SEOOptimizationProps) => {
   const location = useLocation();
-  const currentUrl = `https://bikawo.fr${location.pathname}`;
-  const fullImageUrl = image.startsWith("http") ? image : `https://bikawo.fr${image}`;
+  const currentUrl = `https://bikawo.com${location.pathname}`;
+  const fullImageUrl = image.startsWith("http") ? image : `https://bikawo.com${image}`;
 
   return (
     <Helmet>

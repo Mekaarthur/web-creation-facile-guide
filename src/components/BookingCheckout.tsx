@@ -69,8 +69,6 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          console.log('[CHECKOUT] User profile loaded:', user.user_metadata);
-          
           // Récupérer aussi depuis la table profiles si elle existe
           const { data: profile } = await supabase
             .from('profiles')
@@ -126,7 +124,6 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
     if (!address) missing.push("Adresse");
 
     if (missing.length > 0) {
-      console.log("[CHECKOUT] Champs manquants:", { clientInfo });
       toast({
         title: "Formulaire incomplet",
         description: `Veuillez renseigner: ${missing.join(", ")}`,
@@ -202,20 +199,13 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       return false;
     }
 
-    console.log("[CHECKOUT] Validation OK", { clientInfo, phoneDigits: digits });
     return true;
   };
 
   const handleSubmitBooking = async () => {
-    console.log('[CHECKOUT] Submit clicked with clientInfo:', clientInfo);
-    console.log('[CHECKOUT] Form validation starting...');
-    
     if (!validateForm()) {
-      console.log('[CHECKOUT] Validation failed, stopping submission');
       return;
     }
-    
-    console.log('[CHECKOUT] Validation passed, proceeding with payment...');
 
     setIsProcessing(true);
 
@@ -251,7 +241,6 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       // NOTE: La déclaration URSSAF est désormais déclenchée de manière asynchrone
       // APRÈS confirmation du paiement Stripe (dans verify-payment), pas avant.
       // Cela évite le risque d'encaisser un paiement sans déclaration URSSAF valide.
-      console.log('[CHECKOUT] URSSAF enabled:', urssafEnabled, '- déclaration sera faite après paiement Stripe');
 
       // Create Stripe payment session (only for client amount)
       const { data: paymentData, error: paymentError } = await supabase.functions.invoke('create-payment', {
@@ -273,8 +262,6 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
           }
         }
       });
-
-      console.log('[CHECKOUT] create-payment response', { paymentData, paymentError });
 
       if (paymentError) {
         console.error('[CHECKOUT] Payment error:', paymentError);
@@ -311,7 +298,6 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
           console.warn('[CHECKOUT] checkoutWindow navigation failed', e);
         }
         try {
-          console.log('[CHECKOUT] Redirect via window.location.assign');
           window.location.assign(u);
           return;
         } catch (e) {
@@ -319,7 +305,6 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
         }
         try {
           if (window.top) {
-            console.log('[CHECKOUT] Redirect via window.top.location');
             // @ts-ignore
             window.top.location.href = u;
             return;
@@ -327,7 +312,6 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
         } catch (e) {
           console.warn('[CHECKOUT] top.navigation failed', e);
         }
-        console.log('[CHECKOUT] Redirect via anchor _blank fallback');
         const a = document.createElement('a');
         a.href = u;
         a.target = '_blank';
@@ -337,7 +321,6 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
         a.remove();
       };
 
-      console.log('[CHECKOUT] Redirecting to:', paymentData.url);
       go(paymentData.url);
 
     } catch (error: any) {
@@ -513,7 +496,6 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                   value={clientInfo.address}
                   onChange={(e) => {
                     setClientInfo({...clientInfo, address: e.target.value});
-                    console.log('[CHECKOUT] Address changed:', e.target.value);
                   }}
                   placeholder="Ex: 15 rue de la Paix, 75001 Paris"
                   required
@@ -545,7 +527,6 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
                   value={clientInfo.phone}
                   onChange={(e) => {
                     setClientInfo({...clientInfo, phone: e.target.value});
-                    console.log('[CHECKOUT] Phone changed:', e.target.value);
                   }}
                   placeholder="Ex: 06 12 34 56 78"
                   required

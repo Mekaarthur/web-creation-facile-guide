@@ -3,10 +3,16 @@ import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import SEOOptimization from "@/components/SEOOptimization";
 
 const PolitiqueConfidentialite = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEOOptimization
+        title="Politique de confidentialité - Bikawo | Protection de vos données"
+        description="Politique de confidentialité de Bikawo. Comment nous collectons, utilisons et protégeons vos données personnelles conformément au RGPD."
+        keywords="politique confidentialité, RGPD, données personnelles, Bikawo"
+      />
       {/* Header */}
       <div className="bg-gradient-to-br from-primary/10 via-accent/5 to-background py-16">
         <div className="container mx-auto px-4">
