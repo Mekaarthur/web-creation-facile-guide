@@ -40,7 +40,7 @@ const buildClientItems = (cartCount: number): BottomNavItem[] => [
 const providerItems: BottomNavItem[] = [
   { label: "Accueil", href: "/", icon: Home, matchExact: true },
   { label: "Missions", href: "/espace-prestataire", icon: ListChecks, query: "tab=missions" },
-  { label: "Agenda", href: "/espace-prestataire", icon: Calendar, query: "tab=calendar" },
+  { label: "Messages", href: "/espace-prestataire", icon: MessageCircle, query: "tab=messages" },
   { label: "Gains", href: "/espace-prestataire", icon: Wallet, query: "tab=billing" },
   { label: "Profil", href: "/espace-prestataire", icon: User, query: "tab=profile" },
 ];

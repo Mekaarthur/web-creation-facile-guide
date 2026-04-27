@@ -176,7 +176,7 @@ export const RealtimeChat = ({ bookingId, otherUserId, otherUserName, onClose }:
             </AvatarFallback>
           </Avatar>
           <CardTitle className="text-sm font-medium">{otherUserName}</CardTitle>
-          <Badge variant="outline" className="text-xs">En ligne</Badge>
+          <Badge variant="outline" className="text-xs text-green-600 border-green-200">Actif</Badge>
         </div>
         {onClose && (
           <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">

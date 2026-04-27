@@ -9,15 +9,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { 
+import {
   MessageSquare,
   Send,
-  Phone,
-  Video,
-  MoreVertical,
   Search,
-  Paperclip,
-  Smile,
   CheckCheck,
   Clock
 } from 'lucide-react';
@@ -90,7 +85,7 @@ const ProviderMessaging = () => {
 
   useEffect(() => {
     if (selectedConversation) {
-      // Real-time subscription for messages
+      // Real-time subscription for messages (by booking_id for cross-component compatibility)
       const channel = supabase
         .channel('conversation-messages')
         .on(
@@ -99,7 +94,7 @@ const ProviderMessaging = () => {
             event: 'INSERT',
             schema: 'public',
             table: 'chat_messages',
-            filter: `conversation_id=eq.${selectedConversation.id}`
+            filter: `booking_id=eq.${selectedConversation.booking_id}`
           },
           (payload) => {
             const newMessage = payload.new as Message;
@@ -182,14 +177,16 @@ const ProviderMessaging = () => {
   };
 
   const loadMessages = async (conversationId: string) => {
+    if (!selectedConversation) return;
     try {
+      // Query by booking_id for compatibility with client-side chat (RealtimeChat/ChatInterface)
       const { data: messagesData } = await supabase
         .from('chat_messages')
         .select(`
           *,
           sender_profile:profiles!chat_messages_sender_id_fkey(first_name, last_name, avatar_url)
         `)
-        .eq('conversation_id', conversationId)
+        .eq('booking_id', selectedConversation.booking_id || conversationId)
         .order('created_at', { ascending: true });
 
       setMessages((messagesData || []).map((msg: any) => ({
@@ -298,7 +295,7 @@ const ProviderMessaging = () => {
         
         <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
           <MessageSquare className="h-3 w-3 mr-1" />
-          Chiffrement de bout en bout
+          Messagerie sécurisée
         </Badge>
       </div>
 
@@ -398,15 +395,9 @@ const ProviderMessaging = () => {
                   </div>
                   
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm">
-                      <Phone className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Video className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
+                    <Badge variant="outline" className="text-xs text-green-600 border-green-200">
+                      Actif
+                    </Badge>
                   </div>
                 </div>
               </CardHeader>
@@ -479,10 +470,6 @@ const ProviderMessaging = () => {
               {/* Message Input */}
               <div className="border-t p-4">
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm">
-                    <Paperclip className="h-4 w-4" />
-                  </Button>
-                  
                   <Input
                     placeholder="Tapez votre message..."
                     value={newMessage}
@@ -491,17 +478,16 @@ const ProviderMessaging = () => {
                     disabled={sendingMessage}
                     className="flex-1"
                   />
-                  
-                  <Button variant="outline" size="sm">
-                    <Smile className="h-4 w-4" />
-                  </Button>
-                  
-                  <Button 
+                  <Button
                     onClick={sendMessage}
                     disabled={!newMessage.trim() || sendingMessage}
                     className="bg-gradient-to-r from-primary to-secondary hover:opacity-90"
                   >
-                    <Send className="h-4 w-4" />
+                    {sendingMessage ? (
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
               </div>

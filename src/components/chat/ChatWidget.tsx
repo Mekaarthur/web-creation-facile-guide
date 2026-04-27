@@ -105,11 +105,11 @@ export const ChatWidget = ({ bookingId, otherUserId, otherUserName }: ChatWidget
 
   return (
     <>
-      {/* Floating button */}
+      {/* Floating button — above bottom nav on mobile */}
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-4 right-4 h-14 w-14 rounded-full shadow-lg z-50"
+          className="fixed bottom-20 lg:bottom-4 right-4 h-14 w-14 rounded-full shadow-lg z-40"
           size="icon"
         >
           <MessageCircle className="h-6 w-6" />
@@ -123,9 +123,9 @@ export const ChatWidget = ({ bookingId, otherUserId, otherUserName }: ChatWidget
         </Button>
       )}
 
-      {/* Chat window */}
+      {/* Chat window — above bottom nav on mobile */}
       {isOpen && (
-        <div className="fixed bottom-4 right-4 w-80 sm:w-96 h-[500px] z-50 shadow-2xl rounded-lg overflow-hidden bg-background border flex flex-col">
+        <div className="fixed bottom-20 lg:bottom-4 right-4 w-80 sm:w-96 h-[420px] sm:h-[500px] z-40 shadow-2xl rounded-lg overflow-hidden bg-background border flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between p-3 border-b bg-primary text-primary-foreground">
             <div className="flex items-center gap-2">
