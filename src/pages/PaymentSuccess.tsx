@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { CheckCircle, Loader2, Home, Calendar, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -136,6 +136,10 @@ const PaymentSuccess = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Paiement confirmé | Bikawo</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <Navbar />
       <div className="pt-16 lg:pt-20 pb-16 px-4">
         <div className="max-w-2xl mx-auto space-y-6">

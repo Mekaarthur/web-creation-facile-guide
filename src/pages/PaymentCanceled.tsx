@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,10 @@ const PaymentCanceled = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-4">
+      <Helmet>
+        <title>Paiement annulé | Bikawo</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <Card className="max-w-md w-full border-orange-200">
         <CardContent className="pt-8 pb-8 text-center">
           <XCircle className="w-20 h-20 mx-auto mb-4 text-orange-500" />

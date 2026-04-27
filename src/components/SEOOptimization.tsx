@@ -7,14 +7,16 @@ interface SEOOptimizationProps {
   keywords?: string;
   image?: string;
   type?: string;
+  noIndex?: boolean;
 }
 
-const SEOOptimization = ({ 
+const SEOOptimization = ({
   title = "Bikawo - Assistant Personnel à Domicile | Services Famille Paris",
   description = "Assistant personnel à domicile Paris. Garde d'enfants, préparation culinaire / batch cooking, aide seniors, démarches administratives. Un seul prestataire de confiance pour tous vos besoins. Crédit d'impôt 50%.",
   keywords = "assistant personnel, services domicile, garde enfants Paris, préparation culinaire domicile, batch cooking, aide seniors, démarches administratives, conciergerie familiale, prestataire confiance, crédit impôt 50%, Bikawo",
   image = "/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png",
-  type = "website"
+  type = "website",
+  noIndex = false,
 }: SEOOptimizationProps) => {
   const location = useLocation();
   const currentUrl = `https://bikawo.com${location.pathname}`;
@@ -56,7 +58,7 @@ const SEOOptimization = ({
       <link rel="alternate" hrefLang="x-default" href={currentUrl} />
       
       {/* Robots directives */}
-      <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+      <meta name="robots" content={noIndex ? "noindex, nofollow" : "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"} />
       
       {/* Additional SEO meta tags */}
       <meta name="author" content="Bikawo" />

@@ -14,6 +14,7 @@ const CartPage = () => {
       <Helmet>
         <title>Panier | Bikawo</title>
         <meta name="description" content="Votre panier de réservation Bikawo" />
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
       <Navbar />

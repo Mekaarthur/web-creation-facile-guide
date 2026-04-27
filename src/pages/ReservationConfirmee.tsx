@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -74,6 +75,10 @@ const ReservationConfirmee = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Réservation confirmée | Bikawo</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <Navbar />
       
       <div className="container mx-auto px-4 py-16">

@@ -3,31 +3,31 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://bikawo.com/</loc>
-    <lastmod>2025-01-24T00:00:00+00:00</lastmod>
+    <lastmod>2025-04-26T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://bikawo.com/services</loc>
-    <lastmod>2025-01-24T00:00:00+00:00</lastmod>
+    <lastmod>2025-04-26T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://bikawo.com/a-propos-de-nous</loc>
-    <lastmod>2025-01-24T00:00:00+00:00</lastmod>
+    <lastmod>2025-04-26T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bikawo.com/blog</loc>
-    <lastmod>2025-01-24T00:00:00+00:00</lastmod>
+    <lastmod>2025-04-26T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://bikawo.com/blog/charge-mentale-histoire-realite-solution</loc>
-    <lastmod>2025-01-24T00:00:00+00:00</lastmod>
+    <lastmod>2025-04-26T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -36,32 +36,44 @@
   </url>
   <url>
     <loc>https://bikawo.com/contact</loc>
-    <lastmod>2025-01-24T00:00:00+00:00</lastmod>
+    <lastmod>2025-04-26T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://bikawo.com/espace-personnel</loc>
-    <lastmod>2025-01-24T00:00:00+00:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://bikawo.com/espace-prestataire</loc>
-    <lastmod>2025-01-24T00:00:00+00:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://bikawo.com/nous-recrutons</loc>
-    <lastmod>2025-01-24T00:00:00+00:00</lastmod>
+    <lastmod>2025-04-26T00:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bikawo.com/avance-immediate</loc>
+    <lastmod>2025-04-26T00:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bikawo.com/aide</loc>
+    <lastmod>2025-04-26T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://bikawo.com/aide</loc>
-    <lastmod>2025-01-24T00:00:00+00:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
+    <loc>https://bikawo.com/mentions-legales</loc>
+    <lastmod>2025-04-26T00:00:00+00:00</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://bikawo.com/politique-confidentialite</loc>
+    <lastmod>2025-04-26T00:00:00+00:00</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://bikawo.com/cgu</loc>
+    <lastmod>2025-04-26T00:00:00+00:00</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
   </url>
 </urlset>

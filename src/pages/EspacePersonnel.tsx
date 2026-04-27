@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -81,8 +82,12 @@ const EspacePersonnel = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Mon espace | Bikawo</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <Navbar />
-      
+
       <div className="pt-14 pb-10 bg-gradient-to-br from-background via-background to-muted/20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header moderne */}

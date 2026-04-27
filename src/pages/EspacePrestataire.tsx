@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -62,6 +63,10 @@ const EspacePrestataire = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Espace prestataire | Bikawo</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <EnhancedProviderDashboard />
     </div>
   );
