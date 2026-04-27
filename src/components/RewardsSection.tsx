@@ -1,7 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useRewards } from '@/hooks/useRewards';
 import { Gift, Clock, Star, Trophy, Calendar } from 'lucide-react';
@@ -18,11 +17,9 @@ export const RewardsSection: React.FC<RewardsSectionProps> = ({ userType }) => {
     providerRewards,
     monthlyActivity,
     loading,
-    checkClientEligibility,
     getTierBadgeColor,
     getTierEmoji,
     formatTierName,
-    useClientReward,
   } = useRewards();
 
   const currentYear = new Date().getFullYear();
@@ -83,7 +80,7 @@ export const RewardsSection: React.FC<RewardsSectionProps> = ({ userType }) => {
               <Progress value={progress.progressPercentage} className="h-2" />
             </div>
             
-            <div className="grid grid-cols-3 gap-4 text-center">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
               <div>
                 <div className="text-2xl font-bold text-primary">{progress.consecutiveMonths}</div>
                 <div className="text-sm text-muted-foreground">Mois consécutifs</div>

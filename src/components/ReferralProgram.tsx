@@ -182,7 +182,7 @@ const ReferralProgram = () => {
             </Card>
 
             {/* Statistiques */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Card>
                 <CardContent className="p-4 text-center">
                   <Users className="w-6 h-6 text-primary mx-auto mb-2" />

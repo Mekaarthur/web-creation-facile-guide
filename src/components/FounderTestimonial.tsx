@@ -55,18 +55,18 @@ const FounderTestimonial = () => {
             </div>
 
             {/* Statistiques rapides */}
-            <div className="grid grid-cols-3 gap-8 mt-12 pt-8 border-t border-border">
+            <div className="grid grid-cols-3 gap-4 sm:gap-8 mt-12 pt-8 border-t border-border">
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary">2025</div>
-                <div className="text-sm text-muted-foreground">Année de création</div>
+                <div className="text-2xl sm:text-3xl font-bold text-primary">2025</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Année de création</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary">2500+</div>
-                <div className="text-sm text-muted-foreground">Familles accompagnées</div>
+                <div className="text-2xl sm:text-3xl font-bold text-primary">SAP</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Organisme déclaré</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary">4.9</div>
-                <div className="text-sm text-muted-foreground">Note moyenne</div>
+                <div className="text-2xl sm:text-3xl font-bold text-primary">4.9</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Note moyenne</div>
               </div>
             </div>
           </div>

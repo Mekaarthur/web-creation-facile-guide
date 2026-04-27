@@ -256,8 +256,8 @@ const ChatBot = () => {
 
   return (
     <>
-      {/* Bouton flottant */}
-      <div className="fixed bottom-6 right-6 z-50">
+      {/* Bouton flottant — au-dessus de la barre mobile */}
+      <div className="fixed bottom-20 lg:bottom-6 right-4 sm:right-6 z-50">
         <Button
           onClick={() => setIsOpen(!isOpen)}
           className="w-14 h-14 rounded-full bg-gradient-primary text-white shadow-glow hover:shadow-cocon transition-all duration-300 hover:scale-110"
@@ -273,7 +273,7 @@ const ChatBot = () => {
 
       {/* Interface de chat */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 w-96 h-[500px] z-50 animate-fade-in">
+        <div className="fixed bottom-36 lg:bottom-24 right-2 sm:right-6 w-[calc(100vw-1rem)] sm:w-96 h-[420px] sm:h-[500px] z-50 animate-fade-in">
           <Card className="h-full flex flex-col shadow-cocon border-primary/20">
             {/* Header */}
             <CardHeader className="bg-gradient-primary text-white p-4 rounded-t-lg">

@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { AlertTriangle, CheckCircle, XCircle, Clock, Eye, FileText, Users, CreditCard, Mail, Upload } from "lucide-react";
+import { AlertTriangle, CheckCircle, XCircle, Clock, Eye, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface AuditItem {
@@ -181,7 +181,7 @@ const AuditReport = () => {
           )}
 
           {auditResults.length > 0 && !isRunning && (
-            <div className="grid grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-500">{successCount}</div>
                 <div className="text-sm text-muted-foreground">Fonctionnels</div>

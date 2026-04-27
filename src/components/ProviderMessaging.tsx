@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -64,7 +63,6 @@ const ProviderMessaging = () => {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [provider, setProvider] = useState<any>(null);
 
   useEffect(() => {
     if (user) {
@@ -124,7 +122,6 @@ const ProviderMessaging = () => {
         .single();
 
       if (providerData) {
-        setProvider(providerData);
 
         // Load conversations where the provider is involved
         const { data: conversationsData } = await supabase
@@ -299,7 +296,7 @@ const ProviderMessaging = () => {
         </Badge>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[600px]">
         {/* Conversations List */}
         <Card className="border-0 shadow-lg">
           <CardHeader className="pb-3">
@@ -315,7 +312,7 @@ const ProviderMessaging = () => {
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <ScrollArea className="h-[480px]">
+            <ScrollArea className="h-[300px] lg:h-[480px]">
               {filteredConversations.length > 0 ? (
                 <div className="space-y-1 p-3">
                   {filteredConversations.map((conversation) => (
@@ -404,7 +401,7 @@ const ProviderMessaging = () => {
 
               {/* Messages */}
               <CardContent className="flex-1 p-0">
-                <ScrollArea className="h-[380px] p-4">
+                <ScrollArea className="h-[250px] lg:h-[380px] p-4">
                   <div className="space-y-4">
                     {messages.map((message) => {
                       const isOwnMessage = message.sender_id === user?.id;
@@ -474,7 +471,7 @@ const ProviderMessaging = () => {
                     placeholder="Tapez votre message..."
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
+                    onKeyDown={handleKeyPress}
                     disabled={sendingMessage}
                     className="flex-1"
                   />
