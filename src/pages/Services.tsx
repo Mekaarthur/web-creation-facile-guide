@@ -12,9 +12,9 @@ const ServicesPage = () => {
   return (
     <div className="min-h-screen">
       <SEOComponent 
-        title="Services BIKAWO - Tous nos services"
-        description="Parcourez tous les services BIKAWO, harmonisés avec l'accueil et la page Services."
-        keywords="services BIKAWO, bika kids, bika maison, bika seniors, bika travel, bika pro, bika plus"
+        title="Services Bikawo - Tous nos services"
+        description="Parcourez tous les services Bikawo, harmonisés avec l'accueil et la page Services."
+        keywords="services Bikawo, bika kids, bika maison, bika seniors, bika travel, bika pro, bika plus"
       />
       <Navbar />
       <div className="pt-16 lg:pt-20 bg-background">

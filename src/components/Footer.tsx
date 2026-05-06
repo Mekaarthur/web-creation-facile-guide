@@ -10,12 +10,12 @@ const Footer = () => {
     {
       title: t('footer.services'),
       links: [
-        { name: "Bika Kids", href: "/services" },
-        { name: "Bika Maison", href: "/services" },
-        { name: "Bika Seniors", href: "/services" },
-        { name: "Bika Travel", href: "/services" },
-        { name: "Bika Pro", href: "/services" },
-        { name: "Bika Plus", href: "/services" }
+        { name: "Bika Kids", href: "/bika-kids" },
+        { name: "Bika Maison", href: "/bika-maison" },
+        { name: "Bika Seniors", href: "/bika-seniors" },
+        { name: "Bika Travel", href: "/bika-travel" },
+        { name: "Bika Pro", href: "/bika-pro" },
+        { name: "Bika Plus", href: "/bika-plus" }
       ]
     },
     {

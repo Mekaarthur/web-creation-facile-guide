@@ -10,11 +10,11 @@ const FAQ = () => {
 
   const faqs = [
     {
-      category: "💙 À propos de BIKAWO",
+      category: "💙 À propos de Bikawo",
       questions: [
         {
-          question: "Qu'est-ce que BIKAWO ?",
-          answer: "BIKAWO est une plateforme de services personnalisés pour simplifier votre quotidien avec tendresse et professionnalisme : garde d'enfants, gestion du foyer, conciergerie, assistance voyage, soins aux animaux et accompagnement des seniors."
+          question: "Qu'est-ce que Bikawo ?",
+          answer: "Bikawo est une plateforme de services personnalisés pour simplifier votre quotidien avec tendresse et professionnalisme : garde d'enfants, gestion du foyer, conciergerie, assistance voyage, soins aux animaux et accompagnement des seniors."
         },
         {
           question: "Où intervenez-vous ?",

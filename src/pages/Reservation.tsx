@@ -9,9 +9,9 @@ const Reservation = () => {
   return (
     <div className="min-h-screen">
       <SEOComponent 
-        title="Réserver un service BIKAWO - Nos Services"
-        description="Choisissez un service BIKAWO à réserver parmi nos catégories harmonisées comme sur la page d'accueil."
-        keywords="réserver, services BIKAWO, bika kids, bika maison, bika seniors, bika travel, bika pro, bika plus"
+        title="Réserver un service Bikawo - Nos Services"
+        description="Choisissez un service Bikawo à réserver parmi nos catégories harmonisées comme sur la page d'accueil."
+        keywords="réserver, services Bikawo, bika kids, bika maison, bika seniors, bika travel, bika pro, bika plus"
       />
       <Navbar />
 

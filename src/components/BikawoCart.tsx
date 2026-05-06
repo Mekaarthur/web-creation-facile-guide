@@ -186,10 +186,11 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
                           </span>
                         </td>
                         <td className="p-3 text-center">
-                          <Button 
-                            size="sm" 
-                            variant="ghost" 
+                          <Button
+                            size="sm"
+                            variant="ghost"
                             onClick={() => removeFromCart(item.id)}
+                            aria-label={`Supprimer ${item.name} du panier`}
                             className="text-destructive hover:text-destructive hover:bg-destructive/10 hover-scale"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -232,10 +233,11 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
                         </div>
                       </div>
                       
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
+                      <Button
+                        size="sm"
+                        variant="ghost"
                         onClick={() => removeFromCart(item.id)}
+                        aria-label={`Supprimer ${item.name} du panier`}
                         className="text-destructive hover:text-destructive hover:bg-destructive/10 hover-scale ml-2"
                       >
                         <Trash2 className="w-5 h-5" />

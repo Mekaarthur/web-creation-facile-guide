@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import SEOComponent from "@/components/SEOComponent";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Clock, Calendar, User, ArrowLeft, Share2, BookOpen } from "lucide-react";
 import { generateArticleStructuredData } from "@/utils/seoData";
 import { ReadingProgress } from "@/components/blog/ReadingProgress";
@@ -55,7 +55,7 @@ const blogContent = {
       
       <h2>Comment s'en sortir ?</h2>
       
-      <p><strong>Déléguer est la clé.</strong> Chez BIKAWO, nous comprenons cette problématique. Nos services permettent de transférer une partie de cette charge mentale à des professionnels qualifiés :</p>
+      <p><strong>Déléguer est la clé.</strong> Chez Bikawo, nous comprenons cette problématique. Nos services permettent de transférer une partie de cette charge mentale à des professionnels qualifiés :</p>
       
       <ul>
         <li><strong>Aide ménagère :</strong> Ne plus penser au ménage, lessive, repassage</li>
@@ -64,7 +64,7 @@ const blogContent = {
         <li><strong>Courses et commission :</strong> Plus besoin de planifier les achats</li>
       </ul>
       
-      <p>L'avantage BIKAWO ? <strong>Un seul interlocuteur</strong> pour plusieurs services, ce qui réduit encore votre charge mentale de coordination.</p>
+      <p>L'avantage Bikawo ? <strong>Un seul interlocuteur</strong> pour plusieurs services, ce qui réduit encore votre charge mentale de coordination.</p>
       
       <h2>Conclusion</h2>
       
@@ -163,14 +163,14 @@ const blogContent = {
         <li>Modèle d'organisation efficace</li>
       </ul>
       
-      <h2>Témoignages clients BIKAWO</h2>
+      <h2>Témoignages clients Bikawo</h2>
       
       <blockquote>
         <p>"Au début, j'étais réticente. Maintenant, je ne peux plus m'en passer. Sophie s'occupe du ménage et garde ma fille le mercredi. J'ai retrouvé du temps pour moi et ma famille."</p>
         <cite>- Marie, maman de 2 enfants</cite>
       </blockquote>
       
-      <h2>Comment BIKAWO facilite la délégation</h2>
+      <h2>Comment Bikawo facilite la délégation</h2>
       
       <ul>
         <li><strong>Un seul contact :</strong> Évite la multiplication des interlocuteurs</li>
@@ -314,7 +314,7 @@ const blogContent = {
         <li>Expertise nécessaire</li>
       </ul>
       
-      <h3>L'avantage BIKAWO : services combinés</h3>
+      <h3>L'avantage Bikawo : services combinés</h3>
       <ul>
         <li><strong>Économies d'échelle :</strong> Même prestataire, plusieurs services</li>
         <li><strong>Réduction frais de déplacement :</strong> Optimisation des trajets</li>
@@ -500,7 +500,7 @@ const blogContent = {
         <li>Formations complémentaires si besoin</li>
       </ul>
       
-      <h2>L'approche BIKAWO : garde d'enfants intégrée</h2>
+      <h2>L'approche Bikawo : garde d'enfants intégrée</h2>
       
       <h3>Services combinés</h3>
       <p>Notre approche unique :</p>
@@ -545,7 +545,7 @@ const blogContent = {
       
       <p>Choisir une garde d'enfants est une décision majeure qui impacte le bien-être de toute la famille. Prenez le temps nécessaire, faites confiance à votre instinct et n'hésitez pas à poser toutes vos questions.</p>
       
-      <p>Chez BIKAWO, nous accompagnons les familles dans cette démarche cruciale en proposant des professionnels sélectionnés et formés, avec la possibilité de combiner plusieurs services pour simplifier votre organisation.</p>
+      <p>Chez Bikawo, nous accompagnons les familles dans cette démarche cruciale en proposant des professionnels sélectionnés et formés, avec la possibilité de combiner plusieurs services pour simplifier votre organisation.</p>
     `
   }
 };
