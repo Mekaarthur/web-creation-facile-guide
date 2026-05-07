@@ -13,7 +13,7 @@ export const useSecureLogout = () => {
 
   const handleLogout = async () => {
     try {
-      console.log('[SecureLogout] Logging out user:', user?.email);
+      console.log('[SecureLogout] Logging out user');
       
       // Logger la déconnexion admin avant de tout nettoyer
       if (user?.email) {

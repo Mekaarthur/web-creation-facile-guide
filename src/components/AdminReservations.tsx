@@ -296,10 +296,7 @@ const AdminReservations = () => {
 
       // Here you would call an edge function to send the email
       // For now, we'll just log the action
-      console.log('Sending email to:', recipientEmail, {
-        subject: emailSubject,
-        message: emailMessage
-      });
+      console.log('[Admin] Email de réservation envoyé');
 
       toast({
         title: "Email envoyé",

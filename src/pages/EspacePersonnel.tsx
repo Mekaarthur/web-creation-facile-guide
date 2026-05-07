@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
+import { DeleteAccountSection } from '@/components/DeleteAccountSection';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -260,6 +261,7 @@ const EspacePersonnel = () => {
             {/* Mon Profil */}
             <TabsContent value="profil" className="space-y-6">
               <ProfileUpdateForm />
+              <DeleteAccountSection />
             </TabsContent>
 
             {/* Mes Moyens de Paiement */}

@@ -71,7 +71,7 @@ class ModernNotificationService {
 
       if (error) throw error;
       
-      console.log(`💝 Notification moderne ${request.type} envoyée avec tendresse à ${request.recipient.email}`);
+      console.log(`[Notification] ${request.type} envoyée`);
       return { success: true };
     } catch (error) {
       console.error('Error sending modern notification:', error);
@@ -332,7 +332,7 @@ class ModernNotificationService {
         reminderType
       });
 
-      console.log(`💝 Rappel ${reminderType} programmé avec tendresse pour ${profile.email}`);
+      console.log(`[Notification] Rappel ${reminderType} programmé`);
       return { success: true };
     } catch (error) {
       console.error('Error scheduling reminder:', error);
