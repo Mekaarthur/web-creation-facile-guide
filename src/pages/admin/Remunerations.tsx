@@ -53,13 +53,7 @@ const Remunerations: React.FC = () => {
       // Charger les transactions financières groupées par prestataire et mois
       const { data: transactions, error } = await supabase
         .from('financial_transactions')
-        .select(`
-          *,
-          provider:providers(
-            business_name,
-            profiles(first_name, last_name)
-          )
-        `)
+        .select('*')
         .eq('payment_status', 'completed')
         .order('created_at', { ascending: false });
 
@@ -75,8 +69,7 @@ const Remunerations: React.FC = () => {
         if (!grouped[key]) {
           grouped[key] = {
             provider_id: providerId,
-            provider_name: (t as any).provider?.business_name || 
-              `${(t as any).provider?.profiles?.first_name} ${(t as any).provider?.profiles?.last_name}`,
+            provider_name: `Prestataire ${providerId?.slice(0, 8) || 'inconnu'}`,
             month: monthKey,
             total_brut: 0,
             missions: 0,

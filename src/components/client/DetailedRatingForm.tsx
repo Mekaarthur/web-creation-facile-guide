@@ -96,9 +96,8 @@ export const DetailedRatingForm = ({
           client_id: user.id,
           rating: overallRating,
           comment: enrichedComment,
-          criteria_ratings: criteriaRatings,
-          tags: selectedTags,
-          would_recommend: wouldRecommend === 'yes'
+          punctuality_rating: criteriaRatings['punctuality'] ?? null,
+          quality_rating: criteriaRatings['quality'] ?? null,
         });
 
       if (error) throw error;

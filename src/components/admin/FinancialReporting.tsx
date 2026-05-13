@@ -81,21 +81,7 @@ const FinancialReporting = () => {
       // Fetch transactions
       let query = supabase
         .from('financial_transactions')
-        .select(`
-          *,
-          bookings (
-            booking_date,
-            services (name)
-          ),
-          profiles!financial_transactions_client_id_fkey (
-            first_name,
-            last_name
-          ),
-          providers!financial_transactions_provider_id_fkey (
-            business_name,
-            profiles (first_name, last_name)
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (dateFilter) {

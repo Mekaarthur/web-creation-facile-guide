@@ -201,75 +201,44 @@ const ServicesBooking = () => {
         return;
       }
 
-      // Créer la réservation principale
-      const bookingData = {
-        client_id: user.id,
-        provider_id: null, // Sera assigné par l'équipe
-        service_id: selectedService.id,
-        booking_date: format(timeSlots[0].startDate, 'yyyy-MM-dd'),
-        start_time: timeSlots[0].startTime,
-        end_time: timeSlots[0].endTime,
-        total_price: getTotalPrice(),
-        address: location,
-        notes: notes || null,
-        status: 'pending'
-      };
+      // Construire la description avec tous les créneaux
+      const slotsDescription = timeSlots.map((slot, i) =>
+        `Créneau ${i + 1}: du ${format(slot.startDate, 'dd/MM/yyyy')} au ${format(slot.endDate, 'dd/MM/yyyy')} · ${slot.startTime}–${slot.endTime}`
+      ).join('\n');
 
-      const { data: booking, error: bookingError } = await supabase
-        .from('bookings')
-        .insert([bookingData])
+      const serviceDescription = `Service: ${selectedService.name}\n\n${slotsDescription}\n\nBudget estimé: ${getTotalPrice()}€`;
+
+      // Insérer dans custom_requests (prestataire assigné par l'équipe)
+      const { data: created, error: requestError } = await supabase
+        .from('custom_requests')
+        .insert([{
+          client_name: user.email?.split('@')[0] || 'Client',
+          client_email: user.email || '',
+          service_description: serviceDescription,
+          location: location,
+          preferred_date: format(timeSlots[0].startDate, 'yyyy-MM-dd'),
+          preferred_time: timeSlots[0].startTime,
+          additional_notes: notes || null,
+          urgency_level: 'normal',
+          status: 'new'
+        }])
         .select()
         .single();
 
-      if (bookingError) throw bookingError;
+      if (requestError) throw requestError;
 
-      // Créer les créneaux multiples pour chaque jour de la plage
-      const slotsData: any[] = [];
-      timeSlots.forEach(slot => {
-        const current = new Date(slot.startDate);
-        const end = new Date(slot.endDate);
-        
-        while (current <= end) {
-          slotsData.push({
-            booking_id: booking.id,
-            booking_date: format(current, 'yyyy-MM-dd'),
-            start_time: slot.startTime,
-            end_time: slot.endTime
-          });
-          current.setDate(current.getDate() + 1);
-        }
-      });
-
-      const { error: slotsError } = await supabase
-        .from('booking_slots')
-        .insert(slotsData);
-
-      if (slotsError) throw slotsError;
-
-      // Envoyer email de confirmation de commande
+      // Email de confirmation (best-effort)
       try {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('first_name, last_name')
-          .eq('user_id', user.id)
-          .single();
-
-        const clientName = profile?.first_name && profile?.last_name 
-          ? `${profile.first_name} ${profile.last_name}` 
-          : 'Client';
-
-        await supabase.functions.invoke('send-workflow-notification', {
+        await supabase.functions.invoke('send-modern-notification', {
           body: {
-            booking_id: booking.id,
-            notification_type: 'order_received',
-            recipient_email: user.email,
-            recipient_name: clientName,
-            booking_details: {
-              service_name: selectedService.name,
-              booking_date: format(timeSlots[0].startDate, 'dd/MM/yyyy'),
-              start_time: timeSlots[0].startTime,
+            type: 'booking_confirmation',
+            recipient: { email: user.email, name: user.email?.split('@')[0], firstName: user.email?.split('@')[0] },
+            data: {
+              serviceName: selectedService.name,
+              bookingDate: format(timeSlots[0].startDate, 'dd/MM/yyyy'),
+              startTime: timeSlots[0].startTime,
               address: location,
-              total_price: getTotalPrice()
+              bookingId: created?.id
             }
           }
         });

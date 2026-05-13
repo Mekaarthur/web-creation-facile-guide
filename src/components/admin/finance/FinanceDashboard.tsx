@@ -29,11 +29,7 @@ export const FinanceDashboard = () => {
       // Charger les transactions financières
       const { data: transactionsData } = await supabase
         .from('financial_transactions')
-        .select(`
-          *,
-          booking:bookings(booking_date, start_time),
-          client:profiles!financial_transactions_client_id_fkey(first_name, last_name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(50);
 

@@ -53,15 +53,13 @@ const CustomRequestForm = () => {
     try {
       // Construire le payload pour custom_requests (RLS: insertion publique autorisée)
       const preferredDateStr = selectedDate ? selectedDate.toISOString().split('T')[0] : null;
-      const deliveryNote = formData.delivery_address
-        ? `\n\nAdresse de livraison : ${formData.delivery_address}`
-        : '';
       const payload = {
         client_name: formData.client_name,
         client_email: formData.client_email,
         client_phone: formData.client_phone || null,
-        service_description: formData.service_description + deliveryNote,
+        service_description: formData.service_description,
         location: formData.pickup_address,
+        delivery_address: formData.delivery_address || null,
         preferred_date: preferredDateStr,
         preferred_time: selectedTime || null,
         budget_range: formData.budget_range || null,

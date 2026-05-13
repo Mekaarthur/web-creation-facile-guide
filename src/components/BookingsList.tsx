@@ -14,8 +14,8 @@ interface Booking {
   id: string;
   booking_date: string;
   start_time: string;
-  duration_hours: number;
-  location: string;
+  end_time: string;
+  address: string | null;
   notes: string | null;
   total_price: number;
   status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
@@ -26,10 +26,6 @@ interface Booking {
   } | null;
   providers: {
     business_name: string | null;
-    profiles: {
-      first_name: string | null;
-      last_name: string | null;
-    } | null;
   } | null;
 }
 
@@ -56,22 +52,19 @@ const BookingsList = ({ userType }: BookingsListProps) => {
         return;
       }
 
-      let query = (supabase as any)
+      let query = supabase
         .from('bookings')
         .select(`
-          *,
+          id, booking_date, start_time, end_time, address, notes, total_price, status, created_at,
           services(name, category),
-          providers(
-            business_name,
-            profiles(first_name, last_name)
-          )
+          providers(business_name)
         `);
 
       if (userType === 'client') {
-        query = query.eq('user_id', user.id);
+        query = query.eq('client_id', user.id);
       } else {
         // Pour les prestataires, on récupère les réservations de leurs services
-        const { data: providerData } = await (supabase as any)
+        const { data: providerData } = await supabase
           .from('providers')
           .select('id')
           .eq('user_id', user.id)
@@ -121,16 +114,12 @@ const BookingsList = ({ userType }: BookingsListProps) => {
   };
 
   const getProviderDisplayName = (booking: Booking) => {
-    if (booking.providers?.business_name) return booking.providers.business_name;
-    if (booking.providers?.profiles?.first_name && booking.providers?.profiles?.last_name) {
-      return `${booking.providers.profiles.first_name} ${booking.providers.profiles.last_name}`;
-    }
-    return "Prestataire";
+    return booking.providers?.business_name || "Prestataire assigné";
   };
 
   const updateBookingStatus = async (bookingId: string, newStatus: string) => {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('bookings')
         .update({ status: newStatus })
         .eq('id', bookingId);
@@ -230,14 +219,16 @@ const BookingsList = ({ userType }: BookingsListProps) => {
                   </div>
                   <div className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
-                    <span>{booking.start_time} ({booking.duration_hours}h)</span>
+                    <span>{booking.start_time} → {booking.end_time}</span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <MapPin className="w-4 h-4" />
-                  <span>{booking.location}</span>
-                </div>
+                {booking.address && (
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <MapPin className="w-4 h-4" />
+                    <span>{booking.address}</span>
+                  </div>
+                )}
 
                 {userType === 'client' && (
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">

@@ -61,7 +61,7 @@ export const AvanceImmediateActivation = () => {
     const { data } = await supabase
       .from('profiles')
       .select('avance_immediate_active, avance_immediate_pending')
-      .eq('id', user.id)
+      .eq('user_id', user.id)
       .single();
 
     if (data?.avance_immediate_active) {
