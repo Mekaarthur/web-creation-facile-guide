@@ -7,11 +7,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, Upload, User, Mail, Phone, MapPin, Globe, Briefcase, Award, Shield } from 'lucide-react';
-import { Textarea } from '@/components/ui/textarea';
+import { Loader2, Upload, User, Mail, Phone, MapPin, Shield } from 'lucide-react';
 import { useSecureForm } from '@/hooks/useSecureForm';
 import { z } from 'zod';
-import { nameSchema, emailSchema, phoneSchema, postalCodeSchema } from '@/lib/security-validation';
+import { nameSchema, emailSchema, phoneSchema } from '@/lib/security-validation';
 import { Badge } from '@/components/ui/badge';
 
 interface ProfileData {
@@ -21,15 +20,8 @@ interface ProfileData {
   email?: string;
   phone?: string;
   address?: string;
-  postal_code?: string;
-  city?: string;
-  country?: string;
   avatar_url?: string;
   user_type?: string;
-  preferences?: any;
-  specialties?: any;
-  intervention_zones?: any;
-  certifications?: any;
 }
 
 interface ProfileUpdateFormProps {
@@ -42,9 +34,6 @@ const profileSchema = z.object({
   email: emailSchema.optional(),
   phone: phoneSchema.optional(),
   address: z.string().max(200, "Adresse trop longue (max 200 caractères)").optional(),
-  postal_code: postalCodeSchema.optional(),
-  city: z.string().max(100, "Ville trop longue").optional(),
-  country: z.string().max(100, "Pays trop long").optional(),
 });
 
 const ProfileUpdateForm = ({ userType = 'client' }: ProfileUpdateFormProps) => {
@@ -93,9 +82,6 @@ const ProfileUpdateForm = ({ userType = 'client' }: ProfileUpdateFormProps) => {
           email: user?.email || '',
           phone: '',
           address: '',
-          postal_code: '',
-          city: '',
-          country: 'France',
           avatar_url: '',
           user_type: userType,
         });
@@ -165,9 +151,6 @@ const ProfileUpdateForm = ({ userType = 'client' }: ProfileUpdateFormProps) => {
       email: profile.email,
       phone: profile.phone,
       address: profile.address,
-      postal_code: profile.postal_code,
-      city: profile.city,
-      country: profile.country,
     });
   };
 
@@ -178,16 +161,14 @@ const ProfileUpdateForm = ({ userType = 'client' }: ProfileUpdateFormProps) => {
         .from('profiles')
         .upsert({
           user_id: user?.id,
-          ...validatedData,
-          // Keep existing fields not in validation
-          avatar_url: profile.avatar_url,
-          user_type: profile.user_type,
-          preferences: profile.preferences,
-          specialties: profile.specialties,
-          intervention_zones: profile.intervention_zones,
-          certifications: profile.certifications,
+          first_name: validatedData.first_name,
+          last_name: validatedData.last_name,
+          email: validatedData.email,
+          phone: validatedData.phone || null,
+          address: validatedData.address || null,
+          avatar_url: profile.avatar_url || null,
           updated_at: new Date().toISOString(),
-        });
+        }, { onConflict: 'user_id' });
 
       if (error) throw error;
 
@@ -347,129 +328,21 @@ const ProfileUpdateForm = ({ userType = 'client' }: ProfileUpdateFormProps) => {
             <MapPin className="h-5 w-5" />
             <span>Adresse</span>
           </h3>
-          
+
           <div className="space-y-2">
             <Label htmlFor="address">Adresse complète</Label>
             <Input
               id="address"
               value={profile.address || ''}
               onChange={(e) => handleInputChange('address', e.target.value)}
-              placeholder="123 Rue de la République"
+              placeholder="123 Rue de la République, 75001 Paris"
             />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="postal_code">Code postal</Label>
-              <Input
-                id="postal_code"
-                value={profile.postal_code || ''}
-                onChange={(e) => handleInputChange('postal_code', e.target.value)}
-                placeholder="75001"
-              />
-              {errors.postal_code && (
-                <p className="text-sm text-destructive">{errors.postal_code}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="city">Ville</Label>
-              <Input
-                id="city"
-                value={profile.city || ''}
-                onChange={(e) => handleInputChange('city', e.target.value)}
-                placeholder="Paris"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="country">Pays</Label>
-              <div className="relative">
-                <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="country"
-                  value={profile.country || 'France'}
-                  onChange={(e) => handleInputChange('country', e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
+            {errors.address && (
+              <p className="text-sm text-destructive">{errors.address}</p>
+            )}
           </div>
         </div>
 
-        {/* Informations spécifiques selon le type d'utilisateur */}
-        {userType === 'client' && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Préférences</h3>
-            <div className="space-y-2">
-              <Label htmlFor="preferences">Préférences de service</Label>
-              <Textarea
-                id="preferences"
-                value={profile.preferences?.description || ''}
-                onChange={(e) => setProfile(prev => ({
-                  ...prev,
-                  preferences: { ...prev.preferences, description: e.target.value }
-                }))}
-                placeholder="Décrivez vos préférences (type de voyages, besoins spécifiques, etc.)"
-                rows={3}
-              />
-            </div>
-          </div>
-        )}
-
-        {userType === 'provider' && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium flex items-center space-x-2">
-              <Briefcase className="h-5 w-5" />
-              <span>Informations professionnelles</span>
-            </h3>
-            
-            <div className="space-y-2">
-              <Label htmlFor="specialties">Spécialités</Label>
-              <Textarea
-                id="specialties"
-                value={profile.specialties?.description || ''}
-                onChange={(e) => setProfile(prev => ({
-                  ...prev,
-                  specialties: { ...prev.specialties, description: e.target.value }
-                }))}
-                placeholder="Décrivez vos spécialités et compétences"
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="intervention_zones">Zones d'intervention</Label>
-              <Textarea
-                id="intervention_zones"
-                value={profile.intervention_zones?.description || ''}
-                onChange={(e) => setProfile(prev => ({
-                  ...prev,
-                  intervention_zones: { ...prev.intervention_zones, description: e.target.value }
-                }))}
-                placeholder="Indiquez vos zones d'intervention (départements, villes, etc.)"
-                rows={2}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="certifications" className="flex items-center space-x-2">
-                <Award className="h-4 w-4" />
-                <span>Certifications</span>
-              </Label>
-              <Textarea
-                id="certifications"
-                value={profile.certifications?.description || ''}
-                onChange={(e) => setProfile(prev => ({
-                  ...prev,
-                  certifications: { ...prev.certifications, description: e.target.value }
-                }))}
-                placeholder="Listez vos certifications, diplômes et formations"
-                rows={3}
-              />
-            </div>
-          </div>
-        )}
 
         {/* Bouton de sauvegarde */}
         <div className="pt-4">

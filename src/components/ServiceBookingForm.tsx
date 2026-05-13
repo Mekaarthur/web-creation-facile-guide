@@ -36,7 +36,7 @@ const ServiceBookingForm = ({ service, packageTitle, onClose }: ServiceBookingFo
   const [bookingSlots, setBookingSlots] = useState<BookingSlot[]>([]);
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
   const { addToCart } = useCart();
   const { toast } = useToast();
 
@@ -182,7 +182,7 @@ const ServiceBookingForm = ({ service, packageTitle, onClose }: ServiceBookingFo
                   {/* Date */}
                   <div className="space-y-2">
                     <Label>Date</Label>
-                    <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                    <Popover open={openPopoverId === slot.id} onOpenChange={(open) => setOpenPopoverId(open ? slot.id : null)}>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
@@ -204,7 +204,7 @@ const ServiceBookingForm = ({ service, packageTitle, onClose }: ServiceBookingFo
                           onSelect={(date) => {
                             if (date) {
                               updateBookingSlot(slot.id, { date });
-                              setIsPopoverOpen(false);
+                              setOpenPopoverId(null);
                             }
                           }}
                           disabled={(date) => date < new Date()}

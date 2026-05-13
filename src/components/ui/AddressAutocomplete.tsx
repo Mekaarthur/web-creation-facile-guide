@@ -4,18 +4,14 @@ import { MapPin, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface AddressSuggestion {
-  display_name: string;
-  address: {
-    house_number?: string;
-    road?: string;
-    city?: string;
-    town?: string;
-    village?: string;
-    municipality?: string;
-    postcode?: string;
-  };
-  lat: string;
-  lon: string;
+  label: string;
+  housenumber?: string;
+  street?: string;
+  postcode?: string;
+  city?: string;
+  citycode?: string;
+  x: number;
+  y: number;
 }
 
 interface AddressAutocompleteProps {
@@ -60,13 +56,23 @@ const AddressAutocomplete = ({
     }
     setLoading(true);
     try {
+      // API adresse.data.gouv.fr — gratuite, sans limite, CORS ok, France uniquement
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=fr&addressdetails=1&limit=5`,
-        { headers: { 'Accept-Language': 'fr' } }
+        `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=6&autocomplete=1`
       );
-      const data: AddressSuggestion[] = await response.json();
-      setSuggestions(data || []);
-      setShowDropdown((data || []).length > 0);
+      const data = await response.json();
+      const features: AddressSuggestion[] = (data.features || []).map((f: any) => ({
+        label: f.properties.label,
+        housenumber: f.properties.housenumber,
+        street: f.properties.street,
+        postcode: f.properties.postcode,
+        city: f.properties.city,
+        citycode: f.properties.citycode,
+        x: f.geometry.coordinates[0],
+        y: f.geometry.coordinates[1],
+      }));
+      setSuggestions(features);
+      setShowDropdown(features.length > 0);
     } catch {
       setSuggestions([]);
     } finally {
@@ -77,26 +83,19 @@ const AddressAutocomplete = ({
   const handleChange = (val: string) => {
     onChange(val);
     if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => fetchSuggestions(val), 600);
+    timerRef.current = setTimeout(() => fetchSuggestions(val), 400);
   };
 
-  const handleSelect = (suggestion: AddressSuggestion) => {
-    const addr = suggestion.address;
-    const parts = [addr.house_number, addr.road].filter(Boolean).join(' ');
-    const city = addr.city || addr.town || addr.village || addr.municipality || '';
-    const postcode = addr.postcode || '';
-    const fullAddress = [parts, postcode, city].filter(Boolean).join(', ');
-
-    onChange(fullAddress);
+  const handleSelect = (s: AddressSuggestion) => {
+    onChange(s.label);
     setShowDropdown(false);
     setSuggestions([]);
-
     onSelect?.({
-      address: fullAddress,
-      city,
-      postcode,
-      lat: parseFloat(suggestion.lat),
-      lon: parseFloat(suggestion.lon),
+      address: s.label,
+      city: s.city || '',
+      postcode: s.postcode || '',
+      lat: s.y,
+      lon: s.x,
     });
   };
 
@@ -113,6 +112,7 @@ const AddressAutocomplete = ({
           placeholder={placeholder}
           className={cn(showIcon && "pl-10", className)}
           required={required}
+          autoComplete="off"
         />
         {loading && (
           <Loader2 className="absolute right-3 top-3 h-4 w-4 text-muted-foreground animate-spin" />
@@ -130,7 +130,7 @@ const AddressAutocomplete = ({
             >
               <div className="flex items-start gap-2">
                 <MapPin className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
-                <span className="text-foreground line-clamp-2">{s.display_name}</span>
+                <span className="text-foreground line-clamp-2">{s.label}</span>
               </div>
             </button>
           ))}
