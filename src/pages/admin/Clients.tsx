@@ -70,8 +70,11 @@ const AdminClients = () => {
 
   useEffect(() => {
     loadClients();
-    loadStats();
   }, [searchTerm, statusFilter, serviceFilter]);
+
+  useEffect(() => {
+    loadStats();
+  }, []);
 
   const loadClients = async () => {
     try {

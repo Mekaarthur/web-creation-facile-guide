@@ -54,8 +54,7 @@ export const BinomesDashboard = () => {
         .select(`
           *,
           primary_provider:providers!binomes_primary_provider_id_fkey(
-            business_name,
-            profiles(first_name, last_name)
+            business_name
           )
         `)
         .order('created_at', { ascending: false });

@@ -232,11 +232,14 @@ export const useUpdateMissionStatus = () => {
       if (params.status === "in_progress" || params.status === "completed") {
         try {
           const { supabase } = await import("@/integrations/supabase/client");
-          await supabase.functions.invoke("send-mission-status-update", {
-            body: { bookingId: params.missionId, newStatus: params.status },
+          await supabase.functions.invoke("send-modern-notification", {
+            body: {
+              type: params.status === "completed" ? "mission_completed" : "mission_started",
+              data: { bookingId: params.missionId, newStatus: params.status },
+            },
           });
         } catch (e) {
-          console.warn("send-mission-status-update failed (non-bloquant)", e);
+          console.warn("Notification statut mission non envoyée (non-bloquant)", e);
         }
       }
 

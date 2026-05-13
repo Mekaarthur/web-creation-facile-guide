@@ -75,15 +75,14 @@ const AdminProviders = () => {
       console.log('Loading providers with filters:', { statusFilter, searchTerm, universeFilter });
       
       const { data, error } = await supabase.functions.invoke('admin-providers', {
-        body: { 
+        body: {
           action: 'list',
           status: statusFilter,
           searchTerm: searchTerm,
+          universeFilter: universeFilter !== 'all' ? universeFilter : undefined,
           limit: 100
         }
       });
-
-      console.log('Providers response:', { data, error });
 
       if (error) {
         console.error('Edge function error:', error);
@@ -91,17 +90,13 @@ const AdminProviders = () => {
       }
 
       if (data?.success) {
-        console.log('Received providers:', data.providers?.length || 0);
-        let filteredProviders = data.providers || [];
-        
-        // Filter by universe on the client side if needed
+        // Filtre côté client en fallback si l'Edge Function ne supporte pas universeFilter
+        let filteredProviders: Provider[] = data.providers || [];
         if (universeFilter && universeFilter !== 'all') {
           filteredProviders = filteredProviders.filter((p: Provider) =>
             p.universes?.includes(universeFilter)
           );
         }
-
-        console.log('Filtered providers:', filteredProviders.length);
         setProviders(filteredProviders);
       } else {
         console.error('Unexpected response format:', data);
