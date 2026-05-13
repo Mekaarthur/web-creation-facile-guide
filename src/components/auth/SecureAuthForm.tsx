@@ -107,10 +107,9 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
       if (authData.user && !authData.user.email_confirmed_at) {
         try {
           const { error: emailError } = await supabase.functions.invoke('send-confirmation-email', {
-            body: { 
+            body: {
               userEmail: validatedData.email,
-              userId: authData.user.id,
-              confirmationToken: authData.session?.access_token
+              userId: authData.user.id
             }
           });
           if (emailError) {

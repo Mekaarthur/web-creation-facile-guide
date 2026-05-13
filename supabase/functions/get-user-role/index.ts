@@ -37,7 +37,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[get-user-role] Fetching role for user: ${user.id} (${user.email})`);
+    console.log(`[get-user-role] Fetching role for user: ${user.id}`);
 
     // Récupérer le rôle via la fonction SECURITY DEFINER (plus sécurisé) + fallback
     const { data: roleData, error: roleError } = await supabaseClient
@@ -97,9 +97,9 @@ serve(async (req) => {
 
     // Logging d'audit pour traçabilité
     if (role === 'admin') {
-      console.log(`[get-user-role] ✅ ADMIN ACCESS - User: ${user.id}, Email: ${user.email}`);
+      console.log(`[get-user-role] ✅ ADMIN ACCESS - User: ${user.id}`);
     } else if (isProvider) {
-      console.log(`[get-user-role] 👷 PROVIDER ACCESS - User: ${user.id}, Email: ${user.email}, Status: ${providerData?.status}`);
+      console.log(`[get-user-role] 👷 PROVIDER ACCESS - User: ${user.id}, Status: ${providerData?.status}`);
     } else {
       console.log(`[get-user-role] 👤 USER ACCESS - User: ${user.id}, Role: ${role}`);
     }

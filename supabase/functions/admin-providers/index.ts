@@ -540,7 +540,7 @@ async function createProviderDirect(supabase: any, { providerData }: any) {
   try {
     const { email, first_name, last_name, phone, business_name, category, location } = providerData;
     
-    console.log('Creating provider directly:', { email, first_name, last_name });
+    console.log('Creating provider directly (admin action)...');
 
     // Vérifier si l'email existe déjà
     const { data: existingUser } = await supabase.auth.admin.listUsers();

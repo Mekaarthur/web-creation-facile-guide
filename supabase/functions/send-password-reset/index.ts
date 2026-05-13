@@ -68,7 +68,7 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { email, resetUrl }: PasswordResetRequest = await req.json();
     
-    console.log(`🔑 Processing password reset for: ${email}`);
+    console.log('🔑 Processing password reset request...');
 
     // Vérifier que l'email existe en base
     const { data: profiles } = await supabase
@@ -77,7 +77,7 @@ const handler = async (req: Request): Promise<Response> => {
       .ilike('email', email);
 
     if (!profiles || profiles.length === 0) {
-      console.log(`❌ No account found for email: ${email}`);
+      console.log('❌ No account found for provided email (not revealed to caller)');
       // Ne pas révéler si l'email existe ou non pour la sécurité
       return new Response(
         JSON.stringify({ 

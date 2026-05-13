@@ -401,7 +401,7 @@ async function unblockClient(supabase: any, { clientId }: any, adminUserId: stri
 
 async function createClientAdmin(supabase: any, { email, firstName, lastName, phone, address }: any, adminUserId: string) {
   try {
-    console.log('Creating client with:', { email, firstName, lastName, phone, address });
+    console.log('Creating client (admin action)...');
     
     // Validation des données
     if (!email || !firstName || !lastName) {

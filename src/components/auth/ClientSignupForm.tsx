@@ -126,10 +126,9 @@ export const ClientSignupForm = () => {
       if (authData.user && !authData.user.email_confirmed_at) {
         try {
           await supabase.functions.invoke('send-confirmation-email', {
-            body: { 
+            body: {
               userEmail: normalizedEmail,
-              userId: authData.user.id,
-              confirmationToken: authData.session?.access_token
+              userId: authData.user.id
             }
           });
         } catch (emailError) {
@@ -327,11 +326,11 @@ export const ClientSignupForm = () => {
               <div className="space-y-1 leading-none">
                 <FormLabel className="cursor-pointer">
                   J'accepte les{' '}
-                  <Link to="/cgu" target="_blank" className="text-primary hover:underline font-medium">
+                  <Link to="/cgu" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
                     conditions d'utilisation
                   </Link>
                   {' '}et la{' '}
-                  <Link to="/politique-confidentialite" target="_blank" className="text-primary hover:underline font-medium">
+                  <Link to="/politique-confidentialite" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
                     politique de confidentialité
                   </Link>
                   {' '}*
