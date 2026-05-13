@@ -234,7 +234,7 @@ const AssignedProviderCard = ({ bookingId, onOpenChat }: AssignedProviderCardPro
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Adresse:</span>
-                <span className="text-right max-w-[200px]">{booking.address}</span>
+                <span className="text-right max-w-[200px] truncate">{booking.address}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Prix:</span>

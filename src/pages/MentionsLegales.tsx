@@ -59,13 +59,23 @@ const MentionsLegales = () => {
               
               <div className="bg-muted/30 rounded-xl p-6 space-y-4">
                 <p className="text-foreground">
-                  Le site <strong className="text-primary">https://bikawo.fr/</strong> est édité par <strong>Bikawo</strong>, 
+                  Le site <strong className="text-primary">https://bikawo.com/</strong> est édité par <strong>Bikawo</strong>,
                   entreprise individuelle (auto-entreprise), immatriculée sous le numéro <strong>880 491 436</strong>.
                 </p>
-                
+
+                <div className="border-l-4 border-primary pl-4 space-y-1">
+                  <p className="font-semibold text-foreground">Directeur de la publication :</p>
+                  <p className="text-muted-foreground">BIKOKO Genevieve Anita</p>
+                </div>
+
                 <div className="border-l-4 border-primary pl-4 space-y-1">
                   <p className="font-semibold text-foreground">Siège social :</p>
                   <p className="text-muted-foreground">231 rue Saint-Honoré, 75001 Paris</p>
+                </div>
+
+                <div className="border-l-4 border-primary pl-4 space-y-1">
+                  <p className="font-semibold text-foreground">Téléphone :</p>
+                  <p className="text-muted-foreground">+33 6 09 08 53 90</p>
                 </div>
 
                 <div className="border-l-4 border-primary pl-4 space-y-1">
@@ -159,6 +169,31 @@ const MentionsLegales = () => {
                 <Mail className="h-5 w-5" />
                 contact@bikawo.com
               </a>
+            </CardContent>
+          </Card>
+
+          {/* Hébergeur */}
+          <Card className="border-0 shadow-lg">
+            <CardContent className="p-8">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Shield className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground mb-2">
+                    Hébergeur du site
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Prestataire assurant l'hébergement du site
+                  </p>
+                </div>
+              </div>
+              <div className="bg-muted/30 rounded-xl p-6 space-y-1">
+                <p className="font-semibold text-foreground">IONOS SARL</p>
+                <p className="text-muted-foreground">7 place de la Gare, BP 70109, 57201 Sarreguemines Cedex</p>
+                <p className="text-muted-foreground">Tél : 09 70 808 911</p>
+                <a href="https://www.ionos.fr" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm">www.ionos.fr</a>
+              </div>
             </CardContent>
           </Card>
 

@@ -44,7 +44,8 @@ import {
   Mail,
   TrendingUp,
   UserCog,
-  Clock
+  Clock,
+  ShieldCheck
 } from "lucide-react";
 import { NotificationBell } from './NotificationBell';
 import { SecureLogout } from '@/components/SecureLogout';
@@ -62,10 +63,11 @@ const navigationGroups = [
   {
     label: "Sécurité & Finance",
     items: [
-      { title: "Sécurité",       href: "/modern-admin/security",       icon: Lock },
-      { title: "Finance",        href: "/modern-admin/finance",         icon: Euro },
-      { title: "Urgences",       href: "/modern-admin/urgences",        icon: AlertTriangle },
-      { title: "Réclamations",   href: "/modern-admin/reclamations",    icon: MessageSquareWarning },
+      { title: "Sécurité",         href: "/modern-admin/security",         icon: Lock },
+      { title: "Finance",          href: "/modern-admin/finance",           icon: Euro },
+      { title: "Urgences",         href: "/modern-admin/urgences",          icon: AlertTriangle },
+      { title: "Réclamations",     href: "/modern-admin/reclamations",      icon: MessageSquareWarning },
+      { title: "RGPD / Suppressions", href: "/modern-admin/rgpd-deletions", icon: ShieldCheck },
     ]
   },
   {

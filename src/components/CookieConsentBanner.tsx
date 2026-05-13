@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -124,21 +125,17 @@ const CookieConsentBanner = () => {
           version: '1.0',
         });
         
-        if (prefs.analytics) {
-          await recordConsent.mutateAsync({
-            consentType: 'analytics',
-            granted: true,
-            version: '1.0',
-          });
-        }
-        
-        if (prefs.marketing) {
-          await recordConsent.mutateAsync({
-            consentType: 'marketing',
-            granted: true,
-            version: '1.0',
-          });
-        }
+        await recordConsent.mutateAsync({
+          consentType: 'analytics',
+          granted: prefs.analytics,
+          version: '1.0',
+        });
+
+        await recordConsent.mutateAsync({
+          consentType: 'marketing',
+          granted: prefs.marketing,
+          version: '1.0',
+        });
       } catch (error) {
         console.error('Erreur lors de l\'enregistrement du consentement:', error);
       }
@@ -179,7 +176,8 @@ const CookieConsentBanner = () => {
       {showBanner && (
         <div className="fixed bottom-20 md:bottom-4 left-4 right-4 md:left-4 md:max-w-sm z-40 p-4 bg-card border border-border rounded-xl shadow-elegant animate-in slide-in-from-bottom">
           <p className="text-xs text-muted-foreground mb-3">
-            🍪 Nous utilisons des cookies pour améliorer votre expérience.
+            🍪 Nous utilisons des cookies pour améliorer votre expérience.{' '}
+            <Link to="/politique-cookies" className="underline hover:text-foreground">En savoir plus</Link>
           </p>
           
           <div className="flex items-center gap-2">

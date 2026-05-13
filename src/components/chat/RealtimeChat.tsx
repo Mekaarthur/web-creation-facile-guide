@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Send, MessageCircle, X, Loader2 } from 'lucide-react';
@@ -151,7 +150,7 @@ export const RealtimeChat = ({ bookingId, otherUserId, otherUserName, onClose }:
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
@@ -176,7 +175,6 @@ export const RealtimeChat = ({ bookingId, otherUserId, otherUserName, onClose }:
             </AvatarFallback>
           </Avatar>
           <CardTitle className="text-sm font-medium">{otherUserName}</CardTitle>
-          <Badge variant="outline" className="text-xs text-green-600 border-green-200">Actif</Badge>
         </div>
         {onClose && (
           <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
@@ -223,10 +221,11 @@ export const RealtimeChat = ({ bookingId, otherUserId, otherUserName, onClose }:
         <div className="flex gap-2">
           <Input
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onChange={(e) => setNewMessage(e.target.value.slice(0, 1000))}
+            onKeyDown={handleKeyDown}
             placeholder="Votre message..."
             disabled={sending}
+            maxLength={1000}
             className="flex-1"
           />
           <Button

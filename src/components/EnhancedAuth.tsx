@@ -361,7 +361,7 @@ const EnhancedAuth = () => {
               CGU
             </button>
             {' '}et notre{' '}
-            <button onClick={() => navigate('/privacy')} className="text-primary hover:underline">
+            <button onClick={() => navigate('/politique-confidentialite')} className="text-primary hover:underline">
               Politique de confidentialité
             </button>
           </p>

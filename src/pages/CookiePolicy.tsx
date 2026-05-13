@@ -1,12 +1,9 @@
-import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
 
 const CookiePolicy = () => {
-  const { t } = useTranslation();
-
   const openCookieSettings = () => {
     window.dispatchEvent(new CustomEvent('openCookieSettings'));
   };
@@ -20,7 +17,7 @@ const CookiePolicy = () => {
         </Link>
 
         <h1 className="text-4xl font-bold mb-4">Politique de Cookies</h1>
-        <p className="text-muted-foreground mb-8">Dernière mise à jour : {new Date().toLocaleDateString('fr-FR')}</p>
+        <p className="text-muted-foreground mb-8">Dernière mise à jour : 7 mai 2025</p>
 
         <div className="space-y-8">
           <Card className="p-6">
@@ -50,12 +47,10 @@ const CookiePolicy = () => {
               <div>
                 <h3 className="text-xl font-medium mb-2 text-primary">2. Cookies analytiques</h3>
                 <p className="text-muted-foreground mb-2">
-                  Ces cookies nous permettent de mesurer l'audience et d'améliorer les performances du site.
+                  Ces cookies nous permettent de mesurer l'audience et d'améliorer les performances du site. Ils ne sont déposés qu'avec votre consentement.
                 </p>
                 <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
-                  <li>Google Analytics (mesure d'audience)</li>
-                  <li>Hotjar (analyse du comportement utilisateur)</li>
-                  <li>Microsoft Clarity (heatmaps et sessions)</li>
+                  <li>Google Analytics 4 (mesure d'audience anonymisée)</li>
                 </ul>
                 <p className="text-sm text-muted-foreground mt-2">
                   Durée de conservation : 13 mois maximum
@@ -65,14 +60,7 @@ const CookiePolicy = () => {
               <div>
                 <h3 className="text-xl font-medium mb-2 text-primary">3. Cookies marketing</h3>
                 <p className="text-muted-foreground mb-2">
-                  Ces cookies sont utilisés pour vous proposer des publicités pertinentes et mesurer l'efficacité de nos campagnes.
-                </p>
-                <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
-                  <li>Facebook Pixel (publicités ciblées)</li>
-                  <li>Google Ads (remarketing)</li>
-                </ul>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Durée de conservation : 13 mois maximum
+                  Ces cookies sont utilisés pour vous proposer des publicités pertinentes. Aucun outil marketing n'est actuellement actif sur ce site.
                 </p>
               </div>
             </div>

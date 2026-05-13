@@ -51,31 +51,22 @@ const CustomRequestForm = () => {
     setLoading(true);
 
     try {
-      // Prepare datetime if both date and time are provided
-      let preferredDatetime = null;
-      if (selectedDate && selectedTime) {
-        const [hours, minutes] = selectedTime.split(':');
-        const datetime = new Date(selectedDate);
-        datetime.setHours(parseInt(hours), parseInt(minutes));
-        preferredDatetime = datetime.toISOString();
-      }
-
       // Construire le payload pour custom_requests (RLS: insertion publique autorisée)
       const preferredDateStr = selectedDate ? selectedDate.toISOString().split('T')[0] : null;
+      const deliveryNote = formData.delivery_address
+        ? `\n\nAdresse de livraison : ${formData.delivery_address}`
+        : '';
       const payload = {
         client_name: formData.client_name,
         client_email: formData.client_email,
         client_phone: formData.client_phone || null,
-        service_description: formData.service_description,
+        service_description: formData.service_description + deliveryNote,
         location: formData.pickup_address,
         preferred_date: preferredDateStr,
         preferred_time: selectedTime || null,
-        preferred_datetime: preferredDatetime,
         budget_range: formData.budget_range || null,
         urgency_level: formData.urgency_level || 'normal',
         additional_notes: formData.additional_notes || null,
-        pickup_address: formData.pickup_address,
-        delivery_address: formData.delivery_address || null,
         status: 'new'
       };
 

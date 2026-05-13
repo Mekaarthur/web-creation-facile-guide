@@ -116,6 +116,7 @@ const AdminUrgences = lazy(() => import("./pages/admin/Urgences"));
 const AdminAvanceImmediate = lazy(() => import("./pages/admin/AvanceImmediate"));
 const AdminReclamations = lazy(() => import("./pages/admin/Reclamations"));
 const AdminAccessTracking = lazy(() => import("./pages/admin/AdminAccessTracking"));
+const RgpdDeletions = lazy(() => import("./pages/admin/RgpdDeletions"));
 const AuditReport = lazy(() => import("./components/AuditReport"));
 const BikawoCartDemo = lazy(() => import("./components/BikawoCartDemo"));
 const AnalyticsSEO = lazy(() => import("./pages/AnalyticsSEO"));
@@ -286,6 +287,7 @@ const App = () => (
                   {/* /brand redirige vers /marque */}
                   <Route path="reclamations" element={<AdminReclamations />} />
                   <Route path="acces" element={<AdminAccessTracking />} />
+                  <Route path="rgpd-deletions" element={<RgpdDeletions />} />
                 </Route>
                 
                 <Route path="*" element={<NotFound />} />

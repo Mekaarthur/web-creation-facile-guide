@@ -43,7 +43,7 @@ const FAQ = () => {
         },
         {
           question: "Quels modes de paiement acceptez-vous ?",
-          answer: "Carte bancaire et CESU (Chèque Emploi Service Universel). Le montant est prélevé après la prestation pour votre tranquillité d'esprit."
+          answer: "Carte bancaire et avance immédiate de crédit d'impôt (URSSAF). Le montant est prélevé après la prestation pour votre tranquillité d'esprit."
         },
         {
           question: "Y a-t-il des frais cachés ?",
@@ -60,7 +60,7 @@ const FAQ = () => {
         },
         {
           question: "Âge minimum des enfants gardés ?",
-          answer: "Dès 3 mois avec nos intervenants spécialisés dans l'accompagnement des tout-petits."
+          answer: "Dès 3 ans avec nos intervenants spécialisés dans l'accompagnement des enfants."
         },
         {
           question: "Que se passe-t-il en cas d'urgence ?",
@@ -170,7 +170,7 @@ const FAQ = () => {
         },
         {
           question: "Êtes-vous assurés ?",
-          answer: "Oui ! Assurance responsabilité civile professionnelle couvrant toutes nos prestations. Nos intervenants bénéficient aussi d'une couverture accident du travail."
+          answer: "Oui ! Bikawo est couvert par une assurance responsabilité civile professionnelle pour toutes ses prestations. Chaque partenaire indépendant est responsable de sa propre couverture professionnelle conformément à son statut."
         },
         {
           question: "Comment évaluez-vous la qualité ?",

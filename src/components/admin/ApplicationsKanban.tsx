@@ -236,9 +236,9 @@ export const ApplicationsKanban = () => {
 
       {/* Kanban Board */}
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 overflow-x-auto pb-4">
+        <div className="flex flex-wrap lg:flex-nowrap gap-4 overflow-x-auto pb-4">
           {columns.map(column => (
-            <div key={column.id} className="min-w-[280px]">
+            <div key={column.id} className="w-full sm:w-[calc(50%-0.5rem)] lg:w-auto lg:min-w-[260px] lg:flex-1">
               <div className={cn("rounded-t-lg p-3 flex items-center gap-2", column.bgColor)}>
                 <span className={column.color}>{column.icon}</span>
                 <h3 className={cn("font-semibold", column.color)}>{column.title}</h3>

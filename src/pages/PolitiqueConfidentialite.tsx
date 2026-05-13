@@ -360,7 +360,7 @@ const PolitiqueConfidentialite = () => {
                     <TableRow>
                       <TableCell>Communication et offres</TableCell>
                       <TableCell>Identité, Contact, Préférences</TableCell>
-                      <TableCell>Intérêt légitime de Bikawo</TableCell>
+                      <TableCell>Consentement (opt-in)</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
@@ -387,11 +387,14 @@ const PolitiqueConfidentialite = () => {
 
               <div className="space-y-6">
                 <div className="bg-muted/30 rounded-xl p-6">
-                  <h3 className="font-semibold text-foreground mb-3">Prestataires techniques</h3>
-                  <p className="text-muted-foreground">
-                    Pour assurer le fonctionnement de nos Services, nous utilisons différentes solutions technologiques. 
-                    Par exemple, <strong>Stripe</strong>, notre prestataire de paiement agréé, traite les informations bancaires 
-                    pour permettre les transactions sur la Plateforme.
+                  <h3 className="font-semibold text-foreground mb-3">Sous-traitants techniques (Article 28 RGPD)</h3>
+                  <ul className="space-y-3 text-muted-foreground text-sm">
+                    <li><strong>Supabase Inc.</strong> (USA) — hébergement de la base de données et authentification. Transfert encadré par les Clauses Contractuelles Types de l'UE.</li>
+                    <li><strong>Stripe Inc.</strong> (USA) — traitement des paiements. Certifié PCI-DSS. Transfert encadré par les Clauses Contractuelles Types de l'UE.</li>
+                    <li><strong>Google LLC</strong> (USA) — mesure d'audience via Google Analytics 4, uniquement avec votre consentement. Transfert encadré par les Clauses Contractuelles Types de l'UE.</li>
+                  </ul>
+                  <p className="text-sm text-muted-foreground mt-3">
+                    Ces sous-traitants agissent exclusivement sur instruction de Bikawo et sont soumis à des obligations contractuelles de confidentialité et de sécurité.
                   </p>
                 </div>
 
@@ -563,6 +566,16 @@ const PolitiqueConfidentialite = () => {
 
                 <div className="bg-muted/30 rounded-xl p-5">
                   <div className="flex items-center gap-3 mb-3">
+                    <Clock className="h-5 w-5 text-primary" />
+                    <h3 className="font-semibold text-foreground">Droit à la limitation</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Demander la suspension temporaire du traitement de vos données (Article 18 RGPD).
+                  </p>
+                </div>
+
+                <div className="bg-muted/30 rounded-xl p-5">
+                  <div className="flex items-center gap-3 mb-3">
                     <AlertTriangle className="h-5 w-5 text-primary" />
                     <h3 className="font-semibold text-foreground">Réclamation CNIL</h3>
                   </div>
@@ -635,17 +648,26 @@ const PolitiqueConfidentialite = () => {
                 </div>
               </div>
               
-              <a 
+              <a
                 href="mailto:contact@bikawo.com"
                 className="inline-flex items-center gap-3 px-6 py-4 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors font-medium"
               >
                 <Mail className="h-5 w-5" />
                 contact@bikawo.com
               </a>
-              
+
               <p className="mt-4 text-sm text-muted-foreground">
-                Nous nous engageons à vous répondre dans les meilleurs délais.
+                Nous nous engageons à vous répondre dans les meilleurs délais et au plus tard dans un délai d'un mois (Article 12 RGPD).
               </p>
+
+              <div className="mt-6 p-4 bg-muted/30 rounded-xl">
+                <p className="text-sm text-muted-foreground">
+                  Si vous estimez que vos droits ne sont pas respectés, vous pouvez adresser une réclamation à la{' '}
+                  <a href="https://www.cnil.fr/fr/plaintes" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                    CNIL (Commission Nationale de l'Informatique et des Libertés)
+                  </a>.
+                </p>
+              </div>
             </CardContent>
           </Card>
 

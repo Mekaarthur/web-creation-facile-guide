@@ -2,7 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Helmet } from "react-helmet-async";
 import { Card, CardContent } from "@/components/ui/card";
-import { Shield, FileText, ChevronDown } from "lucide-react";
+import { Shield, FileText } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const CGU = () => {
@@ -25,7 +25,7 @@ const CGU = () => {
 • « Prestation Récurrente » : désigne une Prestation souscrite par un Client avec une régularité (hebdomadaire, bimensuelle, mensuelle, plusieurs fois par semaine), réalisée par un Partenaire déterminé.
 • « Services » : désigne les services fournis par Bikawo aux Utilisateurs, incluant notamment la mise en relation et les services permettant d'organiser et coordonner des Services à la Personne (ex. information, intermédiation, suivi, facturation, envoi d'attestation fiscale).
 • « Service à la Personne » : désigne exclusivement les activités relevant des articles L.7231-1 et suivants et D.7231-1 et suivants du Code du travail (ex. entretien de la maison et travaux ménagers), à l'exclusion de toute activité soumise à agrément, conformément à la loi.
-• « Site » : désigne le site internet accessible à l'adresse https://bikawo.fr/ ainsi que l'ensemble de ses sous-domaines.
+• « Site » : désigne le site internet accessible à l'adresse https://bikawo.com/ ainsi que l'ensemble de ses sous-domaines.
 • « Utilisateur » : désigne indifféremment un Client ou un Partenaire utilisant la Plateforme.
 • « Bikawo » : désigne l'auto-entreprise enregistrée à l'INPI sous le numéro 880 491 436, domiciliée 231 rue Saint-Honoré, Paris. L'activité de Bikawo est dédiée aux services à la personne (notamment : ménage, garde d'enfants, gestion animalière, accompagnement de personnes âgées, etc.).
 
@@ -361,7 +361,15 @@ La responsabilité de Bikawo, limitée à son rôle d'intermédiaire, ne peut ê
 
 En cas de litige Partenaire/Client, Bikawo peut intervenir pour faciliter un règlement amiable. Dans ce cadre, Bikawo peut demander des éléments justificatifs (ex. photos), traités conformément à la politique de confidentialité.
 
-Toute réclamation doit être adressée à contact@bikawo.com dans les 72h. Passé ce délai, elle ne sera pas traitée.`
+Toute réclamation doit être adressée à contact@bikawo.com dans les meilleurs délais et, concernant les dommages matériels, au plus tard 72h après la Prestation afin de permettre un traitement optimal.
+
+Médiation de la consommation (Article L.612-1 du Code de la consommation) :
+En cas d'échec de la réclamation amiable, le Client consommateur peut recourir gratuitement à la médiation. Notre médiateur agréé est :
+ANM Conso — 62 rue Tiquetonne, 75002 Paris
+Site : www.anm-conso.com
+
+Plateforme européenne de résolution des litiges en ligne :
+Conformément au règlement UE n°524/2013, vous pouvez également soumettre votre litige via : https://ec.europa.eu/consumers/odr/`
     },
     {
       id: "divers",

@@ -238,7 +238,7 @@ const ChatBot = () => {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
@@ -273,7 +273,7 @@ const ChatBot = () => {
 
       {/* Interface de chat */}
       {isOpen && (
-        <div className="fixed bottom-36 lg:bottom-24 right-2 sm:right-6 w-[calc(100vw-1rem)] sm:w-96 h-[420px] sm:h-[500px] z-50 animate-fade-in">
+        <div className="fixed bottom-36 lg:bottom-24 right-2 sm:right-6 w-[calc(100vw-1rem)] sm:w-96 h-[min(420px,calc(100svh-11rem))] sm:h-[500px] z-50 animate-fade-in">
           <Card className="h-full flex flex-col shadow-cocon border-primary/20">
             {/* Header */}
             <CardHeader className="bg-gradient-primary text-white p-4 rounded-t-lg">
@@ -386,7 +386,7 @@ const ChatBot = () => {
                   type="text"
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  onKeyDown={handleKeyDown}
                   placeholder="Posez-moi votre question..."
                   className="flex-1 h-9 text-sm"
                   disabled={isLoading}

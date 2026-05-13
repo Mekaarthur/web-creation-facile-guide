@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -49,6 +49,11 @@ const clientSignupSchema = z.object({
     .refine((val) => val === true, {
       message: "Vous devez accepter les conditions d'utilisation"
     }),
+  isAdult: z
+    .boolean()
+    .refine((val) => val === true, {
+      message: "Vous devez certifier avoir au moins 18 ans"
+    }),
 });
 
 type ClientSignupFormData = z.infer<typeof clientSignupSchema>;
@@ -69,6 +74,7 @@ export const ClientSignupForm = () => {
       password: '',
       phone: '',
       acceptTerms: false,
+      isAdult: false,
     },
   });
 
@@ -282,6 +288,29 @@ export const ClientSignupForm = () => {
           )}
         />
 
+        {/* Vérification d'âge */}
+        <FormField
+          control={form.control}
+          name="isAdult"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  disabled={isSubmitting}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel className="cursor-pointer">
+                  Je certifie avoir au moins 18 ans *
+                </FormLabel>
+                <FormMessage />
+              </div>
+            </FormItem>
+          )}
+        />
+
         {/* Acceptation des conditions */}
         <FormField
           control={form.control}
@@ -297,7 +326,15 @@ export const ClientSignupForm = () => {
               </FormControl>
               <div className="space-y-1 leading-none">
                 <FormLabel className="cursor-pointer">
-                  J'accepte les conditions d'utilisation et la politique de confidentialité *
+                  J'accepte les{' '}
+                  <Link to="/cgu" target="_blank" className="text-primary hover:underline font-medium">
+                    conditions d'utilisation
+                  </Link>
+                  {' '}et la{' '}
+                  <Link to="/politique-confidentialite" target="_blank" className="text-primary hover:underline font-medium">
+                    politique de confidentialité
+                  </Link>
+                  {' '}*
                 </FormLabel>
                 <FormMessage />
               </div>
@@ -312,7 +349,8 @@ export const ClientSignupForm = () => {
             <li>Prénom et Nom</li>
             <li>Adresse email valide</li>
             <li>Mot de passe sécurisé (8 caractères minimum)</li>
-            <li>Acceptation des conditions d'utilisation</li>
+            <li>Certification de majorité (18 ans minimum)</li>
+            <li>Acceptation des CGU et politique de confidentialité</li>
           </ul>
         </div>
 
