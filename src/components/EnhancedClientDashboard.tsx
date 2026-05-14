@@ -11,11 +11,12 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { 
-  User, CheckCircle, Sparkles, Search, Filter, ArrowUp, Star, Plus, TrendingUp, 
-  Bell, Calendar, ChevronDown, Clock, MoreHorizontal, Zap, ArrowRight, Target, 
-  Trophy, Heart, BookOpen, CreditCard, Gift 
+import {
+  User, CheckCircle, Sparkles, Search, Filter, ArrowUp, Star, Plus, TrendingUp,
+  Bell, Calendar, ChevronDown, Clock, MoreHorizontal, Zap, ArrowRight, Target,
+  Trophy, Heart, BookOpen, CreditCard, Gift
 } from "lucide-react";
+import ServiceRecommendations from "@/components/client/ServiceRecommendations";
 
 interface EnhancedClientDashboardProps {
   onNavigateToTab: (tab: string) => void;
@@ -332,6 +333,9 @@ const EnhancedClientDashboard = ({ onNavigateToTab }: EnhancedClientDashboardPro
               )}
             </CardContent>
           </Card>
+
+          {/* Recommandations personnalisées */}
+          <ServiceRecommendations />
         </div>
 
         {/* Sidebar avec actions et insights */}
