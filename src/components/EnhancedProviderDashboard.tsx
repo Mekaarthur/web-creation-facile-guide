@@ -40,6 +40,7 @@ import ProviderServices from '@/components/ProviderServices';
 import MyZones from '@/pages/provider/MyZones';
 import { StripeConnectCard } from '@/components/provider/StripeConnectCard';
 import ProviderAttestationsTab from '@/components/provider/ProviderAttestationsTab';
+import { ProviderFavoriteRequests } from '@/components/provider/ProviderFavoriteRequests';
 
 const EnhancedProviderDashboard = () => {
   const { t } = useTranslation();
@@ -331,9 +332,10 @@ const EnhancedProviderDashboard = () => {
           <TabsContent value="communaute" className="mt-4 sm:mt-6 lg:mt-8">
             <Tabs defaultValue="messages" className="w-full">
               <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0 pb-2">
-                <TabsList className="inline-flex sm:grid sm:grid-cols-2 mb-4 min-w-max sm:min-w-0 sm:w-full">
+                <TabsList className="inline-flex sm:grid sm:grid-cols-3 mb-4 min-w-max sm:min-w-0 sm:w-full">
                   <TabsTrigger value="messages" className="text-xs sm:text-sm whitespace-nowrap">Messages</TabsTrigger>
                   <TabsTrigger value="cooptation" className="text-xs sm:text-sm whitespace-nowrap">Cooptation</TabsTrigger>
+                  <TabsTrigger value="binomes" className="text-xs sm:text-sm whitespace-nowrap">Binômes</TabsTrigger>
                 </TabsList>
               </div>
               <TabsContent value="messages">
@@ -341,6 +343,9 @@ const EnhancedProviderDashboard = () => {
               </TabsContent>
               <TabsContent value="cooptation">
                 <ProviderReferralProgram />
+              </TabsContent>
+              <TabsContent value="binomes">
+                <ProviderFavoriteRequests />
               </TabsContent>
             </Tabs>
           </TabsContent>

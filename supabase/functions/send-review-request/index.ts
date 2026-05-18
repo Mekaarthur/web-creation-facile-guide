@@ -36,13 +36,34 @@ serve(async (req) => {
       .select(`
         *,
         client:profiles!bookings_client_id_fkey(first_name, email),
-        provider:profiles!bookings_provider_id_fkey(first_name, last_name),
         service:services(name, category)
       `)
       .eq('id', bookingId)
       .single();
 
     if (bookingError) throw bookingError;
+
+    // Récupérer le nom du prestataire via providers → profiles
+    let providerName = 'Prestataire';
+    if (booking.provider_id) {
+      const { data: providerRow } = await supabaseAdmin
+        .from('providers')
+        .select('business_name, user_id')
+        .eq('id', booking.provider_id)
+        .single();
+      if (providerRow?.business_name) {
+        providerName = providerRow.business_name;
+      } else if (providerRow?.user_id) {
+        const { data: providerProfile } = await supabaseAdmin
+          .from('profiles')
+          .select('first_name, last_name')
+          .eq('user_id', providerRow.user_id)
+          .single();
+        if (providerProfile) {
+          providerName = `${providerProfile.first_name ?? ''} ${providerProfile.last_name ?? ''}`.trim() || 'Prestataire';
+        }
+      }
+    }
 
     // Vérifier si le client a déjà laissé un avis
     const { data: existingReview } = await supabaseAdmin
@@ -54,9 +75,9 @@ serve(async (req) => {
     if (existingReview) {
       console.log('Avis déjà existant pour cette réservation');
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          message: "Avis déjà existant" 
+        JSON.stringify({
+          success: false,
+          message: "Avis déjà existant"
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -66,9 +87,6 @@ serve(async (req) => {
     }
 
     const clientName = booking.client?.first_name || 'Client';
-    const providerName = booking.provider 
-      ? `${booking.provider.first_name} ${booking.provider.last_name}` 
-      : 'Prestataire';
     const serviceName = booking.service?.name || 'Service';
 
     // Créer une notification pour le client

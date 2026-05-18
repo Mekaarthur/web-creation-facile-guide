@@ -85,6 +85,7 @@ serve(async (req) => {
     await supabase
       .from("bookings")
       .update({
+        status: "no_show",
         no_show_reported_at: now.toISOString(),
         replacement_search_status: "searching",
       })

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.3";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
@@ -10,6 +11,11 @@ const corsHeaders = {
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
   apiVersion: "2023-10-16",
 });
+
+const supabase = createClient(
+  Deno.env.get("SUPABASE_URL") ?? "",
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+);
 
 // Validation schema
 const refundSchema = z.object({
@@ -43,6 +49,15 @@ serve(async (req) => {
     });
 
     console.log('Refund created:', refund.id);
+
+    // Mettre à jour financial_transactions via stripe_payment_intent_id
+    await supabase
+      .from('financial_transactions')
+      .update({
+        payment_status: 'refunded',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('stripe_payment_intent_id', paymentIntentId);
 
     return new Response(
       JSON.stringify({

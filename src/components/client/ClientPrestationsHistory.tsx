@@ -15,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import {
   Calendar, Clock, MapPin, Euro, FileText, Star, Award,
-  AlertTriangle, ChevronLeft, ChevronRight, Search, Loader2,
+  AlertTriangle, ChevronLeft, ChevronRight, Search, Loader2, Heart,
 } from 'lucide-react';
 import { format, subDays, subMonths, subYears, isAfter, isBefore, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -65,10 +65,42 @@ export const ClientPrestationsHistory = () => {
   const [reportBooking, setReportBooking] = useState<Booking | null>(null);
   const [reportText, setReportText] = useState('');
   const [submittingReport, setSubmittingReport] = useState(false);
+  const [favoritedProviders, setFavoritedProviders] = useState<Set<string>>(new Set());
+  const [addingFavorite, setAddingFavorite] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user) loadBookings();
+    if (user) {
+      loadBookings();
+      loadFavorites();
+    }
   }, [user]);
+
+  const loadFavorites = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('client_favorites')
+      .select('provider_id')
+      .eq('client_id', user.id)
+      .in('status', ['pending_provider', 'active']);
+    if (data) setFavoritedProviders(new Set(data.map((f: any) => f.provider_id)));
+  };
+
+  const handleAddFavorite = async (booking: Booking) => {
+    if (!user || !booking.provider_id) return;
+    setAddingFavorite(booking.provider_id);
+    try {
+      const { error } = await supabase.functions.invoke('manage-favorites', {
+        body: { action: 'request', providerId: booking.provider_id, bookingId: booking.id },
+      });
+      if (error) throw error;
+      setFavoritedProviders(prev => new Set([...prev, booking.provider_id]));
+      toast({ title: 'Demande envoyée', description: 'Le prestataire va recevoir votre demande de binôme.' });
+    } catch (e: any) {
+      toast({ title: 'Erreur', description: e.message || 'Impossible d\'envoyer la demande', variant: 'destructive' });
+    } finally {
+      setAddingFavorite(null);
+    }
+  };
 
   useEffect(() => {
     setPage(1);
@@ -366,6 +398,27 @@ export const ClientPrestationsHistory = () => {
                             <Button size="sm" variant="outline" onClick={() => navigate(`/espace-personnel?tab=dashboard`)} className="gap-1.5">
                               <Star className="w-3.5 h-3.5" /> Mon avis
                             </Button>
+                            {b.status === 'completed' && b.provider_id && (
+                              favoritedProviders.has(b.provider_id) ? (
+                                <Button size="sm" variant="outline" disabled className="gap-1.5 text-pink-600">
+                                  <Heart className="w-3.5 h-3.5 fill-pink-500" /> Binôme demandé
+                                </Button>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleAddFavorite(b)}
+                                  disabled={addingFavorite === b.provider_id}
+                                  className="gap-1.5 text-pink-600 hover:text-pink-700 hover:border-pink-400"
+                                >
+                                  {addingFavorite === b.provider_id
+                                    ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    : <Heart className="w-3.5 h-3.5" />
+                                  }
+                                  Ajouter en favori
+                                </Button>
+                              )
+                            )}
                             <Button size="sm" variant="ghost" onClick={() => openReport(b)} className="gap-1.5 text-destructive hover:text-destructive">
                               <AlertTriangle className="w-3.5 h-3.5" /> Signaler une anomalie
                             </Button>

@@ -54,7 +54,7 @@ serve(async (req) => {
       .from('bookings')
       .select(`
         *,
-        payments!inner(id, stripe_payment_intent_id, amount, status)
+        payments(id, stripe_payment_intent_id, amount, status)
       `)
       .eq('id', bookingId)
       .single();

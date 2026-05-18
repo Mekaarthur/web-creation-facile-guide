@@ -244,10 +244,22 @@ serve(async (req) => {
         continue;
       }
 
-      // Matching géographique : chercher un prestataire dans la zone du client
+      // Priorité 1 : prestataire favori actif du client
       let availableProvider: { id: string } | null = null;
 
-      if (clientPostalCode) {
+      if (userId) {
+        const { data: favoriteProviders } = await supabaseAdmin.rpc('get_client_active_favorites', {
+          p_client_id: userId,
+          p_service_type: service.category || null,
+        });
+        if (favoriteProviders && favoriteProviders.length > 0) {
+          availableProvider = { id: favoriteProviders[0].provider_id };
+          logStep('Prestataire favori utilisé', { providerId: availableProvider.id });
+        }
+      }
+
+      // Priorité 2 : matching géographique par code postal
+      if (!availableProvider && clientPostalCode) {
         const { data: zoneProviders } = await supabaseClient.rpc('find_providers_in_zone', {
           p_code_postal: clientPostalCode,
           p_service_type: service.category || null,
