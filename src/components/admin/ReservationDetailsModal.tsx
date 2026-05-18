@@ -543,7 +543,7 @@ export const ReservationDetailsModal = ({ reservation, onClose, onUpdate }: Rese
         </DialogHeader>
 
         <Tabs defaultValue="info" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5">
             <TabsTrigger value="info">Informations</TabsTrigger>
             <TabsTrigger value="finance">Finances</TabsTrigger>
             <TabsTrigger value="history">Historique</TabsTrigger>

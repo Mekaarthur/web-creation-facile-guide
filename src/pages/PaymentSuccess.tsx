@@ -31,10 +31,14 @@ const PaymentSuccess = () => {
       try {
         console.log('[PaymentSuccess] Vérification paiement session:', sessionId);
 
-        // Appeler l'edge function verify-payment
-        const { data, error: verifyError } = await supabase.functions.invoke('verify-payment', {
-          body: { sessionId }
-        });
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("La vérification a expiré, veuillez rafraîchir la page")), 15000)
+        );
+
+        const { data, error: verifyError } = await Promise.race([
+          supabase.functions.invoke('verify-payment', { body: { sessionId } }),
+          timeoutPromise,
+        ]) as Awaited<ReturnType<typeof supabase.functions.invoke>>;
 
         if (verifyError) {
           throw verifyError;

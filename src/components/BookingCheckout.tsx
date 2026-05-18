@@ -367,7 +367,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
               </Alert>
             )}
 
-            <div className="space-y-2 sm:space-y-3 max-h-60 sm:max-h-80 overflow-y-auto">
+            <div className="space-y-2 sm:space-y-3 max-h-40 sm:max-h-60 lg:max-h-80 overflow-y-auto">
               {cartItems.map((item) => {
                 const slot = formatTimeSlot(item.timeSlot);
                 return (

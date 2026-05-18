@@ -709,7 +709,7 @@ const AdminReferralManagement = () => {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-6 w-full">
+        <TabsList className="grid grid-cols-3 sm:grid-cols-6 w-full">
           <TabsTrigger value="dashboard" className="gap-2">
             <BarChart3 className="h-4 w-4" />
             Dashboard

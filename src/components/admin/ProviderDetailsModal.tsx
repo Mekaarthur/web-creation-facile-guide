@@ -383,7 +383,7 @@ export const ProviderDetailsModal = ({
 
               {/* Tabs */}
               <Tabs defaultValue="services" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
                   <TabsTrigger value="services">Services</TabsTrigger>
                   <TabsTrigger value="missions">Missions</TabsTrigger>
                   <TabsTrigger value="paiements">Paiements</TabsTrigger>

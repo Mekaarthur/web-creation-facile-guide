@@ -222,7 +222,7 @@ const AdminTools = () => {
       </div>
 
       <Tabs defaultValue="health" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5">
           <TabsTrigger value="health">Santé Système</TabsTrigger>
           <TabsTrigger value="database">Base de Données</TabsTrigger>
           <TabsTrigger value="maintenance">Maintenance</TabsTrigger>

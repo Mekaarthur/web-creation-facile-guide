@@ -252,7 +252,7 @@ export const ClientDetailsModal = ({ clientId, isOpen, onClose, onClientUpdated 
               </div>
 
               <Tabs defaultValue="info" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
                   <TabsTrigger value="info">Informations</TabsTrigger>
                   <TabsTrigger value="bookings">Réservations</TabsTrigger>
                   <TabsTrigger value="payments">Paiements</TabsTrigger>

@@ -254,7 +254,7 @@ const TestsSystems: React.FC = () => {
 
       {/* Tabs pour les différents tests */}
       <Tabs defaultValue="validation" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5">
           <TabsTrigger value="validation">Validation</TabsTrigger>
           <TabsTrigger value="emails">Emails</TabsTrigger>
           <TabsTrigger value="uploads">Uploads</TabsTrigger>

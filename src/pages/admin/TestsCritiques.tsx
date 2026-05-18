@@ -17,7 +17,7 @@ const TestsCritiques = () => {
       </div>
 
       <Tabs defaultValue="system" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
           <TabsTrigger value="system" className="flex items-center gap-2">
             <Server className="h-4 w-4" />
             Système

@@ -18,7 +18,7 @@ const AdminBinomes = () => {
       </div>
 
       <Tabs defaultValue="dashboard" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5">
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="matching">Matching</TabsTrigger>
           <TabsTrigger value="management">Gestion</TabsTrigger>

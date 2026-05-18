@@ -167,7 +167,7 @@ export const PaymentDetailsModal = ({ transaction, onClose, onUpdate }: PaymentD
         </DialogHeader>
 
         <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
             <TabsTrigger value="general">Général</TabsTrigger>
             <TabsTrigger value="financial">Finances</TabsTrigger>
             <TabsTrigger value="stripe">Stripe</TabsTrigger>

@@ -521,7 +521,7 @@ export default function ProvidersManagement() {
             </p>
           </div>
           <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-            <TabsList className="grid grid-cols-6 w-full">
+            <TabsList className="grid grid-cols-3 sm:grid-cols-6 w-full">
               <TabsTrigger value="all">Tous ({getApplicationStats().all})</TabsTrigger>
               <TabsTrigger value="pending">En attente ({getApplicationStats().pending})</TabsTrigger>
               <TabsTrigger value="interview_scheduled">Entretien ({getApplicationStats().interview_scheduled})</TabsTrigger>
@@ -726,7 +726,7 @@ export default function ProvidersManagement() {
         {/* Section Prestataires */}
         <TabsContent value="providers" className="space-y-4">
           <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-            <TabsList className="grid grid-cols-5 w-full">
+            <TabsList className="grid grid-cols-3 sm:grid-cols-5 w-full">
               <TabsTrigger value="all">Tous ({getProviderStats().all})</TabsTrigger>
               <TabsTrigger value="pending">En attente ({getProviderStats().pending})</TabsTrigger>
               <TabsTrigger value="pending_validation">Validation ({getProviderStats().pending_validation})</TabsTrigger>

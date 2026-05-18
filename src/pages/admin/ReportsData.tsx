@@ -128,7 +128,7 @@ const AdminReportsData = () => {
       </div>
 
       <Tabs defaultValue="financial" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
           <TabsTrigger value="financial">Financier</TabsTrigger>
           <TabsTrigger value="services">Services</TabsTrigger>
           <TabsTrigger value="providers">Prestataires</TabsTrigger>

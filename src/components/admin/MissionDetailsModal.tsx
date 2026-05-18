@@ -213,7 +213,7 @@ export const MissionDetailsModal = ({ mission, onClose, onUpdate }: MissionDetai
         </DialogHeader>
 
         <Tabs defaultValue="info" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
             <TabsTrigger value="info">Informations</TabsTrigger>
             <TabsTrigger value="finance">Finances</TabsTrigger>
             <TabsTrigger value="history">Historique</TabsTrigger>
