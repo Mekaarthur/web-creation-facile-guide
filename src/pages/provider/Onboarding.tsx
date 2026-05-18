@@ -36,25 +36,39 @@ const ProviderOnboarding = () => {
       if (error) throw error;
       
       if (!data) {
-        toast.error('Profil prestataire non trouvé', { 
-          description: 'Veuillez d\'abord créer votre compte prestataire.' 
+        toast.error('Profil prestataire non trouvé', {
+          description: 'Veuillez d\'abord créer votre compte prestataire.'
         });
-        navigate('/provider-signup');
+        navigate('/auth/provider');
         return;
       }
-      
+
       setProvider(data);
-      
+
+      if (data.status === 'active') {
+        navigate('/espace-prestataire');
+        return;
+      }
+
+      // Vérifier les documents approuvés par l'admin
+      const { data: approvedDocs } = await supabase
+        .from('provider_documents')
+        .select('document_type')
+        .eq('provider_id', data.id)
+        .eq('status', 'approved');
+
+      const requiredDocTypes = ['identity_document', 'siret_document', 'rib_iban', 'certification'];
+      const documentsApproved = requiredDocTypes.every(type =>
+        approvedDocs?.some((doc: any) => doc.document_type === type)
+      );
+
       // Déterminer l'étape actuelle
-      if (!data.documents_submitted) {
+      if (!data.documents_submitted || !documentsApproved) {
         setCurrentStep(1);
       } else if (!data.mandat_facturation_accepte) {
         setCurrentStep(2);
       } else if (!data.formation_completed) {
         setCurrentStep(3);
-      } else if (data.status === 'active') {
-        navigate('/espace-prestataire');
-        return;
       } else {
         setCurrentStep(4);
       }
@@ -81,7 +95,7 @@ const ProviderOnboarding = () => {
   }
 
   const steps = [
-    { id: 1, title: 'Documents', icon: FileText, completed: provider.documents_submitted },
+    { id: 1, title: 'Documents', icon: FileText, completed: currentStep > 1 },
     { id: 2, title: 'Mandat', icon: PenLine, completed: provider.mandat_facturation_accepte },
     { id: 3, title: 'Formation', icon: GraduationCap, completed: provider.formation_completed },
     { id: 4, title: 'Validation', icon: BadgeCheck, completed: provider.status === 'active' }

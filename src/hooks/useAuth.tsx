@@ -92,11 +92,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
 
-      // Fetch roles when user logs in
       if (session?.user && event === 'SIGNED_IN') {
-        setTimeout(() => {
-          fetchUserRoles(session.user.id);
-        }, 0);
+        fetchUserRoles(session.user.id);
       }
 
       // Clear roles on sign out

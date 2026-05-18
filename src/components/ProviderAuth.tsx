@@ -97,9 +97,18 @@ const ProviderAuth = () => {
         console.error('Error checking provider status:', providerError);
       }
 
-      if (!providerData || !providerData.is_verified) {
+      if (!providerData) {
         await supabase.auth.signOut();
-        throw new Error('Ce compte n\'est pas un compte prestataire vérifié. Veuillez utiliser la page de connexion client ou soumettre votre candidature pour devenir prestataire.');
+        throw new Error('Ce compte n\'est pas un compte prestataire. Veuillez soumettre votre candidature sur la page "Nous recrutons".');
+      }
+
+      if (!providerData.is_verified) {
+        toast({
+          title: "Compte en cours de validation",
+          description: "Votre dossier est en attente de validation. Complétez votre onboarding.",
+        });
+        navigate('/provider-onboarding');
+        return;
       }
 
       toast({
@@ -170,6 +179,28 @@ const ProviderAuth = () => {
 
       if (authData.user && Array.isArray((authData.user as any).identities) && (authData.user as any).identities.length === 0) {
         throw new Error('Cette adresse email est déjà utilisée');
+      }
+
+      if (authData.user) {
+        // Créer le record providers immédiatement (statut en attente)
+        const { error: providerError } = await supabase.from('providers').insert({
+          user_id: authData.user.id,
+          business_name: data.name.trim(),
+          status: 'pending',
+          is_verified: false,
+        });
+        if (providerError) {
+          console.warn('[ProviderAuth] providers insert:', providerError.message);
+        }
+
+        // Ajouter le rôle provider
+        const { error: roleError } = await supabase.from('user_roles').insert({
+          user_id: authData.user.id,
+          role: 'provider',
+        });
+        if (roleError) {
+          console.warn('[ProviderAuth] user_roles insert:', roleError.message);
+        }
       }
 
       if (authData.user && !authData.user.email_confirmed_at) {

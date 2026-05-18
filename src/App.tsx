@@ -178,13 +178,13 @@ const App = () => (
                 {/* User spaces */}
                 <Route path="/espace-personnel" element={<ProtectedRoute><EspacePersonnel /></ProtectedRoute>} />
                 <Route path="/dashboard-client" element={<ProtectedRoute><EspacePersonnel /></ProtectedRoute>} />
-                <Route path="/espace-prestataire" element={<ProtectedProviderRoute><EspacePrestataire /></ProtectedProviderRoute>} />
-                <Route path="/dashboard-prestataire" element={<ProtectedProviderRoute><EspacePrestataire /></ProtectedProviderRoute>} />
+                <Route path="/espace-prestataire" element={<ProtectedProviderRoute requireVerified><EspacePrestataire /></ProtectedProviderRoute>} />
+                <Route path="/dashboard-prestataire" element={<ProtectedProviderRoute requireVerified><EspacePrestataire /></ProtectedProviderRoute>} />
                 <Route path="/provider-onboarding" element={<ProtectedProviderRoute><ProviderOnboarding /></ProtectedProviderRoute>} />
-                <Route path="/provider/zones" element={<ProtectedProviderRoute><MyZones /></ProtectedProviderRoute>} />
+                <Route path="/provider/zones" element={<ProtectedProviderRoute requireVerified><MyZones /></ProtectedProviderRoute>} />
                 <Route path="/nous-recrutons" element={<ProviderSignup />} />
                 <Route path="/candidature-prestataire" element={<ProviderSignup />} />
-                <Route path="/gestion-demandes" element={<GestionDemandes />} />
+                <Route path="/gestion-demandes" element={<AdminRoute><GestionDemandes /></AdminRoute>} />
                 
                 {/* Services */}
                 <Route path="/services" element={<ServicesPage />} />

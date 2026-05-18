@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,22 +6,35 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProtectedProviderRouteProps {
   children: ReactNode;
   redirectTo?: string;
+  requireVerified?: boolean;
 }
 
-/**
- * Route protégée pour les prestataires uniquement
- * Redirige les non-authentifiés vers /auth/provider
- * Redirige les autres rôles vers leur espace approprié
- */
-const ProtectedProviderRoute = ({ children, redirectTo = '/auth/provider' }: ProtectedProviderRouteProps) => {
+const ProtectedProviderRoute = ({ children, redirectTo = '/auth/provider', requireVerified = false }: ProtectedProviderRouteProps) => {
   const { user, loading, hasRole, primaryRole } = useAuth();
   const { t } = useTranslation();
+  const [isVerified, setIsVerified] = useState<boolean | null>(null);
+  const [checkingVerified, setCheckingVerified] = useState(false);
 
-  if (loading) {
+  useEffect(() => {
+    if (!requireVerified || !user || !hasRole('provider')) return;
+    setCheckingVerified(true);
+    supabase
+      .from('providers')
+      .select('is_verified')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        setIsVerified(data?.is_verified ?? false);
+        setCheckingVerified(false);
+      });
+  }, [user, requireVerified]);
+
+  if (loading || checkingVerified) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -82,6 +95,11 @@ const ProtectedProviderRoute = ({ children, redirectTo = '/auth/provider' }: Pro
       );
     }
     return <Navigate to="/" replace />;
+  }
+
+  // Si requireVerified et provider non vérifié → rediriger vers onboarding
+  if (requireVerified && isVerified === false) {
+    return <Navigate to="/provider-onboarding" replace />;
   }
 
   return <>{children}</>;
