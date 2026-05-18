@@ -38,10 +38,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (user && bookingId) {
-      loadMessages();
-      subscribeToMessages();
-    }
+    if (!user || !bookingId) return;
+    loadMessages();
+    return subscribeToMessages();
   }, [user, bookingId]);
 
   useEffect(() => {
@@ -76,7 +75,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   const subscribeToMessages = () => {
     const channel = supabase
-      .channel('chat_messages')
+      .channel(`chat_messages_${bookingId}`)
       .on(
         'postgres_changes',
         {

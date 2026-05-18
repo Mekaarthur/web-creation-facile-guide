@@ -67,11 +67,15 @@ export const RealTimeChat: React.FC<RealTimeChatProps> = ({
   const { toast } = useToast();
 
   useEffect(() => {
-    if (user) {
-      loadConversations();
-      setupPresence();
-      setupRealtimeSubscriptions();
-    }
+    if (!user) return;
+    loadConversations();
+    const cleanupSubscriptions = setupRealtimeSubscriptions();
+    let cleanupPresence: (() => void) | undefined;
+    setupPresence().then((fn) => { cleanupPresence = fn; });
+    return () => {
+      cleanupSubscriptions?.();
+      cleanupPresence?.();
+    };
   }, [user]);
 
   useEffect(() => {

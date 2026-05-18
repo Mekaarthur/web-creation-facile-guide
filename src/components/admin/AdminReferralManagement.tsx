@@ -212,11 +212,11 @@ const AdminReferralManagement = () => {
         .from('provider_referral_rewards')
         .select(`
           *,
-          referrer:providers!provider_referral_rewards_referrer_provider_id_fkey(
+          referrer:providers!referrer_provider_id(
             business_name,
             profiles(first_name, last_name)
           ),
-          referred:providers!provider_referral_rewards_referred_provider_id_fkey(
+          referred:providers!referred_provider_id(
             business_name
           )
         `)
@@ -231,11 +231,11 @@ const AdminReferralManagement = () => {
         .from('referrals')
         .select(`
           *,
-          referrer:providers!referrals_referrer_id_fkey(
+          referrer:providers!referrer_id(
             business_name,
             profiles(first_name, last_name)
           ),
-          referred:providers!referrals_referred_id_fkey(
+          referred:providers!referred_id(
             business_name
           )
         `)
@@ -262,7 +262,7 @@ const AdminReferralManagement = () => {
         .from('provider_rewards')
         .select(`
           *,
-          provider:providers!provider_rewards_provider_id_fkey(
+          provider:providers!provider_id(
             business_name,
             profiles(first_name, last_name)
           )
