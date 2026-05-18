@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import BikaServiceBooking from "@/components/BikaServiceBooking";
 import { servicesData, ServiceCategoryKey, SubService } from "@/utils/servicesData";
 import { useTranslation } from "react-i18next";
+import { useServicePrices } from "@/hooks/useServicePrices";
 
 interface ServiceSubgridProps {
   categoryKey: ServiceCategoryKey;
@@ -13,12 +14,16 @@ interface ServiceSubgridProps {
 
 const ServiceSubgrid = ({ categoryKey }: ServiceSubgridProps) => {
   const [selected, setSelected] = useState<SubService | null>(null);
+  const [selectedEffectivePrice, setSelectedEffectivePrice] = useState<number>(0);
   const [open, setOpen] = useState(false);
   const { t } = useTranslation();
+  const { getPrice } = useServicePrices();
 
   const category = servicesData[categoryKey];
 
   const onReserve = (s: SubService) => {
+    const effective = getPrice(s.slug, s.price);
+    setSelectedEffectivePrice(typeof effective === "number" ? effective : s.price);
     setSelected(s);
     setOpen(true);
   };
@@ -31,29 +36,36 @@ const ServiceSubgrid = ({ categoryKey }: ServiceSubgridProps) => {
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">{t('serviceSubgrid.title', { packageTitle: category.packageTitle })}</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-            {cards.map((s) => (
-              <Card key={s.slug} className="hover:shadow-lg transition-shadow">
-                <CardHeader className="p-0">
-                  <img src={s.image} alt={`${s.title} ${category.packageTitle}`} className="w-full h-40 object-cover rounded-t-lg" loading="lazy" />
-                </CardHeader>
-                <CardContent className="pt-4">
-                  <div className="flex items-start justify-between gap-2 mb-4">
-                    <CardTitle className="text-base leading-tight">{s.title}</CardTitle>
-                    <Badge variant="outline" className="font-semibold">
-                      {s.priceDisplay ?? `${s.price}€/h`}
-                    </Badge>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button asChild variant="outline" size="sm" className="flex-1">
-                      <Link to={`/services/${category.key}/${s.slug}`}>{t('serviceSubgrid.details')}</Link>
-                    </Button>
-                    <Button size="sm" className="flex-1" onClick={() => onReserve(s)}>
-                      {t('serviceSubgrid.reserve')}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            {cards.map((s) => {
+              const effectivePrice = getPrice(s.slug, s.price);
+              const displayPrice = typeof effectivePrice === "number"
+                ? `${effectivePrice}€/h`
+                : (s.priceDisplay ?? `${s.price}€/h`);
+
+              return (
+                <Card key={s.slug} className="hover:shadow-lg transition-shadow">
+                  <CardHeader className="p-0">
+                    <img src={s.image} alt={`${s.title} ${category.packageTitle}`} className="w-full h-40 object-cover rounded-t-lg" loading="lazy" />
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <div className="flex items-start justify-between gap-2 mb-4">
+                      <CardTitle className="text-base leading-tight">{s.title}</CardTitle>
+                      <Badge variant="outline" className="font-semibold">
+                        {displayPrice}
+                      </Badge>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button asChild variant="outline" size="sm" className="flex-1">
+                        <Link to={`/services/${category.key}/${s.slug}`}>{t('serviceSubgrid.details')}</Link>
+                      </Button>
+                      <Button size="sm" className="flex-1" onClick={() => onReserve(s)}>
+                        {t('serviceSubgrid.reserve')}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -65,7 +77,7 @@ const ServiceSubgrid = ({ categoryKey }: ServiceSubgridProps) => {
           service={{
             name: selected.title,
             description: selected.description,
-            price: selected.price,
+            price: selectedEffectivePrice,
             category: category.key,
             options: selected.options,
           }}
