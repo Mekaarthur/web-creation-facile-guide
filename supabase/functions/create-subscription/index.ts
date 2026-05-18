@@ -71,8 +71,8 @@ serve(async (req) => {
         title: "Formule Mensuelle - 40h"
       },
       yearly: {
-        price: 70000, // 700€ in cents  
-        interval: "month",
+        price: 70000, // 700€ in cents
+        interval: "year",
         interval_count: 1,
         title: "Formule Annuelle - 40h"
       },

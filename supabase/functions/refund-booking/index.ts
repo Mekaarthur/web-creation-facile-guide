@@ -114,6 +114,19 @@ serve(async (req) => {
       console.error('Error updating booking:', updateError);
     }
 
+    // Sync financial_transactions with the Stripe refund
+    const { error: txError } = await supabaseClient
+      .from('financial_transactions')
+      .update({
+        payment_status: 'refunded',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('booking_id', bookingId);
+
+    if (txError) {
+      console.error('Error updating financial_transactions:', txError);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,

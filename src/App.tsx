@@ -90,6 +90,7 @@ const AdminApplications = lazy(() => import("./pages/admin/Applications"));
 const AdminMissions = lazy(() => import("./pages/admin/Missions"));
 const AdminReservations = lazy(() => import("./pages/admin/Reservations"));
 const AdminPayments = lazy(() => import("./pages/admin/Payments"));
+const AdminPricing = lazy(() => import("./pages/admin/Pricing"));
 const AdminInvoices = lazy(() => import("./pages/admin/Invoices"));
 const AdminMessages = lazy(() => import("./pages/admin/Messages"));
 const AdminReviews = lazy(() => import("./pages/admin/Reviews"));
@@ -288,6 +289,8 @@ const App = () => (
                   <Route path="reclamations" element={<AdminReclamations />} />
                   <Route path="acces" element={<AdminAccessTracking />} />
                   <Route path="rgpd-deletions" element={<RgpdDeletions />} />
+                  <Route path="pricing" element={<AdminPricing />} />
+                  <Route path="tarifs" element={<AdminPricing />} />
                 </Route>
                 
                 <Route path="*" element={<NotFound />} />

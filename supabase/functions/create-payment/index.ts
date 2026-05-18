@@ -128,11 +128,9 @@ serve(async (req) => {
       }
     }
 
-    // Montant facturé au client
-    // Si avance immédiate : le client paie seulement 50 % via Stripe
-    const chargedAmount = avanceImmediateActive && splitData.urssaf_amount
-      ? Math.round(amount * 100 / 2)   // 50 % en centimes
-      : Math.round(amount * 100);       // 100 % en centimes
+    // Montant facturé au client (déjà calculé côté frontend : 50 % si avance immédiate)
+    // Ne pas rediviser ici : BookingCheckout envoie déjà la bonne somme dans `amount`
+    const chargedAmount = Math.round(amount * 100); // en centimes
 
     const sessionMetadata: Record<string, string> = {
       booking_id:   bookingId  || "",

@@ -20,7 +20,8 @@ import {
   CheckSquare,
   Zap,
   UserCog,
-  Building2
+  Building2,
+  Tag,
 } from "lucide-react"
 
 import {
@@ -226,9 +227,15 @@ export function AdminSidebar() {
           icon: Building2,
           description: "Gestion de l'identité visuelle et communications"
         },
-        { 
-          title: "Paramètres", 
-          url: "/modern-admin/settings", 
+        {
+          title: "Tarifs & Prix",
+          url: "/modern-admin/pricing",
+          icon: Tag,
+          description: "Gestion dynamique des prix des services"
+        },
+        {
+          title: "Paramètres",
+          url: "/modern-admin/settings",
           icon: Settings,
           description: "Configuration système"
         },

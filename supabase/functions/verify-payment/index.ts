@@ -278,19 +278,26 @@ serve(async (req) => {
     }
 
     // Mettre à jour les transactions financières
-    // Le trigger DB a déjà créé la transaction avec le bon split (provider, stripe_commission, bikawo_net).
-    // On attend qu'il s'exécute puis on marque le paiement client comme reçu.
+    // Le trigger DB crée la transaction ; on poll jusqu'à 5× avec backoff exponentiel.
     logStep('Attente création transactions financières par trigger...');
-    await new Promise(resolve => setTimeout(resolve, 2000));
 
     const now = new Date().toISOString();
 
     for (const bookingId of bookingIds) {
-      const { data: existingTransaction, error: checkError } = await supabaseAdmin
-        .from('financial_transactions')
-        .select('id, payment_status, provider_payment, company_commission, stripe_commission')
-        .eq('booking_id', bookingId)
-        .single();
+      let existingTransaction: any = null;
+      let checkError: any = null;
+      for (let attempt = 1; attempt <= 5; attempt++) {
+        const result = await supabaseAdmin
+          .from('financial_transactions')
+          .select('id, payment_status, provider_payment, company_commission, stripe_commission')
+          .eq('booking_id', bookingId)
+          .single();
+        existingTransaction = result.data;
+        checkError = result.error;
+        if (existingTransaction) break;
+        logStep(`Transaction non trouvée, tentative ${attempt}/5, attente ${attempt * 500}ms...`);
+        await new Promise(resolve => setTimeout(resolve, attempt * 500));
+      }
 
       if (checkError || !existingTransaction) {
         logStep('Transaction non trouvée — création manuelle', { bookingId });

@@ -66,32 +66,30 @@ serve(async (req) => {
       const charge = event.data.object as Stripe.Charge;
       const paymentIntentId = charge.payment_intent as string;
 
-      // Mettre à jour la facture
-      const { error } = await supabaseAdmin
-        .from('invoices')
-        .update({
-          status: 'refunded'
-        })
-        .eq('stripe_payment_id', paymentIntentId);
+      // Mettre à jour financial_transactions via stripe_payment_intent_id
+      const { error: txError } = await supabaseAdmin
+        .from('financial_transactions')
+        .update({ payment_status: 'refunded' })
+        .eq('stripe_payment_intent_id', paymentIntentId);
 
-      if (error) {
-        console.error('Erreur mise à jour remboursement:', error);
-      } else {
-        // Créer notification admin pour remboursement
-        await supabaseAdmin.functions.invoke('create-admin-notification', {
-          body: {
-            type: 'payment',
-            title: '💸 Remboursement effectué',
-            message: `Remboursement de ${(charge.amount_refunded / 100).toFixed(2)}€ pour paiement ${paymentIntentId}`,
-            data: {
-              charge_id: charge.id,
-              payment_intent_id: paymentIntentId,
-              amount_refunded: charge.amount_refunded / 100
-            },
-            priority: 'high'
-          }
-        });
+      if (txError) {
+        console.error('Erreur mise à jour financial_transactions:', txError);
       }
+
+      // Créer notification admin pour remboursement
+      await supabaseAdmin.functions.invoke('create-admin-notification', {
+        body: {
+          type: 'payment',
+          title: '💸 Remboursement effectué',
+          message: `Remboursement de ${(charge.amount_refunded / 100).toFixed(2)}€ pour paiement ${paymentIntentId}`,
+          data: {
+            charge_id: charge.id,
+            payment_intent_id: paymentIntentId,
+            amount_refunded: charge.amount_refunded / 100
+          },
+          priority: 'high'
+        }
+      });
     }
 
     // Gérer les litiges
