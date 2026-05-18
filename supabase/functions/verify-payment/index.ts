@@ -84,6 +84,14 @@ serve(async (req) => {
       splitServiceType, splitHours, splitStripeComm, splitProviderAmt, splitBikawoNet,
     });
 
+    // Stripe PaymentIntent ID — pour relier les remboursements webhook
+    const stripePaymentIntentId = session.payment_intent
+      ? (typeof session.payment_intent === 'string'
+          ? session.payment_intent
+          : (session.payment_intent as any).id ?? null)
+      : null;
+    logStep('PaymentIntent ID', { stripePaymentIntentId });
+
     if (!clientInfo || services.length === 0) {
       throw new Error("Données de réservation incomplètes dans les métadonnées");
     }
@@ -211,6 +219,11 @@ serve(async (req) => {
     // Créer les réservations dans la table bookings
     const bookingIds: string[] = [];
 
+    // Extraire le code postal de l'adresse client (5 chiffres consécutifs)
+    const postalCodeMatch = (clientInfo.address ?? '').match(/\b\d{5}\b/);
+    const clientPostalCode = postalCodeMatch ? postalCodeMatch[0] : null;
+    logStep('Code postal client', { clientPostalCode });
+
     for (const service of services) {
       const customBooking = service.customBooking || {};
       const bookingDate = customBooking.date;
@@ -231,12 +244,32 @@ serve(async (req) => {
         continue;
       }
 
-      const { data: availableProvider } = await supabaseClient
-        .from('providers')
-        .select('id')
-        .eq('is_verified', true)
-        .limit(1)
-        .single();
+      // Matching géographique : chercher un prestataire dans la zone du client
+      let availableProvider: { id: string } | null = null;
+
+      if (clientPostalCode) {
+        const { data: zoneProviders } = await supabaseClient.rpc('find_providers_in_zone', {
+          p_code_postal: clientPostalCode,
+          p_service_type: service.category || null,
+        });
+        if (zoneProviders && zoneProviders.length > 0) {
+          availableProvider = { id: zoneProviders[0].provider_id };
+          logStep('Prestataire trouvé dans la zone', { postalCode: clientPostalCode, providerId: availableProvider.id });
+        } else {
+          logStep('Aucun prestataire dans la zone, fallback global', { postalCode: clientPostalCode });
+        }
+      }
+
+      // Fallback : n'importe quel prestataire vérifié
+      if (!availableProvider) {
+        const { data: fallbackProvider } = await supabaseClient
+          .from('providers')
+          .select('id')
+          .eq('is_verified', true)
+          .limit(1)
+          .single();
+        availableProvider = fallbackProvider;
+      }
 
       if (!availableProvider) {
         logStep('Aucun prestataire vérifié disponible');
@@ -306,17 +339,18 @@ serve(async (req) => {
         await supabaseAdmin
           .from('financial_transactions')
           .upsert({
-            booking_id:        bookingId,
-            client_id:         userId,
-            provider_id:       null,
-            service_category:  splitServiceType || 'bika_maison',
-            client_price:      totalAmount,
-            provider_payment:  splitProviderAmt / 100,     // centimes → euros
-            company_commission: splitBikawoNet  / 100,
-            stripe_commission: splitStripeComm  / 100,
-            hours:             splitHours,
-            payment_status:    'paid',
-            client_paid_at:    now,
+            booking_id:               bookingId,
+            client_id:                userId,
+            provider_id:              null,
+            service_category:         splitServiceType || 'bika_maison',
+            client_price:             totalAmount,
+            provider_payment:         splitProviderAmt / 100,     // centimes → euros
+            company_commission:       splitBikawoNet  / 100,
+            stripe_commission:        splitStripeComm  / 100,
+            hours:                    splitHours,
+            payment_status:           'paid',
+            client_paid_at:           now,
+            stripe_payment_intent_id: stripePaymentIntentId,
           }, { onConflict: 'booking_id' });
 
         continue;
@@ -333,8 +367,9 @@ serve(async (req) => {
       await supabaseAdmin
         .from('financial_transactions')
         .update({
-          payment_status: 'paid',
-          client_paid_at: now,
+          payment_status:           'paid',
+          client_paid_at:           now,
+          stripe_payment_intent_id: stripePaymentIntentId,
         })
         .eq('booking_id', bookingId);
     }

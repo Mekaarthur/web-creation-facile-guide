@@ -79,6 +79,51 @@ serve(async (req) => {
       });
     }
 
+    // Traiter automatiquement toutes les transactions en attente de virement
+    if (action === "process_pending_payouts") {
+      const { data: pending, error: pendingError } = await supabaseClient
+        .from("financial_transactions")
+        .select("id")
+        .eq("payment_status", "ready_for_payout");
+
+      if (pendingError) throw pendingError;
+
+      const ids = (pending || []).map((t: any) => t.id);
+      console.log(`[TRANSFER] process_pending_payouts : ${ids.length} transaction(s) à traiter`);
+
+      const results: any[] = [];
+      let successCount = 0;
+      let failCount = 0;
+      let totalAmount = 0;
+
+      for (const id of ids) {
+        try {
+          const result = await processTransfer(stripe, supabaseClient, id);
+          results.push({ id, ...result });
+          if (result.success) {
+            successCount++;
+            totalAmount += result.amount || 0;
+          } else {
+            failCount++;
+          }
+        } catch (e: any) {
+          results.push({ id, success: false, error: e.message });
+          failCount++;
+        }
+      }
+
+      return new Response(JSON.stringify({
+        success: true,
+        processed: ids.length,
+        successCount,
+        failCount,
+        totalAmount,
+        results,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (action === "mark_manual_paid") {
       // Mark as manually paid (bank transfer)
       const { error } = await supabaseClient
@@ -127,9 +172,33 @@ async function processTransfer(stripe: any, supabase: any, transactionId: string
   const provider = (transaction as any).provider;
 
   if (!provider?.stripe_account_id || !provider?.stripe_onboarding_complete) {
+    const providerName = provider?.business_name || 'Prestataire inconnu';
+
+    // Notifier l'admin et le prestataire
+    await supabase.functions.invoke('create-admin-notification', {
+      body: {
+        type: 'payment',
+        title: '⚠️ Virement impossible — Stripe Connect non configuré',
+        message: `Le prestataire "${providerName}" n'a pas finalisé son inscription Stripe Connect. Le virement de la transaction ${transactionId} est bloqué. Contactez le prestataire pour qu'il configure son compte.`,
+        data: {
+          transaction_id: transactionId,
+          provider_id:    provider?.id,
+          provider_name:  providerName,
+        },
+        priority: 'high',
+      },
+    }).catch(() => {}); // non-bloquant
+
+    // Marquer la transaction avec un statut explicite
+    await supabase
+      .from('financial_transactions')
+      .update({ payment_status: 'needs_stripe_setup' })
+      .eq('id', transactionId)
+      .catch(() => {});
+
     return {
       success: false,
-      error: `Provider ${provider?.business_name || 'unknown'} has no Stripe Connect account`,
+      error: `${providerName} n'a pas de compte Stripe Connect — notification envoyée à l'admin`,
     };
   }
 
