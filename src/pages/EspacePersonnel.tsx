@@ -89,7 +89,7 @@ const EspacePersonnel = () => {
       </Helmet>
       <Navbar />
 
-      <div className="pt-14 pb-10 bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="pt-14 pb-24 lg:pb-10 bg-gradient-to-br from-background via-background to-muted/20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header moderne */}
           <div className="mb-4 sm:mb-8 text-center">

@@ -45,7 +45,8 @@ import {
   TrendingUp,
   UserCog,
   Clock,
-  ShieldCheck
+  ShieldCheck,
+  Home,
 } from "lucide-react";
 import { NotificationBell } from './NotificationBell';
 import { SecureLogout } from '@/components/SecureLogout';
@@ -154,8 +155,8 @@ function AdminSidebar() {
     <Sidebar className="border-r border-border">
       <SidebarContent className="p-4">
         {/* Logo */}
-        <div className="flex items-center gap-2 px-2 py-4 mb-4 border-b">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+        <div className="flex items-center gap-2 px-2 py-4 mb-2 border-b">
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
             <Shield className="w-4 h-4 text-primary-foreground" />
           </div>
           {!collapsed && (
@@ -165,6 +166,18 @@ function AdminSidebar() {
             </div>
           )}
         </div>
+
+        {/* Retour au site */}
+        <Link
+          to="/"
+          className={cn(
+            "flex items-center gap-2 px-3 py-2 mb-3 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors",
+            collapsed && "justify-center"
+          )}
+        >
+          <Home className="w-4 h-4 flex-shrink-0" />
+          {!collapsed && <span>← Retour au site</span>}
+        </Link>
 
         {/* Navigation */}
         {navigationGroups.map((group, groupIndex) => (
@@ -239,6 +252,14 @@ export default function ModernAdminLayout() {
 
               <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
                 <NotificationBell />
+
+                <Link
+                  to="/"
+                  className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors text-sm"
+                >
+                  <Home className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="hidden sm:inline">Retour au site</span>
+                </Link>
 
                 <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent">
                   <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">

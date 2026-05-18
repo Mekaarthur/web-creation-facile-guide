@@ -17,8 +17,9 @@ import {
   useInvalidateProviderDashboard,
 } from '@/hooks/queries/useProviderDashboardV2';
 import {
-  LayoutDashboard, Briefcase, User, CheckCircle, Phone, Settings, RefreshCw, MessageSquare, TrendingUp,
+  LayoutDashboard, Briefcase, User, CheckCircle, Phone, Settings, RefreshCw, MessageSquare, TrendingUp, Home,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { EmergencyReportButton } from '@/components/provider/EmergencyReportButton';
 import { SecureLogout } from '@/components/SecureLogout';
 import { DashboardLoadingSkeleton } from '@/components/ui/loading-skeleton';
@@ -213,13 +214,19 @@ const EnhancedProviderDashboard = () => {
                 <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2" />
                 <span className="hidden sm:inline text-xs sm:text-sm">{t('providerDashboard.profile')}</span>
               </Button>
+              <Button asChild variant="ghost" size="sm" className="hover:bg-primary/10 h-8 sm:h-9 px-2 sm:px-3 text-muted-foreground">
+                <Link to="/">
+                  <Home className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-2" />
+                  <span className="hidden sm:inline text-xs sm:text-sm">Retour au site</span>
+                </Link>
+              </Button>
               <SecureLogout variant="outline" size="sm" showIcon={true} />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 space-y-4 sm:space-y-6 lg:space-y-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 pb-20 lg:pb-8 space-y-4 sm:space-y-6 lg:space-y-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0 pb-2">
             <TabsList className="grid grid-cols-5 bg-card/80 backdrop-blur-sm p-0.5 sm:p-1 h-auto shadow-lg rounded-lg sm:rounded-xl border-0 w-full min-w-[280px]">
@@ -235,7 +242,10 @@ const EnhancedProviderDashboard = () => {
                 className="flex flex-col items-center gap-1 sm:gap-1.5 lg:gap-2 py-2.5 sm:py-3 lg:py-4 px-2 sm:px-2.5 lg:px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md sm:rounded-lg transition-all duration-200"
               >
                 <Briefcase className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">Mes missions</span>
+                <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">
+                  <span className="sm:hidden">Missions</span>
+                  <span className="hidden sm:inline">Mes missions</span>
+                </span>
                 {stats.activeMissions > 0 && (
                   <Badge variant="destructive" className="text-[9px] px-1 py-0.5 h-4 min-w-4">
                     {stats.activeMissions}
@@ -247,21 +257,30 @@ const EnhancedProviderDashboard = () => {
                 className="flex flex-col items-center gap-1 sm:gap-1.5 lg:gap-2 py-2.5 sm:py-3 lg:py-4 px-2 sm:px-2.5 lg:px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md sm:rounded-lg transition-all duration-200"
               >
                 <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">Mon activité</span>
+                <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">
+                  <span className="sm:hidden">Activité</span>
+                  <span className="hidden sm:inline">Mon activité</span>
+                </span>
               </TabsTrigger>
               <TabsTrigger
                 value="communaute"
                 className="flex flex-col items-center gap-1 sm:gap-1.5 lg:gap-2 py-2.5 sm:py-3 lg:py-4 px-2 sm:px-2.5 lg:px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md sm:rounded-lg transition-all duration-200"
               >
                 <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">Ma communauté</span>
+                <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">
+                  <span className="sm:hidden">Communauté</span>
+                  <span className="hidden sm:inline">Ma communauté</span>
+                </span>
               </TabsTrigger>
               <TabsTrigger
                 value="profil"
                 className="flex flex-col items-center gap-1 sm:gap-1.5 lg:gap-2 py-2.5 sm:py-3 lg:py-4 px-2 sm:px-2.5 lg:px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md sm:rounded-lg transition-all duration-200"
               >
                 <User className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">Mon profil</span>
+                <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">
+                  <span className="sm:hidden">Profil</span>
+                  <span className="hidden sm:inline">Mon profil</span>
+                </span>
               </TabsTrigger>
             </TabsList>
           </div>
