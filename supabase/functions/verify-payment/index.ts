@@ -308,6 +308,52 @@ serve(async (req) => {
 
       logStep('Réservation créée', { id: booking.id, status: initialStatus });
       bookingIds.push(booking.id);
+
+      // Notifier le prestataire assigné (notification DB + email)
+      const providerNotifText =
+        `Nouvelle mission : ${service.serviceName} le ${bookingDate} de ${startTime} à ${endTime}.` +
+        ` Client : ${clientInfo.firstName} ${clientInfo.lastName}.` +
+        ` Adresse : ${clientInfo.address}.`;
+
+      await supabaseAdmin
+        .from('provider_notifications')
+        .insert({
+          provider_id: availableProvider.id,
+          title:       'Nouvelle mission confirmée',
+          message:     providerNotifText,
+          type:        'mission_confirmed',
+        })
+        .then(({ error }) => {
+          if (error) logStep('Erreur notification prestataire (non bloquant)', { error: error.message });
+        });
+
+      // Email au prestataire si son profil a un email
+      const { data: providerProfile } = await supabaseAdmin
+        .from('providers')
+        .select('user_id, business_name')
+        .eq('id', availableProvider.id)
+        .single()
+        .catch(() => ({ data: null }));
+
+      if (providerProfile?.user_id) {
+        const { data: provProfile } = await supabaseAdmin
+          .from('profiles')
+          .select('email, first_name, last_name')
+          .eq('user_id', providerProfile.user_id)
+          .maybeSingle()
+          .catch(() => ({ data: null }));
+
+        if (provProfile?.email) {
+          await supabaseAdmin.functions.invoke('send-notification-email', {
+            body: {
+              email:   provProfile.email,
+              name:    providerProfile.business_name || `${provProfile.first_name || ''} ${provProfile.last_name || ''}`.trim(),
+              subject: '✅ Nouvelle mission confirmée — Bikawo',
+              message: providerNotifText,
+            },
+          }).catch(() => {});
+        }
+      }
     }
 
     // Mettre à jour les transactions financières

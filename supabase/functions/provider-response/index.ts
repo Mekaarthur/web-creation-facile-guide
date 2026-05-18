@@ -106,37 +106,50 @@ const handler = async (req: Request): Promise<Response> => {
         throw updateError;
       }
 
-      // Mettre à jour la demande client - statut "confirmée" + montant
+      // Récupérer la demande client complète (budget, durée, prix)
       const { data: clientRequest } = await supabase
         .from('client_requests')
-        .select('service_type, preferred_date, location')
+        .select('service_type, preferred_date, location, budget, duration_hours, price_estimate, client_email')
         .eq('id', assignment.client_request_id)
         .single();
-      
-      // Calculer le montant (forfait de base de 2h x 17€)
-      const montantPrestation = 2 * 17; // 34€ par défaut
-      
+
+      // Montant réel depuis la demande client (fallback : durée × 17€ ou 34€ minimum)
+      const durationHours = clientRequest?.duration_hours ?? 2;
+      const montantPrestation =
+        clientRequest?.budget ??
+        clientRequest?.price_estimate ??
+        durationHours * 17;
+
       await supabase
         .from('client_requests')
         .update({
           status: 'confirmee',
           assigned_provider_id: providerId,
-          payment_amount: montantPrestation
+          payment_amount: montantPrestation,
         })
         .eq('id', assignment.client_request_id);
-        
+
+      // Résoudre le vrai client_id (UUID) depuis son email
+      const clientEmail = clientRequest?.client_email || assignment.client_requests?.client_email;
+      const { data: clientProfile } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('email', clientEmail)
+        .maybeSingle();
+      const clientUserId = clientProfile?.user_id ?? null;
+
       // Créer automatiquement une prestation réalisée
       await supabase
         .from('prestations_realisees')
         .insert({
           client_request_id: assignment.client_request_id,
           provider_id: providerId,
-          client_id: assignment.client_requests.client_email, // Temporaire, sera corrigé avec le vrai client_id
+          client_id: clientUserId,
           service_type: clientRequest?.service_type || 'Service',
-          duree_heures: 2.0,
+          duree_heures: durationHours,
           date_prestation: clientRequest?.preferred_date || new Date().toISOString().split('T')[0],
-          location: clientRequest?.location || assignment.client_requests.location,
-          notes: 'Prestation créée automatiquement après acceptation du prestataire'
+          location: clientRequest?.location || assignment.client_requests?.location,
+          notes: 'Prestation créée automatiquement après acceptation du prestataire',
         });
 
       // Récupérer les infos du prestataire
@@ -181,12 +194,19 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       // Mettre à jour les statistiques du prestataire
+      // Lire d'abord les valeurs courantes pour incrémenter sans supabase.sql (non disponible)
+      const { data: currentStats } = await supabase
+        .from('providers')
+        .select('missions_this_week, rotation_priority')
+        .eq('id', providerId)
+        .single();
+
       await supabase
         .from('providers')
         .update({
-          missions_this_week: supabase.sql`missions_this_week + 1`,
-          last_mission_date: new Date().toISOString(),
-          rotation_priority: supabase.sql`rotation_priority - 10` // Diminuer la priorité après attribution
+          missions_this_week: (currentStats?.missions_this_week ?? 0) + 1,
+          last_mission_date:  new Date().toISOString(),
+          rotation_priority:  (currentStats?.rotation_priority  ?? 100) - 10,
         })
         .eq('id', providerId);
 

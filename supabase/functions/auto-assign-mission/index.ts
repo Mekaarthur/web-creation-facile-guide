@@ -112,12 +112,17 @@ const handler = async (req: Request): Promise<Response> => {
           .single();
 
         if (providerData) {
-          // Récupérer l'email du prestataire
+          // Récupérer le profil complet du prestataire (email inclus)
           const { data: profileData } = await supabase
             .from('profiles')
-            .select('first_name, last_name')
+            .select('first_name, last_name, email')
             .eq('user_id', providerData.user_id)
             .single();
+
+          const providerName = providerData.business_name ||
+            `${profileData?.first_name || ''} ${profileData?.last_name || ''}`.trim() ||
+            'Prestataire';
+          const providerEmail = profileData?.email || '';
 
           // Créer notification dans la base
           await supabase
@@ -129,28 +134,26 @@ const handler = async (req: Request): Promise<Response> => {
               type: 'mission_available'
             });
 
-          // Envoyer email de notification (optionnel)
-          const providerName = providerData.business_name || 
-            `${profileData?.first_name || ''} ${profileData?.last_name || ''}`.trim() ||
-            'Prestataire';
+          // Envoyer email uniquement si on a un vrai email
+          if (providerEmail) {
+            await supabase.functions.invoke('send-notification-email', {
+              body: {
+                email: providerEmail,
+                name: providerName,
+                subject: '🚨 Nouvelle mission disponible - 5 minutes pour répondre',
+                message: `
+                  Nouvelle mission disponible !
 
-          await supabase.functions.invoke('send-notification-email', {
-            body: {
-              email: providerData.user_id, // Utiliser user_id comme placeholder
-              name: providerName,
-              subject: '🚨 Nouvelle mission disponible - 5 minutes pour répondre',
-              message: `
-                Nouvelle mission disponible !
-                
-                Service : ${serviceType}
-                Lieu : ${location}
-                
-                ⏰ Vous avez 5 minutes pour accepter cette mission.
-                
-                Connectez-vous à votre espace prestataire pour répondre.
-              `
-            }
-          });
+                  Service : ${serviceType}
+                  Lieu : ${location}
+
+                  ⏰ Vous avez 5 minutes pour accepter cette mission.
+
+                  Connectez-vous à votre espace prestataire pour répondre.
+                `
+              }
+            });
+          }
 
           notificationsSent++;
         }
@@ -165,11 +168,8 @@ const handler = async (req: Request): Promise<Response> => {
       .update({ sent_notifications: notificationsSent })
       .eq('id', missionAssignment.id);
 
-    // 5. Programmer la vérification automatique après 5 minutes
-    setTimeout(async () => {
-      await checkMissionTimeout(missionAssignment.id);
-    }, 5 * 60 * 1000);
-
+    // La vérification du timeout est gérée par le cron check-mission-acceptance-timeout
+    // (toutes les 15 min) — un setTimeout dans un Edge Function Deno serait tué avant 5 min.
     console.log(`Assignment complete. Sent ${notificationsSent} notifications`);
 
     return new Response(JSON.stringify({
