@@ -215,23 +215,23 @@ export function AdminSidebar() {
       title: "⚙️ Configuration",
       description: "Paramètres, zones et marque",
       items: [
-        { 
-          title: "Zones", 
-          url: "/modern-admin/zones", 
-          icon: MapPin,
-          description: "Gestion des zones géographiques"
-        },
-        { 
-          title: "Marque", 
-          url: "/modern-admin/marque", 
-          icon: Building2,
-          description: "Gestion de l'identité visuelle et communications"
-        },
         {
           title: "Tarifs & Prix",
           url: "/modern-admin/pricing",
-          icon: Tag,
+          icon: Euro,
           description: "Gestion dynamique des prix des services"
+        },
+        {
+          title: "Zones",
+          url: "/modern-admin/zones",
+          icon: MapPin,
+          description: "Gestion des zones géographiques"
+        },
+        {
+          title: "Marque",
+          url: "/modern-admin/marque",
+          icon: Building2,
+          description: "Gestion de l'identité visuelle et communications"
         },
         {
           title: "Paramètres",
