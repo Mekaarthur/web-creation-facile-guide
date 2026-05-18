@@ -272,6 +272,8 @@ const DeclarationsTracking = () => {
 // Bloc 3 — Monitoring incidents
 const IncidentsMonitoring = () => {
   const [incidents, setIncidents] = useState<any[]>([]);
+  const [retrying, setRetrying] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     loadIncidents();
@@ -280,17 +282,87 @@ const IncidentsMonitoring = () => {
   const loadIncidents = async () => {
     const { data } = await supabase
       .from("urssaf_declarations")
-      .select("*")
-      .in("status", ["rejected", "error"])
+      .select(`
+        *,
+        bookings (
+          booking_date, start_time, end_time, total_price, address,
+          services ( name )
+        )
+      `)
+      .in("status", ["rejected", "error", "pending"])
       .order("created_at", { ascending: false });
     setIncidents(data || []);
   };
 
-  const handleRetry = async (id: string) => {
-    // Increment retry count and reset status
+  const handleRetry = async (inc: any) => {
+    setRetrying(inc.id);
+    try {
+      // Incrémenter le compteur et remettre en statut "sent"
+      await supabase
+        .from("urssaf_declarations")
+        .update({
+          status: "sent",
+          retry_count: (inc.retry_count || 0) + 1,
+          client_validation_deadline: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+        })
+        .eq("id", inc.id);
+
+      // Appeler réellement l'Edge Function URSSAF avec les données de la réservation
+      const booking = inc.bookings;
+      if (booking) {
+        const { error } = await supabase.functions.invoke("urssaf-register-service", {
+          body: {
+            bookingId: inc.booking_id,
+            providerId: inc.provider_id,
+            clientInfo: {
+              email: inc.client_email,
+              firstName: inc.client_name?.split(" ")[0] || "",
+              lastName: inc.client_name?.split(" ").slice(1).join(" ") || "",
+            },
+            services: [{
+              serviceName: booking.services?.name || "Prestation",
+              price: booking.total_price || 0,
+              quantity: 1,
+              customBooking: {
+                date: booking.booking_date,
+                startTime: booking.start_time,
+                endTime: booking.end_time,
+              },
+            }],
+            totalAmount: inc.total_amount,
+            clientAmount: inc.client_amount,
+            stateAmount: inc.state_amount,
+          },
+        });
+
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "API URSSAF non disponible",
+            description: "La déclaration est marquée 'sent' mais l'API n'a pas répondu. Vérifiez la configuration des credentials.",
+          });
+        } else {
+          toast({ title: "Déclaration renvoyée", description: `Relance ${(inc.retry_count || 0) + 1}/3 effectuée.` });
+        }
+      } else {
+        toast({
+          title: "Statut mis à jour",
+          description: "Déclaration marquée comme renvoyée (réservation introuvable pour l'appel API).",
+        });
+      }
+
+      loadIncidents();
+    } catch (err) {
+      toast({ variant: "destructive", title: "Erreur", description: "Impossible de relancer la déclaration." });
+    } finally {
+      setRetrying(null);
+    }
+  };
+
+  const handleCancel = async (id: string) => {
     await supabase
       .from("urssaf_declarations")
-      .update({ status: "sent", retry_count: (incidents.find((i) => i.id === id)?.retry_count || 0) + 1 })
+      .update({ status: "archived" })
       .eq("id", id);
     loadIncidents();
   };
@@ -316,27 +388,38 @@ const IncidentsMonitoring = () => {
               <div key={inc.id} className="p-3 border rounded-lg flex flex-col sm:flex-row sm:items-center gap-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <Badge variant="destructive" className="text-xs">
-                      {inc.status === "rejected" ? "Rejeté" : "Erreur"}
+                    <Badge variant={inc.status === "pending" ? "secondary" : "destructive"} className="text-xs">
+                      {inc.status === "rejected" ? "Rejeté" : inc.status === "pending" ? "En attente" : "Erreur"}
                     </Badge>
                     <span className="text-sm font-medium">{inc.client_name || inc.client_email}</span>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {inc.error_code && <span className="font-mono mr-2">[{inc.error_code}]</span>}
-                    {inc.error_message || inc.rejection_reason || "Erreur inconnue"}
+                    {inc.error_message || inc.rejection_reason || "En attente de soumission à l'URSSAF"}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Tentatives: {inc.retry_count || 0} • {new Date(inc.created_at).toLocaleDateString("fr-FR")}
+                    Tentatives: {inc.retry_count || 0}/3 • {new Date(inc.created_at).toLocaleDateString("fr-FR")}
+                    {inc.total_amount && ` • ${Number(inc.total_amount).toFixed(2)}€`}
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => handleRetry(inc.id)}>
-                    <RefreshCw className="h-3 w-3 mr-1" />
-                    Renvoyer
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleRetry(inc)}
+                    disabled={retrying === inc.id || (inc.retry_count || 0) >= 3}
+                  >
+                    <RefreshCw className={`h-3 w-3 mr-1 ${retrying === inc.id ? "animate-spin" : ""}`} />
+                    {retrying === inc.id ? "Envoi..." : "Renvoyer"}
                   </Button>
-                  <Button size="sm" variant="ghost" className="text-destructive">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-destructive"
+                    onClick={() => handleCancel(inc.id)}
+                  >
                     <Ban className="h-3 w-3 mr-1" />
-                    Annuler
+                    Archiver
                   </Button>
                 </div>
               </div>

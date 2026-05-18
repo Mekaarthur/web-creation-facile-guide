@@ -20,14 +20,16 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { 
-      clientInfo, 
-      services, 
-      totalAmount, 
-      clientAmount, 
+    const {
+      clientInfo,
+      services,
+      totalAmount,
+      clientAmount,
       stateAmount,
       preferredDate,
-      preferredTime 
+      preferredTime,
+      bookingId,
+      providerId,
     } = await req.json();
     
     logStep("Request data received", { 
@@ -139,17 +141,18 @@ serve(async (req) => {
     );
 
     const { error: dbError } = await supabaseClient
-      .from("urssaf_registrations")
+      .from("urssaf_declarations")
       .insert({
-        registration_id: registrationData.id,
+        booking_id: bookingId || null,
+        provider_id: providerId || null,
         client_email: clientInfo.email,
         client_name: `${clientInfo.firstName} ${clientInfo.lastName}`,
         total_amount: totalAmount,
         client_amount: clientAmount,
         state_amount: stateAmount,
-        services: services,
-        status: "registered",
-        registration_date: new Date().toISOString()
+        status: "sent",
+        urssaf_reference: registrationData.reference || registrationData.id || null,
+        client_validation_deadline: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
       });
 
     if (dbError) {

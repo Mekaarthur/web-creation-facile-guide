@@ -147,9 +147,8 @@ serve(async (req) => {
           urssaf_particulier_id: registrationData.id,
           avance_immediate_active: true,
           avance_immediate_pending: false,
-          avance_immediate_activated_at: new Date().toISOString(),
         })
-        .eq("id", userId);
+        .eq("user_id", userId);
     }
 
     return new Response(JSON.stringify({
