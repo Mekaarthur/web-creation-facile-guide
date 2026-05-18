@@ -92,16 +92,10 @@ export const ConversationDetailsModal = ({ conversation, onClose, onUpdate }: Co
   const loadMessages = async () => {
     try {
       if (conversation.type === 'client-provider') {
+        // chat_messages.message (pas message_text) + pas de FK nommée vers profiles
         const { data, error } = await supabase
           .from('chat_messages')
-          .select(`
-            id,
-            sender_id,
-            message_text,
-            created_at,
-            is_read,
-            sender:profiles!chat_messages_sender_id_fkey(first_name, last_name)
-          `)
+          .select('id, sender_id, message, created_at, is_read')
           .eq('conversation_id', conversation.id)
           .order('created_at', { ascending: true });
 
@@ -109,21 +103,22 @@ export const ConversationDetailsModal = ({ conversation, onClose, onUpdate }: Co
 
         const senderIds = [...new Set((data || []).map((m: any) => m.sender_id).filter(Boolean))];
         const roleMap: Record<string, 'client' | 'provider' | 'admin'> = {};
+        const nameMap: Record<string, string> = {};
 
         if (senderIds.length > 0) {
-          const { data: roles } = await supabase
-            .from('user_roles')
-            .select('user_id, role')
-            .in('user_id', senderIds);
+          const [rolesRes, profilesRes, providerUsersRes] = await Promise.all([
+            supabase.from('user_roles').select('user_id, role').in('user_id', senderIds),
+            supabase.from('profiles').select('user_id, first_name, last_name').in('user_id', senderIds),
+            supabase.from('providers').select('user_id').in('user_id', senderIds),
+          ]);
 
-          const { data: providerUsers } = await supabase
-            .from('providers')
-            .select('user_id')
-            .in('user_id', senderIds);
+          const providerSet = new Set((providerUsersRes.data || []).map(p => p.user_id));
 
-          const providerSet = new Set((providerUsers || []).map(p => p.user_id));
+          (profilesRes.data || []).forEach((p: any) => {
+            nameMap[p.user_id] = `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim() || 'Utilisateur';
+          });
 
-          (roles || []).forEach((r: any) => {
+          (rolesRes.data || []).forEach((r: any) => {
             if (r.role === 'admin' || r.role === 'moderator') roleMap[r.user_id] = 'admin';
           });
 
@@ -134,9 +129,9 @@ export const ConversationDetailsModal = ({ conversation, onClose, onUpdate }: Co
 
         const formattedMessages = (data || []).map((msg: any) => ({
           id: msg.id,
-          sender_name: msg.sender ? `${msg.sender.first_name} ${msg.sender.last_name}` : 'Utilisateur',
+          sender_name: nameMap[msg.sender_id] ?? 'Utilisateur',
           sender_role: roleMap[msg.sender_id] ?? 'client',
-          message_text: msg.message_text,
+          message_text: msg.message,   // colonne réelle = message
           created_at: msg.created_at,
           is_read: msg.is_read
         }));
@@ -214,15 +209,32 @@ export const ConversationDetailsModal = ({ conversation, onClose, onUpdate }: Co
         return;
       }
 
+      // Résoudre l'UUID du destinataire depuis son email
+      const recipientEmail = conversation.participant1_email === user.email
+        ? conversation.participant2_email
+        : conversation.participant1_email;
+
+      let receiverUuid: string | null = null;
+      if (recipientEmail) {
+        const { data: recipientProfile } = await supabase
+          .from('profiles')
+          .select('user_id')
+          .eq('email', recipientEmail)
+          .maybeSingle();
+        receiverUuid = recipientProfile?.user_id ?? null;
+      }
+
+      if (!receiverUuid) {
+        throw new Error('Destinataire introuvable — impossible d\'envoyer le message');
+      }
+
       // Pour internal_messages
       const { error } = await supabase
         .from('internal_messages')
         .insert({
           conversation_id: conversation.id,
           sender_id: user.id,
-          receiver_id: conversation.participant1_email === user.email 
-            ? conversation.participant2_email 
-            : conversation.participant1_email,
+          receiver_id: receiverUuid,
           message_text: newMessage,
           message_type: 'text',
           is_read: false
@@ -233,28 +245,19 @@ export const ConversationDetailsModal = ({ conversation, onClose, onUpdate }: Co
       setNewMessage('');
       loadMessages();
 
-      await supabase.functions.invoke('monitor-conversation-keywords', {
+      supabase.functions.invoke('monitor-conversation-keywords', {
+        body: { messageText: newMessage, conversationId: conversation.id }
+      }).catch(() => {});
+
+      // Notification best-effort
+      supabase.functions.invoke('send-message-notification', {
         body: {
-          messageText: newMessage,
-          conversationId: conversation.id
+          userId: receiverUuid,
+          conversationId: conversation.id,
+          senderName: 'Admin Bikawo',
+          messagePreview: newMessage.substring(0, 100)
         }
-      });
-
-      // Envoyer notification email au destinataire
-      const receiverId = conversation.participant1_email === (await supabase.auth.getUser()).data.user?.email
-        ? conversation.participant2_email
-        : conversation.participant1_email;
-
-      if (receiverId) {
-        await supabase.functions.invoke('send-message-notification', {
-          body: {
-            userId: receiverId,
-            conversationId: conversation.id,
-            senderName: 'Admin Bikawo',
-            messagePreview: newMessage.substring(0, 100)
-          }
-        });
-      }
+      }).catch(() => {});
 
       toast({
         title: "Message envoyé",
@@ -360,13 +363,20 @@ export const ConversationDetailsModal = ({ conversation, onClose, onUpdate }: Co
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Non authentifié');
 
+      // Résoudre UUID du destinataire
+      const targetEmail = conversation.participant1_email === user.email
+        ? conversation.participant2_email
+        : conversation.participant1_email;
+      const { data: targetProfile } = await supabase
+        .from('profiles').select('user_id').eq('email', targetEmail ?? '').maybeSingle();
+      const targetUuid = targetProfile?.user_id;
+      if (!targetUuid) throw new Error('Destinataire introuvable');
+
       // Créer une notification système
       const { error } = await supabase
         .from('realtime_notifications')
         .insert({
-          user_id: conversation.participant1_email === user.email 
-            ? conversation.participant2_email 
-            : conversation.participant1_email,
+          user_id: targetUuid,
           type: 'system',
           title: '📢 Notification Bikawo',
           message: 'Un administrateur souhaite attirer votre attention sur cette conversation',

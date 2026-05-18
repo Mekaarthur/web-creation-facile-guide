@@ -60,8 +60,9 @@ import {
 
 interface ReferralReward {
   id: string;
-  referrer_id: string;
-  referred_id: string;
+  referrer_provider_id: string;
+  referred_provider_id: string;
+  referral_id: string;
   reward_type: string;
   amount: number;
   status: string;
@@ -206,17 +207,16 @@ const AdminReferralManagement = () => {
     try {
       setLoading(true);
 
-      // Load rewards
-      // @ts-ignore
+      // Load rewards — colonnes réelles : referrer_provider_id / referred_provider_id
       const { data: rewardsData } = await supabase
         .from('provider_referral_rewards')
         .select(`
           *,
-          referrer:providers!provider_referral_rewards_referrer_id_fkey(
+          referrer:providers!provider_referral_rewards_referrer_provider_id_fkey(
             business_name,
             profiles(first_name, last_name)
           ),
-          referred:providers!provider_referral_rewards_referred_id_fkey(
+          referred:providers!provider_referral_rewards_referred_provider_id_fkey(
             business_name
           )
         `)

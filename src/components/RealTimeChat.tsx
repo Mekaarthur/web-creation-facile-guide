@@ -251,18 +251,18 @@ export const RealTimeChat: React.FC<RealTimeChatProps> = ({
 
   const markMessagesAsRead = async (conversationId: string) => {
     if (!user) return;
-
-    try {
-      await supabase
-        .from('chat_messages')
-        .update({ is_read: true })
-        .eq('conversation_id', conversationId)
-        .eq('receiver_id', user.id)
-        .eq('is_read', false);
-
-    } catch (error) {
-      console.error('Erreur lors du marquage des messages comme lus:', error);
-    }
+    // Filtre strict : uniquement les messages reçus par cet utilisateur, non encore lus,
+    // envoyés par quelqu'un d'autre (évite la race condition sur ses propres messages).
+    supabase
+      .from('chat_messages')
+      .update({ is_read: true })
+      .eq('conversation_id', conversationId)
+      .eq('receiver_id', user.id)
+      .eq('is_read', false)
+      .neq('sender_id', user.id)
+      .then(({ error }) => {
+        if (error) console.warn('markMessagesAsRead:', error.message);
+      });
   };
 
   const sendMessage = async () => {

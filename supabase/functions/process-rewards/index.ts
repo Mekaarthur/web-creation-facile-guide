@@ -65,19 +65,17 @@ async function processClientRewards(supabase: any, userId?: string) {
   console.log('Processing client rewards for user:', userId);
 
   // Update monthly activity for completed bookings
-  const { data: completedBookings } = await supabase
+  let bookingsQuery = supabase
     .from('bookings')
-    .select(`
-      id,
-      client_id,
-      booking_date,
-      start_time,
-      end_time,
-      status
-    `)
+    .select('id, client_id, booking_date, start_time, end_time, status')
     .eq('status', 'completed')
-    .gte('booking_date', new Date(new Date().getFullYear(), 0, 1).toISOString())
-    .eq(userId ? 'client_id' : 'id', userId || 'dummy');
+    .gte('booking_date', new Date(new Date().getFullYear(), 0, 1).toISOString());
+
+  if (userId) {
+    bookingsQuery = bookingsQuery.eq('client_id', userId);
+  }
+
+  const { data: completedBookings } = await bookingsQuery;
 
   if (!completedBookings) return;
 
@@ -160,11 +158,11 @@ async function processProviderRewards(supabase: any, providerId?: string) {
   const currentYear = new Date().getFullYear();
 
   // Get all providers or specific provider
-  const { data: providers } = await supabase
-    .from('providers')
-    .select('*')
-    .eq(providerId ? 'id' : 'created_at', providerId || new Date().toISOString())
-    .is(providerId ? null : 'id', null);
+  let providersQuery = supabase.from('providers').select('*');
+  if (providerId) {
+    providersQuery = providersQuery.eq('id', providerId);
+  }
+  const { data: providers } = await providersQuery;
 
   if (!providers) return;
 

@@ -196,14 +196,12 @@ export const useRewards = () => {
     if (!user) return;
 
     try {
-      // The trigger will automatically set valid_until and expires_at
       const { error } = await supabase
         .from('client_rewards')
         .insert({
           client_id: user.id,
           reward_type: rewardType,
-          valid_until: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // 3 months
-          expires_at: new Date(new Date().getFullYear(), 11, 31).toISOString() // Dec 31st
+          earned_date: new Date().toISOString(),
         });
 
       if (error) throw error;
