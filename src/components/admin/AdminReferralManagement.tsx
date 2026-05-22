@@ -227,21 +227,21 @@ const AdminReferralManagement = () => {
       }
 
       // Load referrals
-      const { data: referralsData } = await supabase
+      const { data: referralsData, error: referralsError } = await supabase
         .from('referrals')
         .select(`
           *,
-          referrer:providers!referrer_id(
+          referrer:providers!referrals_referrer_id_fkey(
             business_name,
             profiles(first_name, last_name)
           ),
-          referred:providers!referred_id(
+          referred:providers!referrals_referred_id_fkey(
             business_name
           )
         `)
-        .eq('referrer_type', 'provider')
         .order('created_at', { ascending: false });
 
+      if (referralsError) console.error('[referrals]', referralsError);
       if (referralsData) {
         setReferrals(referralsData as any);
       }
