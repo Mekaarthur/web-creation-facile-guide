@@ -231,6 +231,7 @@ const AdminReferralManagement = () => {
       const { data: referralsData, error: referralsError } = await supabase
         .from('referrals')
         .select('*')
+        .eq('referrer_type', 'provider')
         .order('created_at', { ascending: false });
 
       if (referralsError) console.error('[referrals]', referralsError);
