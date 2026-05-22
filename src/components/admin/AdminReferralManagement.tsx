@@ -226,24 +226,33 @@ const AdminReferralManagement = () => {
         setRewards(rewardsData as any);
       }
 
-      // Load referrals
+      // Load referrals — referrer_id/referred_id → auth.users, not providers
+      // So we can't nest-join to providers directly; enrich in a second pass.
       const { data: referralsData, error: referralsError } = await supabase
         .from('referrals')
-        .select(`
-          *,
-          referrer:providers!referrals_referrer_id_fkey(
-            business_name,
-            profiles(first_name, last_name)
-          ),
-          referred:providers!referrals_referred_id_fkey(
-            business_name
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (referralsError) console.error('[referrals]', referralsError);
-      if (referralsData) {
-        setReferrals(referralsData as any);
+
+      if (referralsData && referralsData.length > 0) {
+        const userIds = [...new Set([
+          ...referralsData.map((r: any) => r.referrer_id).filter(Boolean),
+          ...referralsData.map((r: any) => r.referred_id).filter(Boolean),
+        ])];
+        const { data: provs } = await supabase
+          .from('providers')
+          .select('user_id, business_name, profiles(first_name, last_name)')
+          .in('user_id', userIds);
+        const provMap: Record<string, any> = {};
+        (provs || []).forEach((p: any) => { provMap[p.user_id] = p; });
+        setReferrals(referralsData.map((r: any) => ({
+          ...r,
+          referrer: provMap[r.referrer_id] || null,
+          referred: provMap[r.referred_id] || null,
+        })) as any);
+      } else {
+        setReferrals([]);
       }
 
       // Load super ambassadors
