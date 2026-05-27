@@ -69,15 +69,17 @@ const CustomRequestForm = () => {
       };
 
       // Sauvegarder la demande
-      const { data: created, error } = await supabase
+      // Note: pas de .select() car la policy SELECT est admin-only ; l'INSERT réussit sans relecture
+      const generatedId = crypto.randomUUID();
+      const { error } = await supabase
         .from('custom_requests')
-        .insert([payload])
-        .select()
-        .single();
+        .insert([{ ...payload, id: generatedId }]);
 
       if (error) {
         throw error;
       }
+
+      const created = { id: generatedId };
 
       // Emails: confirmation client et notification admin
       const bookingDetails = {

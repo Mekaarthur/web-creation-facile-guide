@@ -209,9 +209,12 @@ const ServicesBooking = () => {
       const serviceDescription = `Service: ${selectedService.name}\n\n${slotsDescription}\n\nBudget estimé: ${getTotalPrice()}€`;
 
       // Insérer dans custom_requests (prestataire assigné par l'équipe)
-      const { data: created, error: requestError } = await supabase
+      // Pas de .select() : la policy SELECT est admin-only, on génère l'ID côté client
+      const createdId = crypto.randomUUID();
+      const { error: requestError } = await supabase
         .from('custom_requests')
         .insert([{
+          id: createdId,
           client_name: user.email?.split('@')[0] || 'Client',
           client_email: user.email || '',
           service_description: serviceDescription,
@@ -221,11 +224,11 @@ const ServicesBooking = () => {
           additional_notes: notes || null,
           urgency_level: 'normal',
           status: 'new'
-        }])
-        .select()
-        .single();
+        }]);
 
       if (requestError) throw requestError;
+
+      const created = { id: createdId };
 
       // Email de confirmation (best-effort)
       try {
