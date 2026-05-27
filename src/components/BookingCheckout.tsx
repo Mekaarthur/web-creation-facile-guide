@@ -242,23 +242,37 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       // APRÈS confirmation du paiement Stripe (dans verify-payment), pas avant.
       // Cela évite le risque d'encaisser un paiement sans déclaration URSSAF valide.
 
+      // Stripe metadata : limite 500 chars/valeur — on n'envoie que l'essentiel
+      const cap = (v: string) => v.length > 490 ? v.substring(0, 490) : v;
+      const compactServices = services.map(s => ({
+        n: s.serviceName,
+        c: s.category,
+        p: s.price,
+        q: s.quantity,
+        d: s.customBooking?.date,
+        t: s.customBooking?.startTime,
+      }));
+
       // Create Stripe payment session (only for client amount)
       const { data: paymentData, error: paymentError } = await supabase.functions.invoke('create-payment', {
         body: {
           amount: clientAmount,
           description: `Réservation Bikawo - ${services.length} service(s)${urssafEnabled ? ' (Avance immédiate 50%)' : ''}`,
-          serviceName: services.map(s => s.serviceName).join(', '),
+          serviceName: cap(services.map(s => s.serviceName).join(', ')),
           guestEmail: clientInfo.email,
           metadata: {
-            clientInfo: JSON.stringify(clientInfo),
-            services: JSON.stringify(services),
-            preferredDate,
-            preferredTime,
-            notes: cartItems.map(item => item.notes).filter(Boolean).join('; '),
+            services: cap(JSON.stringify(compactServices)),
+            client_name: cap(`${clientInfo.firstName} ${clientInfo.lastName}`),
+            client_email: cap(clientInfo.email),
+            client_phone: cap(clientInfo.phone || ''),
+            address: cap(clientInfo.address || ''),
+            preferredDate: preferredDate || '',
+            preferredTime: preferredTime || '',
+            notes: cap(cartItems.map(item => item.notes).filter(Boolean).join('; ')),
             urssafEnabled: urssafEnabled.toString(),
             totalAmount: totalAmount.toString(),
             clientAmount: clientAmount.toString(),
-            stateAmount: stateAmount.toString()
+            stateAmount: stateAmount.toString(),
           }
         }
       });

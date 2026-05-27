@@ -84,6 +84,7 @@ export const useBikawoCart = () => {
           }
         }));
         setCartItems(items);
+        generateSeparatedBookings(items);
       } catch (error) {
         console.error('Erreur lors du chargement du panier:', error);
         localStorage.removeItem('bikawo-cart');
@@ -107,6 +108,7 @@ export const useBikawoCart = () => {
             }
           }));
           setCartItems(items);
+          generateSeparatedBookings(items);
         } catch (error) {
           console.error('Erreur lors du chargement du panier:', error);
         }

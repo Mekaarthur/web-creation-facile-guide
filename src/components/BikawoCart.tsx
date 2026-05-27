@@ -34,10 +34,11 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
   } = useBikawoCart();
   
   const [isPaymentMode, setIsPaymentMode] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
+  // Initialiser à isOpen pour éviter l'état opacity-0 quand la page est déjà ouverte
+  const [isVisible, setIsVisible] = useState(isOpen);
   const { toast } = useToast();
 
-  // Animation d'entrée
+  // Animation d'entrée (sert pour l'ouverture depuis le modal navbar)
   useEffect(() => {
     if (isOpen) {
       setIsVisible(true);
