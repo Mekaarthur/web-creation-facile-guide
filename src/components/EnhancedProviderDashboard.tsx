@@ -42,6 +42,8 @@ import MyZones from '@/pages/provider/MyZones';
 import { StripeConnectCard } from '@/components/provider/StripeConnectCard';
 import ProviderAttestationsTab from '@/components/provider/ProviderAttestationsTab';
 import { ProviderFavoriteRequests } from '@/components/provider/ProviderFavoriteRequests';
+import { ProviderAvailabilityManager } from '@/components/provider/ProviderAvailabilityManager';
+import { EarningsSimulator } from '@/components/provider/EarningsSimulator';
 
 const EnhancedProviderDashboard = () => {
   const { t } = useTranslation();
@@ -331,12 +333,13 @@ const EnhancedProviderDashboard = () => {
                   <TabsTrigger value="recompenses" className="text-xs sm:text-sm whitespace-nowrap">Récompenses</TabsTrigger>
                 </TabsList>
               </div>
-              <TabsContent value="revenus">
+              <TabsContent value="revenus" className="space-y-6">
                 <ProviderKPIsDashboard
                   stats={stats}
                   reviews={reviews ?? []}
                   missions={missions ?? []}
                 />
+                <EarningsSimulator />
               </TabsContent>
               <TabsContent value="evaluations">
                 <ProviderEvaluationsTab reviews={reviews ?? []} />
@@ -373,13 +376,14 @@ const EnhancedProviderDashboard = () => {
           <TabsContent value="profil" className="mt-4 sm:mt-6 lg:mt-8">
             <Tabs defaultValue="infos" className="w-full">
               <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0 pb-2">
-                <TabsList className="inline-flex sm:grid sm:grid-cols-6 mb-4 min-w-max sm:min-w-0 sm:w-full">
-                  <TabsTrigger value="infos" className="text-xs sm:text-sm whitespace-nowrap">Informations</TabsTrigger>
-                  <TabsTrigger value="services" className="text-xs sm:text-sm whitespace-nowrap">Services</TabsTrigger>
-                  <TabsTrigger value="zones" className="text-xs sm:text-sm whitespace-nowrap">Zones</TabsTrigger>
-                  <TabsTrigger value="documents" className="text-xs sm:text-sm whitespace-nowrap">Documents</TabsTrigger>
-                  <TabsTrigger value="attestations" className="text-xs sm:text-sm whitespace-nowrap">Attestations</TabsTrigger>
-                  <TabsTrigger value="paiements" className="text-xs sm:text-sm whitespace-nowrap">Paiements</TabsTrigger>
+                <TabsList className="inline-flex sm:grid sm:grid-cols-7 mb-4 min-w-max sm:min-w-0 sm:w-full">
+                  <TabsTrigger value="infos"          className="text-xs sm:text-sm whitespace-nowrap">Informations</TabsTrigger>
+                  <TabsTrigger value="services"       className="text-xs sm:text-sm whitespace-nowrap">Services</TabsTrigger>
+                  <TabsTrigger value="zones"          className="text-xs sm:text-sm whitespace-nowrap">Zones</TabsTrigger>
+                  <TabsTrigger value="disponibilites" className="text-xs sm:text-sm whitespace-nowrap">Disponibilités</TabsTrigger>
+                  <TabsTrigger value="documents"      className="text-xs sm:text-sm whitespace-nowrap">Documents</TabsTrigger>
+                  <TabsTrigger value="attestations"   className="text-xs sm:text-sm whitespace-nowrap">Attestations</TabsTrigger>
+                  <TabsTrigger value="paiements"      className="text-xs sm:text-sm whitespace-nowrap">Paiements</TabsTrigger>
                 </TabsList>
               </div>
               <TabsContent value="infos">
@@ -390,6 +394,9 @@ const EnhancedProviderDashboard = () => {
               </TabsContent>
               <TabsContent value="zones">
                 <MyZones />
+              </TabsContent>
+              <TabsContent value="disponibilites">
+                <ProviderAvailabilityManager />
               </TabsContent>
               <TabsContent value="documents">
                 <ProviderDocuments />

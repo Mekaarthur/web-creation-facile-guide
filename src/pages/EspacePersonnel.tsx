@@ -33,6 +33,7 @@ import { PendingReviews } from '@/components/client/PendingReviews';
 import { AvanceImmediateActivation } from '@/components/client/AvanceImmediateActivation';
 import { ClientPrestationsHistory } from '@/components/client/ClientPrestationsHistory';
 import { AutoRatingPrompt } from '@/components/mobile/AutoRatingPrompt';
+import { TwoFactorAuthSetup } from '@/components/auth/TwoFactorAuthSetup';
 import { useTranslation } from 'react-i18next';
 
 const EspacePersonnel = () => {
@@ -53,7 +54,7 @@ const EspacePersonnel = () => {
   }, [user, loading, primaryRole, navigate]);
 
   // Liste unifiée des onglets protégés (nécessitant une authentification)
-  const protectedTabs = ["dashboard", "rendez-vous", "factures", "economies", "parrainage", "profil", "paiement", "attestations"];
+  const protectedTabs = ["dashboard", "rendez-vous", "factures", "economies", "parrainage", "profil", "securite", "paiement", "attestations"];
 
   // Rediriger vers connexion si pas authentifié et tentative d'accès à un onglet protégé
   useEffect(() => {
@@ -124,7 +125,7 @@ const EspacePersonnel = () => {
             window.history.replaceState({}, '', newUrl);
           }} className="w-full">
             <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 pb-2 mb-4 sm:mb-8">
-            <TabsList className={`inline-flex sm:grid gap-1.5 sm:gap-2 bg-white/80 backdrop-blur-sm p-1.5 sm:p-2 shadow-lg rounded-xl border-0 min-w-max sm:min-w-0 sm:w-full ${user ? 'sm:grid-cols-4 lg:grid-cols-8' : 'sm:grid-cols-1'}`}>
+            <TabsList className={`inline-flex sm:grid gap-1.5 sm:gap-2 bg-white/80 backdrop-blur-sm p-1.5 sm:p-2 shadow-lg rounded-xl border-0 min-w-max sm:min-w-0 sm:w-full ${user ? 'sm:grid-cols-4 lg:grid-cols-9' : 'sm:grid-cols-1'}`}>
               {!user && (
                 <TabsTrigger 
                   value="connexion" 
@@ -185,8 +186,15 @@ const EspacePersonnel = () => {
                     <CreditCard className="w-4 h-4 flex-shrink-0" />
                     <span className="truncate font-medium">{t('personalSpace.payment')}</span>
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="attestations" 
+                  <TabsTrigger
+                    value="securite"
+                    className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm py-3 px-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+                  >
+                    <Lock className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate font-medium">Sécurité</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="attestations"
                     className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm py-3 px-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
                   >
                     <Receipt className="w-4 h-4 flex-shrink-0" />
@@ -262,6 +270,11 @@ const EspacePersonnel = () => {
             <TabsContent value="profil" className="space-y-6">
               <ProfileUpdateForm />
               <DeleteAccountSection />
+            </TabsContent>
+
+            {/* Sécurité & 2FA */}
+            <TabsContent value="securite" className="space-y-6">
+              <TwoFactorAuthSetup />
             </TabsContent>
 
             {/* Mes Moyens de Paiement */}

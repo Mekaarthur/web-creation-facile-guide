@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Send, MessageSquare, Calendar as CalendarIcon, MapPin } from "lucide-react";
+import { RecurringBookingOptions, defaultRecurringOptions, type RecurringOptions } from '@/components/booking/RecurringBookingOptions';
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,7 @@ const CustomRequestForm = () => {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState("");
   const [hasDelivery, setHasDelivery] = useState(false);
+  const [recurring, setRecurring] = useState<RecurringOptions>(defaultRecurringOptions());
   const [formData, setFormData] = useState({
     client_name: "",
     client_email: "",
@@ -51,32 +53,43 @@ const CustomRequestForm = () => {
     setLoading(true);
 
     try {
-      // Construire le payload pour custom_requests (RLS: insertion publique autorisée)
       const preferredDateStr = selectedDate ? selectedDate.toISOString().split('T')[0] : null;
-      const payload = {
-        client_name: formData.client_name,
-        client_email: formData.client_email,
-        client_phone: formData.client_phone || null,
+
+      const recurringNote = recurring.enabled
+        ? `[Récurrence: ${recurring.frequency}${recurring.dayOfWeek ? ' · ' + recurring.dayOfWeek : ''}${recurring.endDate ? ' · jusqu\'au ' + recurring.endDate : ''}${recurring.preferSameProvider ? ' · même prestataire souhaité' : ''}]`
+        : null;
+      const additionalNotes = [formData.additional_notes || null, recurringNote]
+        .filter(Boolean).join('\n') || null;
+
+      // Payload de base — uniquement les colonnes originales (toujours présentes en production)
+      const basePayload: Record<string, unknown> = {
+        client_name:         formData.client_name,
+        client_email:        formData.client_email,
         service_description: formData.service_description,
-        location: formData.pickup_address,
-        delivery_address: formData.delivery_address || null,
-        preferred_date: preferredDateStr,
-        preferred_time: selectedTime || null,
-        budget_range: formData.budget_range || null,
-        urgency_level: formData.urgency_level || 'normal',
-        additional_notes: formData.additional_notes || null,
-        status: 'new'
+        location:            formData.pickup_address,
+        status:              'new',
       };
 
-      // Sauvegarder la demande
-      // Note: pas de .select() car la policy SELECT est admin-only ; l'INSERT réussit sans relecture
+      // Colonnes optionnelles — on ne les inclut que si elles ont une valeur
+      if (formData.client_phone)        basePayload.client_phone    = formData.client_phone;
+      if (preferredDateStr)             basePayload.preferred_date  = preferredDateStr;
+      if (selectedTime)                 basePayload.preferred_time  = selectedTime;
+      if (formData.budget_range)        basePayload.budget_range    = formData.budget_range;
+      if (formData.urgency_level)       basePayload.urgency_level   = formData.urgency_level;
+      if (additionalNotes)              basePayload.additional_notes = additionalNotes;
+      // Colonnes ajoutées par migration (incluses seulement si non-nulles pour rester compatibles)
+      if (formData.delivery_address)    basePayload.delivery_address = formData.delivery_address;
+
       const generatedId = crypto.randomUUID();
+      basePayload.id = generatedId;
+
       const { error } = await supabase
         .from('custom_requests')
-        .insert([{ ...payload, id: generatedId }]);
+        .insert([basePayload as any]);
 
       if (error) {
-        throw error;
+        console.error('[CustomRequestForm] Supabase INSERT error:', error);
+        throw new Error(error.message || error.details || 'Erreur base de données');
       }
 
       const created = { id: generatedId };
@@ -164,12 +177,13 @@ const CustomRequestForm = () => {
       setSelectedTime("");
       setHasDelivery(false);
 
-    } catch (error) {
-      console.error('Error submitting custom request:', error);
+    } catch (error: any) {
+      console.error('[CustomRequestForm] Erreur soumission:', error);
+      const msg = error?.message || error?.details || "Impossible d'envoyer votre demande. Veuillez réessayer.";
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible d'envoyer votre demande. Veuillez réessayer."
+        description: msg,
       });
     } finally {
       setLoading(false);
@@ -374,6 +388,11 @@ const CustomRequestForm = () => {
               placeholder="Informations complémentaires, contraintes particulières..."
               rows={3}
             />
+          </div>
+
+          {/* Récurrence */}
+          <div className="pt-2 border-t">
+            <RecurringBookingOptions value={recurring} onChange={setRecurring} />
           </div>
 
           <Button

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface AdminCounts {
   alerts: number;
   demandes: number;
+  demandesPersonnalisees: number;
   candidatures: number;
   prestatairesPending: number;
   moderation: number;
@@ -26,6 +27,7 @@ export const useAdminCounts = () => {
         blockedMissions,
         inactiveProviders,
         demandesTotal,
+        demandesPersonnaliseesNew,
         candidaturesPending,
         prestatairesPending,
         moderationPending,
@@ -37,6 +39,7 @@ export const useAdminCounts = () => {
         supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('status', 'in_progress').lt('started_at', blockedCutoff),
         supabase.from('providers').select('id', { count: 'exact', head: true }).eq('status', 'active').or(`last_mission_date.is.null,last_mission_date.lt.${inactiveDate}`),
         supabase.from('client_requests').select('id', { count: 'exact', head: true }),
+        supabase.from('custom_requests').select('id', { count: 'exact', head: true }).eq('status', 'new'),
         supabase.from('job_applications').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
         supabase.from('providers').select('id', { count: 'exact', head: true }).in('status', ['pending', 'pending_validation']),
         supabase.from('reviews').select('id', { count: 'exact', head: true }).eq('is_approved', false),
@@ -49,6 +52,7 @@ export const useAdminCounts = () => {
       return {
         alerts: alertsTotal,
         demandes: demandesTotal.count || 0,
+        demandesPersonnalisees: demandesPersonnaliseesNew.count || 0,
         candidatures: candidaturesPending.count || 0,
         prestatairesPending: prestatairesPending.count || 0,
         moderation: moderationPending.count || 0,

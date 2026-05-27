@@ -280,6 +280,7 @@ export default function EnhancedModernDashboard() {
     { label: "Candidatures",      href: "/modern-admin/applications",   icon: FileText,      count: counts?.candidatures || 0 },
     { label: "Missions",          href: "/modern-admin/missions",       icon: Target,        count: counts?.missionsPending || 0 },
     { label: "Réservations",      href: "/modern-admin/reservations",   icon: Calendar,      count: 0 },
+    { label: "Demandes",          href: "/modern-admin/demandes",       icon: MessageSquare, count: counts?.demandesPersonnalisees || 0 },
     { label: "Paiements",         href: "/modern-admin/payments",       icon: CreditCard,    count: 0 },
     { label: "Factures",          href: "/modern-admin/invoices",       icon: FileText,      count: 0 },
     { label: "Messages",          href: "/modern-admin/messages",       icon: MessageSquare, count: counts?.messages || 0 },

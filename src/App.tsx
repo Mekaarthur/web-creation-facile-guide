@@ -118,6 +118,7 @@ const AdminAvanceImmediate = lazy(() => import("./pages/admin/AvanceImmediate"))
 const AdminReclamations = lazy(() => import("./pages/admin/Reclamations"));
 const AdminAccessTracking = lazy(() => import("./pages/admin/AdminAccessTracking"));
 const RgpdDeletions = lazy(() => import("./pages/admin/RgpdDeletions"));
+const AdminCustomRequests = lazy(() => import("./components/admin/AdminCustomRequests"));
 const AuditReport = lazy(() => import("./components/AuditReport"));
 const BikawoCartDemo = lazy(() => import("./components/BikawoCartDemo"));
 const AnalyticsSEO = lazy(() => import("./pages/AnalyticsSEO"));
@@ -293,6 +294,7 @@ const App = () => (
                   <Route path="rgpd-deletions" element={<RgpdDeletions />} />
                   <Route path="pricing" element={<AdminPricing />} />
                   <Route path="tarifs" element={<AdminPricing />} />
+                  <Route path="demandes" element={<AdminCustomRequests />} />
                 </Route>
                 
                 <Route path="*" element={<NotFound />} />

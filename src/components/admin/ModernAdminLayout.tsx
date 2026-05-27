@@ -92,11 +92,12 @@ const navigationGroups = [
   {
     label: "Opérations",
     items: [
-      { title: "Missions",          href: "/modern-admin/missions",            icon: Target,    countKey: "missionsPending" as const },
-      { title: "Réservations",      href: "/modern-admin/reservations",        icon: Calendar,  countKey: null },
-      { title: "Paiements",         href: "/modern-admin/payments",            icon: CreditCard,countKey: null },
-      { title: "Factures",          href: "/modern-admin/invoices",            icon: FileText,  countKey: null },
-      { title: "Avance Immédiate",  href: "/modern-admin/urssaf-declarations", icon: Landmark,  countKey: null },
+      { title: "Missions",          href: "/modern-admin/missions",            icon: Target,       countKey: "missionsPending" as const },
+      { title: "Réservations",      href: "/modern-admin/reservations",        icon: Calendar,     countKey: null },
+      { title: "Demandes",          href: "/modern-admin/demandes",            icon: MessageSquare, countKey: "demandesPersonnalisees" as const },
+      { title: "Paiements",         href: "/modern-admin/payments",            icon: CreditCard,   countKey: null },
+      { title: "Factures",          href: "/modern-admin/invoices",            icon: FileText,     countKey: null },
+      { title: "Avance Immédiate",  href: "/modern-admin/urssaf-declarations", icon: Landmark,     countKey: null },
     ]
   },
   {
