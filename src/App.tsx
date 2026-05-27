@@ -180,6 +180,8 @@ const App = () => (
                 <Route path="/dashboard-client" element={<ProtectedRoute><EspacePersonnel /></ProtectedRoute>} />
                 <Route path="/espace-prestataire" element={<ProtectedProviderRoute requireVerified><EspacePrestataire /></ProtectedProviderRoute>} />
                 <Route path="/dashboard-prestataire" element={<ProtectedProviderRoute requireVerified><EspacePrestataire /></ProtectedProviderRoute>} />
+                {/* Alias pour le retour Stripe Connect — doit pointer vers EspacePrestataire */}
+                <Route path="/provider/dashboard" element={<ProtectedProviderRoute requireVerified><EspacePrestataire /></ProtectedProviderRoute>} />
                 <Route path="/provider-onboarding" element={<ProtectedProviderRoute><ProviderOnboarding /></ProtectedProviderRoute>} />
                 <Route path="/provider/zones" element={<ProtectedProviderRoute requireVerified><MyZones /></ProtectedProviderRoute>} />
                 <Route path="/nous-recrutons" element={<ProviderSignup />} />

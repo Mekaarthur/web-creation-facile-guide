@@ -151,8 +151,8 @@ serve(async (req) => {
       if (provider.stripe_account_id) {
         const accountLink = await stripe.accountLinks.create({
           account: provider.stripe_account_id,
-          refresh_url: `${origin}/provider/dashboard?stripe=refresh`,
-          return_url: `${origin}/provider/dashboard?stripe=success`,
+          refresh_url: `${origin}/espace-prestataire?stripe=refresh`,
+          return_url: `${origin}/espace-prestataire?stripe=success`,
           type: "account_onboarding",
         });
 
