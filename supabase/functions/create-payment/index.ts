@@ -152,6 +152,7 @@ serve(async (req) => {
     };
 
     const baseParams: any = {
+      payment_method_types: ["card"],
       line_items: [
         {
           price_data: {
