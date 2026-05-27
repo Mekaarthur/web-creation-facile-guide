@@ -39,8 +39,18 @@ serve(async (req) => {
       avanceImmediateActive = false,
     } = await req.json();
 
-    if (!amount || amount <= 0) {
+    const MIN_AMOUNT = 0.50;  // 50 centimes minimum Stripe
+    const MAX_AMOUNT = 10000; // 10 000€ maximum raisonnable
+
+    if (!amount || typeof amount !== "number") {
       throw new Error("Valid amount is required");
+    }
+    if (amount < MIN_AMOUNT || amount > MAX_AMOUNT) {
+      throw new Error(`Amount must be between ${MIN_AMOUNT}€ and ${MAX_AMOUNT}€`);
+    }
+    // Reject more than 2 decimal places to avoid rounding issues
+    if (Math.round(amount * 100) !== amount * 100) {
+      throw new Error("Amount must have at most 2 decimal places");
     }
 
     // Calcul du split si serviceType + hours fournis
