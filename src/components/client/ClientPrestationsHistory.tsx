@@ -294,7 +294,16 @@ export const ClientPrestationsHistory = () => {
       if (error) throw error;
 
       supabase.functions.invoke('send-modern-notification', {
-        body: { type: 'dispute_opened', bookingId: disputeBooking.id, clientEmail: user.email, disputeType, resolution: disputeResolution },
+        body: {
+          type: 'dispute_opened',
+          recipient: { email: 'admin@bikawo.com', name: 'Admin Bikawo', firstName: 'Admin' },
+          data: {
+            clientName: user.email,
+            bookingId: disputeBooking.id,
+            serviceDescription: `Litige "${disputeType}" — résolution souhaitée : ${disputeResolution}\n\n${disputeDesc.trim()}`,
+            message: disputeType,
+          }
+        }
       }).catch(() => {});
 
       toast({ title: 'Litige ouvert', description: 'Notre équipe traitera votre demande sous 72h ouvrées.' });

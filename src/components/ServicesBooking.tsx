@@ -234,10 +234,10 @@ const ServicesBooking = () => {
       try {
         await supabase.functions.invoke('send-modern-notification', {
           body: {
-            type: 'booking_confirmation',
+            type: 'custom_request_received',
             recipient: { email: user.email, name: user.email?.split('@')[0], firstName: user.email?.split('@')[0] },
             data: {
-              serviceName: selectedService.name,
+              serviceDescription: selectedService.name,
               bookingDate: format(timeSlots[0].startDate, 'dd/MM/yyyy'),
               startTime: timeSlots[0].startTime,
               address: location,
