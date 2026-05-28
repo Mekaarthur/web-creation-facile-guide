@@ -5,6 +5,7 @@ import {
   PRICING,
   calculateMissionSplit,
   calculateWithAvanceImmediate,
+  loadDynamicPricing,
   type ServiceType,
 } from "../_shared/pricing.ts";
 
@@ -53,12 +54,21 @@ serve(async (req) => {
       throw new Error("Amount must have at most 2 decimal places");
     }
 
+    // Charger les prix dynamiques depuis financial_rules (fallback sur PRICING)
+    const serviceRoleClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+    const dynamicPricing = await loadDynamicPricing(serviceRoleClient);
+
     // Calcul du split si serviceType + hours fournis
     let splitData: Record<string, string> = {};
-    if (serviceType && hours && serviceType in PRICING) {
+    const knownType = serviceType && (serviceType in PRICING || (dynamicPricing && serviceType in dynamicPricing));
+    if (serviceType && hours && knownType) {
+      const override = dynamicPricing?.[serviceType];
       const split = avanceImmediateActive
-        ? calculateWithAvanceImmediate(serviceType as ServiceType, hours)
-        : calculateMissionSplit(serviceType as ServiceType, hours);
+        ? calculateWithAvanceImmediate(serviceType as ServiceType, hours, override?.client, override?.provider)
+        : calculateMissionSplit(serviceType as ServiceType, hours, override?.client, override?.provider);
 
       splitData = {
         service_type:      serviceType,
