@@ -47,6 +47,7 @@ import {
   Clock,
   ShieldCheck,
   Home,
+  Tag,
 } from "lucide-react";
 import { NotificationBell } from './NotificationBell';
 import { SecureLogout } from '@/components/SecureLogout';
@@ -119,6 +120,7 @@ const navigationGroups = [
   {
     label: "Configuration",
     items: [
+      { title: "Tarifs",       href: "/modern-admin/tarifs",         icon: Tag },
       { title: "Zones",        href: "/modern-admin/zones",          icon: MapPin },
       { title: "Marque",       href: "/modern-admin/marque",         icon: Palette },
       { title: "Paramètres",   href: "/modern-admin/settings",       icon: Settings },
