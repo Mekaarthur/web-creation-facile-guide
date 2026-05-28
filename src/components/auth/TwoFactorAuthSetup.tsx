@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, ShieldCheck, QrCode, Loader2, ShieldOff } from 'lucide-react';
+import DOMPurify from 'dompurify';
 
 type Step = 'idle' | 'setup' | 'verify';
 
@@ -175,7 +176,7 @@ export const TwoFactorAuthSetup = () => {
               <div className="flex justify-center">
                 <div
                   className="w-48 h-48 border-2 rounded-xl p-2 bg-white"
-                  dangerouslySetInnerHTML={{ __html: qrCode }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(qrCode, { USE_PROFILES: { svg: true, svgFilters: true } }) }}
                 />
               </div>
             )}

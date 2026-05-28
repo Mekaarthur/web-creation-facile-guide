@@ -106,23 +106,26 @@ const TrackingManager = () => {
 
     // Google Ads Remarketing
     const initGoogleAds = () => {
+      const googleAdsId = import.meta.env.VITE_GOOGLE_ADS_ID;
+      if (!googleAdsId || googleAdsId === 'AW-CONVERSION_ID') return;
       const adsScript = document.createElement('script');
       adsScript.async = true;
-      adsScript.src = 'https://www.googletagmanager.com/gtag/js?id=AW-CONVERSION_ID';
+      adsScript.src = `https://www.googletagmanager.com/gtag/js?id=${googleAdsId}`;
       document.head.appendChild(adsScript);
-
-      window.gtag('config', 'AW-CONVERSION_ID');
+      window.gtag('config', googleAdsId);
     };
 
     // Microsoft Clarity
     const initClarity = () => {
+      const clarityId = import.meta.env.VITE_CLARITY_PROJECT_ID;
+      if (!clarityId || clarityId === 'CLARITY_PROJECT_ID') return;
       const clarityScript = document.createElement('script');
       clarityScript.innerHTML = `
         (function(c,l,a,r,i,t,y){
             c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
             t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
             y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-        })(window, document, "clarity", "script", "CLARITY_PROJECT_ID");
+        })(window, document, "clarity", "script", "${clarityId}");
       `;
       document.head.appendChild(clarityScript);
     };
@@ -216,9 +219,10 @@ const TrackingManager = () => {
       });
 
       // Google Ads conversion
-      if (window.gtag) {
+      const googleAdsId = import.meta.env.VITE_GOOGLE_ADS_ID;
+      if (window.gtag && googleAdsId && googleAdsId !== 'AW-CONVERSION_ID') {
         window.gtag('event', 'conversion', {
-          send_to: 'AW-CONVERSION_ID/CONVERSION_LABEL',
+          send_to: googleAdsId,
           value: value,
           currency: 'EUR'
         });
