@@ -40,7 +40,10 @@ interface ModernNotificationRequest {
     // System notifications
     | 'system_maintenance'
     | 'newsletter'
-    | 'technical_support';
+    | 'technical_support'
+    // Custom requests
+    | 'custom_request_received'
+    | 'custom_request_admin';
     
   recipient: {
     email: string;
@@ -392,6 +395,113 @@ const getModernEmailTemplate = (type: string, recipient: any, data: any) => {
             </div>
           </div>
           ${bikawoSignature}
+        </div>
+      `
+    },
+
+    // 🌟 ACCUSÉ DE RÉCEPTION — DEMANDE PERSONNALISÉE (CLIENT)
+    custom_request_received: {
+      subject: `📩 Demande bien reçue — nous l'étudions pour vous`,
+      html: `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 25px; text-align: center; border-radius: 12px 12px 0 0;">
+            <h1 style="margin: 0; font-size: 24px;">📩 Demande bien reçue !</h1>
+            <p style="margin: 8px 0 0 0; font-size: 16px; opacity: 0.9;">Notre équipe va l'étudier et vous répond très vite</p>
+          </div>
+
+          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+            <p style="font-size: 16px; color: #374151;">Bonjour ${firstName},</p>
+            <p style="font-size: 16px; line-height: 1.6; color: #374151;">
+              Merci pour votre confiance ! Votre demande personnalisée a bien été enregistrée.<br>
+              Notre équipe va l'analyser et vous proposera une solution adaptée à vos besoins.
+            </p>
+
+            <div style="background: #fffbeb; padding: 25px; border-radius: 12px; margin: 25px 0; border: 2px solid #f59e0b;">
+              <h3 style="color: #d97706; margin: 0 0 20px 0; font-size: 18px; text-align: center;">📋 Récapitulatif de votre demande</h3>
+              <div style="display: grid; gap: 10px;">
+                ${data.serviceDescription ? `
+                  <div style="padding: 10px 0; border-bottom: 1px solid #fde68a;">
+                    <strong style="color: #92400e;">Votre besoin :</strong>
+                    <p style="margin: 6px 0 0 0; color: #374151; line-height: 1.5;">${data.serviceDescription}</p>
+                  </div>
+                ` : ''}
+                ${data.address ? `
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #fde68a;">
+                    <strong style="color: #92400e;">📍 Adresse :</strong>
+                    <span style="color: #374151; text-align: right;">${data.address}</span>
+                  </div>
+                ` : ''}
+                ${data.bookingDate && data.bookingDate !== 'À définir' ? `
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #fde68a;">
+                    <strong style="color: #92400e;">📅 Date souhaitée :</strong>
+                    <span style="color: #374151;">${data.bookingDate}${data.startTime && data.startTime !== 'À définir' ? ' à ' + data.startTime : ''}</span>
+                  </div>
+                ` : ''}
+                <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                  <strong style="color: #92400e;">🔖 Référence :</strong>
+                  <span style="color: #9ca3af; font-size: 12px;">${data.bookingId ? data.bookingId.slice(0, 8).toUpperCase() : 'N/A'}</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="background: #f0f9ff; padding: 20px; border-radius: 10px; margin: 25px 0; border-left: 4px solid #0ea5e9;">
+              <h4 style="color: #0369a1; margin: 0 0 12px 0;">🕐 Prochaines étapes :</h4>
+              <ul style="margin: 0; padding-left: 20px; color: #374151; line-height: 1.8;">
+                <li>Notre équipe étudie votre demande sous <strong>24 à 48h</strong></li>
+                <li>Nous vous contactons par email ou téléphone pour vous proposer une solution</li>
+                <li>Une fois validée, vous recevrez une confirmation de réservation</li>
+              </ul>
+            </div>
+
+            <div style="background: #fdf2f8; padding: 15px; border-radius: 10px; margin: 20px 0; text-align: center;">
+              <p style="color: #9d174d; font-size: 14px; margin: 0;">
+                💬 Une question ? Répondez simplement à cet email ou contactez-nous.
+              </p>
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.fr'}/espace-personnel"
+                 style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 12px 25px; text-decoration: none; border-radius: 20px; font-weight: 600;">
+                📱 Suivre ma demande
+              </a>
+            </div>
+          </div>
+          ${bikawoSignature}
+        </div>
+      `
+    },
+
+    // 🌟 NOTIFICATION ADMIN — NOUVELLE DEMANDE PERSONNALISÉE
+    custom_request_admin: {
+      subject: `🔔 Nouvelle demande personnalisée — ${data.clientName || 'Client'}`,
+      html: `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); color: white; padding: 25px; text-align: center; border-radius: 12px 12px 0 0;">
+            <h1 style="margin: 0; font-size: 22px;">🔔 Nouvelle demande personnalisée</h1>
+            <p style="margin: 8px 0 0 0; font-size: 15px; opacity: 0.9;">À traiter dans le back-office</p>
+          </div>
+
+          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+            <div style="background: #f5f3ff; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #ddd6fe;">
+              <h3 style="color: #5b21b6; margin: 0 0 15px 0;">👤 Client</h3>
+              <p style="margin: 4px 0; color: #374151;"><strong>Nom :</strong> ${data.clientName}</p>
+              <p style="margin: 4px 0; color: #374151;"><strong>Référence :</strong> ${data.bookingId ? data.bookingId.slice(0, 8).toUpperCase() : 'N/A'}</p>
+            </div>
+
+            <div style="background: #fffbeb; padding: 20px; border-radius: 10px; border: 1px solid #fde68a;">
+              <h3 style="color: #d97706; margin: 0 0 15px 0;">📋 Détails de la demande</h3>
+              ${data.serviceDescription ? `<p style="margin: 4px 0; color: #374151; line-height: 1.5;"><strong>Description :</strong><br>${data.serviceDescription}</p>` : ''}
+              ${data.address ? `<p style="margin: 8px 0 4px 0; color: #374151;"><strong>Adresse :</strong> ${data.address}</p>` : ''}
+              ${data.bookingDate && data.bookingDate !== 'À définir' ? `<p style="margin: 4px 0; color: #374151;"><strong>Date souhaitée :</strong> ${data.bookingDate}${data.startTime && data.startTime !== 'À définir' ? ' à ' + data.startTime : ''}</p>` : ''}
+            </div>
+
+            <div style="text-align: center; margin: 25px 0;">
+              <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.fr'}/modern-admin/demandes"
+                 style="display: inline-block; background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); color: white; padding: 12px 25px; text-decoration: none; border-radius: 20px; font-weight: 600;">
+                🔗 Traiter dans l'admin
+              </a>
+            </div>
+          </div>
         </div>
       `
     },
