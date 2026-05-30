@@ -83,6 +83,7 @@ export const ReservationDetailsModal = ({ reservation, onClose, onUpdate }: Rese
   const [availableProviders, setAvailableProviders] = useState<any[]>([]);
   const [clientHistory, setClientHistory] = useState<any[]>([]);
   const [financialTransaction, setFinancialTransaction] = useState<FinancialTransaction | null>(null);
+  const [stripePaymentIntentId, setStripePaymentIntentId] = useState<string | null>(null);
   const [newDate, setNewDate] = useState(reservation.booking_date);
   const [newStartTime, setNewStartTime] = useState(reservation.start_time);
   const [newEndTime, setNewEndTime] = useState(reservation.end_time);
@@ -137,10 +138,19 @@ export const ReservationDetailsModal = ({ reservation, onClose, onUpdate }: Rese
         .eq('booking_id', reservation.id)
         .single();
 
-      if (error && error.code !== 'PGRST116') { // Ignore "not found" error
+      if (error && error.code !== 'PGRST116') {
         console.error('Error loading transaction:', error);
       } else if (data) {
         setFinancialTransaction(data);
+        // Récupérer le vrai payment_intent_id Stripe (pas l'UUID DB)
+        const { data: paymentData } = await supabase
+          .from('payments')
+          .select('stripe_payment_intent_id')
+          .eq('booking_id', reservation.id)
+          .maybeSingle();
+        if (paymentData?.stripe_payment_intent_id) {
+          setStripePaymentIntentId(paymentData.stripe_payment_intent_id);
+        }
       }
     } catch (error) {
       console.error('Error loading transaction:', error);
@@ -256,12 +266,21 @@ export const ReservationDetailsModal = ({ reservation, onClose, onUpdate }: Rese
       return;
     }
 
+    if (!stripePaymentIntentId) {
+      toast({
+        title: "Identifiant Stripe introuvable",
+        description: "Effectuez le remboursement directement dans le dashboard Stripe.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('refund-booking', {
         body: {
           bookingId: reservation.id,
-          paymentIntentId: financialTransaction.id,
+          paymentIntentId: stripePaymentIntentId,
           reason: cancellationReason
         }
       });
@@ -930,7 +949,7 @@ export const ReservationDetailsModal = ({ reservation, onClose, onUpdate }: Rese
                 {financialTransaction && financialTransaction.payment_status === 'paid' && (
                   <Button 
                     variant="outline"
-                    onClick={() => window.open(`https://dashboard.stripe.com/payments/${financialTransaction.id}`, '_blank')}
+                    onClick={() => window.open(`https://dashboard.stripe.com/payments/${stripePaymentIntentId || financialTransaction.id}`, '_blank')}
                     className="w-full"
                   >
                     <ExternalLink className="mr-2 h-4 w-4" />

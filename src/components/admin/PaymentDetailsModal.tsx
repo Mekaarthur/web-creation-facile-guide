@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -65,7 +65,19 @@ export const PaymentDetailsModal = ({ transaction, onClose, onUpdate }: PaymentD
   const [isLoading, setIsLoading] = useState(false);
   const [refundAmount, setRefundAmount] = useState(transaction.client_price.toString());
   const [refundReason, setRefundReason] = useState('');
+  const [stripePaymentIntentId, setStripePaymentIntentId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    supabase
+      .from('payments')
+      .select('stripe_payment_intent_id')
+      .eq('booking_id', transaction.booking_id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.stripe_payment_intent_id) setStripePaymentIntentId(data.stripe_payment_intent_id);
+      });
+  }, [transaction.booking_id]);
 
   const handleRefund = async () => {
     if (!refundReason) {
@@ -77,12 +89,21 @@ export const PaymentDetailsModal = ({ transaction, onClose, onUpdate }: PaymentD
       return;
     }
 
+    if (!stripePaymentIntentId) {
+      toast({
+        title: "Identifiant Stripe introuvable",
+        description: "Effectuez le remboursement directement dans le dashboard Stripe.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('process-refund', {
         body: {
-          paymentIntentId: transaction.id,
-          refundAmount: Math.round(Number(refundAmount) * 100), // Convertir en cents
+          paymentIntentId: stripePaymentIntentId,
+          refundAmount: Math.round(Number(refundAmount) * 100),
           reason: refundReason
         }
       });
@@ -333,7 +354,7 @@ export const PaymentDetailsModal = ({ transaction, onClose, onUpdate }: PaymentD
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => window.open(`https://dashboard.stripe.com/payments/${transaction.id}`, '_blank')}
+                        onClick={() => window.open(`https://dashboard.stripe.com/payments/${stripePaymentIntentId || transaction.id}`, '_blank')}
                       >
                         <ExternalLink className="w-4 h-4" />
                       </Button>
@@ -358,7 +379,7 @@ export const PaymentDetailsModal = ({ transaction, onClose, onUpdate }: PaymentD
                   <Button
                     variant="outline"
                     className="w-full"
-                    onClick={() => window.open(`https://dashboard.stripe.com/payments/${transaction.id}`, '_blank')}
+                    onClick={() => window.open(`https://dashboard.stripe.com/payments/${stripePaymentIntentId || transaction.id}`, '_blank')}
                   >
                     <ExternalLink className="mr-2 h-4 w-4" />
                     Voir dans Stripe Dashboard
