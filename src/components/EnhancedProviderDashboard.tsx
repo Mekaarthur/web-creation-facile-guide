@@ -44,6 +44,7 @@ import ProviderAttestationsTab from '@/components/provider/ProviderAttestationsT
 import { ProviderFavoriteRequests } from '@/components/provider/ProviderFavoriteRequests';
 import { ProviderAvailabilityManager } from '@/components/provider/ProviderAvailabilityManager';
 import { EarningsSimulator } from '@/components/provider/EarningsSimulator';
+import { ProviderPaymentHistory } from '@/components/provider/ProviderPaymentHistory';
 
 const EnhancedProviderDashboard = () => {
   const { t } = useTranslation();
@@ -327,8 +328,9 @@ const EnhancedProviderDashboard = () => {
           <TabsContent value="activite" className="mt-4 sm:mt-6 lg:mt-8">
             <Tabs defaultValue="revenus" className="w-full">
               <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0 pb-2">
-                <TabsList className="inline-flex sm:grid sm:grid-cols-3 mb-4 min-w-max sm:min-w-0 sm:w-full">
+                <TabsList className="inline-flex sm:grid sm:grid-cols-4 mb-4 min-w-max sm:min-w-0 sm:w-full">
                   <TabsTrigger value="revenus" className="text-xs sm:text-sm whitespace-nowrap">Revenus</TabsTrigger>
+                  <TabsTrigger value="historique" className="text-xs sm:text-sm whitespace-nowrap">Historique paiements</TabsTrigger>
                   <TabsTrigger value="evaluations" className="text-xs sm:text-sm whitespace-nowrap">Évaluations</TabsTrigger>
                   <TabsTrigger value="recompenses" className="text-xs sm:text-sm whitespace-nowrap">Récompenses</TabsTrigger>
                 </TabsList>
@@ -340,6 +342,9 @@ const EnhancedProviderDashboard = () => {
                   missions={missions ?? []}
                 />
                 <EarningsSimulator />
+              </TabsContent>
+              <TabsContent value="historique" className="space-y-6">
+                {providerId && <ProviderPaymentHistory providerId={providerId} />}
               </TabsContent>
               <TabsContent value="evaluations">
                 <ProviderEvaluationsTab reviews={reviews ?? []} />
