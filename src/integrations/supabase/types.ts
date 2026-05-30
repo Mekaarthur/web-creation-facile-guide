@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_deletion_requests: {
+        Row: {
+          cancelled_at: string | null
+          completed_at: string | null
+          id: string
+          reason: string | null
+          requested_at: string
+          scheduled_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          cancelled_at?: string | null
+          completed_at?: string | null
+          id?: string
+          reason?: string | null
+          requested_at?: string
+          scheduled_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          cancelled_at?: string | null
+          completed_at?: string | null
+          id?: string
+          reason?: string | null
+          requested_at?: string
+          scheduled_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       acquisition_tracking: {
         Row: {
           channel: string
@@ -1636,6 +1669,7 @@ export type Database = {
       }
       financial_rules: {
         Row: {
+          client_price: number
           created_at: string
           id: string
           is_active: boolean
@@ -1644,6 +1678,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          client_price?: number
           created_at?: string
           id?: string
           is_active?: boolean
@@ -1652,6 +1687,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          client_price?: number
           created_at?: string
           id?: string
           is_active?: boolean
@@ -2840,15 +2876,14 @@ export type Database = {
           blocked_at: string | null
           blocked_by: string | null
           created_at: string
-          date_naissance: string | null
           date_of_birth: string | null
+          documents_encrypted: string | null
           email: string | null
           first_name: string | null
           gender: string | null
-          iban_avance_immediate: string | null
+          iban_encrypted: string | null
           id: string
           last_name: string | null
-          numero_fiscal: string | null
           personal_description: string | null
           phone: string | null
           total_bookings: number | null
@@ -2868,15 +2903,14 @@ export type Database = {
           blocked_at?: string | null
           blocked_by?: string | null
           created_at?: string
-          date_naissance?: string | null
           date_of_birth?: string | null
+          documents_encrypted?: string | null
           email?: string | null
           first_name?: string | null
           gender?: string | null
-          iban_avance_immediate?: string | null
+          iban_encrypted?: string | null
           id?: string
           last_name?: string | null
-          numero_fiscal?: string | null
           personal_description?: string | null
           phone?: string | null
           total_bookings?: number | null
@@ -2896,15 +2930,14 @@ export type Database = {
           blocked_at?: string | null
           blocked_by?: string | null
           created_at?: string
-          date_naissance?: string | null
           date_of_birth?: string | null
+          documents_encrypted?: string | null
           email?: string | null
           first_name?: string | null
           gender?: string | null
-          iban_avance_immediate?: string | null
+          iban_encrypted?: string | null
           id?: string
           last_name?: string | null
-          numero_fiscal?: string | null
           personal_description?: string | null
           phone?: string | null
           total_bookings?: number | null
@@ -2914,6 +2947,51 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      provider_absences: {
+        Row: {
+          created_at: string | null
+          end_date: string
+          id: string
+          notes: string | null
+          provider_id: string
+          reason: string
+          start_date: string
+        }
+        Insert: {
+          created_at?: string | null
+          end_date: string
+          id?: string
+          notes?: string | null
+          provider_id: string
+          reason?: string
+          start_date: string
+        }
+        Update: {
+          created_at?: string | null
+          end_date?: string
+          id?: string
+          notes?: string | null
+          provider_id?: string
+          reason?: string
+          start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_absences_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_absences_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers_public_view"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       provider_access_audit: {
         Row: {
@@ -4981,6 +5059,18 @@ export type Database = {
         }
         Relationships: []
       }
+      pending_deletions: {
+        Row: {
+          first_name: string | null
+          id: string | null
+          last_name: string | null
+          reason: string | null
+          requested_at: string | null
+          scheduled_at: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
       prestataire_zones_stats: {
         Row: {
           adresse_reference: string | null
@@ -5136,6 +5226,10 @@ export type Database = {
         Args: { p_binome_id: string }
         Returns: Json
       }
+      anonymize_and_delete_user: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       assign_mission_manually: {
         Args: {
           p_admin_user_id?: string
@@ -5209,6 +5303,7 @@ export type Database = {
         }
         Returns: string
       }
+      cancel_account_deletion: { Args: never; Returns: boolean }
       change_backup_provider: {
         Args: { p_binome_id: string; p_new_backup_provider_id: string }
         Returns: boolean
@@ -5448,6 +5543,7 @@ export type Database = {
           rating: number
         }[]
       }
+      get_provider_iban: { Args: { p_user_id: string }; Returns: string }
       get_public_provider_info: {
         Args: { p_provider_id: string }
         Returns: {
@@ -5609,11 +5705,16 @@ export type Database = {
         }
         Returns: undefined
       }
+      request_account_deletion: { Args: { p_reason?: string }; Returns: string }
       request_gdpr_export: { Args: { p_user_id: string }; Returns: string }
       reset_mission_queue: { Args: never; Returns: number }
       reset_yearly_referral_counters: { Args: never; Returns: undefined }
       retry_failed_payment: { Args: { p_payment_id: string }; Returns: Json }
       run_system_diagnostics: { Args: never; Returns: Json }
+      set_provider_iban: {
+        Args: { p_iban: string; p_user_id: string }
+        Returns: undefined
+      }
       suggest_best_provider: {
         Args: { p_booking_id: string }
         Returns: {
