@@ -104,6 +104,24 @@ export const AdminCustomRequests = () => {
 
       if (error) throw error;
 
+      supabase.functions.invoke('send-modern-notification', {
+        body: {
+          type: 'custom_request_status_update',
+          recipient: {
+            email: selected.client_email,
+            name: selected.client_name,
+            firstName: selected.client_name.split(' ')[0],
+          },
+          data: {
+            clientName: selected.client_name,
+            newStatus: newStatus,
+            serviceDescription: selected.service_description,
+            adminNote: adminNote || undefined,
+            bookingId: selected.id,
+          },
+        },
+      }).catch(() => {});
+
       toast({ title: 'Demande mise à jour' });
       setSelected(null);
       setAdminNote('');

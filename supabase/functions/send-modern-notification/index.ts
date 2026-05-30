@@ -44,6 +44,7 @@ interface ModernNotificationRequest {
     // Custom requests
     | 'custom_request_received'
     | 'custom_request_admin'
+    | 'custom_request_status_update'
     // Status-change notifications
     | 'provider_assigned'
     | 'dispute_opened';
@@ -952,6 +953,54 @@ const getModernEmailTemplate = (type: string, recipient: any, data: any) => {
         </div>
       `
     },
+
+    // 🌟 MISE À JOUR STATUT DEMANDE PERSONNALISÉE
+    custom_request_status_update: (() => {
+      const statusStyles: Record<string, { color: string; bg: string; emoji: string; label: string }> = {
+        in_progress: { color: '#1d4ed8', bg: '#dbeafe', emoji: '⏳', label: 'En cours de traitement' },
+        completed:   { color: '#065f46', bg: '#d1fae5', emoji: '✅', label: 'Traitée' },
+        cancelled:   { color: '#374151', bg: '#f3f4f6', emoji: '❌', label: 'Annulée' },
+      };
+      const s = statusStyles[data.newStatus as string] || statusStyles.in_progress;
+      return {
+        subject: `${s.emoji} Votre demande Bikawo : ${s.label}`,
+        html: `
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: linear-gradient(135deg, ${s.color} 0%, ${s.color}cc 100%); color: white; padding: 25px; text-align: center; border-radius: 12px 12px 0 0;">
+              <h1 style="margin: 0; font-size: 22px;">${s.emoji} Mise à jour de votre demande</h1>
+              <p style="margin: 8px 0 0 0; font-size: 15px; opacity: 0.9;">Statut : <strong>${s.label}</strong></p>
+            </div>
+            <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+              <p style="font-size: 16px; color: #374151;">Bonjour ${firstName},</p>
+              <p style="font-size: 16px; line-height: 1.6; color: #374151;">
+                Votre demande personnalisée a été mise à jour par notre équipe.
+              </p>
+              <div style="background: ${s.bg}; padding: 20px; border-radius: 12px; margin: 25px 0; border-left: 4px solid ${s.color};">
+                <p style="margin: 0 0 8px 0; font-weight: 600; color: ${s.color};">Demande :</p>
+                <p style="margin: 0; color: #374151; line-height: 1.5;">${data.serviceDescription || 'Demande personnalisée'}</p>
+                <p style="margin: 12px 0 0 0; font-weight: 600; color: ${s.color};">Nouveau statut : ${s.label}</p>
+              </div>
+              ${data.adminNote ? `
+                <div style="background: #fffbeb; padding: 16px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+                  <p style="margin: 0 0 6px 0; font-weight: 600; color: #92400e;">Message de l'équipe :</p>
+                  <p style="margin: 0; color: #78350f; font-style: italic; line-height: 1.5;">"${data.adminNote}"</p>
+                </div>
+              ` : ''}
+              <div style="text-align: center; margin: 25px 0;">
+                <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.fr'}/espace-personnel?tab=demandes"
+                   style="display: inline-block; background: linear-gradient(135deg, ${s.color} 0%, ${s.color}cc 100%); color: white; padding: 12px 25px; text-decoration: none; border-radius: 20px; font-weight: 600;">
+                  Voir mes demandes
+                </a>
+              </div>
+              <p style="font-size: 13px; color: #6b7280; text-align: center;">
+                Des questions ? 📧 <a href="mailto:contact@bikawo.com" style="color: ${s.color};">contact@bikawo.com</a>
+              </p>
+            </div>
+            ${bikawoSignature}
+          </div>
+        `
+      };
+    })(),
 
     // 🌟 TEMPLATE PAR DÉFAUT
     default: {
