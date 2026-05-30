@@ -41,6 +41,8 @@ interface ModernNotificationRequest {
     | 'system_maintenance'
     | 'newsletter'
     | 'technical_support'
+    // Provider onboarding
+    | 'provider_rejected'
     // Custom requests
     | 'custom_request_received'
     | 'custom_request_admin'
@@ -331,6 +333,37 @@ const getModernEmailTemplate = (type: string, recipient: any, data: any) => {
                 🏠 Accéder à mon espace
               </a>
             </div>
+          </div>
+          ${bikawoSignature}
+        </div>
+      `
+    },
+
+    provider_rejected: {
+      subject: `Votre candidature Bikawo — Décision`,
+      html: `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 25px; text-align: center; border-radius: 12px 12px 0 0;">
+            <h1 style="margin: 0; font-size: 22px;">Votre candidature</h1>
+            <p style="margin: 8px 0 0 0; font-size: 15px; opacity: 0.9;">Un message de l'équipe Bikawo</p>
+          </div>
+          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+            <p style="font-size: 16px; color: #374151;">Bonjour ${firstName},</p>
+            <p style="font-size: 16px; line-height: 1.6; color: #374151;">
+              Merci d'avoir pris le temps de postuler pour rejoindre notre équipe de prestataires. Après examen de votre dossier, nous ne sommes pas en mesure de donner une suite favorable à votre candidature pour le moment.
+            </p>
+            ${data.reason ? `
+              <div style="background: #fffbeb; padding: 20px; border-radius: 10px; margin: 25px 0; border-left: 4px solid #f59e0b;">
+                <p style="margin: 0 0 6px 0; font-weight: 600; color: #92400e;">Motif communiqué :</p>
+                <p style="margin: 0; color: #78350f; line-height: 1.5;">${data.reason}</p>
+              </div>
+            ` : ''}
+            <p style="font-size: 15px; line-height: 1.6; color: #374151;">
+              Cette décision ne remet pas en question vos compétences. Si votre situation évolue ou si vous souhaitez soumettre un dossier complété, n'hésitez pas à nous recontacter.
+            </p>
+            <p style="font-size: 13px; color: #6b7280; text-align: center; margin-top: 20px;">
+              📧 <a href="mailto:contact@bikawo.com" style="color: #f59e0b;">contact@bikawo.com</a>
+            </p>
           </div>
           ${bikawoSignature}
         </div>

@@ -365,13 +365,26 @@ export const UnifiedProviderPipeline = () => {
 
   const handleRejectApplication = async (person: UnifiedPerson) => {
     if (!person.application) return;
-    const reason = prompt("Raison du rejet:");
+    const reason = prompt("Raison du rejet :");
     if (!reason) return;
     try {
       const { error } = await supabase.functions.invoke("admin-applications", {
         body: { action: "reject", applicationId: person.application.id, adminComments: reason },
       });
       if (error) throw error;
+
+      supabase.functions.invoke("send-modern-notification", {
+        body: {
+          type: "provider_rejected",
+          recipient: {
+            email: person.email,
+            name: person.name,
+            firstName: person.name.split(" ")[0],
+          },
+          data: { reason },
+        },
+      }).catch(() => {});
+
       toast.success("Candidature rejetée");
       await loadAll();
     } catch (error: any) {
@@ -387,6 +400,19 @@ export const UnifiedProviderPipeline = () => {
         .update({ status: "active", is_verified: true })
         .eq("id", person.provider.id);
       if (error) throw error;
+
+      supabase.functions.invoke("send-modern-notification", {
+        body: {
+          type: "provider_welcome",
+          recipient: {
+            email: person.email,
+            name: person.name,
+            firstName: person.name.split(" ")[0],
+          },
+          data: { providerName: person.name },
+        },
+      }).catch(() => {});
+
       toast.success("Prestataire activé !");
       await loadAll();
     } catch (error: any) {
