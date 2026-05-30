@@ -35,7 +35,7 @@ const PaymentSuccess = () => {
           setTimeout(() => reject(new Error("La vérification a expiré, veuillez rafraîchir la page")), 15000)
         );
 
-        const { data, error: verifyError } = await Promise.race([
+        const { data: rawData, error: verifyError } = await Promise.race([
           supabase.functions.invoke('verify-payment', { body: { sessionId } }),
           timeoutPromise,
         ]) as Awaited<ReturnType<typeof supabase.functions.invoke>>;
@@ -44,8 +44,10 @@ const PaymentSuccess = () => {
           throw verifyError;
         }
 
-        if (!data.success) {
-          throw new Error(data.error || "Erreur lors de la vérification du paiement");
+        const data = rawData as Record<string, any>;
+
+        if (!data || !data.success) {
+          throw new Error(data?.error || "Erreur lors de la vérification du paiement");
         }
 
         console.log('[PaymentSuccess] Paiement vérifié:', data);
@@ -61,7 +63,9 @@ const PaymentSuccess = () => {
 
         toast({
           title: "✅ Réservation confirmée !",
-          description: `Votre paiement de ${data.clientAmount}€ a été traité avec succès.`,
+          description: data.alreadyProcessed
+            ? "Votre réservation est déjà enregistrée."
+            : `Votre paiement de ${data.clientAmount}€ a été traité avec succès.`,
           duration: 6000,
         });
 
@@ -136,7 +140,14 @@ const PaymentSuccess = () => {
     );
   }
 
-  const { clientInfo, services, clientAmount, urssafEnabled, bookingIds } = verificationData;
+  const {
+    clientInfo,
+    services,
+    clientAmount,
+    urssafEnabled,
+    bookingIds,
+    alreadyProcessed,
+  } = verificationData as Record<string, any>;
 
   return (
     <div className="min-h-screen bg-background">
@@ -151,13 +162,19 @@ const PaymentSuccess = () => {
           <Card className="border-green-200 bg-green-50/50">
             <CardContent className="pt-8 pb-8 text-center">
               <CheckCircle className="w-20 h-20 mx-auto mb-4 text-green-600 animate-fade-in" />
-              <h1 className="text-3xl font-bold mb-2">Paiement réussi !</h1>
+              <h1 className="text-3xl font-bold mb-2">
+                {alreadyProcessed ? "Réservation enregistrée" : "Paiement réussi !"}
+              </h1>
               <p className="text-lg text-muted-foreground mb-4">
-                Votre réservation a été confirmée
+                {alreadyProcessed
+                  ? "Votre paiement a déjà été traité avec succès"
+                  : "Votre réservation a été confirmée"}
               </p>
-              <Badge className="bg-green-600 text-white text-base px-4 py-2">
-                {clientAmount}€ payé
-              </Badge>
+              {clientAmount != null && (
+                <Badge className="bg-green-600 text-white text-base px-4 py-2">
+                  {clientAmount}€ payé
+                </Badge>
+              )}
               {urssafEnabled && (
                 <p className="text-sm text-green-700 mt-3">
                   ✅ Avance immédiate URSSAF activée (-50%)
@@ -166,68 +183,76 @@ const PaymentSuccess = () => {
             </CardContent>
           </Card>
 
-          {/* Informations client */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Vos informations</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Nom complet</p>
-                  <p className="font-medium">{clientInfo.firstName} {clientInfo.lastName}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="font-medium">{clientInfo.email}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Téléphone</p>
-                  <p className="font-medium">{clientInfo.phone}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Adresse</p>
-                  <p className="font-medium text-sm">{clientInfo.address}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Services réservés */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                Services réservés
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {services.map((service: any, index: number) => {
-                const booking = service.customBooking || {};
-                return (
-                  <div key={index} className="p-4 bg-muted/30 rounded-lg">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h3 className="font-semibold">{service.serviceName}</h3>
-                        <p className="text-sm text-muted-foreground">{service.packageTitle}</p>
-                      </div>
-                      <Badge variant="secondary">{service.price * service.quantity}€</Badge>
-                    </div>
-                    <div className="text-sm space-y-1 text-muted-foreground">
-                      <p>📅 {new Date(booking.date).toLocaleDateString('fr-FR', { 
-                        weekday: 'long', 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
-                      })}</p>
-                      <p>🕐 {booking.startTime} - {booking.endTime}</p>
-                      <p>⏱️ {booking.hours} heure(s)</p>
-                    </div>
+          {/* Informations client — absentes en cas d'alreadyProcessed */}
+          {clientInfo && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Vos informations</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Nom complet</p>
+                    <p className="font-medium">{clientInfo.firstName} {clientInfo.lastName}</p>
                   </div>
-                );
-              })}
-            </CardContent>
-          </Card>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Email</p>
+                    <p className="font-medium">{clientInfo.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Téléphone</p>
+                    <p className="font-medium">{clientInfo.phone}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Adresse</p>
+                    <p className="font-medium text-sm">{clientInfo.address}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Services réservés — absents en cas d'alreadyProcessed */}
+          {Array.isArray(services) && services.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  Services réservés
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {services.map((service: any, index: number) => {
+                  const booking = service.customBooking || {};
+                  const dateObj = booking.date ? new Date(booking.date) : null;
+                  const dateLabel = dateObj && !isNaN(dateObj.getTime())
+                    ? dateObj.toLocaleDateString('fr-FR', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })
+                    : booking.date || "—";
+                  return (
+                    <div key={index} className="p-4 bg-muted/30 rounded-lg">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h3 className="font-semibold">{service.serviceName}</h3>
+                          <p className="text-sm text-muted-foreground">{service.packageTitle}</p>
+                        </div>
+                        <Badge variant="secondary">{service.price * service.quantity}€</Badge>
+                      </div>
+                      <div className="text-sm space-y-1 text-muted-foreground">
+                        <p>📅 {dateLabel}</p>
+                        {booking.startTime && <p>🕐 {booking.startTime}{booking.endTime ? ` - ${booking.endTime}` : ''}</p>}
+                        {booking.hours && <p>⏱️ {booking.hours} heure(s)</p>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Numéros de réservation */}
           {bookingIds && bookingIds.length > 0 && (
@@ -249,13 +274,21 @@ const PaymentSuccess = () => {
 
           {/* Actions */}
           <div className="flex gap-3">
-            <Button 
-              onClick={() => navigate("/")}
+            <Button
+              onClick={() => navigate("/espace-personnel")}
               className="flex-1"
               size="lg"
             >
+              <Calendar className="w-4 h-4 mr-2" />
+              Voir mes réservations
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate("/")}
+              size="lg"
+            >
               <Home className="w-4 h-4 mr-2" />
-              Retour à l'accueil
+              Accueil
             </Button>
           </div>
         </div>
