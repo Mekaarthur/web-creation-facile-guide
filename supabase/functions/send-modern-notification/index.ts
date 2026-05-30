@@ -49,7 +49,8 @@ interface ModernNotificationRequest {
     | 'custom_request_status_update'
     // Status-change notifications
     | 'provider_assigned'
-    | 'dispute_opened';
+    | 'dispute_opened'
+    | 'booking_completed';
     
   recipient: {
     email: string;
@@ -1034,6 +1035,375 @@ const getModernEmailTemplate = (type: string, recipient: any, data: any) => {
         `
       };
     })(),
+
+    // 🌟 MISSION ASSIGNÉE (prestataire)
+    mission_assigned: {
+      subject: `🎯 Mission confirmée — ${data.serviceName || 'Nouvelle mission'}`,
+      html: `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: white; padding: 25px; text-align: center; border-radius: 12px 12px 0 0;">
+            <h1 style="margin: 0; font-size: 24px;">🎯 Mission confirmée !</h1>
+            <p style="margin: 8px 0 0 0; font-size: 16px; opacity: 0.9;">Vous êtes assigné(e) à cette prestation</p>
+          </div>
+          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+            <p style="font-size: 16px; color: #374151;">Bonjour ${firstName},</p>
+            <p style="font-size: 16px; line-height: 1.6; color: #374151;">
+              Vous avez été assigné(e) à une nouvelle mission. Voici les détails :
+            </p>
+            <div style="background: #e0f2fe; padding: 25px; border-radius: 12px; margin: 25px 0; border: 2px solid #0ea5e9;">
+              <h3 style="color: #0369a1; margin: 0 0 18px 0; text-align: center;">📋 Votre mission</h3>
+              <div style="display: grid; gap: 10px;">
+                ${data.serviceName ? `
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #bae6fd;">
+                    <strong style="color: #075985;">Service :</strong>
+                    <span style="color: #374151;">${data.serviceName}</span>
+                  </div>
+                ` : ''}
+                ${data.clientName ? `
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #bae6fd;">
+                    <strong style="color: #075985;">Client :</strong>
+                    <span style="color: #374151;">${data.clientName}</span>
+                  </div>
+                ` : ''}
+                ${data.bookingDate ? `
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #bae6fd;">
+                    <strong style="color: #075985;">Date :</strong>
+                    <span style="color: #374151;">${data.bookingDate}${data.startTime ? ' à ' + data.startTime : ''}</span>
+                  </div>
+                ` : ''}
+                ${data.address ? `
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #bae6fd;">
+                    <strong style="color: #075985;">Adresse :</strong>
+                    <span style="color: #374151; text-align: right;">${data.address}</span>
+                  </div>
+                ` : ''}
+                ${data.price ? `
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                    <strong style="color: #075985;">Rémunération :</strong>
+                    <strong style="color: #059669;">${data.price}€</strong>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+            <div style="background: #f0fdf4; padding: 16px; border-radius: 10px; margin: 20px 0; text-align: center;">
+              <p style="color: #065f46; margin: 0; font-weight: 600;">
+                🔔 Vous recevrez un rappel 24h et 2h avant la mission.
+              </p>
+            </div>
+            <div style="text-align: center; margin: 25px 0;">
+              <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.fr'}/espace-prestataire"
+                 style="display: inline-block; background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: white; padding: 12px 25px; text-decoration: none; border-radius: 20px; font-weight: 600;">
+                📱 Voir ma mission
+              </a>
+            </div>
+          </div>
+          ${bikawoSignature}
+        </div>
+      `
+    },
+
+    // 🌟 RAPPEL MISSION (prestataire)
+    mission_reminder: {
+      subject: `⏰ Rappel : Votre mission ${data.serviceName || ''} ${data.reminderType === '2h' ? 'dans 2h' : 'demain'}`,
+      html: `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; padding: 25px; text-align: center; border-radius: 12px 12px 0 0;">
+            <h1 style="margin: 0; font-size: 24px;">⏰ Rappel de mission</h1>
+            <p style="margin: 8px 0 0 0; font-size: 16px; opacity: 0.9;">
+              ${data.reminderType === '2h' ? 'Votre mission commence dans 2 heures !' : 'Votre mission a lieu demain !'}
+            </p>
+          </div>
+          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+            <p style="font-size: 16px; color: #374151;">Bonjour ${firstName},</p>
+            <p style="font-size: 16px; line-height: 1.6; color: #374151;">
+              ${data.reminderType === '2h'
+                ? 'C\'est l\'heure ! Votre prochaine mission commence très bientôt. 🚀'
+                : 'Petit rappel bienveillant : vous avez une mission prévue demain. 😊'
+              }
+            </p>
+            <div style="background: #faf5ff; padding: 20px; border-radius: 12px; margin: 25px 0; border: 2px solid #8b5cf6; text-align: center;">
+              <h3 style="color: #7c3aed; margin: 0 0 15px 0;">${data.serviceName || 'Votre mission'}</h3>
+              ${data.bookingDate ? `<p style="color: #581c87; margin: 5px 0;"><strong>📅</strong> ${data.bookingDate} ${data.startTime ? 'à ' + data.startTime : ''}</p>` : ''}
+              ${data.address ? `<p style="color: #6b46c1; margin: 5px 0;"><strong>📍</strong> ${data.address}</p>` : ''}
+              ${data.clientName ? `<p style="color: #6b46c1; margin: 5px 0;"><strong>👤</strong> Client : ${data.clientName}</p>` : ''}
+            </div>
+            <div style="background: #eff6ff; padding: 16px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #3b82f6;">
+              <p style="color: #1e40af; margin: 0; font-size: 14px;">
+                💡 Pensez à confirmer votre présence et à prévenir en cas d'imprévu.
+              </p>
+            </div>
+            <div style="text-align: center; margin: 25px 0;">
+              <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.fr'}/espace-prestataire"
+                 style="display: inline-block; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; padding: 12px 25px; text-decoration: none; border-radius: 20px; font-weight: 600;">
+                📱 Voir les détails
+              </a>
+            </div>
+          </div>
+          ${bikawoSignature}
+        </div>
+      `
+    },
+
+    // 🌟 MODIFICATION CLIENT (prestataire)
+    client_modification: {
+      subject: `⚠️ Modification de réservation — ${data.clientName || 'Votre client'} a modifié sa demande`,
+      html: `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 25px; text-align: center; border-radius: 12px 12px 0 0;">
+            <h1 style="margin: 0; font-size: 22px;">⚠️ Modification de réservation</h1>
+            <p style="margin: 8px 0 0 0; font-size: 15px; opacity: 0.9;">Votre client a mis à jour sa demande</p>
+          </div>
+          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+            <p style="font-size: 16px; color: #374151;">Bonjour ${firstName},</p>
+            <p style="font-size: 16px; line-height: 1.6; color: #374151;">
+              <strong>${data.clientName || 'Votre client'}</strong> vient de modifier sa réservation pour <strong>${data.serviceName || 'votre service'}</strong>. Veuillez en prendre connaissance.
+            </p>
+            <div style="background: #fffbeb; padding: 20px; border-radius: 12px; margin: 25px 0; border: 2px solid #f59e0b;">
+              <h3 style="color: #d97706; margin: 0 0 15px 0;">📋 Détails mis à jour</h3>
+              <div style="display: grid; gap: 8px;">
+                ${data.serviceName ? `
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #fde68a;">
+                    <strong style="color: #92400e;">Service :</strong>
+                    <span style="color: #374151;">${data.serviceName}</span>
+                  </div>
+                ` : ''}
+                ${data.bookingDate ? `
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #fde68a;">
+                    <strong style="color: #92400e;">Nouvelle date :</strong>
+                    <span style="color: #374151;">${data.bookingDate}${data.startTime ? ' à ' + data.startTime : ''}</span>
+                  </div>
+                ` : ''}
+                ${data.address ? `
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #fde68a;">
+                    <strong style="color: #92400e;">Adresse :</strong>
+                    <span style="color: #374151;">${data.address}</span>
+                  </div>
+                ` : ''}
+                ${data.message ? `
+                  <div style="padding: 8px 0;">
+                    <strong style="color: #92400e;">Note :</strong>
+                    <p style="margin: 6px 0 0 0; color: #374151; line-height: 1.5;">${data.message}</p>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+            <div style="background: #fef2f2; padding: 16px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #ef4444;">
+              <p style="color: #b91c1c; margin: 0; font-size: 14px; font-weight: 600;">
+                ⚡ Veuillez confirmer votre disponibilité pour ces nouvelles informations.
+              </p>
+            </div>
+            <div style="text-align: center; margin: 25px 0;">
+              <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.fr'}/espace-prestataire"
+                 style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 12px 25px; text-decoration: none; border-radius: 20px; font-weight: 600;">
+                📱 Voir la réservation
+              </a>
+            </div>
+          </div>
+          ${bikawoSignature}
+        </div>
+      `
+    },
+
+    // 🌟 PAIEMENT CONFIRMÉ (client)
+    payment_confirmed: {
+      subject: `💳 Paiement confirmé — ${data.serviceName || 'Votre réservation'}`,
+      html: `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; padding: 25px; text-align: center; border-radius: 12px 12px 0 0;">
+            <h1 style="margin: 0; font-size: 24px;">💳 Paiement confirmé !</h1>
+            <p style="margin: 8px 0 0 0; font-size: 16px; opacity: 0.9;">Votre transaction a bien été enregistrée</p>
+          </div>
+          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+            <p style="font-size: 16px; color: #374151;">Bonjour ${firstName},</p>
+            <p style="font-size: 16px; line-height: 1.6; color: #374151;">
+              Votre paiement a été traité avec succès. 🎉 Vous pouvez maintenant attendre votre prestataire en toute sérénité.
+            </p>
+            <div style="background: #f0fdf4; padding: 25px; border-radius: 12px; margin: 25px 0; border: 2px solid #059669; text-align: center;">
+              <p style="color: #065f46; font-size: 14px; margin: 0 0 8px 0;">Montant réglé</p>
+              <p style="color: #059669; font-size: 36px; font-weight: 700; margin: 0;">${data.amount || data.price || '—'}€</p>
+              ${data.serviceName ? `<p style="color: #374151; font-size: 14px; margin: 8px 0 0 0;">Pour : ${data.serviceName}</p>` : ''}
+              ${data.bookingDate ? `<p style="color: #374151; font-size: 14px; margin: 4px 0;">Le : ${data.bookingDate}${data.startTime ? ' à ' + data.startTime : ''}</p>` : ''}
+            </div>
+            <div style="background: #eff6ff; padding: 18px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #3b82f6;">
+              <p style="color: #1e40af; margin: 0; font-size: 14px;">
+                🔒 Transaction sécurisée via Stripe. Conservez cet email comme justificatif.<br>
+                Référence : <strong>${data.bookingId ? data.bookingId.slice(0, 8).toUpperCase() : 'N/A'}</strong>
+              </p>
+            </div>
+            <div style="text-align: center; margin: 25px 0;">
+              <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.fr'}/espace-personnel"
+                 style="display: inline-block; background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; padding: 12px 25px; text-decoration: none; border-radius: 20px; font-weight: 600;">
+                📱 Voir ma réservation
+              </a>
+            </div>
+          </div>
+          ${bikawoSignature}
+        </div>
+      `
+    },
+
+    // 🌟 FACTURE GÉNÉRÉE (client)
+    invoice_generated: {
+      subject: `🧾 Votre facture Bikawo — ${data.invoiceNumber || data.serviceName || 'Prestation'}`,
+      html: `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; padding: 25px; text-align: center; border-radius: 12px 12px 0 0;">
+            <h1 style="margin: 0; font-size: 24px;">🧾 Votre facture est disponible</h1>
+            <p style="margin: 8px 0 0 0; font-size: 16px; opacity: 0.9;">Téléchargez-la depuis votre espace personnel</p>
+          </div>
+          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+            <p style="font-size: 16px; color: #374151;">Bonjour ${firstName},</p>
+            <p style="font-size: 16px; line-height: 1.6; color: #374151;">
+              Votre facture pour la prestation <strong>${data.serviceName || 'Bikawo'}</strong> est maintenant disponible.
+            </p>
+            <div style="background: #eef2ff; padding: 25px; border-radius: 12px; margin: 25px 0; border: 2px solid #6366f1;">
+              <h3 style="color: #4338ca; margin: 0 0 15px 0; text-align: center;">📄 Détails de la facture</h3>
+              <div style="display: grid; gap: 10px;">
+                ${data.invoiceNumber ? `
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #c7d2fe;">
+                    <strong style="color: #3730a3;">N° Facture :</strong>
+                    <span style="color: #374151;">${data.invoiceNumber}</span>
+                  </div>
+                ` : ''}
+                ${data.serviceName ? `
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #c7d2fe;">
+                    <strong style="color: #3730a3;">Service :</strong>
+                    <span style="color: #374151;">${data.serviceName}</span>
+                  </div>
+                ` : ''}
+                ${data.bookingDate ? `
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #c7d2fe;">
+                    <strong style="color: #3730a3;">Date :</strong>
+                    <span style="color: #374151;">${data.bookingDate}</span>
+                  </div>
+                ` : ''}
+                ${(data.amount || data.price) ? `
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                    <strong style="color: #3730a3;">Montant TTC :</strong>
+                    <strong style="color: #4f46e5; font-size: 18px;">${data.amount || data.price}€</strong>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+            <div style="text-align: center; margin: 25px 0;">
+              <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.fr'}/espace-personnel"
+                 style="display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; padding: 14px 30px; text-decoration: none; border-radius: 25px; font-weight: 600; font-size: 16px;">
+                📥 Télécharger ma facture
+              </a>
+            </div>
+            <p style="font-size: 13px; color: #6b7280; text-align: center;">
+              Besoin d'aide ? 📧 <a href="mailto:contact@bikawo.com" style="color: #6366f1;">contact@bikawo.com</a>
+            </p>
+          </div>
+          ${bikawoSignature}
+        </div>
+      `
+    },
+
+    // 🌟 RÉMUNÉRATION DISPONIBLE (prestataire)
+    remuneration_available: {
+      subject: `💰 Votre rémunération est disponible !`,
+      html: `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; padding: 25px; text-align: center; border-radius: 12px 12px 0 0;">
+            <h1 style="margin: 0; font-size: 24px;">💰 Rémunération disponible !</h1>
+            <p style="margin: 8px 0 0 0; font-size: 16px; opacity: 0.9;">Votre virement est en cours de traitement</p>
+          </div>
+          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+            <p style="font-size: 16px; color: #374151;">Bonjour ${firstName},</p>
+            <p style="font-size: 16px; line-height: 1.6; color: #374151;">
+              Bonne nouvelle ! La rémunération pour votre mission est maintenant disponible et sera versée sur votre compte. 🎉
+            </p>
+            <div style="background: #f0fdf4; padding: 30px; border-radius: 12px; margin: 25px 0; border: 2px solid #059669; text-align: center;">
+              <p style="color: #065f46; font-size: 14px; margin: 0 0 8px 0;">Montant à percevoir</p>
+              <p style="color: #059669; font-size: 42px; font-weight: 800; margin: 0;">${data.amount || data.price || '—'}€</p>
+              ${data.serviceName ? `<p style="color: #374151; font-size: 14px; margin: 12px 0 0 0;">Mission : <strong>${data.serviceName}</strong></p>` : ''}
+              ${data.bookingDate ? `<p style="color: #6b7280; font-size: 13px; margin: 4px 0;">Réalisée le : ${data.bookingDate}</p>` : ''}
+            </div>
+            <div style="background: #eff6ff; padding: 18px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #3b82f6;">
+              <p style="color: #1e40af; margin: 0; font-size: 14px;">
+                🏦 Le virement sera effectué sous <strong>1 à 3 jours ouvrés</strong> sur votre compte bancaire déclaré.
+              </p>
+            </div>
+            <div style="text-align: center; margin: 25px 0;">
+              <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.fr'}/espace-prestataire"
+                 style="display: inline-block; background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; padding: 12px 25px; text-decoration: none; border-radius: 20px; font-weight: 600;">
+                💼 Voir mon historique
+              </a>
+            </div>
+          </div>
+          ${bikawoSignature}
+        </div>
+      `
+    },
+
+    // 🌟 RÉSERVATION REPROGRAMMÉE (client)
+    booking_rescheduled: {
+      subject: `📅 Votre prestation a été reprogrammée — ${data.serviceName || 'Réservation'}`,
+      html: `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 25px; text-align: center; border-radius: 12px 12px 0 0;">
+            <h1 style="margin: 0; font-size: 22px;">📅 Prestation reprogrammée</h1>
+            <p style="margin: 8px 0 0 0; font-size: 15px; opacity: 0.9;">La date ou l'heure de votre prestation a changé</p>
+          </div>
+          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+            <p style="font-size: 16px; color: #374151;">Bonjour ${firstName},</p>
+            <p style="font-size: 16px; line-height: 1.6; color: #374151;">
+              Votre prestation <strong>${data.serviceName || 'Bikawo'}</strong> a été reprogrammée. Voici le nouveau créneau :
+            </p>
+            <div style="background: #fffbeb; padding: 25px; border-radius: 12px; margin: 25px 0; border: 2px solid #f59e0b;">
+              ${(data.newDate || data.newTime) ? `
+                <div style="text-align: center; margin-bottom: 16px;">
+                  <p style="color: #92400e; font-size: 18px; font-weight: 700; margin: 0;">
+                    📅 ${data.newDate || data.bookingDate || ''}${(data.newTime || data.startTime) ? ' à ' + (data.newTime || data.startTime) : ''}
+                  </p>
+                </div>
+              ` : data.bookingDate ? `
+                <div style="text-align: center; margin-bottom: 16px;">
+                  <p style="color: #92400e; font-size: 18px; font-weight: 700; margin: 0;">
+                    📅 ${data.bookingDate}${data.startTime ? ' à ' + data.startTime : ''}
+                  </p>
+                </div>
+              ` : ''}
+              <div style="display: grid; gap: 8px;">
+                ${data.providerName ? `
+                  <div style="display: flex; justify-content: space-between; padding: 6px 0; border-top: 1px solid #fde68a;">
+                    <strong style="color: #92400e;">Prestataire :</strong>
+                    <span style="color: #374151;">${data.providerName}</span>
+                  </div>
+                ` : ''}
+                ${data.address ? `
+                  <div style="display: flex; justify-content: space-between; padding: 6px 0; border-top: 1px solid #fde68a;">
+                    <strong style="color: #92400e;">Adresse :</strong>
+                    <span style="color: #374151;">${data.address}</span>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+            ${data.reason ? `
+              <div style="background: #f9fafb; padding: 16px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #9ca3af;">
+                <p style="color: #4b5563; margin: 0;"><strong>Raison :</strong> ${data.reason}</p>
+              </div>
+            ` : ''}
+            <div style="background: #eff6ff; padding: 16px; border-radius: 10px; margin: 20px 0; text-align: center;">
+              <p style="color: #1e40af; margin: 0; font-size: 14px;">
+                📱 Vérifiez votre agenda et prévenez-nous si ce créneau ne vous convient pas.
+              </p>
+            </div>
+            <div style="text-align: center; margin: 25px 0;">
+              <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.fr'}/espace-personnel"
+                 style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 12px 25px; text-decoration: none; border-radius: 20px; font-weight: 600;">
+                📱 Voir ma réservation
+              </a>
+            </div>
+            <p style="font-size: 14px; color: #6b7280; text-align: center;">
+              Questions ? 📧 contact@bikawo.com | 📞 06 09 08 53 90
+            </p>
+          </div>
+          ${bikawoSignature}
+        </div>
+      `
+    },
 
     // 🌟 TEMPLATE PAR DÉFAUT
     default: {
