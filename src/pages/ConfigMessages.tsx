@@ -9,15 +9,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Palette, Heart, MessageSquare, Mail, Bell, Settings } from 'lucide-react';
 import { EMAIL_TEMPLATES, NOTIFICATION_TEMPLATES, COMPANY_CONFIG, type EmailTemplateConfig, type NotificationConfig } from '@/utils/emailConfig';
+import { sanitizeEmailPreview } from '@/utils/emailPreview';
 
 export default function ConfigMessages() {
   const [emailTemplates, setEmailTemplates] = useState(EMAIL_TEMPLATES);
   const [notificationTemplates, setNotificationTemplates] = useState(NOTIFICATION_TEMPLATES);
   const [companyConfig, setCompanyConfig] = useState(COMPANY_CONFIG);
   const [loading, setLoading] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState<string | null>(null);
 
   // Variables disponibles pour personnalisation
   const availableVariables = [
@@ -104,64 +107,61 @@ export default function ConfigMessages() {
       previewGreeting = previewGreeting.replace(regex, value);
     });
 
-    const previewWindow = window.open('', '_blank', 'width=600,height=800');
-    if (previewWindow) {
-      previewWindow.document.write(`
-        <html>
-          <head>
-            <title>Aperçu Email Bikawo - ${template.title}</title>
-            <style>
-              body { 
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-                max-width: 600px; margin: 0 auto; padding: 20px; 
-                background: #f8fafc;
-              }
-              .email-container { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-              .header { 
-                background: linear-gradient(135deg, ${companyConfig.colors.primary}, ${companyConfig.colors.secondary}); 
-                color: white; padding: 30px; text-align: center; 
-              }
-              .content { padding: 30px; line-height: 1.6; }
-              .greeting { font-size: 18px; font-weight: 600; color: #334155; margin-bottom: 20px; }
-              .main-content { color: #475569; font-size: 16px; margin-bottom: 25px; }
-              .button { 
-                background: linear-gradient(135deg, ${companyConfig.colors.primary}, ${companyConfig.colors.secondary}); 
-                color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; 
-                display: inline-block; margin: 20px 0; font-weight: 600;
-                transition: transform 0.2s;
-              }
-              .button:hover { transform: translateY(-1px); }
-              .footer { color: #64748b; font-size: 14px; margin-top: 30px; }
-              .signature { font-weight: 600; color: ${companyConfig.colors.primary}; margin-top: 20px; }
-              .variables { background: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0; }
-              .variable-tag { background: white; padding: 3px 8px; border-radius: 4px; font-family: monospace; font-size: 12px; }
-            </style>
-          </head>
-          <body>
-            <div class="email-container">
-              <div class="header">
-                <h1 style="margin: 0; font-size: 28px;">💛 ${template.title}</h1>
-                <p style="margin: 10px 0 0 0; opacity: 0.9;">Sujet: ${previewSubject}</p>
-              </div>
-              <div class="content">
-                <div class="greeting">${previewGreeting}</div>
-                <div class="main-content">${previewContent}</div>
-                <a href="#" class="button">${template.buttonText}</a>
-                <div class="footer">${template.footer}</div>
-                <div class="signature">${template.signature}</div>
-                <div class="variables">
-                  <strong>Variables utilisées dans l'aperçu :</strong><br>
-                  ${Object.entries(previewData).map(([key, value]) => 
-                    `<span class="variable-tag">{${key}} → ${value}</span>`
-                  ).join(' ')}
-                </div>
+    const html = `
+      <html>
+        <head>
+          <title>Aperçu Email Bikawo - ${template.title}</title>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              max-width: 600px; margin: 0 auto; padding: 20px;
+              background: #f8fafc;
+            }
+            .email-container { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+            .header {
+              background: linear-gradient(135deg, ${companyConfig.colors.primary}, ${companyConfig.colors.secondary});
+              color: white; padding: 30px; text-align: center;
+            }
+            .content { padding: 30px; line-height: 1.6; }
+            .greeting { font-size: 18px; font-weight: 600; color: #334155; margin-bottom: 20px; }
+            .main-content { color: #475569; font-size: 16px; margin-bottom: 25px; }
+            .button {
+              background: linear-gradient(135deg, ${companyConfig.colors.primary}, ${companyConfig.colors.secondary});
+              color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px;
+              display: inline-block; margin: 20px 0; font-weight: 600;
+              transition: transform 0.2s;
+            }
+            .button:hover { transform: translateY(-1px); }
+            .footer { color: #64748b; font-size: 14px; margin-top: 30px; }
+            .signature { font-weight: 600; color: ${companyConfig.colors.primary}; margin-top: 20px; }
+            .variables { background: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0; }
+            .variable-tag { background: white; padding: 3px 8px; border-radius: 4px; font-family: monospace; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="email-container">
+            <div class="header">
+              <h1 style="margin: 0; font-size: 28px;">💛 ${template.title}</h1>
+              <p style="margin: 10px 0 0 0; opacity: 0.9;">Sujet: ${previewSubject}</p>
+            </div>
+            <div class="content">
+              <div class="greeting">${previewGreeting}</div>
+              <div class="main-content">${previewContent}</div>
+              <a href="#" class="button">${template.buttonText}</a>
+              <div class="footer">${template.footer}</div>
+              <div class="signature">${template.signature}</div>
+              <div class="variables">
+                <strong>Variables utilisées dans l'aperçu :</strong><br>
+                ${Object.entries(previewData).map(([key, value]) =>
+                  `<span class="variable-tag">{${key}} → ${value}</span>`
+                ).join(' ')}
               </div>
             </div>
-          </body>
-        </html>
-      `);
-      previewWindow.document.close();
-    }
+          </div>
+        </body>
+      </html>
+    `;
+    setPreviewHtml(sanitizeEmailPreview(html));
   };
 
   // Charger la configuration sauvegardée
@@ -720,6 +720,22 @@ export default function ConfigMessages() {
           </Tabs>
         </div>
       </div>
+
+      <Dialog open={previewHtml !== null} onOpenChange={(open) => { if (!open) setPreviewHtml(null); }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Aperçu Email</DialogTitle>
+          </DialogHeader>
+          {previewHtml && (
+            <iframe
+              srcDoc={previewHtml}
+              sandbox="allow-same-origin"
+              title="Aperçu email"
+              style={{ width: '100%', height: '580px', border: 'none', borderRadius: '4px' }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

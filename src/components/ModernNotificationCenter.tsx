@@ -39,7 +39,9 @@ import {
   Briefcase,
   Zap
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeEmailPreview } from '@/utils/emailPreview';
 
 const ModernNotificationCenter = () => {
   const [testEmail, setTestEmail] = useState('');
@@ -52,6 +54,7 @@ const ModernNotificationCenter = () => {
     clicked: 0
   });
   const [recentNotifications, setRecentNotifications] = useState([]);
+  const [previewHtml, setPreviewHtml] = useState<string | null>(null);
   const { toast } = useToast();
 
   const notificationTypes = [
@@ -178,98 +181,90 @@ const ModernNotificationCenter = () => {
   };
 
   const previewNotificationTemplate = (notificationType: string) => {
-    const previewWindow = window.open('', '_blank', 'width=800,height=900');
-    if (previewWindow) {
-      const mockData = {
-        serviceName: 'Préparation culinaire à domicile',
-        bookingDate: new Date().toLocaleDateString('fr-FR'),
-        startTime: '14:00',
-        endTime: '16:00',
-        address: '123 Rue de la Paix, 75001 Paris',
-        price: 65,
-        providerName: 'Marie Dupont',
-        clientName: 'Alex Martin'
-      };
+    const mockData = {
+      serviceName: 'Préparation culinaire à domicile',
+      bookingDate: new Date().toLocaleDateString('fr-FR'),
+      startTime: '14:00',
+      endTime: '16:00',
+      address: '123 Rue de la Paix, 75001 Paris',
+      price: 65,
+      providerName: 'Marie Dupont',
+      clientName: 'Alex Martin'
+    };
 
-      previewWindow.document.write(`
-        <html>
-          <head>
-            <title>Aperçu - ${notificationType}</title>
-            <meta charset="UTF-8">
-            <style>
-              body { 
-                font-family: 'Segoe UI', Arial, sans-serif; 
-                margin: 0; 
-                padding: 20px; 
-                background: #f3f4f6;
-              }
-              .preview-container { 
-                max-width: 600px; 
-                margin: 0 auto; 
-                background: white;
-                border-radius: 12px;
-                overflow: hidden;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-              }
-              .preview-header {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 20px;
-                text-align: center;
-              }
-              .preview-content {
-                padding: 30px;
-              }
-              .signature {
-                margin-top: 40px;
-                padding-top: 20px;
-                border-top: 1px solid #e5e7eb;
-                text-align: center;
-                color: #9ca3af;
-                font-size: 14px;
-                font-style: italic;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="preview-container">
-              <div class="preview-header">
-                <h1>📧 Aperçu Email Bikawo</h1>
-                <p>Type: ${notificationType}</p>
+    const html = `
+      <html>
+        <head>
+          <title>Aperçu - ${notificationType}</title>
+          <meta charset="UTF-8">
+          <style>
+            body {
+              font-family: 'Segoe UI', Arial, sans-serif;
+              margin: 0;
+              padding: 20px;
+              background: #f3f4f6;
+            }
+            .preview-container {
+              max-width: 600px;
+              margin: 0 auto;
+              background: white;
+              border-radius: 12px;
+              overflow: hidden;
+              box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            }
+            .preview-header {
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              color: white;
+              padding: 20px;
+              text-align: center;
+            }
+            .preview-content { padding: 30px; }
+            .signature {
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 1px solid #e5e7eb;
+              text-align: center;
+              color: #9ca3af;
+              font-size: 14px;
+              font-style: italic;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="preview-container">
+            <div class="preview-header">
+              <h1>📧 Aperçu Email Bikawo</h1>
+              <p>Type: ${notificationType}</p>
+            </div>
+            <div class="preview-content">
+              <p><strong>Bonjour Alex,</strong></p>
+              <p>Ceci est un aperçu du template <strong>${notificationType}</strong>.</p>
+              <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+                <h3 style="color: #10b981; margin: 0 0 15px 0;">Détails de test :</h3>
+                <ul style="margin: 0; padding-left: 20px;">
+                  <li>Service : ${mockData.serviceName}</li>
+                  <li>Date : ${mockData.bookingDate}</li>
+                  <li>Horaire : ${mockData.startTime} - ${mockData.endTime}</li>
+                  <li>Adresse : ${mockData.address}</li>
+                  <li>Prix : ${mockData.price}€</li>
+                </ul>
               </div>
-              <div class="preview-content">
-                <p><strong>Bonjour Alex,</strong></p>
-                <p>Ceci est un aperçu du template <strong>${notificationType}</strong>.</p>
-                
-                <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
-                  <h3 style="color: #10b981; margin: 0 0 15px 0;">Détails de test :</h3>
-                  <ul style="margin: 0; padding-left: 20px;">
-                    <li>Service : ${mockData.serviceName}</li>
-                    <li>Date : ${mockData.bookingDate}</li>
-                    <li>Horaire : ${mockData.startTime} - ${mockData.endTime}</li>
-                    <li>Adresse : ${mockData.address}</li>
-                    <li>Prix : ${mockData.price}€</li>
-                  </ul>
-                </div>
-                
-                <p>Ce template utilise un design moderne et des messages chaleureux pour créer une expérience utilisateur exceptionnelle.</p>
-                
-                <div style="text-align: center; margin: 25px 0;">
-                  <a href="#" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 25px; text-decoration: none; border-radius: 20px; font-weight: 600;">
-                    Bouton d'action
-                  </a>
-                </div>
-                
-                <div class="signature">
-                  <p>💝 Avec toute notre tendresse,<br>
-                  <strong style="color: #2563eb;">L'équipe Bikawo</strong> ❤️</p>
-                </div>
+              <p>Ce template utilise un design moderne et des messages chaleureux pour créer une expérience utilisateur exceptionnelle.</p>
+              <div style="text-align: center; margin: 25px 0;">
+                <a href="#" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 25px; text-decoration: none; border-radius: 20px; font-weight: 600;">
+                  Bouton d'action
+                </a>
+              </div>
+              <div class="signature">
+                <p>💝 Avec toute notre tendresse,<br>
+                <strong style="color: #2563eb;">L'équipe Bikawo</strong> ❤️</p>
               </div>
             </div>
-          </body>
-        </html>
-      `);
-    }
+          </div>
+        </body>
+      </html>
+    `;
+    setPreviewHtml(sanitizeEmailPreview(html));
   };
 
   useEffect(() => {
@@ -783,6 +778,22 @@ const ModernNotificationCenter = () => {
           </Alert>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={previewHtml !== null} onOpenChange={(open) => { if (!open) setPreviewHtml(null); }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Aperçu Email</DialogTitle>
+          </DialogHeader>
+          {previewHtml && (
+            <iframe
+              srcDoc={previewHtml}
+              sandbox="allow-same-origin"
+              title="Aperçu email"
+              style={{ width: '100%', height: '580px', border: 'none', borderRadius: '4px' }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

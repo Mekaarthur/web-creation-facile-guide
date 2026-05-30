@@ -6,15 +6,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { EMAIL_TEMPLATES, NOTIFICATION_TEMPLATES, COMPANY_CONFIG, type EmailTemplateConfig, type NotificationConfig } from '@/utils/emailConfig';
+import { sanitizeEmailPreview } from '@/utils/emailPreview';
 
 export default function EmailConfigManager() {
   const [emailTemplates, setEmailTemplates] = useState(EMAIL_TEMPLATES);
   const [notificationTemplates, setNotificationTemplates] = useState(NOTIFICATION_TEMPLATES);
   const [companyConfig, setCompanyConfig] = useState(COMPANY_CONFIG);
   const [loading, setLoading] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState<string | null>(null);
 
   const updateEmailTemplate = (templateKey: string, field: keyof EmailTemplateConfig, value: string) => {
     setEmailTemplates(prev => ({
@@ -63,39 +66,36 @@ export default function EmailConfigManager() {
 
   const previewEmail = (templateKey: string) => {
     const template = emailTemplates[templateKey];
-    const previewWindow = window.open('', '_blank', 'width=600,height=800');
-    if (previewWindow) {
-      previewWindow.document.write(`
-        <html>
-          <head>
-            <title>Aperçu Email - ${template.title}</title>
-            <style>
-              body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
-              .header { background: ${companyConfig.colors.primary}; color: white; padding: 20px; text-align: center; }
-              .content { padding: 20px; background: #f9f9f9; }
-              .button { background: ${companyConfig.colors.primary}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 20px 0; }
-              .footer { color: #666; font-size: 12px; margin-top: 30px; }
-            </style>
-          </head>
-          <body>
-            <div class="header">
-              <h1>${template.title}</h1>
-            </div>
-            <div class="content">
-              <p><strong>${template.greeting}</strong></p>
-              <p>${template.content}</p>
-              <a href="#" class="button">${template.buttonText}</a>
-              <p style="color: #666;">${template.footer}</p>
-              <p class="footer">
-                Cordialement,<br>
-                ${template.signature}
-              </p>
-            </div>
-          </body>
-        </html>
-      `);
-      previewWindow.document.close();
-    }
+    const html = `
+      <html>
+        <head>
+          <title>Aperçu Email - ${template.title}</title>
+          <style>
+            body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: ${companyConfig.colors.primary}; color: white; padding: 20px; text-align: center; }
+            .content { padding: 20px; background: #f9f9f9; }
+            .button { background: ${companyConfig.colors.primary}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 20px 0; }
+            .footer { color: #666; font-size: 12px; margin-top: 30px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>${template.title}</h1>
+          </div>
+          <div class="content">
+            <p><strong>${template.greeting}</strong></p>
+            <p>${template.content}</p>
+            <a href="#" class="button">${template.buttonText}</a>
+            <p style="color: #666;">${template.footer}</p>
+            <p class="footer">
+              Cordialement,<br>
+              ${template.signature}
+            </p>
+          </div>
+        </body>
+      </html>
+    `;
+    setPreviewHtml(sanitizeEmailPreview(html));
   };
 
   // Charger la configuration sauvegardée au démarrage
@@ -323,6 +323,22 @@ export default function EmailConfigManager() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={previewHtml !== null} onOpenChange={(open) => { if (!open) setPreviewHtml(null); }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Aperçu Email</DialogTitle>
+          </DialogHeader>
+          {previewHtml && (
+            <iframe
+              srcDoc={previewHtml}
+              sandbox="allow-same-origin"
+              title="Aperçu email"
+              style={{ width: '100%', height: '580px', border: 'none', borderRadius: '4px' }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
