@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { 
-  CheckCircle, Clock, Send, Download, Loader2, 
-  BanknoteIcon, CreditCard, AlertCircle 
+import {
+  CheckCircle, Clock, Send, Download, Loader2,
+  BanknoteIcon, CreditCard, AlertCircle, RefreshCw
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -16,6 +16,8 @@ interface ProviderPayout {
   payout_frequency: string;
   total_due: number;
   transaction_count: number;
+  ready_count: number;       // nb transactions ready_for_payout
+  blocked_count: number;     // nb transactions needs_stripe_setup
   transactions: any[];
 }
 
@@ -36,7 +38,7 @@ export const ProviderPayoutsTab = () => {
           *,
           provider:providers(id, business_name, stripe_account_id, stripe_onboarding_complete, payout_frequency, profiles(first_name, last_name))
         `)
-        .in("payment_status", ["client_paid", "paid", "completed"])
+        .in("payment_status", ["client_paid", "paid", "completed", "ready_for_payout", "needs_stripe_setup"])
         .is("provider_paid_at", null);
 
       if (error) throw error;
@@ -49,17 +51,21 @@ export const ProviderPayoutsTab = () => {
           const provider = t.provider;
           grouped[pid] = {
             provider_id: pid,
-            provider_name: provider?.business_name || 
+            provider_name: provider?.business_name ||
               `${provider?.profiles?.first_name || ""} ${provider?.profiles?.last_name || ""}`.trim() || "Inconnu",
             stripe_connected: !!provider?.stripe_account_id && !!provider?.stripe_onboarding_complete,
             payout_frequency: provider?.payout_frequency || "weekly",
             total_due: 0,
             transaction_count: 0,
+            ready_count: 0,
+            blocked_count: 0,
             transactions: [],
           };
         }
         grouped[pid].total_due += Number(t.provider_payment);
         grouped[pid].transaction_count++;
+        if (t.payment_status === "ready_for_payout") grouped[pid].ready_count++;
+        if (t.payment_status === "needs_stripe_setup") grouped[pid].blocked_count++;
         grouped[pid].transactions.push(t);
       });
 
@@ -92,19 +98,20 @@ export const ProviderPayoutsTab = () => {
     }
   };
 
-  const handleMarkManualPaid = async (transactionId: string) => {
+  const handleMarkAllManualPaid = async (payout: ProviderPayout) => {
+    setProcessing(payout.provider_id);
     try {
-      const { data, error } = await supabase.functions.invoke("transfer-provider-payment", {
-        body: { action: "mark_manual_paid", transactionId },
-      });
-
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-
-      toast.success("Marqué comme payé manuellement");
+      for (const t of payout.transactions) {
+        await supabase.functions.invoke("transfer-provider-payment", {
+          body: { action: "mark_manual_paid", transactionId: t.id },
+        });
+      }
+      toast.success(`${payout.transaction_count} transaction(s) marquée(s) payées manuellement`);
       loadPayouts();
     } catch (error: any) {
       toast.error(error.message || "Erreur");
+    } finally {
+      setProcessing(null);
     }
   };
 
@@ -147,10 +154,16 @@ export const ProviderPayoutsTab = () => {
             {payouts.length} prestataire(s) · {payouts.reduce((s, p) => s + p.total_due, 0).toFixed(2)}€ à verser
           </p>
         </div>
-        <Button variant="outline" onClick={handleExportCSV} disabled={payouts.length === 0}>
-          <Download className="w-4 h-4 mr-2" />
-          Exporter récapitulatif
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => { setLoading(true); loadPayouts(); }}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Actualiser
+          </Button>
+          <Button variant="outline" onClick={handleExportCSV} disabled={payouts.length === 0}>
+            <Download className="w-4 h-4 mr-2" />
+            Exporter récapitulatif
+          </Button>
+        </div>
       </div>
 
       {payouts.length === 0 ? (
@@ -162,43 +175,53 @@ export const ProviderPayoutsTab = () => {
         </Card>
       ) : (
         payouts.map((payout) => (
-          <Card key={payout.provider_id}>
+          <Card key={payout.provider_id} className={payout.ready_count > 0 ? "border-green-300" : ""}>
             <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div>
-                    <div className="font-medium text-base">{payout.provider_name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {payout.transaction_count} mission(s)
-                    </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      {payout.stripe_connected ? (
-                        <Badge variant="default" className="text-xs flex items-center gap-1">
-                          <CreditCard className="w-3 h-3" />
-                          Stripe Connect
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary" className="text-xs flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3" />
-                          Virement manuel
-                        </Badge>
-                      )}
-                      <Badge variant="outline" className="text-xs flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {payout.payout_frequency === "monthly" ? "Mensuel" : "Hebdomadaire"}
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1.5 flex-1 min-w-0">
+                  <div className="font-medium text-base">{payout.provider_name}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {payout.transaction_count} mission(s)
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {payout.stripe_connected ? (
+                      <Badge variant="default" className="text-xs flex items-center gap-1">
+                        <CreditCard className="w-3 h-3" />
+                        Stripe Connect
                       </Badge>
-                    </div>
+                    ) : (
+                      <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        Virement manuel
+                      </Badge>
+                    )}
+                    <Badge variant="outline" className="text-xs flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {payout.payout_frequency === "monthly" ? "Mensuel" : "Hebdomadaire"}
+                    </Badge>
+                    {payout.ready_count > 0 && (
+                      <Badge className="text-xs bg-green-100 text-green-800 border-green-300 flex items-center gap-1">
+                        <CheckCircle className="w-3 h-3" />
+                        {payout.ready_count} prêt(s) au virement
+                      </Badge>
+                    )}
+                    {payout.blocked_count > 0 && (
+                      <Badge variant="destructive" className="text-xs flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {payout.blocked_count} bloqué(s) — Stripe non configuré
+                      </Badge>
+                    )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 shrink-0">
                   <div className="text-right">
                     <div className="text-xl font-bold">{payout.total_due.toFixed(2)}€</div>
                     <div className="text-xs text-muted-foreground">à verser</div>
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    {payout.stripe_connected ? (
+                    {payout.stripe_connected && (
                       <Button
                         size="sm"
                         onClick={() => handleStripeTransfer(payout)}
@@ -211,19 +234,20 @@ export const ProviderPayoutsTab = () => {
                         )}
                         Payer via Stripe
                       </Button>
-                    ) : null}
-                    
-                    {payout.transactions.map((t: any) => (
-                      <Button
-                        key={t.id}
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleMarkManualPaid(t.id)}
-                      >
+                    )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleMarkAllManualPaid(payout)}
+                      disabled={processing === payout.provider_id}
+                    >
+                      {processing === payout.provider_id ? (
+                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                      ) : (
                         <BanknoteIcon className="w-4 h-4 mr-1" />
-                        Marquer payé ({Number(t.provider_payment).toFixed(2)}€)
-                      </Button>
-                    ))}
+                      )}
+                      Marquer payé manuellement
+                    </Button>
                   </div>
                 </div>
               </div>
