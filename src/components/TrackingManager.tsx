@@ -78,9 +78,8 @@ const TrackingManager = () => {
 
     // Facebook Pixel
     const initFacebookPixel = () => {
-      // Skip Facebook Pixel if ID not configured
-      const pixelId = 'YOUR_FACEBOOK_PIXEL_ID'; // Replace with actual ID when configured
-      if (pixelId === 'YOUR_FACEBOOK_PIXEL_ID') return;
+      const pixelId = import.meta.env.VITE_FB_PIXEL_ID;
+      if (!pixelId) return;
       
       const fbScript = document.createElement('script');
       fbScript.innerHTML = `
@@ -132,9 +131,8 @@ const TrackingManager = () => {
 
     // Hotjar
     const initHotjar = () => {
-      // Skip Hotjar if ID not configured
-      const hotjarId = 'YOUR_HOTJAR_ID'; // Replace with actual ID when configured
-      if (hotjarId === 'YOUR_HOTJAR_ID') return;
+      const hotjarId = import.meta.env.VITE_HOTJAR_ID;
+      if (!hotjarId) return;
       
       const hotjarScript = document.createElement('script');
       hotjarScript.innerHTML = `
