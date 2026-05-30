@@ -15,7 +15,8 @@ import {
   Lock,
   LayoutDashboard,
   Receipt,
-  PiggyBank
+  PiggyBank,
+  MessageSquare
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -32,6 +33,7 @@ import { TaxCreditSavings } from '@/components/client/TaxCreditSavings';
 import { PendingReviews } from '@/components/client/PendingReviews';
 import { AvanceImmediateActivation } from '@/components/client/AvanceImmediateActivation';
 import { ClientPrestationsHistory } from '@/components/client/ClientPrestationsHistory';
+import { ClientCustomRequests } from '@/components/client/ClientCustomRequests';
 import { AutoRatingPrompt } from '@/components/mobile/AutoRatingPrompt';
 import { TwoFactorAuthSetup } from '@/components/auth/TwoFactorAuthSetup';
 import { useTranslation } from 'react-i18next';
@@ -54,7 +56,7 @@ const EspacePersonnel = () => {
   }, [user, loading, primaryRole, navigate]);
 
   // Liste unifiée des onglets protégés (nécessitant une authentification)
-  const protectedTabs = ["dashboard", "rendez-vous", "factures", "economies", "parrainage", "profil", "securite", "paiement", "attestations"];
+  const protectedTabs = ["dashboard", "rendez-vous", "factures", "economies", "parrainage", "profil", "securite", "paiement", "attestations", "demandes"];
 
   // Rediriger vers connexion si pas authentifié et tentative d'accès à un onglet protégé
   useEffect(() => {
@@ -125,7 +127,7 @@ const EspacePersonnel = () => {
             window.history.replaceState({}, '', newUrl);
           }} className="w-full">
             <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 pb-2 mb-4 sm:mb-8">
-            <TabsList className={`inline-flex sm:grid gap-1.5 sm:gap-2 bg-white/80 backdrop-blur-sm p-1.5 sm:p-2 shadow-lg rounded-xl border-0 min-w-max sm:min-w-0 sm:w-full ${user ? 'sm:grid-cols-4 lg:grid-cols-9' : 'sm:grid-cols-1'}`}>
+            <TabsList className={`inline-flex sm:grid gap-1.5 sm:gap-2 bg-white/80 backdrop-blur-sm p-1.5 sm:p-2 shadow-lg rounded-xl border-0 min-w-max sm:min-w-0 sm:w-full ${user ? 'sm:grid-cols-4 lg:grid-cols-10' : 'sm:grid-cols-1'}`}>
               {!user && (
                 <TabsTrigger 
                   value="connexion" 
@@ -199,6 +201,13 @@ const EspacePersonnel = () => {
                   >
                     <Receipt className="w-4 h-4 flex-shrink-0" />
                     <span className="truncate font-medium">{t('personalSpace.attestations')}</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="demandes"
+                    className="flex items-center gap-1 sm:gap-2 min-h-12 text-xs sm:text-sm py-3 px-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-200"
+                  >
+                    <MessageSquare className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate font-medium">Demandes</span>
                   </TabsTrigger>
                 </>
               )}
@@ -285,6 +294,11 @@ const EspacePersonnel = () => {
             {/* Attestations Crédit d'Impôt et CAF */}
             <TabsContent value="attestations" className="space-y-6">
               <AttestationsManager />
+            </TabsContent>
+
+            {/* Mes demandes personnalisées */}
+            <TabsContent value="demandes" className="space-y-6">
+              <ClientCustomRequests />
             </TabsContent>
           </Tabs>
         </div>
