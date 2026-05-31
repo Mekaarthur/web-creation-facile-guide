@@ -32,7 +32,7 @@ const ProtectedProviderRoute = ({ children, redirectTo = '/auth/provider', requi
         setIsVerified(data?.is_verified ?? false);
         setCheckingVerified(false);
       });
-  }, [user, requireVerified]);
+  }, [user, requireVerified, primaryRole]);
 
   if (loading || checkingVerified) {
     return (

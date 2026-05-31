@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { checkEmailExists, mapAuthError } from '@/lib/authUtils';
 import { Button } from '@/components/ui/button';
@@ -34,6 +34,7 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
   const [isResendingEmail, setIsResendingEmail] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   // ========== SIGNUP FORM ==========
   const signupForm = useForm<SignupData>({
@@ -227,7 +228,13 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
       } else {
         destination = '/espace-personnel';
       }
-      navigate(destination);
+
+      // Honor ?redirect= param — relative paths only (prevents open redirect)
+      const redirectParam = searchParams.get('redirect');
+      const safeRedirect = redirectParam && /^[\w-][\w/-]*$/.test(redirectParam)
+        ? '/' + redirectParam.replace(/^\/+/, '')
+        : null;
+      navigate(safeRedirect || destination);
 
       if (onSuccess) {
         onSuccess();

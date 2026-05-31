@@ -12,14 +12,14 @@ export default defineConfig({
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    video: 'off',
   },
 
   projects: [
-    // Default: Chromium only for local dev speed
+    // Default: use system Edge (avoids Playwright browser download in restricted networks)
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: { ...devices['Desktop Chrome'], channel: 'msedge' },
     },
 
     // Full cross-browser suite — run explicitly with --project=firefox/webkit

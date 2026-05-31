@@ -105,7 +105,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // 2) Puis récupérer la session existante
     supabase.auth.getSession()
-      .then(({ data: { session }, error }) => {
+      .then(async ({ data: { session }, error }) => {
         if (error) {
           console.error('Error getting session:', error);
         }
@@ -113,9 +113,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
 
-        // Fetch roles for existing session
+        // Await roles before releasing loading so ProtectedRoute guards see them
         if (session?.user) {
-          fetchUserRoles(session.user.id);
+          await fetchUserRoles(session.user.id);
         }
       })
       .finally(() => {
