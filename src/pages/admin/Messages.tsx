@@ -1,23 +1,21 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
-  Search, 
-  MessageSquare, 
-  Send, 
+import {
+  Search,
+  MessageSquare,
+  Send,
   Eye,
-  Download, 
+  Download,
   Archive,
-  Ban,
   CheckCircle,
   Clock,
   RefreshCw,
-  Filter,
   X
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -50,39 +48,192 @@ interface MessagingStats {
   messages_today: number;
 }
 
+async function fetchConversations(
+  typeFilter: string,
+  statusFilter: string,
+  universeFilter: string
+): Promise<ConversationRow[]> {
+  const allConversations: ConversationRow[] = [];
+
+  if (typeFilter === 'all' || typeFilter === 'client-provider') {
+    const { data: chatConvs } = await supabase
+      .from('chat_conversations')
+      .select(`
+        *,
+        client:profiles!chat_conversations_client_id_fkey(first_name, last_name, email),
+        provider:profiles!chat_conversations_provider_id_fkey(first_name, last_name, email),
+        booking:bookings(service_id, services(category))
+      `)
+      .order('last_message_at', { ascending: false });
+
+    if (chatConvs) {
+      chatConvs.forEach((conv: any) => {
+        allConversations.push({
+          id: conv.id,
+          type: 'client-provider',
+          participant1_name: conv.client
+            ? `${conv.client.first_name} ${conv.client.last_name}`
+            : 'Client',
+          participant1_email: conv.client?.email,
+          participant2_name: conv.provider
+            ? `${conv.provider.first_name} ${conv.provider.last_name}`
+            : 'Prestataire',
+          participant2_email: conv.provider?.email,
+          subject: conv.booking?.services?.category || 'Service',
+          service_category: conv.booking?.services?.category,
+          last_message_at: conv.last_message_at || conv.created_at,
+          status: 'open',
+          unread_count: 0,
+          booking_id: conv.booking_id,
+        });
+      });
+    }
+  }
+
+  if (typeFilter === 'all' || typeFilter === 'client-admin' || typeFilter === 'provider-admin') {
+    const { data: internalConvs } = await supabase
+      .from('internal_conversations')
+      .select(`
+        *,
+        client:profiles!internal_conversations_client_id_fkey(first_name, last_name, email),
+        provider:profiles!internal_conversations_provider_id_fkey(first_name, last_name, email),
+        admin:profiles!internal_conversations_admin_id_fkey(first_name, last_name)
+      `)
+      .order('last_message_at', { ascending: false });
+
+    if (internalConvs) {
+      internalConvs.forEach((conv: any) => {
+        const convType: 'client-admin' | 'provider-admin' = conv.provider_id
+          ? 'provider-admin'
+          : 'client-admin';
+        if (typeFilter !== 'all' && typeFilter !== convType) return;
+        allConversations.push({
+          id: conv.id,
+          type: convType,
+          participant1_name: conv.client
+            ? `${conv.client.first_name} ${conv.client.last_name}`
+            : conv.provider
+              ? `${conv.provider.first_name} ${conv.provider.last_name}`
+              : 'Utilisateur',
+          participant1_email: conv.client?.email || conv.provider?.email,
+          participant2_name: conv.admin
+            ? `Admin (${conv.admin.first_name})`
+            : 'Admin Bikawo',
+          subject: conv.subject,
+          last_message_at: conv.last_message_at || conv.created_at,
+          status: conv.status,
+          unread_count: 0,
+        });
+      });
+    }
+  }
+
+  let filtered = statusFilter === 'all'
+    ? allConversations
+    : allConversations.filter(c => c.status === statusFilter);
+
+  if (universeFilter !== 'all') {
+    filtered = filtered.filter(c =>
+      c.service_category?.toLowerCase().includes(universeFilter.toLowerCase())
+    );
+  }
+
+  return filtered;
+}
+
+async function fetchMessagingStats(): Promise<MessagingStats> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const [chatConvs, internalConvs, chatMsgs, internalMsgs] = await Promise.all([
+    supabase.from('chat_conversations').select('*', { count: 'exact', head: true }),
+    supabase.from('internal_conversations').select('*'),
+    supabase.from('chat_messages').select('*').gte('created_at', today.toISOString()),
+    supabase.from('internal_messages').select('*').gte('created_at', today.toISOString()),
+  ]);
+
+  const totalConvs = (chatConvs.count || 0) + (internalConvs.data?.length || 0);
+  const openConvs = (internalConvs.data || []).filter((c: any) => c.status === 'active').length;
+  const closedConvs = (internalConvs.data || []).filter((c: any) => c.status === 'closed').length;
+  const pendingConvs = (internalConvs.data || []).filter((c: any) => c.status === 'pending').length;
+  const todayMsgs = (chatMsgs.data?.length || 0) + (internalMsgs.data?.length || 0);
+
+  return {
+    total_conversations: totalConvs,
+    open_conversations: openConvs,
+    closed_conversations: closedConvs,
+    pending_responses: pendingConvs,
+    average_response_time: '2h 15min',
+    messages_today: todayMsgs,
+  };
+}
+
+const getTypeBadge = (type: string) => {
+  switch (type) {
+    case 'client-provider':
+      return <Badge className="bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800">Client ↔ Prestataire</Badge>;
+    case 'client-admin':
+      return <Badge className="bg-orange-100 dark:bg-orange-950 text-orange-800 dark:text-orange-200 border-orange-200 dark:border-orange-800">Client ↔ Admin</Badge>;
+    case 'provider-admin':
+      return <Badge className="bg-green-100 dark:bg-green-950 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800">Prestataire ↔ Admin</Badge>;
+    default:
+      return <Badge variant="outline">{type}</Badge>;
+  }
+};
+
+const getStatusBadge = (status: string) => {
+  switch (status) {
+    case 'open':
+    case 'active':
+      return <Badge variant="default"><CheckCircle className="w-3 h-3 mr-1" />Ouvert</Badge>;
+    case 'closed':
+      return <Badge variant="secondary"><X className="w-3 h-3 mr-1" />Fermé</Badge>;
+    case 'pending':
+      return <Badge variant="outline"><Clock className="w-3 h-3 mr-1" />En attente</Badge>;
+    default:
+      return <Badge variant="outline">{status}</Badge>;
+  }
+};
+
 export default function AdminMessages() {
-  const [conversations, setConversations] = useState<ConversationRow[]>([]);
+  const qc = useQueryClient();
   const [selectedConversation, setSelectedConversation] = useState<ConversationRow | null>(null);
-  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [universeFilter, setUniverseFilter] = useState('all');
-  const [stats, setStats] = useState<MessagingStats | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadConversations();
-    loadStats();
+  const convQueryKey = ['admin-conversations', typeFilter, statusFilter, universeFilter] as const;
 
-    // Real-time subscriptions
+  const { data: conversations = [], isLoading: loading, refetch } = useQuery<ConversationRow[]>({
+    queryKey: convQueryKey,
+    queryFn: () => fetchConversations(typeFilter, statusFilter, universeFilter),
+  });
+
+  const { data: stats } = useQuery<MessagingStats>({
+    queryKey: ['admin-messages-stats'],
+    queryFn: fetchMessagingStats,
+  });
+
+  useEffect(() => {
     const chatChannel = supabase
       .channel('admin-chat-conversations')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_conversations' }, () => {
-        loadConversations();
+        qc.invalidateQueries({ queryKey: ['admin-conversations'] });
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages' }, () => {
-        loadConversations();
+        qc.invalidateQueries({ queryKey: ['admin-conversations'] });
       })
       .subscribe();
 
     const internalChannel = supabase
       .channel('admin-internal-conversations')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'internal_conversations' }, () => {
-        loadConversations();
+        qc.invalidateQueries({ queryKey: ['admin-conversations'] });
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'internal_messages' }, () => {
-        loadConversations();
+        qc.invalidateQueries({ queryKey: ['admin-conversations'] });
       })
       .subscribe();
 
@@ -90,197 +241,33 @@ export default function AdminMessages() {
       supabase.removeChannel(chatChannel);
       supabase.removeChannel(internalChannel);
     };
-  }, [typeFilter, statusFilter, universeFilter]);
-
-  const loadConversations = async () => {
-    try {
-      setLoading(true);
-      const allConversations: ConversationRow[] = [];
-
-      // Charger les conversations Client ↔ Prestataire
-      if (typeFilter === 'all' || typeFilter === 'client-provider') {
-        const { data: chatConvs } = await supabase
-          .from('chat_conversations')
-          .select(`
-            *,
-            client:profiles!chat_conversations_client_id_fkey(first_name, last_name, email),
-            provider:profiles!chat_conversations_provider_id_fkey(first_name, last_name, email),
-            booking:bookings(service_id, services(category))
-          `)
-          .order('last_message_at', { ascending: false });
-
-        if (chatConvs) {
-          chatConvs.forEach((conv: any) => {
-            allConversations.push({
-              id: conv.id,
-              type: 'client-provider',
-              participant1_name: conv.client 
-                ? `${conv.client.first_name} ${conv.client.last_name}` 
-                : 'Client',
-              participant1_email: conv.client?.email,
-              participant2_name: conv.provider 
-                ? `${conv.provider.first_name} ${conv.provider.last_name}` 
-                : 'Prestataire',
-              participant2_email: conv.provider?.email,
-              subject: conv.booking?.services?.category || 'Service',
-              service_category: conv.booking?.services?.category,
-              last_message_at: conv.last_message_at || conv.created_at,
-              status: 'open',
-              unread_count: 0,
-              booking_id: conv.booking_id
-            });
-          });
-        }
-      }
-
-      // Charger les conversations internes (Client/Provider ↔ Admin)
-      if (typeFilter === 'all' || typeFilter === 'client-admin' || typeFilter === 'provider-admin') {
-        const { data: internalConvs } = await supabase
-          .from('internal_conversations')
-          .select(`
-            *,
-            client:profiles!internal_conversations_client_id_fkey(first_name, last_name, email),
-            provider:profiles!internal_conversations_provider_id_fkey(first_name, last_name, email),
-            admin:profiles!internal_conversations_admin_id_fkey(first_name, last_name)
-          `)
-          .order('last_message_at', { ascending: false });
-
-        if (internalConvs) {
-          internalConvs.forEach((conv: any) => {
-            const convType: 'client-admin' | 'provider-admin' = conv.provider_id 
-              ? 'provider-admin' 
-              : 'client-admin';
-            
-            if (typeFilter !== 'all' && typeFilter !== convType) return;
-
-            allConversations.push({
-              id: conv.id,
-              type: convType,
-              participant1_name: conv.client 
-                ? `${conv.client.first_name} ${conv.client.last_name}` 
-                : conv.provider 
-                  ? `${conv.provider.first_name} ${conv.provider.last_name}`
-                  : 'Utilisateur',
-              participant1_email: conv.client?.email || conv.provider?.email,
-              participant2_name: conv.admin 
-                ? `Admin (${conv.admin.first_name})` 
-                : 'Admin Bikawo',
-              subject: conv.subject,
-              last_message_at: conv.last_message_at || conv.created_at,
-              status: conv.status,
-              unread_count: 0
-            });
-          });
-        }
-      }
-
-      // Filtrer par statut
-      let filtered = statusFilter === 'all' 
-        ? allConversations 
-        : allConversations.filter(c => c.status === statusFilter);
-
-      // Filtrer par univers
-      if (universeFilter !== 'all') {
-        filtered = filtered.filter(c => 
-          c.service_category?.toLowerCase().includes(universeFilter.toLowerCase())
-        );
-      }
-
-      setConversations(filtered);
-    } catch (error) {
-      console.error('Erreur chargement conversations:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les conversations",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadStats = async () => {
-    try {
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-      const [chatConvs, internalConvs, chatMsgs, internalMsgs] = await Promise.all([
-        supabase.from('chat_conversations').select('*', { count: 'exact', head: true }),
-        supabase.from('internal_conversations').select('*'),
-        supabase.from('chat_messages').select('*').gte('created_at', today.toISOString()),
-        supabase.from('internal_messages').select('*').gte('created_at', today.toISOString())
-      ]);
-
-      const totalConvs = (chatConvs.count || 0) + (internalConvs.data?.length || 0);
-      const openConvs = (internalConvs.data || []).filter((c: any) => c.status === 'active').length;
-      const closedConvs = (internalConvs.data || []).filter((c: any) => c.status === 'closed').length;
-      const pendingConvs = (internalConvs.data || []).filter((c: any) => c.status === 'pending').length;
-      const todayMsgs = (chatMsgs.data?.length || 0) + (internalMsgs.data?.length || 0);
-
-      setStats({
-        total_conversations: totalConvs,
-        open_conversations: openConvs,
-        closed_conversations: closedConvs,
-        pending_responses: pendingConvs,
-        average_response_time: '2h 15min',
-        messages_today: todayMsgs
-      });
-    } catch (error) {
-      console.error('Erreur chargement stats:', error);
-    }
-  };
+  }, [qc]);
 
   const handleArchiveConversation = async (conversationId: string, type: string) => {
     try {
-      const table = type === 'client-provider' ? 'chat_conversations' : 'internal_conversations';
-      
-      // Pour internal_conversations, on peut utiliser le statut 'archived'
-      if (table === 'internal_conversations') {
+      if (type !== 'client-provider') {
         await supabase
-          .from(table)
+          .from('internal_conversations')
           .update({ status: 'archived' })
           .eq('id', conversationId);
       }
-
-      toast({
-        title: "Conversation archivée",
-        description: "La conversation a été archivée avec succès"
-      });
-      
-      loadConversations();
+      toast({ title: "Conversation archivée", description: "La conversation a été archivée avec succès" });
+      qc.invalidateQueries({ queryKey: ['admin-conversations'] });
       setSelectedConversation(null);
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible d'archiver la conversation",
-        variant: "destructive"
-      });
+    } catch {
+      toast({ title: "Erreur", description: "Impossible d'archiver la conversation", variant: "destructive" });
     }
   };
 
   const handleDownloadHistory = async (conversationId: string, type: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke('export-conversation-history', {
-        body: {
-          conversationId,
-          type,
-          format: 'csv'
-        }
+      const { error } = await supabase.functions.invoke('export-conversation-history', {
+        body: { conversationId, type, format: 'csv' },
       });
-
       if (error) throw error;
-
-      toast({
-        title: "Export réussi",
-        description: "L'historique a été téléchargé avec succès"
-      });
-    } catch (error) {
-      console.error('Erreur export:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de télécharger l'historique",
-        variant: "destructive"
-      });
+      toast({ title: "Export réussi", description: "L'historique a été téléchargé avec succès" });
+    } catch {
+      toast({ title: "Erreur", description: "Impossible de télécharger l'historique", variant: "destructive" });
     }
   };
 
@@ -290,33 +277,6 @@ export default function AdminMessages() {
     conv.participant2_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (conv.participant1_email && conv.participant1_email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
-
-  const getTypeBadge = (type: string) => {
-    switch (type) {
-      case 'client-provider':
-        return <Badge className="bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800">Client ↔ Prestataire</Badge>;
-      case 'client-admin':
-        return <Badge className="bg-orange-100 dark:bg-orange-950 text-orange-800 dark:text-orange-200 border-orange-200 dark:border-orange-800">Client ↔ Admin</Badge>;
-      case 'provider-admin':
-        return <Badge className="bg-green-100 dark:bg-green-950 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800">Prestataire ↔ Admin</Badge>;
-      default:
-        return <Badge variant="outline">{type}</Badge>;
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'open':
-      case 'active':
-        return <Badge variant="default"><CheckCircle className="w-3 h-3 mr-1" />Ouvert</Badge>;
-      case 'closed':
-        return <Badge variant="secondary"><X className="w-3 h-3 mr-1" />Fermé</Badge>;
-      case 'pending':
-        return <Badge variant="outline"><Clock className="w-3 h-3 mr-1" />En attente</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
 
   if (loading && conversations.length === 0) {
     return (
@@ -340,7 +300,6 @@ export default function AdminMessages() {
         <p className="text-muted-foreground">Suivi et modération de toutes les conversations</p>
       </div>
 
-      {/* Statistiques */}
       {stats && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
           <Card>
@@ -351,12 +310,9 @@ export default function AdminMessages() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
-                {stats.total_conversations}
-              </div>
+              <div className="text-2xl font-bold text-blue-600">{stats.total_conversations}</div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -365,12 +321,9 @@ export default function AdminMessages() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {stats.open_conversations}
-              </div>
+              <div className="text-2xl font-bold text-green-600">{stats.open_conversations}</div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -379,12 +332,9 @@ export default function AdminMessages() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-600">
-                {stats.closed_conversations}
-              </div>
+              <div className="text-2xl font-bold text-gray-600">{stats.closed_conversations}</div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -393,12 +343,9 @@ export default function AdminMessages() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-600">
-                {stats.pending_responses}
-              </div>
+              <div className="text-2xl font-bold text-orange-600">{stats.pending_responses}</div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -407,12 +354,9 @@ export default function AdminMessages() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-lg font-bold text-purple-600">
-                {stats.average_response_time}
-              </div>
+              <div className="text-lg font-bold text-purple-600">{stats.average_response_time}</div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -421,15 +365,12 @@ export default function AdminMessages() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-teal-600">
-                {stats.messages_today}
-              </div>
+              <div className="text-2xl font-bold text-teal-600">{stats.messages_today}</div>
             </CardContent>
           </Card>
         </div>
       )}
 
-      {/* Filtres */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Recherche et filtres</CardTitle>
@@ -445,7 +386,6 @@ export default function AdminMessages() {
                 className="pl-10"
               />
             </div>
-
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="Type de conversation" />
@@ -457,7 +397,6 @@ export default function AdminMessages() {
                 <SelectItem value="provider-admin">Prestataire ↔ Admin</SelectItem>
               </SelectContent>
             </Select>
-
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="Statut" />
@@ -470,7 +409,6 @@ export default function AdminMessages() {
                 <SelectItem value="pending">En attente</SelectItem>
               </SelectContent>
             </Select>
-
             <Select value={universeFilter} onValueChange={setUniverseFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="Univers" />
@@ -484,9 +422,8 @@ export default function AdminMessages() {
               </SelectContent>
             </Select>
           </div>
-
           <div className="flex gap-2 mt-4">
-            <Button variant="outline" size="sm" onClick={loadConversations}>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
               <RefreshCw className="w-4 h-4 mr-2" />
               Actualiser
             </Button>
@@ -494,7 +431,6 @@ export default function AdminMessages() {
         </CardContent>
       </Card>
 
-      {/* Tableau des conversations */}
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -548,25 +484,13 @@ export default function AdminMessages() {
                       <TableCell>{getStatusBadge(conv.status)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center gap-2 justify-end">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setSelectedConversation(conv)}
-                          >
+                          <Button variant="ghost" size="sm" onClick={() => setSelectedConversation(conv)}>
                             <Eye className="w-4 h-4" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDownloadHistory(conv.id, conv.type)}
-                          >
+                          <Button variant="ghost" size="sm" onClick={() => handleDownloadHistory(conv.id, conv.type)}>
                             <Download className="w-4 h-4" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleArchiveConversation(conv.id, conv.type)}
-                          >
+                          <Button variant="ghost" size="sm" onClick={() => handleArchiveConversation(conv.id, conv.type)}>
                             <Archive className="w-4 h-4" />
                           </Button>
                         </div>
@@ -584,7 +508,7 @@ export default function AdminMessages() {
         <ConversationDetailsModal
           conversation={selectedConversation}
           onClose={() => setSelectedConversation(null)}
-          onUpdate={loadConversations}
+          onUpdate={() => qc.invalidateQueries({ queryKey: ['admin-conversations'] })}
         />
       )}
     </div>

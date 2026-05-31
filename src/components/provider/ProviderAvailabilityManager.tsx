@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -26,6 +27,11 @@ interface Absence {
   created_at: string;
 }
 
+interface AvailabilityData {
+  providerId: string;
+  absences: Absence[];
+}
+
 const REASON_CONFIG: Record<string, { label: string; color: string }> = {
   vacances:  { label: 'Vacances',           color: 'bg-blue-100 text-blue-800' },
   maladie:   { label: 'Maladie / Arrêt',    color: 'bg-red-100 text-red-800' },
@@ -36,41 +42,43 @@ const REASON_CONFIG: Record<string, { label: string; color: string }> = {
 
 const today = new Date().toISOString().split('T')[0];
 
+async function fetchAvailabilityData(userId: string): Promise<AvailabilityData | null> {
+  const { data: provider } = await supabase
+    .from('providers')
+    .select('id')
+    .eq('user_id', userId)
+    .single();
+  if (!provider) return null;
+
+  const { data, error } = await supabase
+    .from('provider_absences')
+    .select('*')
+    .eq('provider_id', provider.id)
+    .order('start_date', { ascending: true });
+
+  if (error) throw error;
+  return { providerId: provider.id, absences: data || [] };
+}
+
 export const ProviderAvailabilityManager = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const qc = useQueryClient();
 
-  const [providerId, setProviderId] = useState<string | null>(null);
-  const [absences, setAbsences] = useState<Absence[]>([]);
-  const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ start_date: '', end_date: '', reason: 'vacances', notes: '' });
 
-  useEffect(() => {
-    if (user) fetchProvider();
-  }, [user]);
+  const AVAIL_KEY = ['provider-availability', user?.id] as const;
 
-  const fetchProvider = async () => {
-    const { data } = await supabase.from('providers').select('id').eq('user_id', user!.id).single();
-    if (data) {
-      setProviderId(data.id);
-      loadAbsences(data.id);
-    } else {
-      setLoading(false);
-    }
-  };
+  const { data, isLoading } = useQuery<AvailabilityData | null>({
+    queryKey: AVAIL_KEY,
+    queryFn: () => fetchAvailabilityData(user!.id),
+    enabled: !!user,
+  });
 
-  const loadAbsences = async (pid: string) => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('provider_absences')
-      .select('*')
-      .eq('provider_id', pid)
-      .order('start_date', { ascending: true });
-    if (!error) setAbsences(data || []);
-    setLoading(false);
-  };
+  const providerId = data?.providerId ?? null;
+  const absences = data?.absences ?? [];
 
   const handleSave = async () => {
     if (!form.start_date || !form.end_date) {
@@ -99,7 +107,7 @@ export const ProviderAvailabilityManager = () => {
       toast({ title: 'Indisponibilité enregistrée', description: 'Votre calendrier a été mis à jour.' });
       setDialogOpen(false);
       setForm({ start_date: '', end_date: '', reason: 'vacances', notes: '' });
-      loadAbsences(providerId);
+      qc.invalidateQueries({ queryKey: AVAIL_KEY });
     }
   };
 
@@ -108,7 +116,10 @@ export const ProviderAvailabilityManager = () => {
     if (error) {
       toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
     } else {
-      setAbsences(prev => prev.filter(a => a.id !== id));
+      qc.setQueryData<AvailabilityData | null>(AVAIL_KEY, (prev) => {
+        if (!prev) return prev;
+        return { ...prev, absences: prev.absences.filter(a => a.id !== id) };
+      });
     }
   };
 
@@ -130,7 +141,7 @@ export const ProviderAvailabilityManager = () => {
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {loading ? (
+        {isLoading ? (
           <div className="flex items-center justify-center py-10">
             <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
           </div>

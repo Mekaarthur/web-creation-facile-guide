@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,22 +19,25 @@ interface DeletionRequest {
   last_name: string | null;
 }
 
+async function fetchDeletionRequests(): Promise<DeletionRequest[]> {
+  const { data, error } = await supabase
+    .from('pending_deletions' as any)
+    .select('*');
+  if (error) throw error;
+  return (data as unknown as DeletionRequest[]) || [];
+}
+
+const REQUESTS_KEY = ['rgpd-deletion-requests'] as const;
+
 const RgpdDeletions = () => {
   const { toast } = useToast();
-  const [requests, setRequests] = useState<DeletionRequest[]>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
   const [processing, setProcessing] = useState<string | null>(null);
 
-  const loadRequests = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('pending_deletions' as any)
-      .select('*');
-    if (!error && data) setRequests(data as DeletionRequest[]);
-    setLoading(false);
-  };
-
-  useEffect(() => { loadRequests(); }, []);
+  const { data: requests = [], isLoading: loading } = useQuery<DeletionRequest[]>({
+    queryKey: REQUESTS_KEY,
+    queryFn: fetchDeletionRequests,
+  });
 
   const executeErasure = async (userId: string, userName: string) => {
     if (!confirm(`Confirmer l'effacement définitif des données de ${userName} ?`)) return;
@@ -43,7 +47,7 @@ const RgpdDeletions = () => {
       toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
     } else {
       toast({ title: 'Compte anonymisé', description: `Les données de ${userName} ont été effacées.` });
-      loadRequests();
+      qc.invalidateQueries({ queryKey: REQUESTS_KEY });
     }
     setProcessing(null);
   };

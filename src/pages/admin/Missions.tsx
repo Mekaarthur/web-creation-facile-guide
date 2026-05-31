@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,7 @@ import CleanupDuplicatesButton from "@/components/admin/CleanupDuplicatesButton"
 import { Skeleton } from "@/components/ui/skeleton";
 import { CandidaturesPrestatairesPanel } from "@/components/admin/CandidaturesPrestatairesPanel";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 interface Mission {
   id: string;
@@ -28,208 +29,155 @@ interface Mission {
   service_id: string;
   notes?: string | null;
   cancellation_reason?: string | null;
-  services: {
-    name: string;
-    category: string;
-  } | null;
-  client_profile?: {
-    first_name: string | null;
-    last_name: string | null;
-    email: string | null;
-  } | null;
-  provider_profile?: {
-    first_name: string | null;
-    last_name: string | null;
-  } | null;
+  services: { name: string; category: string; } | null;
+  client_profile?: { first_name: string | null; last_name: string | null; email: string | null; } | null;
+  provider_profile?: { first_name: string | null; last_name: string | null; } | null;
 }
 
+interface MissionsData {
+  missions: Mission[];
+  stats: {
+    total: number;
+    revenue: number;
+    commission: number;
+    providerPayment: number;
+    byStatus: { name: string; value: number; color: string }[];
+  };
+}
+
+const STATUS_COLORS: Record<string, string> = {
+  pending: 'hsl(var(--chart-1))',
+  confirmed: 'hsl(var(--chart-2))',
+  assigned: 'hsl(var(--chart-3))',
+  accepted: 'hsl(var(--chart-4))',
+  in_progress: 'hsl(var(--chart-5))',
+  completed: 'hsl(26.7 83.3% 63.5%)',
+  cancelled: 'hsl(var(--destructive))',
+  paid: 'hsl(var(--primary))',
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  pending: 'En attente', confirmed: 'Confirmée', assigned: 'Assignée',
+  accepted: 'Acceptée', in_progress: 'En cours', completed: 'Terminée',
+  cancelled: 'Annulée', paid: 'Payée',
+};
+
+async function fetchMissionsData(): Promise<MissionsData> {
+  const { data: bookingsData, error } = await supabase
+    .from('bookings')
+    .select('*, services(name, category)')
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+
+  const missionsWithDetails = await Promise.all(
+    (bookingsData || []).map(async (booking) => {
+      const { data: clientProfile } = await supabase
+        .from('profiles')
+        .select('first_name, last_name, email')
+        .eq('user_id', booking.client_id)
+        .single();
+
+      let providerProfile = null;
+      if (booking.provider_id) {
+        const { data: providerData } = await supabase
+          .from('providers')
+          .select('user_id')
+          .eq('id', booking.provider_id)
+          .single();
+        if (providerData?.user_id) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('first_name, last_name')
+            .eq('user_id', providerData.user_id)
+            .single();
+          providerProfile = profileData;
+        }
+      }
+      return { ...booking, client_profile: clientProfile, provider_profile: providerProfile };
+    })
+  );
+
+  const totalRevenue = missionsWithDetails.reduce((sum, m) => sum + (Number(m.total_price) || 0), 0);
+  const statusCounts = missionsWithDetails.reduce((acc, m) => {
+    acc[m.status] = (acc[m.status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  return {
+    missions: missionsWithDetails as Mission[],
+    stats: {
+      total: missionsWithDetails.length,
+      revenue: totalRevenue,
+      commission: totalRevenue * 0.28,
+      providerPayment: totalRevenue * 0.72,
+      byStatus: Object.entries(statusCounts).map(([status, count]) => ({
+        name: STATUS_LABELS[status] || status,
+        value: count,
+        color: STATUS_COLORS[status] || 'hsl(var(--muted))',
+      })),
+    },
+  };
+}
+
+const getStatusBadge = (status: string) => {
+  const variants: Record<string, { variant: any; label: string }> = {
+    pending: { variant: 'outline', label: 'En attente' },
+    confirmed: { variant: 'default', label: 'Confirmée' },
+    assigned: { variant: 'secondary', label: 'Assignée' },
+    accepted: { variant: 'default', label: 'Acceptée' },
+    in_progress: { variant: 'default', label: 'En cours' },
+    completed: { variant: 'default', label: 'Terminée' },
+    cancelled: { variant: 'destructive', label: 'Annulée' },
+    paid: { variant: 'default', label: 'Payée' },
+  };
+  const config = variants[status] || { variant: 'outline', label: status };
+  return <Badge variant={config.variant}>{config.label}</Badge>;
+};
+
+const calculateDuration = (startTime: string, endTime: string) => {
+  const start = new Date(`2000-01-01T${startTime}`);
+  const end = new Date(`2000-01-01T${endTime}`);
+  return ((end.getTime() - start.getTime()) / (1000 * 60 * 60)).toFixed(1);
+};
+
 const AdminMissions = () => {
-  const [missions, setMissions] = useState<Mission[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [universeFilter, setUniverseFilter] = useState("all");
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
   const [selectedProvider, setSelectedProvider] = useState<{ id: string; name: string } | null>(null);
-  const [stats, setStats] = useState({
-    total: 0,
-    revenue: 0,
-    commission: 0,
-    providerPayment: 0,
-    byStatus: [] as { name: string; value: number; color: string }[]
+
+  const { data, isLoading: loading, refetch } = useQuery<MissionsData>({
+    queryKey: ['admin-missions'],
+    queryFn: fetchMissionsData,
   });
 
-  useEffect(() => {
-    loadMissions();
-  }, []);
+  const missions = data?.missions ?? [];
+  const stats = data?.stats ?? { total: 0, revenue: 0, commission: 0, providerPayment: 0, byStatus: [] };
 
-  const loadMissions = async () => {
-    try {
-      setLoading(true);
-      const { data: bookingsData, error } = await supabase
-        .from('bookings')
-        .select(`
-          *,
-          services (
-            name,
-            category
-          )
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Load client and provider profiles separately
-      const missionsWithDetails = await Promise.all(
-        (bookingsData || []).map(async (booking) => {
-          // Load client profile
-          const { data: clientProfile } = await supabase
-            .from('profiles')
-            .select('first_name, last_name, email')
-            .eq('user_id', booking.client_id)
-            .single();
-
-          let providerProfile = null;
-          if (booking.provider_id) {
-            const { data: providerData } = await supabase
-              .from('providers')
-              .select('user_id')
-              .eq('id', booking.provider_id)
-              .single();
-
-            if (providerData?.user_id) {
-              const { data: profileData } = await supabase
-                .from('profiles')
-                .select('first_name, last_name')
-                .eq('user_id', providerData.user_id)
-                .single();
-
-              providerProfile = profileData;
-            }
-          }
-
-          return {
-            ...booking,
-            client_profile: clientProfile,
-            provider_profile: providerProfile
-          };
-        })
-      );
-
-      setMissions(missionsWithDetails as Mission[]);
-
-      // Calculate stats
-      const totalRevenue = missionsWithDetails.reduce((sum, m) => sum + (Number(m.total_price) || 0), 0);
-      const commission = totalRevenue * 0.28;
-      const providerPayment = totalRevenue * 0.72;
-
-      // Calcul des stats par statut
-      const statusColors: Record<string, string> = {
-        pending: 'hsl(var(--chart-1))',
-        confirmed: 'hsl(var(--chart-2))',
-        assigned: 'hsl(var(--chart-3))',
-        accepted: 'hsl(var(--chart-4))',
-        in_progress: 'hsl(var(--chart-5))',
-        completed: 'hsl(26.7 83.3% 63.5%)',
-        cancelled: 'hsl(var(--destructive))',
-        paid: 'hsl(var(--primary))'
-      };
-
-      const statusLabels: Record<string, string> = {
-        pending: 'En attente',
-        confirmed: 'Confirmée',
-        assigned: 'Assignée',
-        accepted: 'Acceptée',
-        in_progress: 'En cours',
-        completed: 'Terminée',
-        cancelled: 'Annulée',
-        paid: 'Payée'
-      };
-
-      const statusCounts = missionsWithDetails.reduce((acc, m) => {
-        acc[m.status] = (acc[m.status] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
-
-      const byStatus = Object.entries(statusCounts).map(([status, count]) => ({
-        name: statusLabels[status] || status,
-        value: count,
-        color: statusColors[status] || 'hsl(var(--muted))'
-      }));
-
-      setStats({
-        total: missionsWithDetails.length,
-        revenue: totalRevenue,
-        commission,
-        providerPayment,
-        byStatus
-      });
-    } catch (error) {
-      console.error('Error loading missions:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredMissions = missions.filter(mission => {
-    const matchesSearch = 
+  const filteredMissions = useMemo(() => missions.filter(mission => {
+    const matchesSearch =
       (mission.services?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (mission.client_profile?.first_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (mission.client_profile?.last_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (mission.provider_profile?.first_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (mission.provider_profile?.last_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (mission.address || '').toLowerCase().includes(searchTerm.toLowerCase());
-    
     const matchesStatus = statusFilter === "all" || mission.status === statusFilter;
     const matchesUniverse = universeFilter === "all" || mission.services?.category === universeFilter;
-    
     return matchesSearch && matchesStatus && matchesUniverse;
-  });
+  }), [missions, searchTerm, statusFilter, universeFilter]);
 
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: any, label: string }> = {
-      pending: { variant: 'outline', label: 'En attente' },
-      confirmed: { variant: 'default', label: 'Confirmée' },
-      assigned: { variant: 'secondary', label: 'Assignée' },
-      accepted: { variant: 'default', label: 'Acceptée' },
-      in_progress: { variant: 'default', label: 'En cours' },
-      completed: { variant: 'default', label: 'Terminée' },
-      cancelled: { variant: 'destructive', label: 'Annulée' },
-      paid: { variant: 'default', label: 'Payée' }
-    };
-
-    const config = variants[status] || { variant: 'outline', label: status };
-    return <Badge variant={config.variant}>{config.label}</Badge>;
-  };
-
-  const getStatusCount = (status: string) => {
-    if (status === 'all') return missions.length;
-    return missions.filter(mission => mission.status === status).length;
-  };
-
-  const calculateDuration = (startTime: string, endTime: string) => {
-    const start = new Date(`2000-01-01T${startTime}`);
-    const end = new Date(`2000-01-01T${endTime}`);
-    const diff = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
-    return diff.toFixed(1);
-  };
-
-  const calculateCommission = (totalPrice: number) => {
-    return (totalPrice * 0.28).toFixed(2);
-  };
-
-  const calculateProviderPayment = (totalPrice: number) => {
-    return (totalPrice * 0.72).toFixed(2);
-  };
+  const getStatusCount = (status: string) =>
+    status === 'all' ? missions.length : missions.filter(m => m.status === status).length;
 
   if (loading) {
     return (
       <div className="space-y-6 p-4 sm:p-6">
         <Skeleton className="h-12 w-64" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-32" />
-          ))}
+          {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-32" />)}
         </div>
         <Skeleton className="h-96" />
       </div>
@@ -246,67 +194,52 @@ const AdminMissions = () => {
         <CleanupDuplicatesButton />
       </div>
 
-      {/* Candidatures prestataires */}
       <CandidaturesPrestatairesPanel />
 
-      {/* Statistics Cards & Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Stats cards */}
         <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total missions</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">
-              {getStatusCount('pending')} en attente
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Chiffre d'affaires</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.revenue.toFixed(2)}€</div>
-            <p className="text-xs text-muted-foreground">
-              Total des missions
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Commission Bikawo</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.commission.toFixed(2)}€</div>
-            <p className="text-xs text-muted-foreground">
-              28% des missions
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Reversé prestataires</CardTitle>
-            <User className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.providerPayment.toFixed(2)}€</div>
-            <p className="text-xs text-muted-foreground">
-              72% des missions
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total missions</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.total}</div>
+              <p className="text-xs text-muted-foreground">{getStatusCount('pending')} en attente</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Chiffre d'affaires</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.revenue.toFixed(2)}€</div>
+              <p className="text-xs text-muted-foreground">Total des missions</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Commission Bikawo</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.commission.toFixed(2)}€</div>
+              <p className="text-xs text-muted-foreground">28% des missions</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Reversé prestataires</CardTitle>
+              <User className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.providerPayment.toFixed(2)}€</div>
+              <p className="text-xs text-muted-foreground">72% des missions</p>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Graphique répartition par statut */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -319,8 +252,7 @@ const AdminMissions = () => {
               <RechartsPieChart>
                 <Pie
                   data={stats.byStatus}
-                  cx="50%"
-                  cy="50%"
+                  cx="50%" cy="50%"
                   labelLine={false}
                   label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   outerRadius={80}
@@ -338,7 +270,6 @@ const AdminMissions = () => {
         </Card>
       </div>
 
-      {/* Filters */}
       <Card>
         <CardHeader>
           <CardTitle>Filtres et recherche</CardTitle>
@@ -388,7 +319,6 @@ const AdminMissions = () => {
         </CardHeader>
       </Card>
 
-      {/* Missions Table */}
       <Card>
         <CardHeader>
           <CardTitle>Liste des missions ({filteredMissions.length})</CardTitle>
@@ -416,28 +346,18 @@ const AdminMissions = () => {
                   <TableRow>
                     <TableCell colSpan={11} className="text-center py-8">
                       <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-lg font-medium text-muted-foreground">
-                        Aucune mission trouvée
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Essayez de modifier vos critères de recherche
-                      </p>
+                      <p className="text-lg font-medium text-muted-foreground">Aucune mission trouvée</p>
+                      <p className="text-sm text-muted-foreground">Essayez de modifier vos critères de recherche</p>
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredMissions.map((mission) => (
                     <TableRow key={mission.id}>
-                      <TableCell className="font-mono text-xs">
-                        {mission.id.substring(0, 8)}
-                      </TableCell>
+                      <TableCell className="font-mono text-xs">{mission.id.substring(0, 8)}</TableCell>
                       <TableCell>
                         <div>
-                          <div className="font-medium">
-                            {mission.client_profile?.first_name} {mission.client_profile?.last_name}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {mission.client_profile?.email}
-                          </div>
+                          <div className="font-medium">{mission.client_profile?.first_name} {mission.client_profile?.last_name}</div>
+                          <div className="text-xs text-muted-foreground">{mission.client_profile?.email}</div>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -447,7 +367,7 @@ const AdminMissions = () => {
                             className="font-medium p-0 h-auto"
                             onClick={() => setSelectedProvider({
                               id: mission.provider_id!,
-                              name: `${mission.provider_profile.first_name} ${mission.provider_profile.last_name}`
+                              name: `${mission.provider_profile!.first_name} ${mission.provider_profile!.last_name}`
                             })}
                           >
                             {mission.provider_profile.first_name} {mission.provider_profile.last_name}
@@ -459,40 +379,22 @@ const AdminMissions = () => {
                       <TableCell>
                         <div>
                           <div className="font-medium">{mission.services?.name}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {mission.services?.category}
-                          </div>
+                          <div className="text-xs text-muted-foreground">{mission.services?.category}</div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div>
                           <div>{new Date(mission.booking_date).toLocaleDateString('fr-FR')}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {mission.start_time} - {mission.end_time}
-                          </div>
+                          <div className="text-xs text-muted-foreground">{mission.start_time} - {mission.end_time}</div>
                         </div>
                       </TableCell>
+                      <TableCell>{calculateDuration(mission.start_time, mission.end_time)}h</TableCell>
+                      <TableCell>{getStatusBadge(mission.status)}</TableCell>
+                      <TableCell className="font-medium">{Number(mission.total_price).toFixed(2)}€</TableCell>
+                      <TableCell className="text-muted-foreground">{(Number(mission.total_price) * 0.28).toFixed(2)}€</TableCell>
+                      <TableCell className="font-medium text-green-600">{(Number(mission.total_price) * 0.72).toFixed(2)}€</TableCell>
                       <TableCell>
-                        {calculateDuration(mission.start_time, mission.end_time)}h
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(mission.status)}
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {Number(mission.total_price).toFixed(2)}€
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {calculateCommission(Number(mission.total_price))}€
-                      </TableCell>
-                      <TableCell className="font-medium text-green-600">
-                        {calculateProviderPayment(Number(mission.total_price))}€
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSelectedMission(mission)}
-                        >
+                        <Button variant="outline" size="sm" onClick={() => setSelectedMission(mission)}>
                           <Eye className="h-4 w-4 mr-1" />
                           Détails
                         </Button>
@@ -506,16 +408,14 @@ const AdminMissions = () => {
         </CardContent>
       </Card>
 
-      {/* Mission Details Modal */}
       {selectedMission && (
         <MissionDetailsModal
           mission={selectedMission}
           onClose={() => setSelectedMission(null)}
-          onUpdate={loadMissions}
+          onUpdate={() => refetch()}
         />
       )}
 
-      {/* Provider Stats Modal */}
       {selectedProvider && (
         <ProviderStatsModal
           providerId={selectedProvider.id}

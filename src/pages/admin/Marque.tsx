@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,6 @@ import {
   Zap,
   Monitor,
   Smartphone,
-  FileText
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -75,7 +74,6 @@ const AdminMarque = () => {
       privacy_url: 'https://bikawo.fr/privacy'
     }
   });
-  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
   const { toast } = useToast();
@@ -178,33 +176,7 @@ const AdminMarque = () => {
     }
   };
 
-  if (loading || !settings) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Identité de Marque</h1>
-            <p className="text-muted-foreground">Personnalisez l'apparence de votre plateforme</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i}>
-              <CardHeader>
-                <div className="w-full h-4 bg-muted animate-pulse rounded" />
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="w-full h-3 bg-muted animate-pulse rounded" />
-                  <div className="w-3/4 h-3 bg-muted animate-pulse rounded" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="space-y-6">

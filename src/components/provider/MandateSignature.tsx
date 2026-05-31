@@ -5,8 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { FileSignature, CheckCircle, Download } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import SignatureCanvas from 'react-signature-canvas';
+import { SignaturePad, type SignaturePadHandle } from '@/components/ui/SignaturePad';
 
 interface MandateSignatureProps {
   providerId: string;
@@ -18,7 +17,7 @@ export const MandateSignature = ({ providerId, providerName, onSigned }: Mandate
   const [accepted, setAccepted] = useState(false);
   const [signing, setSigning] = useState(false);
   const [signed, setSigned] = useState(false);
-  const signatureRef = useRef<any>(null);
+  const signatureRef = useRef<SignaturePadHandle>(null);
 
   const mandateText = `
 MANDAT DE FACTURATION BIKAWO
@@ -164,12 +163,9 @@ Fait le ${new Date().toLocaleDateString('fr-FR')}
             </Button>
           </div>
           <div className="border-2 border-dashed rounded-lg overflow-hidden bg-white">
-            <SignatureCanvas
+            <SignaturePad
               ref={signatureRef}
-              canvasProps={{
-                className: 'w-full h-40',
-                style: { touchAction: 'none' }
-              }}
+              canvasProps={{ className: 'w-full h-40' }}
               backgroundColor="white"
             />
           </div>

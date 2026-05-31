@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Activity, Users, Calendar, MessageSquare, Bell, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,142 +15,108 @@ interface RealtimeEvent {
   status: 'success' | 'warning' | 'error' | 'info';
 }
 
+interface RealtimeData {
+  stats: { activeUsers: number; pendingBookings: number; unreadMessages: number; systemLoad: number; };
+  events: RealtimeEvent[];
+}
+
+async function fetchRealtimeData(): Promise<RealtimeData> {
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+  const [
+    { count: activeUsers },
+    { count: pendingBookings },
+    { count: unreadMessages },
+    { count: todayBookings },
+    { data: recentBookings },
+    { data: recentApplications },
+  ] = await Promise.all([
+    supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('last_login', thirtyDaysAgo),
+    supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+    supabase.from('internal_messages').select('id', { count: 'exact', head: true }).eq('is_read', false),
+    supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('booking_date', new Date().toISOString().split('T')[0]),
+    supabase.from('bookings').select('id, created_at, status, client_id, profiles!bookings_client_id_fkey(first_name, last_name)').order('created_at', { ascending: false }).limit(3),
+    supabase.from('job_applications').select('id, created_at, first_name, last_name, status').order('created_at', { ascending: false }).limit(2),
+  ]);
+
+  const events: RealtimeEvent[] = [];
+
+  recentBookings?.forEach((booking: any) => {
+    events.push({
+      id: booking.id,
+      type: 'booking',
+      title: booking.status === 'pending' ? 'Nouvelle réservation' : 'Réservation mise à jour',
+      description: booking.profiles ? `${booking.profiles.first_name || ''} ${booking.profiles.last_name || ''}`.trim() || 'Client' : 'Client',
+      timestamp: new Date(booking.created_at),
+      status: booking.status === 'pending' ? 'warning' : 'success',
+    });
+  });
+
+  recentApplications?.forEach((app) => {
+    events.push({
+      id: app.id,
+      type: 'registration',
+      title: 'Nouvelle candidature',
+      description: `${app.first_name} ${app.last_name} a postulé comme prestataire`,
+      timestamp: new Date(app.created_at),
+      status: app.status === 'pending' ? 'info' : 'success',
+    });
+  });
+
+  events.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+  return {
+    stats: {
+      activeUsers: activeUsers || 0,
+      pendingBookings: pendingBookings || 0,
+      unreadMessages: unreadMessages || 0,
+      systemLoad: Math.min(100, (todayBookings || 0) * 5),
+    },
+    events: events.slice(0, 5),
+  };
+}
+
+const getEventIcon = (type: RealtimeEvent['type']) => {
+  switch (type) {
+    case 'booking': return Calendar;
+    case 'message': return MessageSquare;
+    case 'registration': return Users;
+    case 'payment': return Activity;
+    default: return Bell;
+  }
+};
+
+const getStatusColor = (status: RealtimeEvent['status']) => {
+  switch (status) {
+    case 'success': return 'bg-green-500';
+    case 'warning': return 'bg-yellow-500';
+    case 'error': return 'bg-red-500';
+    case 'info': return 'bg-blue-500';
+    default: return 'bg-gray-500';
+  }
+};
+
+const formatTime = (date: Date): string => {
+  const diffInMinutes = Math.floor((Date.now() - date.getTime()) / (1000 * 60));
+  if (diffInMinutes < 1) return "à l'instant";
+  if (diffInMinutes < 60) return `il y a ${diffInMinutes}min`;
+  return `il y a ${Math.floor(diffInMinutes / 60)}h`;
+};
+
 const AdminRealtime = () => {
   const navigate = useNavigate();
-  const { data: adminCounts, refetch: refetchCounts } = useAdminCounts();
-  const [events, setEvents] = useState<RealtimeEvent[]>([]);
-  const [stats, setStats] = useState({
-    activeUsers: 0,
-    pendingBookings: 0,
-    unreadMessages: 0,
-    systemLoad: 0
+  const { refetch: refetchCounts } = useAdminCounts();
+
+  const { data, isLoading: loading, refetch } = useQuery<RealtimeData>({
+    queryKey: ['admin-realtime'],
+    queryFn: fetchRealtimeData,
   });
-  const [loading, setLoading] = useState(true);
 
-  // Charger les données réelles
-  const loadRealData = async () => {
-    setLoading(true);
-    try {
-      // Compter les utilisateurs actifs (inscrits ces 30 derniers jours)
-      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-      const { count: activeUsers } = await supabase
-        .from('profiles')
-        .select('id', { count: 'exact', head: true })
-        .gte('last_login', thirtyDaysAgo);
-
-      // Compter les réservations en attente
-      const { count: pendingBookings } = await supabase
-        .from('bookings')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'pending');
-
-      // Compter les messages non lus
-      const { count: unreadMessages } = await supabase
-        .from('internal_messages')
-        .select('id', { count: 'exact', head: true })
-        .eq('is_read', false);
-
-      // Calculer la charge système (basée sur les réservations aujourd'hui)
-      const today = new Date().toISOString().split('T')[0];
-      const { count: todayBookings } = await supabase
-        .from('bookings')
-        .select('id', { count: 'exact', head: true })
-        .eq('booking_date', today);
-
-      // Charge système = min(100, nombre de réservations * 5)
-      const systemLoad = Math.min(100, (todayBookings || 0) * 5);
-
-      setStats({
-        activeUsers: activeUsers || 0,
-        pendingBookings: pendingBookings || 0,
-        unreadMessages: unreadMessages || 0,
-        systemLoad
-      });
-
-      // Charger les événements récents
-      const recentEvents: RealtimeEvent[] = [];
-
-      // Dernières réservations
-      const { data: recentBookings } = await supabase
-        .from('bookings')
-        .select('id, created_at, status, client_id, profiles!bookings_client_id_fkey(first_name, last_name)')
-        .order('created_at', { ascending: false })
-        .limit(3);
-
-      recentBookings?.forEach((booking: any) => {
-        recentEvents.push({
-          id: booking.id,
-          type: 'booking',
-          title: booking.status === 'pending' ? 'Nouvelle réservation' : 'Réservation mise à jour',
-          description: booking.profiles ? `${booking.profiles.first_name || ''} ${booking.profiles.last_name || ''}`.trim() || 'Client' : 'Client',
-          timestamp: new Date(booking.created_at),
-          status: booking.status === 'pending' ? 'warning' : 'success'
-        });
-      });
-
-      // Dernières candidatures
-      const { data: recentApplications } = await supabase
-        .from('job_applications')
-        .select('id, created_at, first_name, last_name, status')
-        .order('created_at', { ascending: false })
-        .limit(2);
-
-      recentApplications?.forEach((app) => {
-        recentEvents.push({
-          id: app.id,
-          type: 'registration',
-          title: 'Nouvelle candidature',
-          description: `${app.first_name} ${app.last_name} a postulé comme prestataire`,
-          timestamp: new Date(app.created_at),
-          status: app.status === 'pending' ? 'info' : 'success'
-        });
-      });
-
-      // Trier par date
-      recentEvents.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-      setEvents(recentEvents.slice(0, 5));
-    } catch (error) {
-      console.error('Error loading realtime data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadRealData();
-  }, []);
-
-  const getEventIcon = (type: RealtimeEvent['type']) => {
-    switch (type) {
-      case 'booking': return Calendar;
-      case 'message': return MessageSquare;
-      case 'registration': return Users;
-      case 'payment': return Activity;
-      default: return Bell;
-    }
-  };
-
-  const getStatusColor = (status: RealtimeEvent['status']) => {
-    switch (status) {
-      case 'success': return 'bg-green-500';
-      case 'warning': return 'bg-yellow-500';
-      case 'error': return 'bg-red-500';
-      case 'info': return 'bg-blue-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
-  const formatTime = (date: Date): string => {
-    const now = new Date();
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
-    if (diffInMinutes < 1) return "à l'instant";
-    if (diffInMinutes < 60) return `il y a ${diffInMinutes}min`;
-    return `il y a ${Math.floor(diffInMinutes / 60)}h`;
-  };
+  const stats = data?.stats ?? { activeUsers: 0, pendingBookings: 0, unreadMessages: 0, systemLoad: 0 };
+  const events = data?.events ?? [];
 
   const refreshData = () => {
-    loadRealData();
+    refetch();
     refetchCounts();
   };
 
@@ -169,7 +134,7 @@ const AdminRealtime = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card 
+        <Card
           className="cursor-pointer hover:shadow-md transition-shadow"
           onClick={() => navigate('/admin/clients')}
         >
@@ -186,7 +151,7 @@ const AdminRealtime = () => {
           </CardContent>
         </Card>
 
-        <Card 
+        <Card
           className="cursor-pointer hover:shadow-md transition-shadow"
           onClick={() => navigate('/admin/missions')}
         >
@@ -203,7 +168,7 @@ const AdminRealtime = () => {
           </CardContent>
         </Card>
 
-        <Card 
+        <Card
           className="cursor-pointer hover:shadow-md transition-shadow"
           onClick={() => navigate('/admin/messages')}
         >
@@ -228,8 +193,8 @@ const AdminRealtime = () => {
           <CardContent>
             <div className="text-2xl font-bold">{loading ? '...' : `${stats.systemLoad}%`}</div>
             <div className="w-full bg-muted rounded-full h-2 mt-2">
-              <div 
-                className="bg-primary h-2 rounded-full transition-all duration-300" 
+              <div
+                className="bg-primary h-2 rounded-full transition-all duration-300"
                 style={{ width: `${stats.systemLoad}%` }}
               ></div>
             </div>

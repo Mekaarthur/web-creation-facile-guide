@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import Auth from './Auth';
+import Auth from '@/components/EnhancedAuth';
 import EnhancedClientDashboard from '@/components/EnhancedClientDashboard';
 import ModernInvoiceManagement from '@/components/ModernInvoiceManagement';
 import PaymentMethodsManager from '@/components/PaymentMethodsManager';

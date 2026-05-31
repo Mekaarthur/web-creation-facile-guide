@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,9 +16,24 @@ import { EMAIL_TEMPLATES, NOTIFICATION_TEMPLATES, COMPANY_CONFIG, type EmailTemp
 import { sanitizeEmailPreview } from '@/utils/emailPreview';
 
 export default function ConfigMessages() {
-  const [emailTemplates, setEmailTemplates] = useState(EMAIL_TEMPLATES);
-  const [notificationTemplates, setNotificationTemplates] = useState(NOTIFICATION_TEMPLATES);
-  const [companyConfig, setCompanyConfig] = useState(COMPANY_CONFIG);
+  const [emailTemplates, setEmailTemplates] = useState(() => {
+    try {
+      const saved = localStorage.getItem('bikawo_email_templates');
+      return saved ? JSON.parse(saved) : EMAIL_TEMPLATES;
+    } catch { return EMAIL_TEMPLATES; }
+  });
+  const [notificationTemplates, setNotificationTemplates] = useState(() => {
+    try {
+      const saved = localStorage.getItem('bikawo_notification_templates');
+      return saved ? JSON.parse(saved) : NOTIFICATION_TEMPLATES;
+    } catch { return NOTIFICATION_TEMPLATES; }
+  });
+  const [companyConfig, setCompanyConfig] = useState(() => {
+    try {
+      const saved = localStorage.getItem('bikawo_company_config');
+      return saved ? JSON.parse(saved) : COMPANY_CONFIG;
+    } catch { return COMPANY_CONFIG; }
+  });
   const [loading, setLoading] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
 
@@ -163,27 +178,6 @@ export default function ConfigMessages() {
     `;
     setPreviewHtml(sanitizeEmailPreview(html));
   };
-
-  // Charger la configuration sauvegardée
-  useEffect(() => {
-    try {
-      const savedEmailTemplates = localStorage.getItem('bikawo_email_templates');
-      const savedNotificationTemplates = localStorage.getItem('bikawo_notification_templates');
-      const savedCompanyConfig = localStorage.getItem('bikawo_company_config');
-
-      if (savedEmailTemplates) {
-        setEmailTemplates(JSON.parse(savedEmailTemplates));
-      }
-      if (savedNotificationTemplates) {
-        setNotificationTemplates(JSON.parse(savedNotificationTemplates));
-      }
-      if (savedCompanyConfig) {
-        setCompanyConfig(JSON.parse(savedCompanyConfig));
-      }
-    } catch (error) {
-      console.error('Error loading saved config:', error);
-    }
-  }, []);
 
   // Organiser les templates par catégorie
   const clientEmailTemplates = Object.entries(emailTemplates).filter(([key]) => key.startsWith('client_'));

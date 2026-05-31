@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,7 +41,6 @@ const ProfileUpdateForm = ({ userType = 'client' }: ProfileUpdateFormProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [profile, setProfile] = useState<ProfileData>({});
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
@@ -54,48 +54,23 @@ const ProfileUpdateForm = ({ userType = 'client' }: ProfileUpdateFormProps) => {
     rateLimitAction: 'update_profile'
   });
 
-  useEffect(() => {
-    if (user) {
-      loadProfile();
-    }
-  }, [user]);
-
-  const loadProfile = async () => {
-    try {
+  const { data: serverProfile, isLoading: loading } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', user?.id)
-        .maybeSingle();
+        .from('profiles').select('*').eq('user_id', user!.id).maybeSingle();
+      if (error && error.code !== 'PGRST116') throw error;
+      return (data ?? { first_name: '', last_name: '', email: user?.email || '', phone: '', address: '', avatar_url: '', user_type: userType }) as ProfileData;
+    },
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
 
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
-
-      if (data) {
-        setProfile(data);
-      } else {
-        // Créer un profil par défaut si il n'existe pas
-        setProfile({
-          first_name: '',
-          last_name: '',
-          email: user?.email || '',
-          phone: '',
-          address: '',
-          avatar_url: '',
-          user_type: userType,
-        });
-      }
-    } catch (error: any) {
-      toast({
-        title: "Erreur de chargement",
-        description: "Impossible de charger vos informations",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Populate form from server data on first load
+  useEffect(() => {
+    if (serverProfile) setProfile(serverProfile);
+  }, [serverProfile]);
 
   const handleInputChange = (field: string, value: string) => {
     setProfile(prev => ({

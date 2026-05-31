@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,107 +29,67 @@ interface RealtimeChatProps {
   onClose?: () => void;
 }
 
+async function fetchMessages(bookingId: string, userId: string): Promise<Message[]> {
+  const { data, error } = await supabase
+    .from('chat_messages')
+    .select('*')
+    .eq('booking_id', bookingId)
+    .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+    .order('created_at', { ascending: true });
+
+  if (error) throw error;
+
+  const messages = data || [];
+  const unreadIds = messages.filter(m => m.receiver_id === userId && !m.is_read).map(m => m.id);
+  if (unreadIds.length > 0) {
+    await supabase.from('chat_messages').update({ is_read: true }).in('id', unreadIds);
+  }
+
+  return messages;
+}
+
 export const RealtimeChat = ({ bookingId, otherUserId, otherUserName, onClose }: RealtimeChatProps) => {
   const { user } = useAuth();
-  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const qc = useQueryClient();
+
+  const MSGS_KEY = ['chat-messages', bookingId] as const;
+
+  const { data: messages = [], isLoading } = useQuery<Message[]>({
+    queryKey: MSGS_KEY,
+    queryFn: () => fetchMessages(bookingId, user!.id),
+    enabled: !!user && !!bookingId,
+  });
 
   useEffect(() => {
-    if (!user || !bookingId) return;
-
-    loadMessages();
-    const cleanup = setupRealtimeSubscription();
-
-    return () => {
-      cleanup?.();
-    };
-  }, [user, bookingId]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const loadMessages = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('chat_messages')
-        .select('*')
-        .eq('booking_id', bookingId)
-        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-        .order('created_at', { ascending: true });
-
-      if (error) throw error;
-      setMessages(data || []);
-      
-      // Mark unread messages as read
-      const unreadIds = (data || [])
-        .filter(m => m.receiver_id === user.id && !m.is_read)
-        .map(m => m.id);
-      
-      if (unreadIds.length > 0) {
-        await supabase
-          .from('chat_messages')
-          .update({ is_read: true })
-          .in('id', unreadIds);
-      }
-    } catch (error) {
-      console.error('Erreur chargement messages:', error);
-      toast.error('Erreur lors du chargement des messages');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const setupRealtimeSubscription = () => {
-    if (!user) return;
-
-    const channel = supabase
-      .channel(`chat-${bookingId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'chat_messages',
-          filter: `booking_id=eq.${bookingId}`
-        },
-        (payload) => {
-          const newMsg = payload.new as Message;
-          setMessages(prev => {
-            if (prev.some(m => m.id === newMsg.id)) return prev;
-            return [...prev, newMsg];
-          });
-          
-          // Mark as read if we're the receiver
-          if (newMsg.receiver_id === user.id) {
-            supabase
-              .from('chat_messages')
-              .update({ is_read: true })
-              .eq('id', newMsg.id);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  };
-
-  const scrollToBottom = () => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  };
+  }, [messages]);
+
+  useEffect(() => {
+    if (!user || !bookingId) return;
+    const channel = supabase
+      .channel(`chat-${bookingId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `booking_id=eq.${bookingId}` },
+        (payload) => {
+          const newMsg = payload.new as Message;
+          qc.setQueryData<Message[]>(MSGS_KEY, (prev = []) => {
+            if (prev.some(m => m.id === newMsg.id)) return prev;
+            return [...prev, newMsg];
+          });
+          if (newMsg.receiver_id === user.id) {
+            supabase.from('chat_messages').update({ is_read: true }).eq('id', newMsg.id);
+          }
+        })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, bookingId, qc]);
 
   const sendMessage = async () => {
     if (!user || !newMessage.trim()) return;
-
     setSending(true);
     try {
       const { error } = await supabase.from('chat_messages').insert({
@@ -139,25 +100,20 @@ export const RealtimeChat = ({ bookingId, otherUserId, otherUserName, onClose }:
         is_read: false,
         message_type: 'text'
       });
-
       if (error) throw error;
       setNewMessage('');
-    } catch (error) {
-      console.error('Erreur envoi message:', error);
-      toast.error('Erreur lors de l\'envoi du message');
+    } catch {
+      toast.error("Erreur lors de l'envoi du message");
     } finally {
       setSending(false);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card className="h-96 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -182,7 +138,7 @@ export const RealtimeChat = ({ bookingId, otherUserId, otherUserName, onClose }:
           </Button>
         )}
       </CardHeader>
-      
+
       <ScrollArea className="flex-1 p-4" ref={scrollRef}>
         <div className="space-y-3">
           {messages.length === 0 ? (
@@ -194,17 +150,8 @@ export const RealtimeChat = ({ bookingId, otherUserId, otherUserName, onClose }:
             messages.map((msg) => {
               const isOwn = msg.sender_id === user?.id;
               return (
-                <div
-                  key={msg.id}
-                  className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-[75%] rounded-lg px-3 py-2 ${
-                      isOwn
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted'
-                    }`}
-                  >
+                <div key={msg.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[75%] rounded-lg px-3 py-2 ${isOwn ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                     <p className="text-sm break-words">{msg.message}</p>
                     <p className={`text-xs mt-1 ${isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
                       {format(new Date(msg.created_at), 'HH:mm', { locale: fr })}
@@ -228,16 +175,8 @@ export const RealtimeChat = ({ bookingId, otherUserId, otherUserName, onClose }:
             maxLength={1000}
             className="flex-1"
           />
-          <Button
-            onClick={sendMessage}
-            disabled={!newMessage.trim() || sending}
-            size="icon"
-          >
-            {sending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
+          <Button onClick={sendMessage} disabled={!newMessage.trim() || sending} size="icon">
+            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </div>
       </div>

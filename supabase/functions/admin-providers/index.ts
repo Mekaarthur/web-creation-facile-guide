@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.3';
+import { sanitizeSearch } from '../_shared/sanitize.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -113,7 +114,7 @@ async function listProviders(supabase: any, { status = 'all', limit = 50, offset
     }
 
     if (searchTerm) {
-      query = query.or(`business_name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
+      query = query.or(`business_name.ilike.%${sanitizeSearch(searchTerm)}%,description.ilike.%${sanitizeSearch(searchTerm)}%`);
     }
 
     const { data: providers, error } = await query;

@@ -47,7 +47,7 @@ const Cart = ({ isOpen = false, onClose }: CartProps) => {
 
   // Charger le panier depuis localStorage
   useEffect(() => {
-    const savedCart = localStorage.getItem('bikawo-cart');
+    const savedCart = localStorage.getItem('bikawo-legacy-cart');
     if (savedCart) {
       try {
         setCartItems(JSON.parse(savedCart));
@@ -59,7 +59,7 @@ const Cart = ({ isOpen = false, onClose }: CartProps) => {
 
   // Sauvegarder le panier dans localStorage
   useEffect(() => {
-    localStorage.setItem('bikawo-cart', JSON.stringify(cartItems));
+    localStorage.setItem('bikawo-legacy-cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
   const updateQuantity = (id: string, newQuantity: number) => {
@@ -235,7 +235,7 @@ export const useCart = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const savedCart = localStorage.getItem('bikawo-cart');
+    const savedCart = localStorage.getItem('bikawo-legacy-cart');
     if (savedCart) {
       try {
         setCartItems(JSON.parse(savedCart));
@@ -264,11 +264,11 @@ export const useCart = () => {
             ? { ...existing, quantity: existing.quantity + 1 }
             : existing
         );
-        localStorage.setItem('bikawo-cart', JSON.stringify(updated));
+        localStorage.setItem('bikawo-legacy-cart', JSON.stringify(updated));
         return updated;
       } else {
         const updated = [...prev, newItem];
-        localStorage.setItem('bikawo-cart', JSON.stringify(updated));
+        localStorage.setItem('bikawo-legacy-cart', JSON.stringify(updated));
         return updated;
       }
     });

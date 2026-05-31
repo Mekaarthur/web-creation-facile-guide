@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,299 +34,199 @@ interface AvailableProvider {
   performanceScore: number;
 }
 
+const DEFAULT_STATS: AssignmentStats = {
+  pendingMissions: 0,
+  todayAssignments: 0,
+  activeProviders: 0,
+  successRate: "0%",
+};
+
+async function fetchAssignmentStats(): Promise<AssignmentStats> {
+  const { data, error } = await supabase.functions.invoke('admin-assignment', {
+    body: { action: 'get_stats' },
+  });
+  if (error) throw error;
+  if (data?.success) return data.data;
+  return DEFAULT_STATS;
+}
+
+async function fetchPendingMissions(): Promise<PendingMission[]> {
+  const { data, error } = await supabase.functions.invoke('admin-assignment', {
+    body: { action: 'get_pending_missions' },
+  });
+  if (error) throw error;
+  if (data?.success) return data.data;
+  return [];
+}
+
+async function fetchAvailableProviders(mission: PendingMission): Promise<AvailableProvider[]> {
+  const { data, error } = await supabase.functions.invoke('admin-assignment', {
+    body: {
+      action: 'get_available_providers',
+      serviceType: mission.service,
+      location: mission.location,
+    },
+  });
+  if (error) throw error;
+  if (data?.success) return data.data;
+  return [];
+}
+
 const AdminAssignment = () => {
+  const qc = useQueryClient();
   const [autoAssignEnabled, setAutoAssignEnabled] = useState(true);
   const [priorityMode, setPriorityMode] = useState("performance");
-  const [stats, setStats] = useState<AssignmentStats>({
-    pendingMissions: 0,
-    todayAssignments: 0,
-    activeProviders: 0,
-    successRate: "0%"
-  });
-  const [pendingMissions, setPendingMissions] = useState<PendingMission[]>([]);
-  const [availableProviders, setAvailableProviders] = useState<AvailableProvider[]>([]);
-  const [loading, setLoading] = useState({
-    stats: false,
-    missions: false,
-    toggle: false,
-    priority: false,
-    providers: false,
-    bulkAssign: false,
-    resetQueue: false
-  });
   const [selectedMission, setSelectedMission] = useState<PendingMission | null>(null);
+  const [toggleLoading, setToggleLoading] = useState(false);
+  const [priorityLoading, setPriorityLoading] = useState(false);
+  const [bulkAssignLoading, setBulkAssignLoading] = useState(false);
+  const [resetQueueLoading, setResetQueueLoading] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadInitialData();
-  }, []);
+  const { data: stats = DEFAULT_STATS, isLoading: statsLoading } = useQuery<AssignmentStats>({
+    queryKey: ['admin-assignment-stats'],
+    queryFn: fetchAssignmentStats,
+  });
 
-  const loadInitialData = async () => {
-    await Promise.all([
-      loadStats(),
-      loadPendingMissions()
-    ]);
-  };
+  const { data: pendingMissions = [], isLoading: missionsLoading, refetch: refetchMissions } = useQuery<PendingMission[]>({
+    queryKey: ['admin-assignment-pending'],
+    queryFn: fetchPendingMissions,
+  });
 
-  const loadStats = async () => {
-    setLoading(prev => ({ ...prev, stats: true }));
-    try {
-      const { data, error } = await supabase.functions.invoke('admin-assignment', {
-        body: { action: 'get_stats' }
-      });
+  const { data: availableProviders = [], isFetching: providersFetching } = useQuery<AvailableProvider[]>({
+    queryKey: ['admin-assignment-providers', selectedMission?.id],
+    queryFn: () => fetchAvailableProviders(selectedMission!),
+    enabled: !!selectedMission,
+  });
 
-      if (error) throw error;
-
-      if (data?.success) {
-        setStats(data.data);
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des stats:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les statistiques",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(prev => ({ ...prev, stats: false }));
-    }
-  };
-
-  const loadPendingMissions = async () => {
-    setLoading(prev => ({ ...prev, missions: true }));
-    try {
-      const { data, error } = await supabase.functions.invoke('admin-assignment', {
-        body: { action: 'get_pending_missions' }
-      });
-
-      if (error) throw error;
-
-      if (data?.success) {
-        setPendingMissions(data.data);
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des missions:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les missions en attente",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(prev => ({ ...prev, missions: false }));
-    }
+  const refreshData = () => {
+    qc.invalidateQueries({ queryKey: ['admin-assignment-stats'] });
+    qc.invalidateQueries({ queryKey: ['admin-assignment-pending'] });
   };
 
   const handleToggleAutoAssign = async () => {
     const newValue = !autoAssignEnabled;
-    setLoading(prev => ({ ...prev, toggle: true }));
-    
+    setToggleLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
       const { data, error } = await supabase.functions.invoke('admin-assignment', {
-        body: { 
-          action: 'toggle_auto_assign', 
-          enabled: newValue,
-          adminUserId: user?.id
-        }
+        body: { action: 'toggle_auto_assign', enabled: newValue, adminUserId: user?.id },
       });
-
       if (error) throw error;
-
       if (data?.success) {
         setAutoAssignEnabled(newValue);
         toast({
           title: newValue ? "Assignation automatique activée" : "Assignation automatique désactivée",
-          description: data.message
+          description: data.message,
         });
       }
-    } catch (error) {
-      console.error('Erreur lors du toggle:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de modifier l'assignation automatique",
-        variant: "destructive"
-      });
+    } catch {
+      toast({ title: "Erreur", description: "Impossible de modifier l'assignation automatique", variant: "destructive" });
     } finally {
-      setLoading(prev => ({ ...prev, toggle: false }));
+      setToggleLoading(false);
     }
   };
 
   const handlePriorityModeChange = async (mode: string) => {
-    setLoading(prev => ({ ...prev, priority: true }));
-    
+    setPriorityLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
       const { data, error } = await supabase.functions.invoke('admin-assignment', {
-        body: { 
-          action: 'update_priority_mode', 
-          mode,
-          adminUserId: user?.id
-        }
+        body: { action: 'update_priority_mode', mode, adminUserId: user?.id },
       });
-
       if (error) throw error;
-
       if (data?.success) {
         setPriorityMode(mode);
-        toast({
-          title: "Mode de priorité mis à jour",
-          description: data.message
-        });
+        toast({ title: "Mode de priorité mis à jour", description: data.message });
       }
-    } catch (error) {
-      console.error('Erreur lors du changement de mode:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de modifier le mode de priorité",
-        variant: "destructive"
-      });
+    } catch {
+      toast({ title: "Erreur", description: "Impossible de modifier le mode de priorité", variant: "destructive" });
     } finally {
-      setLoading(prev => ({ ...prev, priority: false }));
+      setPriorityLoading(false);
     }
   };
 
-  const handleViewMission = async (mission: PendingMission) => {
+  const handleViewMission = (mission: PendingMission) => {
     setSelectedMission(mission);
-    setLoading(prev => ({ ...prev, providers: true }));
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('admin-assignment', {
-        body: { 
-          action: 'get_available_providers',
-          serviceType: mission.service,
-          location: mission.location
-        }
-      });
-
-      if (error) throw error;
-
-      if (data?.success) {
-        setAvailableProviders(data.data);
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des prestataires:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les prestataires disponibles",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(prev => ({ ...prev, providers: false }));
-    }
   };
 
   const handleAssignMission = async (providerId: string) => {
     if (!selectedMission) return;
-    
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
       const { data, error } = await supabase.functions.invoke('admin-assignment', {
-        body: { 
+        body: {
           action: 'assign_mission_manually',
           missionId: selectedMission.id,
           providerId,
-          adminUserId: user?.id
-        }
+          adminUserId: user?.id,
+        },
       });
-
-      if (error) {
-        console.error('Erreur Supabase:', error);
-        throw new Error('Erreur de communication avec le serveur');
-      }
-
+      if (error) throw new Error('Erreur de communication avec le serveur');
       if (data?.success) {
-        toast({
-          title: "Mission assignée",
-          description: data.message || "Mission assignée avec succès"
-        });
+        toast({ title: "Mission assignée", description: data.message || "Mission assignée avec succès" });
         setSelectedMission(null);
-        setAvailableProviders([]);
-        loadInitialData(); // Recharger les données
+        refreshData();
       } else {
-        throw new Error(data?.error || 'Erreur lors de l\'assignation');
+        throw new Error(data?.error || "Erreur lors de l'assignation");
       }
     } catch (error) {
-      console.error('Erreur lors de l\'assignation:', error);
       toast({
         title: "Erreur",
         description: error instanceof Error ? error.message : "Impossible d'assigner la mission",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
 
   const handleBulkAssign = async () => {
     if (pendingMissions.length === 0) return;
-    
-    setLoading(prev => ({ ...prev, bulkAssign: true }));
-    
+    setBulkAssignLoading(true);
     try {
-      const missionIds = pendingMissions.slice(0, 5).map(m => m.id); // Max 5 missions
-      
-      const { data, error } = await supabase.rpc('bulk_assign_missions', {
-        p_mission_ids: missionIds
-      });
-
+      const missionIds = pendingMissions.slice(0, 5).map(m => m.id);
+      const { data, error } = await supabase.rpc('bulk_assign_missions', { p_mission_ids: missionIds });
       if (error) throw error;
-
       const successCount = data?.filter((r: any) => r.success).length || 0;
       const failCount = data?.filter((r: any) => !r.success).length || 0;
-
       if (successCount > 0) {
         toast({
           title: "Assignation en lot réussie",
-          description: `${successCount} missions assignées avec succès${failCount > 0 ? `, ${failCount} échecs` : ''}`
+          description: `${successCount} missions assignées avec succès${failCount > 0 ? `, ${failCount} échecs` : ''}`,
         });
       } else {
-        throw new Error('Aucune mission n\'a pu être assignée');
+        throw new Error("Aucune mission n'a pu être assignée");
       }
-
-      loadInitialData(); // Recharger les données
+      refreshData();
     } catch (error) {
-      console.error('Erreur lors de l\'assignation en lot:', error);
       toast({
         title: "Erreur",
         description: error instanceof Error ? error.message : "Impossible d'effectuer l'assignation en lot",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
-      setLoading(prev => ({ ...prev, bulkAssign: false }));
+      setBulkAssignLoading(false);
     }
   };
 
   const handleResetQueue = async () => {
-    setLoading(prev => ({ ...prev, resetQueue: true }));
-    
+    setResetQueueLoading(true);
     try {
       const { data, error } = await supabase.rpc('reset_mission_queue');
-
       if (error) throw error;
-
-      toast({
-        title: "Queue réinitialisée",
-        description: `${data || 0} missions réinitialisées avec succès`
-      });
-      loadInitialData(); // Recharger les données
-    } catch (error) {
-      console.error('Erreur lors de la réinitialisation:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de réinitialiser la queue",
-        variant: "destructive"
-      });
+      toast({ title: "Queue réinitialisée", description: `${data || 0} missions réinitialisées avec succès` });
+      refreshData();
+    } catch {
+      toast({ title: "Erreur", description: "Impossible de réinitialiser la queue", variant: "destructive" });
     } finally {
-      setLoading(prev => ({ ...prev, resetQueue: false }));
+      setResetQueueLoading(false);
     }
   };
 
   const assignmentStats = [
-    { label: "Missions en attente", value: loading.stats ? "..." : stats.pendingMissions, icon: Clock, color: "text-orange-600" },
-    { label: "Assignées aujourd'hui", value: loading.stats ? "..." : stats.todayAssignments, icon: Target, color: "text-green-600" },
-    { label: "Prestataires actifs", value: loading.stats ? "..." : stats.activeProviders, icon: Users, color: "text-blue-600" },
-    { label: "Taux de succès", value: loading.stats ? "..." : stats.successRate, icon: BarChart3, color: "text-purple-600" }
+    { label: "Missions en attente", value: statsLoading ? "..." : stats.pendingMissions, icon: Clock, color: "text-orange-600" },
+    { label: "Assignées aujourd'hui", value: statsLoading ? "..." : stats.todayAssignments, icon: Target, color: "text-green-600" },
+    { label: "Prestataires actifs", value: statsLoading ? "..." : stats.activeProviders, icon: Users, color: "text-blue-600" },
+    { label: "Taux de succès", value: statsLoading ? "..." : stats.successRate, icon: BarChart3, color: "text-purple-600" },
   ];
 
   return (
@@ -340,7 +241,6 @@ const AdminAssignment = () => {
         </Badge>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {assignmentStats.map((stat, index) => (
           <Card key={index}>
@@ -358,7 +258,6 @@ const AdminAssignment = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Configuration */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
@@ -381,7 +280,7 @@ const AdminAssignment = () => {
                 id="auto-assign"
                 checked={autoAssignEnabled}
                 onCheckedChange={handleToggleAutoAssign}
-                disabled={loading.toggle}
+                disabled={toggleLoading}
                 className="flex-shrink-0"
               />
             </div>
@@ -397,7 +296,7 @@ const AdminAssignment = () => {
                     value="performance"
                     checked={priorityMode === "performance"}
                     onChange={(e) => handlePriorityModeChange(e.target.value)}
-                    disabled={loading.priority}
+                    disabled={priorityLoading}
                   />
                   <Label htmlFor="performance">Performance (rating + taux d'acceptation)</Label>
                 </div>
@@ -409,7 +308,7 @@ const AdminAssignment = () => {
                     value="rotation"
                     checked={priorityMode === "rotation"}
                     onChange={(e) => handlePriorityModeChange(e.target.value)}
-                    disabled={loading.priority}
+                    disabled={priorityLoading}
                   />
                   <Label htmlFor="rotation">Rotation équitable</Label>
                 </div>
@@ -421,7 +320,7 @@ const AdminAssignment = () => {
                     value="proximity"
                     checked={priorityMode === "proximity"}
                     onChange={(e) => handlePriorityModeChange(e.target.value)}
-                    disabled={loading.priority}
+                    disabled={priorityLoading}
                   />
                   <Label htmlFor="proximity">Proximité géographique</Label>
                 </div>
@@ -430,7 +329,6 @@ const AdminAssignment = () => {
           </CardContent>
         </Card>
 
-        {/* Missions en attente */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
@@ -443,7 +341,7 @@ const AdminAssignment = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {loading.missions ? (
+              {missionsLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin mr-2" />
                   <span>Chargement des missions...</span>
@@ -474,9 +372,9 @@ const AdminAssignment = () => {
                   Aucune mission en attente
                 </div>
               )}
-              
-              <Button className="w-full" variant="outline" onClick={loadPendingMissions} disabled={loading.missions}>
-                {loading.missions ? (
+
+              <Button className="w-full" variant="outline" onClick={() => refetchMissions()} disabled={missionsLoading}>
+                {missionsLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Actualisation...
@@ -485,16 +383,16 @@ const AdminAssignment = () => {
                   "Actualiser les missions"
                 )}
               </Button>
-              
+
               {pendingMissions.length > 0 && (
                 <div className="flex flex-col sm:flex-row gap-2 mt-2">
-                  <Button 
-                    className="flex-1 w-full" 
-                    onClick={handleBulkAssign} 
-                    disabled={loading.bulkAssign}
+                  <Button
+                    className="flex-1 w-full"
+                    onClick={handleBulkAssign}
+                    disabled={bulkAssignLoading}
                     size="sm"
                   >
-                    {loading.bulkAssign ? (
+                    {bulkAssignLoading ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         Assignation...
@@ -506,14 +404,14 @@ const AdminAssignment = () => {
                       </>
                     )}
                   </Button>
-                  
-                  <Button 
-                    variant="outline" 
-                    onClick={handleResetQueue} 
-                    disabled={loading.resetQueue}
+
+                  <Button
+                    variant="outline"
+                    onClick={handleResetQueue}
+                    disabled={resetQueueLoading}
                     size="sm"
                   >
-                    {loading.resetQueue ? (
+                    {resetQueueLoading ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         Reset...
@@ -529,7 +427,6 @@ const AdminAssignment = () => {
         </Card>
       </div>
 
-      {/* Modal pour l'assignation de prestataires */}
       {selectedMission && (
         <Card className="mt-6">
           <CardHeader>
@@ -539,7 +436,7 @@ const AdminAssignment = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {loading.providers ? (
+            {providersFetching ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-6 w-6 animate-spin mr-2" />
                 <span>Recherche des prestataires...</span>

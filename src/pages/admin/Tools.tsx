@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,12 +7,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { 
-  Server, 
-  Database, 
-  Shield, 
-  Trash2, 
-  Download, 
+import {
+  Server,
+  Database,
+  Shield,
+  Trash2,
+  Download,
   Mail,
   Activity,
   AlertTriangle,
@@ -39,174 +40,129 @@ interface DatabaseStats {
   growth_stats: Record<string, number>;
 }
 
+const HEALTH_KEY = ['admin-system-health'] as const;
+const DB_STATS_KEY = ['admin-database-stats'] as const;
+
+async function fetchSystemHealth(): Promise<SystemHealth> {
+  const { data, error } = await supabase.functions.invoke('admin-system', {
+    body: { action: 'get_system_health' },
+  });
+  if (error) throw error;
+  return data;
+}
+
+async function fetchDatabaseStats(): Promise<DatabaseStats> {
+  const { data, error } = await supabase.functions.invoke('admin-system', {
+    body: { action: 'get_database_stats' },
+  });
+  if (error) throw error;
+  return data;
+}
+
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case 'healthy':
+    case 'good':
+      return <CheckCircle className="h-4 w-4 text-green-500" />;
+    case 'warning':
+      return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+    case 'error':
+    case 'poor':
+      return <XCircle className="h-4 w-4 text-red-500" />;
+    default:
+      return <Clock className="h-4 w-4 text-gray-500" />;
+  }
+};
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'healthy':
+    case 'good':
+      return 'text-green-600';
+    case 'warning':
+      return 'text-yellow-600';
+    case 'error':
+    case 'poor':
+      return 'text-red-600';
+    default:
+      return 'text-gray-600';
+  }
+};
+
 const AdminTools = () => {
-  const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null);
-  const [databaseStats, setDatabaseStats] = useState<DatabaseStats | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const qc = useQueryClient();
   const [cleanupType, setCleanupType] = useState('expired_carts');
   const [testEmail, setTestEmail] = useState('');
+  const [diagLoading, setDiagLoading] = useState(false);
   const [diagnosticsResult, setDiagnosticsResult] = useState<any>(null);
-  const { toast } = useToast();
 
-  const fetchSystemHealth = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('admin-system', {
-        body: { action: 'get_system_health' }
-      });
-      
-      if (error) throw error;
-      setSystemHealth(data);
-    } catch (error) {
-      console.error('Error fetching system health:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de récupérer l'état du système",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: systemHealth, isFetching: healthFetching, refetch: refetchHealth } = useQuery<SystemHealth>({
+    queryKey: HEALTH_KEY,
+    queryFn: fetchSystemHealth,
+  });
 
-  const fetchDatabaseStats = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('admin-system', {
-        body: { action: 'get_database_stats' }
-      });
-      
-      if (error) throw error;
-      setDatabaseStats(data);
-    } catch (error) {
-      console.error('Error fetching database stats:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de récupérer les statistiques de la base",
-        variant: "destructive",
-      });
-    }
+  const { data: databaseStats, isFetching: dbFetching, refetch: refetchDb } = useQuery<DatabaseStats>({
+    queryKey: DB_STATS_KEY,
+    queryFn: fetchDatabaseStats,
+  });
+
+  const refreshAll = () => {
+    refetchHealth();
+    refetchDb();
   };
 
   const runCleanup = async () => {
     if (!confirm(`Êtes-vous sûr de vouloir nettoyer : ${cleanupType} ?`)) return;
-    
     try {
-      const { data, error } = await supabase.rpc('cleanup_data', {
-        cleanup_type: cleanupType
-      });
-      
+      const { data, error } = await supabase.rpc('cleanup_data', { cleanup_type: cleanupType });
       if (error) throw error;
-      
-      toast({
-        title: "Nettoyage terminé",
-        description: `${data} éléments supprimés`,
-      });
-      
-      fetchDatabaseStats(); // Refresh stats
+      toast({ title: "Nettoyage terminé", description: `${data} éléments supprimés` });
+      qc.invalidateQueries({ queryKey: DB_STATS_KEY });
     } catch (error) {
-      console.error('Error running cleanup:', error);
-      toast({
-        title: "Erreur de nettoyage",
-        description: "Impossible d'effectuer le nettoyage",
-        variant: "destructive",
-      });
+      toast({ title: "Erreur de nettoyage", description: "Impossible d'effectuer le nettoyage", variant: "destructive" });
     }
   };
 
   const sendTestEmail = async () => {
     if (!testEmail) {
-      toast({
-        title: "Email requis",
-        description: "Veuillez saisir un email de test",
-        variant: "destructive",
-      });
+      toast({ title: "Email requis", description: "Veuillez saisir un email de test", variant: "destructive" });
       return;
     }
-
     try {
-      const { data, error } = await supabase.functions.invoke('admin-tools', {
-        body: { 
+      const { error } = await supabase.functions.invoke('admin-tools', {
+        body: {
           action: 'send_test_email',
           email: testEmail,
           testType: 'basic',
-          adminUserId: (await supabase.auth.getUser()).data.user?.id
-        }
+          adminUserId: (await supabase.auth.getUser()).data.user?.id,
+        },
       });
-      
       if (error) throw error;
-      
-      toast({
-        title: "Email envoyé",
-        description: `Email de test envoyé à ${testEmail}`,
-      });
+      toast({ title: "Email envoyé", description: `Email de test envoyé à ${testEmail}` });
     } catch (error) {
-      console.error('Error sending test email:', error);
-      toast({
-        title: "Erreur d'envoi",
-        description: "Impossible d'envoyer l'email de test",
-        variant: "destructive",
-      });
+      toast({ title: "Erreur d'envoi", description: "Impossible d'envoyer l'email de test", variant: "destructive" });
     }
   };
 
   const runDiagnostics = async () => {
-    setLoading(true);
+    setDiagLoading(true);
     try {
       const { data, error } = await supabase.rpc('run_system_diagnostics');
-      
       if (error) throw error;
       setDiagnosticsResult(data);
-      
       toast({
         title: "Diagnostics terminés",
         description: `Taille DB: ${(data as any).database_size}, Statut: ${(data as any).health_status}`,
       });
     } catch (error) {
-      console.error('Error running diagnostics:', error);
-      toast({
-        title: "Erreur de diagnostic",
-        description: "Impossible d'exécuter les diagnostics",
-        variant: "destructive",
-      });
+      toast({ title: "Erreur de diagnostic", description: "Impossible d'exécuter les diagnostics", variant: "destructive" });
     } finally {
-      setLoading(false);
+      setDiagLoading(false);
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'healthy':
-      case 'good':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'warning':
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
-      case 'error':
-      case 'poor':
-        return <XCircle className="h-4 w-4 text-red-500" />;
-      default:
-        return <Clock className="h-4 w-4 text-gray-500" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'healthy':
-      case 'good':
-        return 'text-green-600';
-      case 'warning':
-        return 'text-yellow-600';
-      case 'error':
-      case 'poor':
-        return 'text-red-600';
-      default:
-        return 'text-gray-600';
-    }
-  };
-
-  useEffect(() => {
-    fetchSystemHealth();
-    fetchDatabaseStats();
-  }, []);
+  const loading = healthFetching || dbFetching;
 
   return (
     <div className="space-y-6">
@@ -215,7 +171,7 @@ const AdminTools = () => {
           <h1 className="text-3xl font-bold">Gestion Avancée</h1>
           <p className="text-muted-foreground">Outils système et diagnostics avancés</p>
         </div>
-        <Button onClick={() => { fetchSystemHealth(); fetchDatabaseStats(); }} disabled={loading}>
+        <Button onClick={refreshAll} disabled={loading}>
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
           Actualiser
         </Button>
@@ -250,7 +206,6 @@ const AdminTools = () => {
                       Statut global : {systemHealth.overall_status}
                     </span>
                   </div>
-                  
                   <div className="grid gap-4">
                     {systemHealth.checks.map((check, index) => (
                       <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
@@ -304,7 +259,6 @@ const AdminTools = () => {
                       ))}
                     </div>
                   </div>
-
                   <div>
                     <h4 className="font-semibold mb-3">Croissance (30 derniers jours)</h4>
                     <div className="grid grid-cols-3 gap-4">
@@ -353,7 +307,6 @@ const AdminTools = () => {
                   Nettoyer
                 </Button>
               </div>
-              
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
@@ -373,7 +326,7 @@ const AdminTools = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button onClick={runDiagnostics} disabled={loading}>
+              <Button onClick={runDiagnostics} disabled={diagLoading}>
                 <Activity className="h-4 w-4 mr-2" />
                 Exécuter les diagnostics
               </Button>
@@ -391,7 +344,6 @@ const AdminTools = () => {
                       Taille DB: {diagnosticsResult.database_size}
                     </p>
                   </div>
-
                   <div className="space-y-2">
                     <h4 className="font-semibold">Métriques de performance</h4>
                     <div className="grid grid-cols-2 gap-3">
@@ -434,7 +386,6 @@ const AdminTools = () => {
                   </Button>
                 </div>
               </div>
-
               <div>
                 <h4 className="font-semibold mb-3">Sauvegarde Système</h4>
                 <Button variant="outline" disabled>

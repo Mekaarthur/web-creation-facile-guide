@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -37,12 +38,26 @@ const activationSchema = z.object({
     }, "Vous devez avoir au moins 18 ans"),
 });
 
+interface AvanceStatus {
+  avance_immediate_active: boolean | null;
+  avance_immediate_pending: boolean | null;
+}
+
+async function fetchAvanceStatus(userId: string): Promise<AvanceStatus | null> {
+  const { data } = await supabase
+    .from('profiles')
+    .select('avance_immediate_active, avance_immediate_pending')
+    .eq('user_id', userId)
+    .single();
+  return data;
+}
+
 export const AvanceImmediateActivation = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [status, setStatus] = useState<'idle' | 'active' | 'pending'>('idle');
   const [formData, setFormData] = useState({
     numeroFiscal: '',
     iban: '',
@@ -50,30 +65,21 @@ export const AvanceImmediateActivation = () => {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    if (user) {
-      loadStatus();
-    }
-  }, [user]);
+  const AVANCE_KEY = ['avance-immediate-status', user?.id] as const;
 
-  const loadStatus = async () => {
-    if (!user) return;
-    const { data } = await supabase
-      .from('profiles')
-      .select('avance_immediate_active, avance_immediate_pending')
-      .eq('user_id', user.id)
-      .single();
+  const { data: profileStatus } = useQuery<AvanceStatus | null>({
+    queryKey: AVANCE_KEY,
+    queryFn: () => fetchAvanceStatus(user!.id),
+    enabled: !!user,
+  });
 
-    if (data?.avance_immediate_active) {
-      setStatus('active');
-    } else if (data?.avance_immediate_pending) {
-      setStatus('pending');
-    }
-  };
+  const status = profileStatus?.avance_immediate_active ? 'active'
+    : profileStatus?.avance_immediate_pending ? 'pending'
+    : 'idle';
 
   const handleSubmit = async () => {
     setErrors({});
-    
+
     const parsed = activationSchema.safeParse(formData);
     if (!parsed.success) {
       const fieldErrors: Record<string, string> = {};
@@ -87,7 +93,6 @@ export const AvanceImmediateActivation = () => {
     setIsSubmitting(true);
 
     try {
-      // Try calling the edge function
       const { data, error } = await supabase.functions.invoke('urssaf-register-client', {
         body: {
           numeroFiscal: parsed.data.numeroFiscal,
@@ -97,13 +102,12 @@ export const AvanceImmediateActivation = () => {
       });
 
       if (error || data?.simulation) {
-        // API not yet available - mark as pending only, do NOT store sensitive data
         await supabase
           .from('profiles')
           .update({ avance_immediate_pending: true })
           .eq('id', user!.id);
 
-        setStatus('pending');
+        qc.setQueryData<AvanceStatus>(AVANCE_KEY, { avance_immediate_active: false, avance_immediate_pending: true });
         setOpen(false);
 
         toast({
@@ -111,10 +115,9 @@ export const AvanceImmediateActivation = () => {
           description: "Pour activer l'avance immédiate, rendez-vous sur particulier.urssaf.fr avec votre numéro fiscal et votre IBAN. L'activation automatique sera bientôt disponible.",
         });
       } else if (data?.success) {
-        // API available and registration succeeded
-        setStatus('active');
+        qc.setQueryData<AvanceStatus>(AVANCE_KEY, { avance_immediate_active: true, avance_immediate_pending: false });
         setOpen(false);
-        
+
         toast({
           title: "Avance immédiate activée ! ✅",
           description: "Vous bénéficierez automatiquement de -50% sur vos prochaines prestations.",
@@ -127,7 +130,7 @@ export const AvanceImmediateActivation = () => {
         .update({ avance_immediate_pending: true })
         .eq('id', user!.id);
 
-      setStatus('pending');
+      qc.setQueryData<AvanceStatus>(AVANCE_KEY, { avance_immediate_active: false, avance_immediate_pending: true });
       setOpen(false);
 
       toast({
@@ -163,9 +166,9 @@ export const AvanceImmediateActivation = () => {
             <p className="font-semibold text-amber-800">Activation en cours</p>
             <p className="text-sm text-amber-600">
               Vos informations sont enregistrées. Finalisez l'activation sur{' '}
-              <a 
-                href="https://particulier.urssaf.fr/sap" 
-                target="_blank" 
+              <a
+                href="https://particulier.urssaf.fr/sap"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="underline font-medium inline-flex items-center gap-1"
               >
@@ -205,7 +208,7 @@ export const AvanceImmediateActivation = () => {
                 Renseignez vos informations fiscales pour bénéficier de -50% instantanément sur vos prestations.
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-4 py-2">
               <div className="space-y-2">
                 <Label htmlFor="numeroFiscal">Numéro fiscal (13 chiffres)</Label>
@@ -258,9 +261,9 @@ export const AvanceImmediateActivation = () => {
                 </p>
               </div>
 
-              <Button 
-                onClick={handleSubmit} 
-                disabled={isSubmitting} 
+              <Button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
                 className="w-full"
               >
                 {isSubmitting ? 'Activation en cours...' : "Activer l'avance immédiate"}

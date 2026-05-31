@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -21,44 +22,43 @@ interface FavoriteRequest {
   } | null;
 }
 
+interface FavoritesData {
+  providerId: string;
+  pending: FavoriteRequest[];
+}
+
+async function fetchFavoriteRequests(userId: string): Promise<FavoritesData | null> {
+  const { data: providerRow } = await supabase
+    .from('providers')
+    .select('id')
+    .eq('user_id', userId)
+    .single();
+  if (!providerRow) return null;
+
+  const { data, error } = await supabase.functions.invoke('manage-favorites', {
+    body: { action: 'list_pending', providerId: providerRow.id },
+  });
+  if (error) throw error;
+
+  return { providerId: providerRow.id, pending: data?.pending || [] };
+}
+
 export const ProviderFavoriteRequests = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [pending, setPending] = useState<FavoriteRequest[]>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
   const [responding, setResponding] = useState<string | null>(null);
-  const [providerId, setProviderId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (user) loadPending();
-  }, [user]);
+  const FAVORITES_KEY = ['provider-favorite-requests', user?.id] as const;
 
-  const loadPending = async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      const { data: providerRow } = await supabase
-        .from('providers')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
+  const { data, isLoading } = useQuery<FavoritesData | null>({
+    queryKey: FAVORITES_KEY,
+    queryFn: () => fetchFavoriteRequests(user!.id),
+    enabled: !!user,
+  });
 
-      if (!providerRow) { setLoading(false); return; }
-      setProviderId(providerRow.id);
-
-      const { data, error } = await supabase.functions.invoke('manage-favorites', {
-        body: { action: 'list_pending', providerId: providerRow.id },
-      });
-
-      if (error) throw error;
-      setPending(data?.pending || []);
-    } catch (e: any) {
-      console.error(e);
-      toast({ title: 'Erreur', description: 'Impossible de charger les demandes', variant: 'destructive' });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const providerId = data?.providerId ?? null;
+  const pending = data?.pending ?? [];
 
   const respond = async (request: FavoriteRequest, response: 'accepted' | 'declined') => {
     if (!providerId) return;
@@ -68,8 +68,7 @@ export const ProviderFavoriteRequests = () => {
         body: { action: 'respond', providerId, response },
       });
       if (error) throw error;
-
-      setPending(prev => prev.filter(p => p.id !== request.id));
+      qc.invalidateQueries({ queryKey: FAVORITES_KEY });
       toast({
         title: response === 'accepted' ? 'Binôme accepté !' : 'Demande déclinée',
         description: response === 'accepted'
@@ -83,7 +82,7 @@ export const ProviderFavoriteRequests = () => {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card>
         <CardContent className="py-8 flex items-center justify-center text-muted-foreground">

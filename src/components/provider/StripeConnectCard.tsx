@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { CreditCard, CheckCircle, Loader2, ExternalLink, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
+import { useState } from "react";
 
 interface StripeStatus {
   connected: boolean;
@@ -25,71 +27,64 @@ interface StripeOnboardingData {
   accountId?: string;
 }
 
+interface ProviderPayoutData {
+  payout_frequency: string | null;
+}
+
+async function invokeStripeAction<T>(action: "check_status" | "create_account"): Promise<T> {
+  const { data, error } = await supabase.functions.invoke("stripe-connect-onboarding", {
+    body: { action },
+  });
+  if (error) throw error;
+  const response = (data ?? null) as StripeConnectResponse<T> | null;
+  if (response?.ok === false) throw new Error(response.error || "Erreur Stripe Connect");
+  if (response?.ok === true) return response.data as T;
+  return data as T;
+}
+
+async function fetchStripeStatus(): Promise<StripeStatus> {
+  return invokeStripeAction<StripeStatus>("check_status");
+}
+
+async function fetchPayoutFrequency(): Promise<ProviderPayoutData | null> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+  const { data } = await supabase
+    .from("providers")
+    .select("payout_frequency")
+    .eq("user_id", user.id)
+    .single();
+  return data;
+}
+
+const STATUS_KEY = ["stripe-connect-status"] as const;
+const PAYOUT_KEY = ["provider-payout-frequency"] as const;
+
 export const StripeConnectCard = () => {
-  const [status, setStatus] = useState<StripeStatus | null>(null);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
   const [connecting, setConnecting] = useState(false);
-  const [payoutFrequency, setPayoutFrequency] = useState<string>("weekly");
   const [savingFrequency, setSavingFrequency] = useState(false);
 
-  useEffect(() => {
-    checkStatus();
-    loadPayoutFrequency();
-  }, []);
+  const { data: status, isLoading } = useQuery<StripeStatus>({
+    queryKey: STATUS_KEY,
+    queryFn: fetchStripeStatus,
+    retry: false,
+  });
+
+  const { data: payoutData } = useQuery<ProviderPayoutData | null>({
+    queryKey: PAYOUT_KEY,
+    queryFn: fetchPayoutFrequency,
+  });
+
+  const payoutFrequency = payoutData?.payout_frequency ?? "weekly";
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("stripe") === "success") {
-      checkStatus();
+      qc.invalidateQueries({ queryKey: STATUS_KEY });
       window.history.replaceState({}, "", window.location.pathname);
     }
-  }, []);
-
-  const invokeStripeAction = async <T,>(action: "check_status" | "create_account") => {
-    const { data, error } = await supabase.functions.invoke("stripe-connect-onboarding", {
-      body: { action },
-    });
-
-    if (error) throw error;
-
-    const response = (data ?? null) as StripeConnectResponse<T> | null;
-
-    if (response?.ok === false) {
-      throw new Error(response.error || "Erreur Stripe Connect");
-    }
-
-    if (response?.ok === true) {
-      return response.data as T;
-    }
-
-    return data as T;
-  };
-
-  const loadPayoutFrequency = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data } = await supabase
-      .from("providers")
-      .select("payout_frequency")
-      .eq("user_id", user.id)
-      .single();
-
-    if (data?.payout_frequency) {
-      setPayoutFrequency(data.payout_frequency);
-    }
-  };
-
-  const checkStatus = async () => {
-    try {
-      const statusData = await invokeStripeAction<StripeStatus>("check_status");
-      setStatus(statusData);
-    } catch (error: any) {
-      console.error("Error checking Stripe status:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [qc]);
 
   const handleConnect = async () => {
     setConnecting(true);
@@ -117,9 +112,9 @@ export const StripeConnectCard = () => {
 
       if (error) throw error;
 
-      setPayoutFrequency(value);
-      toast.success(value === "weekly" 
-        ? "Fréquence de paiement : hebdomadaire" 
+      qc.setQueryData<ProviderPayoutData>(PAYOUT_KEY, { payout_frequency: value });
+      toast.success(value === "weekly"
+        ? "Fréquence de paiement : hebdomadaire"
         : "Fréquence de paiement : mensuelle"
       );
     } catch (error: any) {
@@ -129,7 +124,7 @@ export const StripeConnectCard = () => {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-6">
@@ -141,7 +136,6 @@ export const StripeConnectCard = () => {
 
   return (
     <div className="space-y-4">
-      {/* Stripe Connect Card */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
@@ -197,7 +191,6 @@ export const StripeConnectCard = () => {
         </CardContent>
       </Card>
 
-      {/* Payout Frequency Card */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
@@ -209,8 +202,8 @@ export const StripeConnectCard = () => {
           <p className="text-sm text-muted-foreground">
             Choisissez la fréquence à laquelle vous souhaitez recevoir vos paiements.
           </p>
-          <Select 
-            value={payoutFrequency} 
+          <Select
+            value={payoutFrequency}
             onValueChange={handleFrequencyChange}
             disabled={savingFrequency}
           >
@@ -239,7 +232,7 @@ export const StripeConnectCard = () => {
             </div>
           )}
           <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-lg">
-            {payoutFrequency === "weekly" 
+            {payoutFrequency === "weekly"
               ? "📅 Vos gains sont versés chaque semaine (avec un délai de 2 à 5 jours pour la transmission)."
               : "📅 Vos gains sont cumulés et versés en fin de mois (avec un délai de 2 à 5 jours pour la transmission)."
             }

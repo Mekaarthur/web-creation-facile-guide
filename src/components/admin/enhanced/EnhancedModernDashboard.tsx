@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { AdminAlertsPanel } from '../../AdminAlertsPanel';
 import { MissionAssignmentTrigger } from '../../MissionAssignmentTrigger';
 import { AutomatedReports } from '../AutomatedReports';
@@ -74,7 +75,22 @@ interface AdminStats {
   total_revenue: number;
   pending_reviews: number;
   flagged_reviews: number;
+  pendingProviders: number;
+  pendingAlerts: number;
+  unreadMessages: number;
 }
+
+const DEFAULT_STATS: DashboardStats = {
+  revenue:      { value: 0, change: '+0%', trend: [] },
+  users:        { value: 0, change: '+0%', trend: [] },
+  missions:     { value: 0, change: '+0%', trend: [] },
+  satisfaction: { value: 0, change: '+0',  trend: [] },
+};
+
+const DEFAULT_ADMIN: AdminStats = {
+  total_users: 0, total_providers: 0, total_bookings: 0, total_revenue: 0,
+  pending_reviews: 0, flagged_reviews: 0, pendingProviders: 0, pendingAlerts: 0, unreadMessages: 0,
+};
 
 // ─── Metric Card ────────────────────────────────────────────────────────────
 
@@ -142,65 +158,49 @@ const MetricCard = ({
 export default function EnhancedModernDashboard() {
   const navigate  = useNavigate();
   const { toast } = useToast();
+  const qc = useQueryClient();
   const { data: counts } = useAdminCounts();
+  const [timeRange, setTimeRange] = useState('7d');
 
   useWorkflowEmails();
   useEmergencyOrchestration();
 
-  const [stats, setStats] = useState<DashboardStats>({
-    revenue:      { value: 0, change: '+0%', trend: [] },
-    users:        { value: 0, change: '+0%', trend: [] },
-    missions:     { value: 0, change: '+0%', trend: [] },
-    satisfaction: { value: 0, change: '+0',  trend: [] },
-  });
-  const [activities,          setActivities]          = useState<ActivityItem[]>([]);
-  const [servicePerformance,  setServicePerformance]  = useState<ServicePerformance[]>([]);
-  const [revenueData,         setRevenueData]         = useState<any[]>([]);
-  const [adminStats,          setAdminStats]          = useState<AdminStats>({
-    total_users: 0, total_providers: 0, total_bookings: 0,
-    total_revenue: 0, pending_reviews: 0, flagged_reviews: 0,
-  });
-  const [quickActionCounts, setQuickActionCounts] = useState({
-    pendingProviders: 0, pendingAlerts: 0, totalRevenue: 0, unreadMessages: 0,
-  });
-  const [loading,    setLoading]    = useState(true);
-  const [timeRange,  setTimeRange]  = useState('7d');
-
-  // ─── Data loading ──────────────────────────────────────────────────────────
-
-  const loadDashboardData = async () => {
-    setLoading(true);
-    try {
+  const { data: stats = DEFAULT_STATS, isLoading: loading } = useQuery<DashboardStats>({
+    queryKey: ['emd', 'stats', timeRange],
+    queryFn: async () => {
       const { data, error } = await supabase.functions.invoke('admin-dashboard', {
-        body: { action: 'get_stats', timeRange }
+        body: { action: 'get_stats', timeRange },
       });
-      if (!error && data?.success) setStats(data.stats);
-    } catch (_) {
-    } finally {
-      setLoading(false);
-    }
-  };
+      if (!error && data?.success) return data.stats as DashboardStats;
+      return DEFAULT_STATS;
+    },
+  });
 
-  const loadActivities = async () => {
-    try {
+  const { data: activities = [] } = useQuery<ActivityItem[]>({
+    queryKey: ['emd', 'activities'],
+    queryFn: async () => {
       const { data, error } = await supabase.functions.invoke('admin-dashboard', {
-        body: { action: 'get_activities', limit: 10 }
+        body: { action: 'get_activities', limit: 10 },
       });
-      if (!error && data?.success) setActivities(data.activities);
-    } catch (_) {}
-  };
+      if (!error && data?.success) return data.activities as ActivityItem[];
+      return [];
+    },
+  });
 
-  const loadServicePerformance = async () => {
-    try {
+  const { data: servicePerformance = [] } = useQuery<ServicePerformance[]>({
+    queryKey: ['emd', 'service-perf', timeRange],
+    queryFn: async () => {
       const { data, error } = await supabase.functions.invoke('admin-dashboard', {
-        body: { action: 'get_service_performance', timeRange }
+        body: { action: 'get_service_performance', timeRange },
       });
-      if (!error && data?.success) setServicePerformance(data.servicePerformance);
-    } catch (_) {}
-  };
+      if (!error && data?.success) return data.servicePerformance as ServicePerformance[];
+      return [];
+    },
+  });
 
-  const loadAdminStats = async () => {
-    try {
+  const { data: adminStats = DEFAULT_ADMIN } = useQuery<AdminStats>({
+    queryKey: ['emd', 'admin-stats'],
+    queryFn: async () => {
       const [
         usersCount, providersCount, bookingsCount, reviewsData,
         pendingProvidersCount, unreadMessagesCount, completedBookings, pendingBookingsCount
@@ -215,32 +215,31 @@ export default function EnhancedModernDashboard() {
         supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
       ]);
 
-      const pendingReviews  = reviewsData.data?.filter(r => !r.is_approved) || [];
-      const flaggedReviews  = reviewsData.data?.filter(r => r.is_approved === false) || [];
-      const totalRevenue    = completedBookings.data?.reduce((s, b) => s + (b.total_price || 0), 0) || 0;
-      const alertsCount     = (pendingProvidersCount.count || 0) + (pendingBookingsCount.count || 0) + pendingReviews.length;
+      const pendingReviews = reviewsData.data?.filter(r => !r.is_approved) || [];
+      const flaggedReviews = reviewsData.data?.filter(r => r.is_approved === false) || [];
+      const totalRevenue   = completedBookings.data?.reduce((s, b) => s + (b.total_price || 0), 0) || 0;
+      const alertsCount    = (pendingProvidersCount.count || 0) + (pendingBookingsCount.count || 0) + pendingReviews.length;
 
-      setAdminStats({
+      return {
         total_users:     usersCount.count    || 0,
         total_providers: providersCount.count || 0,
         total_bookings:  bookingsCount.count  || 0,
         total_revenue:   totalRevenue,
         pending_reviews: pendingReviews.length,
         flagged_reviews: flaggedReviews.length,
-      });
-      setQuickActionCounts({
         pendingProviders: pendingProvidersCount.count || 0,
         pendingAlerts:    alertsCount,
-        totalRevenue:     totalRevenue,
         unreadMessages:   unreadMessagesCount.count || 0,
-      });
-    } catch (_) {}
-  };
+      };
+    },
+  });
+
+  const refreshData = () => qc.invalidateQueries({ queryKey: ['emd'] });
 
   const handleExportData = async () => {
     try {
       const { data, error } = await supabase.functions.invoke('admin-dashboard', {
-        body: { action: 'export_data', type: 'providers', format: 'csv' }
+        body: { action: 'export_data', type: 'providers', format: 'csv' },
       });
       if (error) throw error;
       if (data?.success) {
@@ -260,39 +259,28 @@ export default function EnhancedModernDashboard() {
     }
   };
 
-  const refreshData = async () => {
-    await Promise.all([
-      loadDashboardData(),
-      loadActivities(),
-      loadServicePerformance(),
-      loadAdminStats(),
-    ]);
-  };
-
-  useEffect(() => { refreshData(); }, [timeRange]);
-
   // ─── Navigation rapide items ───────────────────────────────────────────────
 
   const navItems = [
-    { label: "Utilisateurs",      href: "/modern-admin/utilisateurs",  icon: UserCog,       count: 0 },
-    { label: "Clients",           href: "/modern-admin/clients",        icon: Users,         count: 0 },
-    { label: "Prestataires",      href: "/modern-admin/providers",      icon: UserCheck,     count: counts?.prestatairesPending || 0 },
-    { label: "Candidatures",      href: "/modern-admin/applications",   icon: FileText,      count: counts?.candidatures || 0 },
-    { label: "Missions",          href: "/modern-admin/missions",       icon: Target,        count: counts?.missionsPending || 0 },
-    { label: "Réservations",      href: "/modern-admin/reservations",   icon: Calendar,      count: 0 },
-    { label: "Demandes",          href: "/modern-admin/demandes",       icon: MessageSquare, count: counts?.demandesPersonnalisees || 0 },
-    { label: "Paiements",         href: "/modern-admin/payments",       icon: CreditCard,    count: 0 },
-    { label: "Factures",          href: "/modern-admin/invoices",       icon: FileText,      count: 0 },
-    { label: "Messages",          href: "/modern-admin/messages",       icon: MessageSquare, count: counts?.messages || 0 },
-    { label: "Alertes",           href: "/modern-admin/alerts",         icon: AlertTriangle, count: counts?.alerts || 0 },
-    { label: "Avis & Modération", href: "/modern-admin/reviews",        icon: Star,          count: counts?.moderation || 0 },
-    { label: "Finance",           href: "/modern-admin/finance",        icon: Euro,          count: 0 },
-    { label: "Avance Immédiate",  href: "/modern-admin/urssaf-declarations", icon: Landmark, count: 0 },
-    { label: "Matching IA",       href: "/modern-admin/matching",       icon: Zap,           count: 0 },
-    { label: "Binômes",           href: "/modern-admin/binomes",        icon: Gift,          count: 0 },
-    { label: "Sécurité",          href: "/modern-admin/security",       icon: Lock,          count: 0 },
-    { label: "Zones",             href: "/modern-admin/zones",          icon: MapPin,        count: 0 },
-    { label: "Paramètres",        href: "/modern-admin/settings",       icon: Settings,      count: 0 },
+    { label: "Utilisateurs",      href: "/modern-admin/utilisateurs",        icon: UserCog,       count: 0 },
+    { label: "Clients",           href: "/modern-admin/clients",              icon: Users,         count: 0 },
+    { label: "Prestataires",      href: "/modern-admin/providers",            icon: UserCheck,     count: counts?.prestatairesPending || 0 },
+    { label: "Candidatures",      href: "/modern-admin/applications",         icon: FileText,      count: counts?.candidatures || 0 },
+    { label: "Missions",          href: "/modern-admin/missions",             icon: Target,        count: counts?.missionsPending || 0 },
+    { label: "Réservations",      href: "/modern-admin/reservations",         icon: Calendar,      count: 0 },
+    { label: "Demandes",          href: "/modern-admin/demandes",             icon: MessageSquare, count: counts?.demandesPersonnalisees || 0 },
+    { label: "Paiements",         href: "/modern-admin/payments",             icon: CreditCard,    count: 0 },
+    { label: "Factures",          href: "/modern-admin/invoices",             icon: FileText,      count: 0 },
+    { label: "Messages",          href: "/modern-admin/messages",             icon: MessageSquare, count: counts?.messages || 0 },
+    { label: "Alertes",           href: "/modern-admin/alerts",               icon: AlertTriangle, count: counts?.alerts || 0 },
+    { label: "Avis & Modération", href: "/modern-admin/reviews",              icon: Star,          count: counts?.moderation || 0 },
+    { label: "Finance",           href: "/modern-admin/finance",              icon: Euro,          count: 0 },
+    { label: "Avance Immédiate",  href: "/modern-admin/urssaf-declarations",  icon: Landmark,      count: 0 },
+    { label: "Matching IA",       href: "/modern-admin/matching",             icon: Zap,           count: 0 },
+    { label: "Binômes",           href: "/modern-admin/binomes",              icon: Gift,          count: 0 },
+    { label: "Sécurité",          href: "/modern-admin/security",             icon: Lock,          count: 0 },
+    { label: "Zones",             href: "/modern-admin/zones",                icon: MapPin,        count: 0 },
+    { label: "Paramètres",        href: "/modern-admin/settings",             icon: Settings,      count: 0 },
   ];
 
   // ─── Render ────────────────────────────────────────────────────────────────
@@ -310,9 +298,7 @@ export default function EnhancedModernDashboard() {
         </div>
         <div className="flex items-center gap-2">
           <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
+            <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="24h">24h</SelectItem>
               <SelectItem value="7d">7 jours</SelectItem>
@@ -321,12 +307,10 @@ export default function EnhancedModernDashboard() {
             </SelectContent>
           </Select>
           <Button variant="outline" size="sm" onClick={refreshData} disabled={loading}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Actualiser
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />Actualiser
           </Button>
           <Button variant="outline" size="sm" onClick={handleExportData}>
-            <Download className="w-4 h-4 mr-2" />
-            Export
+            <Download className="w-4 h-4 mr-2" />Export
           </Button>
         </div>
       </div>
@@ -384,14 +368,13 @@ export default function EnhancedModernDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-green-500" />
-              Évolution des Revenus
+              <TrendingUp className="w-5 h-5 text-green-500" />Évolution des Revenus
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={revenueData}>
+                <AreaChart data={[]}>
                   <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                   <XAxis dataKey="name" />
                   <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}k€`} />
@@ -420,8 +403,7 @@ export default function EnhancedModernDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="w-5 h-5 text-blue-500" />
-              Performance par Service
+              <Activity className="w-5 h-5 text-blue-500" />Performance par Service
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -449,63 +431,46 @@ export default function EnhancedModernDashboard() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Zap className="w-5 h-5 text-yellow-500" />
-            Actions Rapides
+            <Zap className="w-5 h-5 text-yellow-500" />Actions Rapides
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button
-              variant="outline"
-              className="h-auto p-4 flex flex-col items-center gap-2"
-              onClick={() => navigate('/modern-admin/providers')}
-              disabled={loading}
-            >
+            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2"
+              onClick={() => navigate('/modern-admin/providers')} disabled={loading}>
               {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <CheckCircle className="w-6 h-6 text-green-500" />}
               <span className="text-sm">Valider Prestataires</span>
-              {quickActionCounts.pendingProviders > 0 && (
-                <Badge variant="destructive">{quickActionCounts.pendingProviders}</Badge>
+              {adminStats.pendingProviders > 0 && (
+                <Badge variant="destructive">{adminStats.pendingProviders}</Badge>
               )}
             </Button>
 
-            <Button
-              variant="outline"
-              className="h-auto p-4 flex flex-col items-center gap-2"
-              onClick={() => navigate('/modern-admin/alerts')}
-              disabled={loading}
-            >
+            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2"
+              onClick={() => navigate('/modern-admin/alerts')} disabled={loading}>
               <AlertTriangle className="w-6 h-6 text-amber-500" />
               <span className="text-sm">Gérer Alertes</span>
-              {quickActionCounts.pendingAlerts > 0 && (
-                <Badge variant="default">{quickActionCounts.pendingAlerts}</Badge>
+              {adminStats.pendingAlerts > 0 && (
+                <Badge variant="default">{adminStats.pendingAlerts}</Badge>
               )}
             </Button>
 
-            <Button
-              variant="outline"
-              className="h-auto p-4 flex flex-col items-center gap-2"
-              onClick={() => navigate('/modern-admin/payments')}
-              disabled={loading}
-            >
+            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2"
+              onClick={() => navigate('/modern-admin/payments')} disabled={loading}>
               <Euro className="w-6 h-6 text-blue-500" />
               <span className="text-sm">Paiements</span>
               <Badge variant="default">
-                {quickActionCounts.totalRevenue > 0
-                  ? `${Math.round(quickActionCounts.totalRevenue / 1000)}k€`
+                {adminStats.total_revenue > 0
+                  ? `${Math.round(adminStats.total_revenue / 1000)}k€`
                   : '0€'}
               </Badge>
             </Button>
 
-            <Button
-              variant="outline"
-              className="h-auto p-4 flex flex-col items-center gap-2"
-              onClick={() => navigate('/modern-admin/messages')}
-              disabled={loading}
-            >
+            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2"
+              onClick={() => navigate('/modern-admin/messages')} disabled={loading}>
               <MessageSquare className="w-6 h-6 text-purple-500" />
               <span className="text-sm">Messages</span>
-              {quickActionCounts.unreadMessages > 0 && (
-                <Badge variant="secondary">{quickActionCounts.unreadMessages}</Badge>
+              {adminStats.unreadMessages > 0 && (
+                <Badge variant="secondary">{adminStats.unreadMessages}</Badge>
               )}
             </Button>
           </div>
@@ -516,8 +481,7 @@ export default function EnhancedModernDashboard() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-primary" />
-            Accès Rapide aux Modules
+            <BarChart3 className="w-5 h-5 text-primary" />Accès Rapide aux Modules
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -554,8 +518,7 @@ export default function EnhancedModernDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="w-5 h-5 text-blue-500" />
-              Activité Récente
+              <Activity className="w-5 h-5 text-blue-500" />Activité Récente
             </CardTitle>
           </CardHeader>
           <CardContent>

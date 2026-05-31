@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,20 +7,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { 
-  Bot, 
-  Users, 
-  MapPin, 
-  Clock, 
-  Star, 
-  Zap,
+import {
+  Bot,
+  Users,
+  MapPin,
+  Clock,
+  Star,
   Search,
-  Settings,
   Activity,
   Target,
   Brain,
-  ChevronRight
 } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
@@ -43,69 +40,46 @@ interface MatchResult {
   hourlyRate: number;
 }
 
-export const AdminMatchingPanel = () => {
-  const [stats, setStats] = useState<MatchingStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [testResults, setTestResults] = useState<MatchResult[]>([]);
-  const [testLoading, setTestLoading] = useState(false);
-  const { toast } = useToast();
+const STATS_KEY = ['admin-matching-stats'] as const;
 
-  // Test matching parameters
-  const [testParams, setTestParams] = useState({
+async function fetchMatchingStats(): Promise<MatchingStats> {
+  const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const [{ data: totalRequests }, { data: matchedRequests }, { data: activeProviders }] = await Promise.all([
+    supabase.from('client_requests').select('id').gte('created_at', cutoff),
+    supabase.from('client_requests').select('id').neq('assigned_provider_id', null).gte('created_at', cutoff),
+    supabase.from('providers').select('id').eq('is_verified', true).eq('status', 'active'),
+  ]);
+
+  const total   = totalRequests?.length || 0;
+  const matched = matchedRequests?.length || 0;
+  return {
+    totalRequests: total,
+    matchedRequests: matched,
+    averageMatchTime: "2.5 min",
+    successRate: `${total > 0 ? Math.round((matched / total) * 100) : 0}%`,
+    activeProviders: activeProviders?.length || 0,
+  };
+}
+
+export const AdminMatchingPanel = () => {
+  const [testResults, setTestResults]   = useState<MatchResult[]>([]);
+  const [testLoading, setTestLoading]   = useState(false);
+  const [testParams, setTestParams]     = useState({
     serviceType: 'Garde d\'enfants',
     location: 'Paris',
     urgency: 'normal' as 'low' | 'normal' | 'high' | 'urgent',
     budget: 25
   });
+  const { toast } = useToast();
 
-  useEffect(() => {
-    loadMatchingStats();
-  }, []);
-
-  const loadMatchingStats = async () => {
-    try {
-      // Récupérer les statistiques de matching
-      const { data: totalRequests } = await supabase
-        .from('client_requests')
-        .select('id')
-        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
-
-      const { data: matchedRequests } = await supabase
-        .from('client_requests')
-        .select('id')
-        .neq('assigned_provider_id', null)
-        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
-
-      const { data: activeProviders } = await supabase
-        .from('providers')
-        .select('id')
-        .eq('is_verified', true)
-        .eq('status', 'active');
-
-      const total = totalRequests?.length || 0;
-      const matched = matchedRequests?.length || 0;
-      const successRate = total > 0 ? Math.round((matched / total) * 100) : 0;
-
-      setStats({
-        totalRequests: total,
-        matchedRequests: matched,
-        averageMatchTime: "2.5 min",
-        successRate: `${successRate}%`,
-        activeProviders: activeProviders?.length || 0
-      });
-    } catch (error) {
-      console.error('Erreur lors du chargement des stats:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: stats, isLoading: loading } = useQuery<MatchingStats>({
+    queryKey: STATS_KEY,
+    queryFn: fetchMatchingStats,
+  });
 
   const testMatching = async () => {
     setTestLoading(true);
     try {
-      console.log('Testing matching with params:', testParams);
-      
-      // Appeler l'edge function de matching
       const { data, error } = await supabase.functions.invoke('match-providers', {
         body: {
           serviceType: testParams.serviceType,
@@ -115,62 +89,20 @@ export const AdminMatchingPanel = () => {
           minRating: 3.0
         }
       });
+      if (error) throw error;
 
-      if (error) {
-        throw error;
-      }
-
-      console.log('Matching results:', data);
-      
       if (data?.success && data?.providers) {
-        setTestResults(data.providers.slice(0, 5)); // Top 5 résultats
-        toast({
-          title: "Test de matching réussi",
-          description: `${data.providers.length} prestataires trouvés`
-        });
+        setTestResults(data.providers.slice(0, 5));
+        toast({ title: "Test de matching réussi", description: `${data.providers.length} prestataires trouvés` });
       } else {
         setTestResults([]);
-        toast({
-          title: "Aucun prestataire trouvé",
-          description: "Essayez avec d'autres critères",
-          variant: "destructive"
-        });
+        toast({ title: "Aucun prestataire trouvé", description: "Essayez avec d'autres critères", variant: "destructive" });
       }
     } catch (error: any) {
-      console.error('Erreur de test matching:', error);
-      toast({
-        title: "Erreur de test",
-        description: error.message || "Impossible de tester le matching",
-        variant: "destructive"
-      });
+      toast({ title: "Erreur de test", description: error.message || "Impossible de tester le matching", variant: "destructive" });
       setTestResults([]);
     } finally {
       setTestLoading(false);
-    }
-  };
-
-  const triggerAutoAssign = async (clientRequestId: string) => {
-    try {
-      const { error } = await supabase.functions.invoke('auto-assign-mission', {
-        body: {
-          clientRequestId,
-          serviceType: testParams.serviceType,
-          location: testParams.location
-        }
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Auto-assignation déclenchée",
-        description: "Le système recherche automatiquement un prestataire"
-      });
-    } catch (error: any) {
-      toast({
-        title: "Erreur d'auto-assignation",
-        description: error.message,
-        variant: "destructive"
-      });
     }
   };
 
@@ -181,9 +113,7 @@ export const AdminMatchingPanel = () => {
           <div className="animate-pulse space-y-4">
             <div className="h-6 bg-gray-200 rounded w-1/3"></div>
             <div className="grid grid-cols-4 gap-4">
-              {[1,2,3,4].map(i => (
-                <div key={i} className="h-20 bg-gray-100 rounded"></div>
-              ))}
+              {[1,2,3,4].map(i => <div key={i} className="h-20 bg-gray-100 rounded"></div>)}
             </div>
           </div>
         </CardContent>
@@ -211,7 +141,7 @@ export const AdminMatchingPanel = () => {
                 <Activity className="w-8 h-8 text-blue-600" />
               </div>
             </div>
-            
+
             <div className="bg-green-50 p-4 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
@@ -221,7 +151,7 @@ export const AdminMatchingPanel = () => {
                 <Target className="w-8 h-8 text-green-600" />
               </div>
             </div>
-            
+
             <div className="bg-purple-50 p-4 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
@@ -231,7 +161,7 @@ export const AdminMatchingPanel = () => {
                 <Users className="w-8 h-8 text-purple-600" />
               </div>
             </div>
-            
+
             <div className="bg-orange-50 p-4 rounded-lg">
               <div className="flex items-center justify-between">
                 <div>
@@ -249,7 +179,7 @@ export const AdminMatchingPanel = () => {
               <TabsTrigger value="config">⚙️ Configuration</TabsTrigger>
               <TabsTrigger value="logs">📋 Logs Récents</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="test" className="space-y-4">
               <Card>
                 <CardHeader>
@@ -258,13 +188,11 @@ export const AdminMatchingPanel = () => {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                      <Label htmlFor="serviceType">Type de Service</Label>
-                      <Select value={testParams.serviceType} onValueChange={(value) => 
+                      <Label>Type de Service</Label>
+                      <Select value={testParams.serviceType} onValueChange={(value) =>
                         setTestParams(prev => ({ ...prev, serviceType: value }))
                       }>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Garde d'enfants">🧸 Garde d'enfants</SelectItem>
                           <SelectItem value="Préparation culinaire">🏠 Préparation culinaire</SelectItem>
@@ -274,24 +202,20 @@ export const AdminMatchingPanel = () => {
                         </SelectContent>
                       </Select>
                     </div>
-                    
                     <div>
-                      <Label htmlFor="location">Localisation</Label>
-                      <Input 
+                      <Label>Localisation</Label>
+                      <Input
                         value={testParams.location}
                         onChange={(e) => setTestParams(prev => ({ ...prev, location: e.target.value }))}
                         placeholder="Paris, Lyon, etc."
                       />
                     </div>
-                    
                     <div>
-                      <Label htmlFor="urgency">Urgence</Label>
-                      <Select value={testParams.urgency} onValueChange={(value: any) => 
+                      <Label>Urgence</Label>
+                      <Select value={testParams.urgency} onValueChange={(value: any) =>
                         setTestParams(prev => ({ ...prev, urgency: value }))
                       }>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="low">🟢 Faible</SelectItem>
                           <SelectItem value="normal">🟡 Normale</SelectItem>
@@ -300,10 +224,9 @@ export const AdminMatchingPanel = () => {
                         </SelectContent>
                       </Select>
                     </div>
-                    
                     <div>
-                      <Label htmlFor="budget">Budget (€/h)</Label>
-                      <Input 
+                      <Label>Budget (€/h)</Label>
+                      <Input
                         type="number"
                         value={testParams.budget}
                         onChange={(e) => setTestParams(prev => ({ ...prev, budget: parseInt(e.target.value) || 25 }))}
@@ -311,22 +234,12 @@ export const AdminMatchingPanel = () => {
                       />
                     </div>
                   </div>
-                  
-                  <Button 
-                    onClick={testMatching} 
-                    disabled={testLoading}
-                    className="w-full"
-                  >
+
+                  <Button onClick={testMatching} disabled={testLoading} className="w-full">
                     {testLoading ? (
-                      <>
-                        <Bot className="w-4 h-4 mr-2 animate-spin" />
-                        Test en cours de l'IA...
-                      </>
+                      <><Bot className="w-4 h-4 mr-2 animate-spin" />Test en cours de l'IA...</>
                     ) : (
-                      <>
-                        <Search className="w-4 h-4 mr-2" />
-                        Tester le Matching IA
-                      </>
+                      <><Search className="w-4 h-4 mr-2" />Tester le Matching IA</>
                     )}
                   </Button>
                 </CardContent>
@@ -335,33 +248,23 @@ export const AdminMatchingPanel = () => {
               {testResults.length > 0 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">
-                      Résultats du Matching ({testResults.length} prestataires trouvés)
-                    </CardTitle>
+                    <CardTitle className="text-lg">Résultats du Matching ({testResults.length} prestataires trouvés)</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
                       {testResults.map((result, index) => (
                         <div key={result.providerId} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
                           <div className="flex items-center gap-3">
-                            <Badge variant={index === 0 ? "default" : "secondary"}>
-                              #{index + 1}
-                            </Badge>
+                            <Badge variant={index === 0 ? "default" : "secondary"}>#{index + 1}</Badge>
                             <div>
                               <p className="font-medium">{result.providerName}</p>
                               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <MapPin className="w-3 h-3" />
                                 {result.location}
-                                {result.distance && (
-                                  <>
-                                    <span>•</span>
-                                    <span>{result.distance.toFixed(1)} km</span>
-                                  </>
-                                )}
+                                {result.distance && <><span>•</span><span>{result.distance.toFixed(1)} km</span></>}
                               </div>
                             </div>
                           </div>
-                          
                           <div className="flex items-center gap-4">
                             <div className="text-right">
                               <div className="flex items-center gap-1">
@@ -370,14 +273,11 @@ export const AdminMatchingPanel = () => {
                               </div>
                               <p className="text-sm text-muted-foreground">{result.hourlyRate}€/h</p>
                             </div>
-                            
                             <div className="text-right">
                               <Badge variant={result.recommended ? "default" : "outline"}>
                                 Score: {result.advancedScore.toFixed(0)}
                               </Badge>
-                              {result.recommended && (
-                                <p className="text-xs text-green-600 mt-1">Recommandé</p>
-                              )}
+                              {result.recommended && <p className="text-xs text-green-600 mt-1">Recommandé</p>}
                             </div>
                           </div>
                         </div>
@@ -387,12 +287,10 @@ export const AdminMatchingPanel = () => {
                 </Card>
               )}
             </TabsContent>
-            
+
             <TabsContent value="config" className="space-y-4">
               <Card>
-                <CardHeader>
-                  <CardTitle>Configuration du Matching</CardTitle>
-                </CardHeader>
+                <CardHeader><CardTitle>Configuration du Matching</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="p-4 bg-blue-50 rounded-lg">
@@ -402,7 +300,6 @@ export const AdminMatchingPanel = () => {
                       </p>
                       <Badge variant="outline">Actif</Badge>
                     </div>
-                    
                     <div className="p-4 bg-green-50 rounded-lg">
                       <h4 className="font-medium mb-2">Auto-Assignment</h4>
                       <p className="text-sm text-muted-foreground mb-3">
@@ -411,33 +308,21 @@ export const AdminMatchingPanel = () => {
                       <Badge variant="outline">Actif</Badge>
                     </div>
                   </div>
-                  
                   <div className="p-4 border rounded-lg">
                     <h4 className="font-medium mb-2">Critères de Matching</h4>
                     <div className="grid grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <p className="font-medium">Distance Max</p>
-                        <p className="text-muted-foreground">50 km</p>
-                      </div>
-                      <div>
-                        <p className="font-medium">Rating Min</p>
-                        <p className="text-muted-foreground">3.0/5</p>
-                      </div>
-                      <div>
-                        <p className="font-medium">Timeout</p>
-                        <p className="text-muted-foreground">5 minutes</p>
-                      </div>
+                      <div><p className="font-medium">Distance Max</p><p className="text-muted-foreground">50 km</p></div>
+                      <div><p className="font-medium">Rating Min</p><p className="text-muted-foreground">3.0/5</p></div>
+                      <div><p className="font-medium">Timeout</p><p className="text-muted-foreground">5 minutes</p></div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             <TabsContent value="logs">
               <Card>
-                <CardHeader>
-                  <CardTitle>Logs d'Activité du Matching</CardTitle>
-                </CardHeader>
+                <CardHeader><CardTitle>Logs d'Activité du Matching</CardTitle></CardHeader>
                 <CardContent>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center justify-between p-2 bg-green-50 rounded">

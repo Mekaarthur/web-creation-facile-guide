@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { Award, TrendingUp, Calendar, Euro, Star, CheckCircle, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Progress } from '@/components/ui/progress';
+import { useMemo } from 'react';
 
 interface PerformanceReward {
   id: string;
@@ -30,158 +30,114 @@ interface ProviderStats {
   months_active: number;
 }
 
+interface PerformanceData {
+  rewards: PerformanceReward[];
+  stats: ProviderStats;
+}
+
+async function fetchPerformanceData(): Promise<PerformanceData> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { rewards: [], stats: { missions_completed: 0, total_hours: 0, average_rating: 0, months_active: 0 } };
+
+  const { data: provider } = await supabase
+    .from('providers')
+    .select('id, missions_completed, rating, created_at')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (!provider) return { rewards: [], stats: { missions_completed: 0, total_hours: 0, average_rating: 0, months_active: 0 } };
+
+  const [{ data: rewardsData }, { data: bookings }] = await Promise.all([
+    supabase.from('provider_rewards').select('*').eq('provider_id', provider.id).order('year', { ascending: false }),
+    supabase.from('bookings').select('start_time, end_time').eq('provider_id', provider.id).eq('status', 'completed'),
+  ]);
+
+  const totalHours = bookings?.reduce((sum, b) => {
+    if (b.start_time && b.end_time) {
+      const start = new Date(`1970-01-01T${b.start_time}`);
+      const end = new Date(`1970-01-01T${b.end_time}`);
+      return sum + (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+    }
+    return sum;
+  }, 0) || 0;
+
+  const monthsActive = Math.floor(
+    (Date.now() - new Date(provider.created_at).getTime()) / (1000 * 60 * 60 * 24 * 30)
+  );
+
+  return {
+    rewards: rewardsData || [],
+    stats: {
+      missions_completed: provider.missions_completed || 0,
+      total_hours: totalHours,
+      average_rating: provider.rating || 0,
+      months_active: monthsActive,
+    },
+  };
+}
+
+const currentYear = new Date().getFullYear();
+
+const getTierColor = (tier: string) => {
+  switch (tier) {
+    case 'bronze': return 'bg-orange-500';
+    case 'silver': return 'bg-gray-400';
+    case 'gold':   return 'bg-yellow-500';
+    default:       return 'bg-gray-500';
+  }
+};
+
+const getTierLabel = (tier: string) => {
+  switch (tier) {
+    case 'bronze': return 'Bronze';
+    case 'silver': return 'Argent';
+    case 'gold':   return 'Or';
+    default:       return tier;
+  }
+};
+
 const ProviderPerformanceRewards = () => {
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [rewards, setRewards] = useState<PerformanceReward[]>([]);
-  const [stats, setStats] = useState<ProviderStats>({
-    missions_completed: 0,
-    total_hours: 0,
-    average_rating: 0,
-    months_active: 0
+  const { data, isLoading } = useQuery<PerformanceData>({
+    queryKey: ['provider-performance-rewards'],
+    queryFn: fetchPerformanceData,
   });
-  const [currentYear] = useState(new Date().getFullYear());
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  const rewards = data?.rewards ?? [];
+  const stats = data?.stats ?? { missions_completed: 0, total_hours: 0, average_rating: 0, months_active: 0 };
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // Get provider ID
-      const { data: provider } = await supabase
-        .from('providers')
-        .select('id, missions_completed, rating, created_at')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (!provider) return;
-
-      // Load rewards
-      const { data: rewardsData } = await supabase
-        .from('provider_rewards')
-        .select('*')
-        .eq('provider_id', provider.id)
-        .order('year', { ascending: false });
-
-      if (rewardsData) {
-        setRewards(rewardsData);
-      }
-
-      // Calculate stats
-      const { data: bookings } = await supabase
-        .from('bookings')
-        .select('start_time, end_time')
-        .eq('provider_id', provider.id)
-        .eq('status', 'completed');
-
-      const totalHours = bookings?.reduce((sum, b) => {
-        if (b.start_time && b.end_time) {
-          const start = new Date(`1970-01-01T${b.start_time}`);
-          const end = new Date(`1970-01-01T${b.end_time}`);
-          return sum + (end.getTime() - start.getTime()) / (1000 * 60 * 60);
-        }
-        return sum;
-      }, 0) || 0;
-
-      const monthsActive = Math.floor(
-        (Date.now() - new Date(provider.created_at).getTime()) / (1000 * 60 * 60 * 24 * 30)
-      );
-
-      setStats({
-        missions_completed: provider.missions_completed || 0,
-        total_hours: totalHours,
-        average_rating: provider.rating || 0,
-        months_active: monthsActive
-      });
-
-    } catch (error) {
-      console.error('Error loading data:', error);
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de charger les données',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getTierColor = (tier: string) => {
-    switch (tier) {
-      case 'bronze': return 'bg-orange-500';
-      case 'silver': return 'bg-gray-400';
-      case 'gold': return 'bg-yellow-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
-  const getTierLabel = (tier: string) => {
-    switch (tier) {
-      case 'bronze': return 'Bronze';
-      case 'silver': return 'Argent';
-      case 'gold': return 'Or';
-      default: return tier;
-    }
-  };
-
-  const getNextTierRequirements = () => {
+  const nextTier = useMemo(() => {
     const { missions_completed, total_hours, average_rating, months_active } = stats;
-    
-    if (months_active < 6) {
-      return {
-        tier: 'Éligibilité',
-        requirements: [
-          { label: 'Ancienneté', current: months_active, target: 6, unit: 'mois' }
-        ]
-      };
-    }
 
+    if (months_active < 6) {
+      return { tier: 'Éligibilité', requirements: [{ label: 'Ancienneté', current: months_active, target: 6, unit: 'mois' }] };
+    }
     if (missions_completed >= 50 && total_hours >= 400 && average_rating >= 4.5) {
       return { tier: 'Or', requirements: [] };
     }
-
     if (missions_completed >= 30 && total_hours >= 240 && average_rating >= 4.3) {
-      return {
-        tier: 'Or',
-        requirements: [
-          { label: 'Missions', current: missions_completed, target: 50, unit: 'missions' },
-          { label: 'Heures', current: total_hours, target: 400, unit: 'heures' },
-          { label: 'Note moyenne', current: average_rating, target: 4.5, unit: '/5' }
-        ]
-      };
+      return { tier: 'Or', requirements: [
+        { label: 'Missions', current: missions_completed, target: 50, unit: 'missions' },
+        { label: 'Heures', current: total_hours, target: 400, unit: 'heures' },
+        { label: 'Note moyenne', current: average_rating, target: 4.5, unit: '/5' },
+      ]};
     }
-
     if (missions_completed >= 15 && total_hours >= 120 && average_rating >= 4.0) {
-      return {
-        tier: 'Argent',
-        requirements: [
-          { label: 'Missions', current: missions_completed, target: 30, unit: 'missions' },
-          { label: 'Heures', current: total_hours, target: 240, unit: 'heures' },
-          { label: 'Note moyenne', current: average_rating, target: 4.3, unit: '/5' }
-        ]
-      };
+      return { tier: 'Argent', requirements: [
+        { label: 'Missions', current: missions_completed, target: 30, unit: 'missions' },
+        { label: 'Heures', current: total_hours, target: 240, unit: 'heures' },
+        { label: 'Note moyenne', current: average_rating, target: 4.3, unit: '/5' },
+      ]};
     }
-
-    return {
-      tier: 'Bronze',
-      requirements: [
-        { label: 'Missions', current: missions_completed, target: 15, unit: 'missions' },
-        { label: 'Heures', current: total_hours, target: 120, unit: 'heures' },
-        { label: 'Note moyenne', current: average_rating, target: 4.0, unit: '/5' }
-      ]
-    };
-  };
+    return { tier: 'Bronze', requirements: [
+      { label: 'Missions', current: missions_completed, target: 15, unit: 'missions' },
+      { label: 'Heures', current: total_hours, target: 120, unit: 'heures' },
+      { label: 'Note moyenne', current: average_rating, target: 4.0, unit: '/5' },
+    ]};
+  }, [stats]);
 
   const currentYearReward = rewards.find(r => r.year === currentYear);
-  const nextTier = getNextTierRequirements();
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
@@ -194,7 +150,6 @@ const ProviderPerformanceRewards = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h2 className="text-3xl font-bold flex items-center gap-3">
           <Award className="h-8 w-8 text-primary" />
@@ -205,7 +160,6 @@ const ProviderPerformanceRewards = () => {
         </p>
       </div>
 
-      {/* Current Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-3">
@@ -242,9 +196,7 @@ const ProviderPerformanceRewards = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xs text-muted-foreground">
-              Sur 5 étoiles
-            </div>
+            <div className="text-xs text-muted-foreground">Sur 5 étoiles</div>
           </CardContent>
         </Card>
 
@@ -262,7 +214,6 @@ const ProviderPerformanceRewards = () => {
         </Card>
       </div>
 
-      {/* Current Year Reward */}
       {currentYearReward && (
         <Card className="border-2 border-primary">
           <CardHeader>
@@ -311,7 +262,6 @@ const ProviderPerformanceRewards = () => {
         </Card>
       )}
 
-      {/* Progress to Next Tier */}
       {nextTier.requirements.length > 0 && (
         <Card>
           <CardHeader>
@@ -337,7 +287,6 @@ const ProviderPerformanceRewards = () => {
         </Card>
       )}
 
-      {/* Tier Requirements Guide */}
       <Card>
         <CardHeader>
           <CardTitle>Guide des paliers de récompenses</CardTitle>
@@ -349,37 +298,28 @@ const ProviderPerformanceRewards = () => {
               <Award className="h-8 w-8 text-yellow-500 flex-shrink-0" />
               <div className="space-y-1">
                 <h4 className="font-semibold">Or - 150€</h4>
-                <p className="text-sm text-muted-foreground">
-                  400+ heures • Note ≥ 4.5/5 • 6+ mois d'ancienneté
-                </p>
+                <p className="text-sm text-muted-foreground">400+ heures • Note ≥ 4.5/5 • 6+ mois d'ancienneté</p>
               </div>
             </div>
-
             <div className="flex gap-4 p-4 rounded-lg bg-gray-400/10 border border-gray-400/20">
               <Award className="h-8 w-8 text-gray-400 flex-shrink-0" />
               <div className="space-y-1">
                 <h4 className="font-semibold">Argent - 100€</h4>
-                <p className="text-sm text-muted-foreground">
-                  240+ heures • Note ≥ 4.3/5 • 6+ mois d'ancienneté
-                </p>
+                <p className="text-sm text-muted-foreground">240+ heures • Note ≥ 4.3/5 • 6+ mois d'ancienneté</p>
               </div>
             </div>
-
             <div className="flex gap-4 p-4 rounded-lg bg-orange-500/10 border border-orange-500/20">
               <Award className="h-8 w-8 text-orange-500 flex-shrink-0" />
               <div className="space-y-1">
                 <h4 className="font-semibold">Bronze - 50€</h4>
-                <p className="text-sm text-muted-foreground">
-                  120+ heures • Note ≥ 4.0/5 • 6+ mois d'ancienneté
-                </p>
+                <p className="text-sm text-muted-foreground">120+ heures • Note ≥ 4.0/5 • 6+ mois d'ancienneté</p>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Rewards History */}
-      {rewards.length > 0 && (
+      {rewards.length > 0 ? (
         <Card>
           <CardHeader>
             <CardTitle>Historique des récompenses</CardTitle>
@@ -388,16 +328,11 @@ const ProviderPerformanceRewards = () => {
           <CardContent>
             <div className="space-y-3">
               {rewards.map((reward) => (
-                <div
-                  key={reward.id}
-                  className="flex items-center justify-between p-4 rounded-lg border"
-                >
+                <div key={reward.id} className="flex items-center justify-between p-4 rounded-lg border">
                   <div className="flex items-center gap-3">
                     <Award className={`h-6 w-6 ${getTierColor(reward.reward_tier)}`} />
                     <div>
-                      <p className="font-medium">
-                        {getTierLabel(reward.reward_tier)} {reward.year}
-                      </p>
+                      <p className="font-medium">{getTierLabel(reward.reward_tier)} {reward.year}</p>
                       <p className="text-sm text-muted-foreground">
                         {reward.missions_count} missions • {reward.hours_worked}h • {reward.average_rating.toFixed(1)}★
                       </p>
@@ -414,9 +349,7 @@ const ProviderPerformanceRewards = () => {
             </div>
           </CardContent>
         </Card>
-      )}
-
-      {rewards.length === 0 && (
+      ) : (
         <Card>
           <CardContent className="py-12 text-center">
             <Award className="h-12 w-12 mx-auto text-muted-foreground mb-4" />

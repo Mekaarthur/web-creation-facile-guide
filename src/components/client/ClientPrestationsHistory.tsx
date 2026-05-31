@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -8,26 +9,24 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
-} from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import {
   Calendar, Clock, MapPin, Euro, FileText, Star, Award,
   AlertTriangle, ChevronLeft, ChevronRight, Search, Loader2, Heart,
-  RotateCcw, Scale, RefreshCw,
+  RotateCcw, Scale,
 } from 'lucide-react';
 import { format, subDays, subMonths, subYears, isAfter, parseISO, differenceInHours } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { BookingCancellation } from '@/components/BookingCancellation';
+import { AnomalyReportDialog } from './AnomalyReportDialog';
+import { DisputeDialog } from './DisputeDialog';
+import { RescheduleDialog } from './RescheduleDialog';
 
 type StatusGroup = 'upcoming' | 'in_progress' | 'past' | 'cancelled';
 type PeriodFilter = 'all' | '7d' | '30d' | '6m' | '1y';
 type SortBy = 'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc';
 
-interface Booking {
+export interface Booking {
   id: string;
   booking_date: string;
   start_time: string;
@@ -45,6 +44,34 @@ interface Booking {
 }
 
 const PAGE_SIZE = 10;
+const BOOKINGS_KEY = ['client-prestations'] as const;
+const FAVORITES_KEY = (userId: string) => ['client-favorites', userId] as const;
+
+async function fetchBookings(userId: string): Promise<Booking[]> {
+  const { data, error } = await supabase
+    .from('bookings')
+    .select(`
+      id, booking_date, start_time, end_time, status, total_price, address,
+      service_id, provider_id, completed_at, cancelled_at,
+      services:service_id ( name, category ),
+      providers:provider_id ( business_name, user_id ),
+      invoices ( id, invoice_number, status )
+    `)
+    .eq('client_id', userId)
+    .order('booking_date', { ascending: false })
+    .limit(500);
+  if (error) throw error;
+  return (data || []) as any;
+}
+
+async function fetchFavorites(userId: string): Promise<{ provider_id: string }[]> {
+  const { data } = await (supabase as any)
+    .from('client_favorites')
+    .select('provider_id')
+    .eq('client_id', userId)
+    .in('status', ['pending_provider', 'active']);
+  return (data as any) || [];
+}
 
 const STATUS_LABELS: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   pending: { label: 'En attente', variant: 'outline' },
@@ -58,53 +85,33 @@ export const ClientPrestationsHistory = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
   const [tab, setTab] = useState<StatusGroup>('upcoming');
   const [period, setPeriod] = useState<PeriodFilter>('all');
   const [sortBy, setSortBy] = useState<SortBy>('date_desc');
   const [page, setPage] = useState(1);
-  // Signalement anomalie (passées)
-  const [reportOpen, setReportOpen] = useState(false);
+
   const [reportBooking, setReportBooking] = useState<Booking | null>(null);
-  const [reportText, setReportText] = useState('');
-  const [submittingReport, setSubmittingReport] = useState(false);
-
-  // Litige structuré
-  const [disputeOpen, setDisputeOpen] = useState(false);
   const [disputeBooking, setDisputeBooking] = useState<Booking | null>(null);
-  const [disputeType, setDisputeType] = useState('qualite');
-  const [disputeResolution, setDisputeResolution] = useState('remboursement');
-  const [disputeDesc, setDisputeDesc] = useState('');
-  const [disputeAmount, setDisputeAmount] = useState('');
-  const [submittingDispute, setSubmittingDispute] = useState(false);
-
-  // Report de RDV
-  const [rescheduleOpen, setRescheduleOpen] = useState(false);
   const [rescheduleBooking, setRescheduleBooking] = useState<Booking | null>(null);
-  const [newDate, setNewDate] = useState('');
-  const [rescheduleNotes, setRescheduleNotes] = useState('');
-  const [submittingReschedule, setSubmittingReschedule] = useState(false);
-
-  const [favoritedProviders, setFavoritedProviders] = useState<Set<string>>(new Set());
   const [addingFavorite, setAddingFavorite] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (user) {
-      loadBookings();
-      loadFavorites();
-    }
-  }, [user]);
+  const { data: bookings = [], isLoading } = useQuery<Booking[]>({
+    queryKey: BOOKINGS_KEY,
+    queryFn: () => fetchBookings(user!.id),
+    enabled: !!user,
+  });
 
-  const loadFavorites = async () => {
-    if (!user) return;
-    const { data } = await supabase
-      .from('client_favorites')
-      .select('provider_id')
-      .eq('client_id', user.id)
-      .in('status', ['pending_provider', 'active']);
-    if (data) setFavoritedProviders(new Set(data.map((f: any) => f.provider_id)));
-  };
+  const { data: favoritesData = [] } = useQuery<{ provider_id: string }[]>({
+    queryKey: FAVORITES_KEY(user?.id ?? ''),
+    queryFn: () => fetchFavorites(user!.id),
+    enabled: !!user,
+  });
+
+  const favoritedProviders = useMemo(
+    () => new Set(favoritesData.map(f => f.provider_id)),
+    [favoritesData]
+  );
 
   const handleAddFavorite = async (booking: Booking) => {
     if (!user || !booking.provider_id) return;
@@ -114,7 +121,7 @@ export const ClientPrestationsHistory = () => {
         body: { action: 'request', providerId: booking.provider_id, bookingId: booking.id },
       });
       if (error) throw error;
-      setFavoritedProviders(prev => new Set([...prev, booking.provider_id]));
+      qc.invalidateQueries({ queryKey: FAVORITES_KEY(user.id) });
       toast({ title: 'Demande envoyée', description: 'Le prestataire va recevoir votre demande de binôme.' });
     } catch (e: any) {
       toast({ title: 'Erreur', description: e.message || 'Impossible d\'envoyer la demande', variant: 'destructive' });
@@ -127,38 +134,10 @@ export const ClientPrestationsHistory = () => {
     setPage(1);
   }, [tab, period, sortBy]);
 
-  const loadBookings = async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('bookings')
-        .select(`
-          id, booking_date, start_time, end_time, status, total_price, address,
-          service_id, provider_id, completed_at, cancelled_at,
-          services:service_id ( name, category ),
-          providers:provider_id ( business_name, user_id ),
-          invoices ( id, invoice_number, status )
-        `)
-        .eq('client_id', user.id)
-        .order('booking_date', { ascending: false })
-        .limit(500);
-
-      if (error) throw error;
-      setBookings((data || []) as any);
-    } catch (e: any) {
-      console.error(e);
-      toast({ title: 'Erreur', description: 'Impossible de charger l\'historique', variant: 'destructive' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const groupOf = (b: Booking): StatusGroup => {
     if (b.status === 'cancelled') return 'cancelled';
     if (b.status === 'in_progress') return 'in_progress';
     if (b.status === 'completed') return 'past';
-    // pending / confirmed → à venir si date future, sinon passées
     const bookingDate = parseISO(b.booking_date);
     return isAfter(bookingDate, new Date()) ? 'upcoming' : 'past';
   };
@@ -210,154 +189,17 @@ export const ClientPrestationsHistory = () => {
       } else {
         toast({ title: 'Facture', description: 'Téléchargement en cours...' });
       }
-    } catch (e) {
+    } catch {
       toast({ title: 'Erreur', description: 'Téléchargement de la facture indisponible', variant: 'destructive' });
     }
   };
 
-  const openReport = (b: Booking) => {
-    setReportBooking(b);
-    setReportText('');
-    setReportOpen(true);
-  };
-
-  const submitReport = async () => {
-    if (!reportBooking || !user || reportText.trim().length < 10) {
-      toast({ title: 'Description trop courte', description: 'Merci de décrire l\'anomalie (10 caractères min).', variant: 'destructive' });
-      return;
-    }
-    setSubmittingReport(true);
-    try {
-      const { error } = await supabase.from('complaints').insert({
-        client_id: user.id,
-        booking_id: reportBooking.id,
-        provider_id: reportBooking.provider_id,
-        complaint_type: 'historique_anomalie',
-        title: `Anomalie historique - ${reportBooking.services?.name || 'Prestation'}`,
-        description: reportText.trim(),
-        priority: 'medium',
-        status: 'open',
-      });
-      if (error) throw error;
-
-      supabase.functions.invoke('send-anomaly-report', {
-        body: { bookingId: reportBooking.id, clientEmail: user.email, description: reportText.trim(), serviceName: reportBooking.services?.name, bookingDate: reportBooking.booking_date },
-      }).catch(() => {});
-
-      toast({ title: 'Signalement envoyé', description: 'Notre support vous répondra sous 48h ouvrées.' });
-      setReportOpen(false);
-    } catch (e: any) {
-      toast({ title: 'Erreur', description: 'Impossible d\'envoyer le signalement', variant: 'destructive' });
-    } finally {
-      setSubmittingReport(false);
-    }
-  };
-
-  // ── Litige structuré ────────────────────────────────────────────────
-  const openDispute = (b: Booking) => {
-    setDisputeBooking(b);
-    setDisputeType('qualite');
-    setDisputeResolution('remboursement');
-    setDisputeDesc('');
-    setDisputeAmount('');
-    setDisputeOpen(true);
-  };
-
-  const DISPUTE_PRIORITY: Record<string, string> = {
-    paiement: 'high',
-    no_show:  'high',
-    qualite:  'medium',
-    retard:   'medium',
-    autre:    'low',
-  };
-
-  const submitDispute = async () => {
-    if (!disputeBooking || !user || disputeDesc.trim().length < 20) {
-      toast({ title: 'Description insuffisante', description: 'Décrivez votre litige en au moins 20 caractères.', variant: 'destructive' });
-      return;
-    }
-    setSubmittingDispute(true);
-    try {
-      const priority = DISPUTE_PRIORITY[disputeType] || 'medium';
-      const amountNum = disputeAmount ? parseFloat(disputeAmount) : null;
-
-      const { error } = await supabase.from('complaints').insert({
-        client_id:        user.id,
-        booking_id:       disputeBooking.id,
-        provider_id:      disputeBooking.provider_id,
-        complaint_type:   `litige_${disputeType}`,
-        title:            `Litige ${disputeType} - ${disputeBooking.services?.name || 'Prestation'}`,
-        description:      `[Résolution souhaitée : ${disputeResolution}${amountNum ? ` (${amountNum}€)` : ''}]\n\n${disputeDesc.trim()}`,
-        priority,
-        status:           'open',
-      });
-      if (error) throw error;
-
-      supabase.functions.invoke('send-modern-notification', {
-        body: {
-          type: 'dispute_opened',
-          recipient: { email: 'admin@bikawo.com', name: 'Admin Bikawo', firstName: 'Admin' },
-          data: {
-            clientName: user.email,
-            bookingId: disputeBooking.id,
-            serviceDescription: `Litige "${disputeType}" — résolution souhaitée : ${disputeResolution}\n\n${disputeDesc.trim()}`,
-            message: disputeType,
-          }
-        }
-      }).catch(() => {});
-
-      toast({ title: 'Litige ouvert', description: 'Notre équipe traitera votre demande sous 72h ouvrées.' });
-      setDisputeOpen(false);
-    } catch (e: any) {
-      toast({ title: 'Erreur', description: 'Impossible d\'ouvrir le litige', variant: 'destructive' });
-    } finally {
-      setSubmittingDispute(false);
-    }
-  };
-
-  // ── Demande de report ────────────────────────────────────────────────
-  const openReschedule = (b: Booking) => {
-    setRescheduleBooking(b);
-    setNewDate('');
-    setRescheduleNotes('');
-    setRescheduleOpen(true);
-  };
-
-  const submitReschedule = async () => {
-    if (!rescheduleBooking || !user || !newDate) {
-      toast({ title: 'Date manquante', description: 'Sélectionnez une nouvelle date.', variant: 'destructive' });
-      return;
-    }
-    setSubmittingReschedule(true);
-    try {
-      const { error } = await supabase.from('complaints').insert({
-        client_id:      user.id,
-        booking_id:     rescheduleBooking.id,
-        provider_id:    rescheduleBooking.provider_id,
-        complaint_type: 'demande_report',
-        title:          `Demande de report - ${rescheduleBooking.services?.name || 'Prestation'}`,
-        description:    `Nouvelle date souhaitée : ${newDate}${rescheduleNotes ? `\n\nNotes : ${rescheduleNotes}` : ''}`,
-        priority:       'medium',
-        status:         'open',
-      });
-      if (error) throw error;
-
-      toast({ title: 'Demande de report envoyée', description: 'Le support vous contactera pour confirmer le nouveau créneau.' });
-      setRescheduleOpen(false);
-    } catch (e: any) {
-      toast({ title: 'Erreur', description: 'Impossible d\'envoyer la demande', variant: 'destructive' });
-    } finally {
-      setSubmittingReschedule(false);
-    }
-  };
-
-  // Vérifier si annulation encore possible selon politique (>2h avant)
   const canCancel = (b: Booking): boolean => {
     const bookingDt = new Date(`${b.booking_date}T${b.start_time}`);
     return differenceInHours(bookingDt, new Date()) > 0;
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card>
         <CardContent className="py-12 flex items-center justify-center text-muted-foreground">
@@ -508,13 +350,13 @@ export const ClientPrestationsHistory = () => {
                                 startTime={b.start_time}
                                 totalPrice={b.total_price}
                                 cancelledBy="client"
-                                onCancelled={loadBookings}
+                                onCancelled={() => qc.invalidateQueries({ queryKey: BOOKINGS_KEY })}
                               />
                             )}
-                            <Button size="sm" variant="outline" onClick={() => openReschedule(b)} className="gap-1.5">
+                            <Button size="sm" variant="outline" onClick={() => setRescheduleBooking(b)} className="gap-1.5">
                               <RotateCcw className="w-3.5 h-3.5" /> Reporter
                             </Button>
-                            <Button size="sm" variant="ghost" onClick={() => openDispute(b)} className="gap-1.5 text-amber-600 hover:text-amber-700">
+                            <Button size="sm" variant="ghost" onClick={() => setDisputeBooking(b)} className="gap-1.5 text-amber-600 hover:text-amber-700">
                               <Scale className="w-3.5 h-3.5" /> Ouvrir un litige
                             </Button>
                           </div>
@@ -553,10 +395,10 @@ export const ClientPrestationsHistory = () => {
                                 </Button>
                               )
                             )}
-                            <Button size="sm" variant="ghost" onClick={() => openDispute(b)} className="gap-1.5 text-amber-600 hover:text-amber-700">
+                            <Button size="sm" variant="ghost" onClick={() => setDisputeBooking(b)} className="gap-1.5 text-amber-600 hover:text-amber-700">
                               <Scale className="w-3.5 h-3.5" /> Litige
                             </Button>
-                            <Button size="sm" variant="ghost" onClick={() => openReport(b)} className="gap-1.5 text-destructive hover:text-destructive">
+                            <Button size="sm" variant="ghost" onClick={() => setReportBooking(b)} className="gap-1.5 text-destructive hover:text-destructive">
                               <AlertTriangle className="w-3.5 h-3.5" /> Anomalie
                             </Button>
                           </div>
@@ -588,179 +430,9 @@ export const ClientPrestationsHistory = () => {
         </CardContent>
       </Card>
 
-      {/* Modal signalement anomalie */}
-      <Dialog open={reportOpen} onOpenChange={setReportOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-destructive" />
-              Signaler une anomalie
-            </DialogTitle>
-            <DialogDescription>
-              Décrivez l'anomalie constatée sur cette prestation. Notre support vous répondra sous 48h ouvrées.
-            </DialogDescription>
-          </DialogHeader>
-          {reportBooking && (
-            <div className="text-sm bg-muted/50 p-3 rounded-lg">
-              <strong>{reportBooking.services?.name}</strong> · {format(parseISO(reportBooking.booking_date), 'd MMM yyyy', { locale: fr })}
-            </div>
-          )}
-          <Textarea
-            placeholder="Expliquez l'anomalie : montant incorrect, prestation non réalisée, écart d'horaire..."
-            value={reportText}
-            onChange={e => setReportText(e.target.value)}
-            rows={5}
-            maxLength={1000}
-          />
-          <p className="text-xs text-muted-foreground text-right">{reportText.length}/1000</p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setReportOpen(false)}>Annuler</Button>
-            <Button onClick={submitReport} disabled={submittingReport}>
-              {submittingReport && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Envoyer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal litige structuré */}
-      <Dialog open={disputeOpen} onOpenChange={setDisputeOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Scale className="w-5 h-5 text-amber-600" />
-              Ouvrir un litige
-            </DialogTitle>
-            <DialogDescription>
-              Décrivez votre litige. Notre équipe de médiation traitera votre demande sous 72h ouvrées.
-            </DialogDescription>
-          </DialogHeader>
-
-          {disputeBooking && (
-            <div className="text-sm bg-muted/50 p-3 rounded-lg">
-              <strong>{disputeBooking.services?.name}</strong> · {format(parseISO(disputeBooking.booking_date), 'd MMM yyyy', { locale: fr })} · {disputeBooking.total_price.toFixed(2)}€
-            </div>
-          )}
-
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>Type de litige</Label>
-                <Select value={disputeType} onValueChange={setDisputeType}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="qualite">Qualité de service</SelectItem>
-                    <SelectItem value="paiement">Problème de paiement</SelectItem>
-                    <SelectItem value="no_show">Prestataire absent</SelectItem>
-                    <SelectItem value="retard">Retard important</SelectItem>
-                    <SelectItem value="securite">Problème de sécurité</SelectItem>
-                    <SelectItem value="autre">Autre</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Résolution souhaitée</Label>
-                <Select value={disputeResolution} onValueChange={setDisputeResolution}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="remboursement">Remboursement</SelectItem>
-                    <SelectItem value="avoir">Avoir / Bon de réduction</SelectItem>
-                    <SelectItem value="rescheduling">Prestation refaite</SelectItem>
-                    <SelectItem value="excuse">Excuse formelle</SelectItem>
-                    <SelectItem value="autre">Autre</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {(disputeResolution === 'remboursement' || disputeResolution === 'avoir') && (
-              <div className="space-y-1.5">
-                <Label>Montant demandé (€) <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
-                <Input
-                  type="number"
-                  placeholder={disputeBooking?.total_price.toString()}
-                  value={disputeAmount}
-                  onChange={e => setDisputeAmount(e.target.value)}
-                  min={0}
-                  max={disputeBooking?.total_price}
-                  step={0.01}
-                />
-              </div>
-            )}
-
-            <div className="space-y-1.5">
-              <Label>Description <span className="text-destructive">*</span></Label>
-              <Textarea
-                placeholder="Décrivez précisément les faits : date, heure, ce qui s'est passé, preuves disponibles..."
-                value={disputeDesc}
-                onChange={e => setDisputeDesc(e.target.value)}
-                rows={5}
-                maxLength={2000}
-              />
-              <p className="text-xs text-muted-foreground text-right">{disputeDesc.length}/2000</p>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDisputeOpen(false)}>Annuler</Button>
-            <Button onClick={submitDispute} disabled={submittingDispute} className="bg-amber-600 hover:bg-amber-700">
-              {submittingDispute && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Soumettre le litige
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal demande de report */}
-      <Dialog open={rescheduleOpen} onOpenChange={setRescheduleOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <RotateCcw className="w-5 h-5 text-primary" />
-              Reporter le rendez-vous
-            </DialogTitle>
-            <DialogDescription>
-              Indiquez votre nouvelle disponibilité. Le support vous confirmera le nouveau créneau sous 24h.
-            </DialogDescription>
-          </DialogHeader>
-
-          {rescheduleBooking && (
-            <div className="text-sm bg-muted/50 p-3 rounded-lg">
-              <strong>{rescheduleBooking.services?.name}</strong> · Actuellement : {format(parseISO(rescheduleBooking.booking_date), 'EEEE d MMM yyyy', { locale: fr })} à {rescheduleBooking.start_time?.slice(0, 5)}
-            </div>
-          )}
-
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <Label>Nouvelle date souhaitée <span className="text-destructive">*</span></Label>
-              <Input
-                type="date"
-                value={newDate}
-                min={new Date().toISOString().split('T')[0]}
-                onChange={e => setNewDate(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Notes <span className="text-muted-foreground text-xs">(horaires préférés, contraintes...)</span></Label>
-              <Textarea
-                placeholder="Ex : disponible en après-midi, éviter le vendredi..."
-                value={rescheduleNotes}
-                onChange={e => setRescheduleNotes(e.target.value)}
-                rows={3}
-                maxLength={500}
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRescheduleOpen(false)}>Annuler</Button>
-            <Button onClick={submitReschedule} disabled={submittingReschedule || !newDate}>
-              {submittingReschedule && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Envoyer la demande
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AnomalyReportDialog booking={reportBooking} onClose={() => setReportBooking(null)} />
+      <DisputeDialog booking={disputeBooking} onClose={() => setDisputeBooking(null)} />
+      <RescheduleDialog booking={rescheduleBooking} onClose={() => setRescheduleBooking(null)} />
     </div>
   );
 };

@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,23 +22,24 @@ interface Complaint {
   created_at: string;
 }
 
+const QUERY_KEY = ['admin-complaints'] as const;
+
 export const ComplaintsPanel = () => {
-  const [complaints, setComplaints] = useState<Complaint[]>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
   const [resolutionNote, setResolutionNote] = useState<Record<string, string>>({});
 
-  useEffect(() => { loadComplaints(); }, []);
-
-  const loadComplaints = async () => {
-    const { data, error } = await supabase
-      .from("complaints")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(50);
-    if (error) { console.error(error); toast.error("Erreur chargement réclamations"); }
-    else setComplaints(data || []);
-    setLoading(false);
-  };
+  const { data: complaints = [], isLoading: loading } = useQuery<Complaint[]>({
+    queryKey: QUERY_KEY,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("complaints")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) { toast.error("Erreur chargement réclamations"); throw error; }
+      return data || [];
+    },
+  });
 
   const handleResolve = async (id: string) => {
     const { error } = await supabase
@@ -49,18 +51,18 @@ export const ComplaintsPanel = () => {
       })
       .eq("id", id);
     if (error) toast.error("Erreur résolution");
-    else { toast.success("Réclamation résolue"); loadComplaints(); }
+    else { toast.success("Réclamation résolue"); qc.invalidateQueries({ queryKey: QUERY_KEY }); }
   };
 
-  const getPriorityVariant = (priority: string) => {
-    if (priority === "urgent" || priority === "high") return "destructive" as const;
-    if (priority === "medium") return "default" as const;
-    return "secondary" as const;
+  const getPriorityVariant = (priority: string): 'destructive' | 'default' | 'secondary' => {
+    if (priority === "urgent" || priority === "high") return "destructive";
+    if (priority === "medium") return "default";
+    return "secondary";
   };
 
   if (loading) return <div className="p-4">Chargement...</div>;
 
-  const openComplaints = complaints.filter(c => c.status !== "resolved");
+  const openComplaints     = complaints.filter(c => c.status !== "resolved");
   const resolvedComplaints = complaints.filter(c => c.status === "resolved");
 
   return (

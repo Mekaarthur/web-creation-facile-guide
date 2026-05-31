@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,77 +20,64 @@ interface PendingReview {
   total_price: number;
 }
 
+async function fetchPendingReviews(userId: string): Promise<PendingReview[]> {
+  const { data: bookings, error } = await supabase
+    .from('bookings')
+    .select(`
+      id,
+      booking_date,
+      total_price,
+      provider_id,
+      providers (
+        id,
+        business_name
+      ),
+      services (name)
+    `)
+    .eq('client_id', userId)
+    .eq('status', 'completed')
+    .order('booking_date', { ascending: false });
+
+  if (error) throw error;
+
+  const { data: existingReviews } = await supabase
+    .from('reviews')
+    .select('booking_id')
+    .eq('client_id', userId);
+
+  const reviewedBookingIds = new Set(existingReviews?.map(r => r.booking_id) || []);
+
+  return (bookings || [])
+    .filter(b => !reviewedBookingIds.has(b.id))
+    .map(b => ({
+      id: b.id,
+      booking_date: b.booking_date,
+      provider_id: b.provider_id,
+      provider_name: (b.providers as any)?.business_name || 'Prestataire',
+      service_name: (b.services as any)?.name || 'Service',
+      total_price: b.total_price,
+    }));
+}
+
 export const PendingReviews = () => {
   const { user } = useAuth();
-  const [pendingReviews, setPendingReviews] = useState<PendingReview[]>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
   const [selectedBooking, setSelectedBooking] = useState<PendingReview | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      loadPendingReviews();
-    }
-  }, [user]);
-
-  const loadPendingReviews = async () => {
-    if (!user) return;
-
-    try {
-      // Récupérer les réservations complétées sans avis
-      const { data: bookings, error } = await supabase
-        .from('bookings')
-        .select(`
-          id,
-          booking_date,
-          total_price,
-          provider_id,
-          providers (
-            id,
-            business_name
-          ),
-          services (name)
-        `)
-        .eq('client_id', user.id)
-        .eq('status', 'completed')
-        .order('booking_date', { ascending: false });
-
-      if (error) throw error;
-
-      // Filtrer celles qui n'ont pas d'avis
-      const { data: existingReviews } = await supabase
-        .from('reviews')
-        .select('booking_id')
-        .eq('client_id', user.id);
-
-      const reviewedBookingIds = new Set(existingReviews?.map(r => r.booking_id) || []);
-
-      const pending = (bookings || [])
-        .filter(b => !reviewedBookingIds.has(b.id))
-        .map(b => ({
-          id: b.id,
-          booking_date: b.booking_date,
-          provider_id: b.provider_id,
-          provider_name: (b.providers as any)?.business_name || 'Prestataire',
-          service_name: (b.services as any)?.name || 'Service',
-          total_price: b.total_price
-        }));
-
-      setPendingReviews(pending);
-    } catch (error) {
-      console.error('Erreur chargement avis en attente:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: pendingReviews = [], isLoading } = useQuery<PendingReview[]>({
+    queryKey: ['pending-reviews', user?.id],
+    queryFn: () => fetchPendingReviews(user!.id),
+    enabled: !!user,
+  });
 
   const handleReviewSuccess = () => {
     setDialogOpen(false);
     setSelectedBooking(null);
-    loadPendingReviews();
+    qc.invalidateQueries({ queryKey: ['pending-reviews', user?.id] });
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-8">

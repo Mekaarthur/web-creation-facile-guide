@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -43,34 +44,31 @@ const REQUIRED_PROVIDER_DOCUMENT_TYPES = [
   "certification",
 ];
 
+const DOCS_KEY = ['admin-provider-documents'] as const;
+
+async function fetchDocuments(): Promise<ProviderDoc[]> {
+  const { data, error } = await supabase
+    .from("provider_documents")
+    .select(`
+      *,
+      provider:providers!provider_documents_provider_id_fkey(business_name, user_id)
+    `)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as any[]) || [];
+}
+
 export const ProviderDocumentsReview = () => {
-  const [documents, setDocuments] = useState<ProviderDoc[]>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
   const [rejectingDoc, setRejectingDoc] = useState<ProviderDoc | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
 
-  useEffect(() => {
-    loadDocuments();
-  }, []);
+  const { data: documents = [], isLoading: loading } = useQuery<ProviderDoc[]>({
+    queryKey: DOCS_KEY,
+    queryFn: fetchDocuments,
+  });
 
-  const loadDocuments = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("provider_documents")
-      .select(`
-        *,
-        provider:providers!provider_documents_provider_id_fkey(business_name, user_id)
-      `)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error(error);
-      toast.error("Erreur chargement documents");
-    } else {
-      setDocuments((data as any[]) || []);
-    }
-    setLoading(false);
-  };
+  const invalidate = () => qc.invalidateQueries({ queryKey: DOCS_KEY });
 
   const handleApprove = async (doc: ProviderDoc) => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -89,8 +87,7 @@ export const ProviderDocumentsReview = () => {
       toast.error("Erreur lors de l'approbation");
     } else {
       toast.success(`Document "${DOC_LABELS[doc.document_type] || doc.document_type}" approuvé`);
-      
-      // Check if all docs for this provider are now approved
+
       const nextDocs = documents
         .filter(d => d.provider_id === doc.provider_id)
         .map(d => d.id === doc.id ? { ...d, status: 'approved' } : d);
@@ -104,8 +101,8 @@ export const ProviderDocumentsReview = () => {
           documents_submitted_at: allRequiredApproved ? new Date().toISOString() : null,
         })
         .eq("id", doc.provider_id);
-      
-      loadDocuments();
+
+      invalidate();
     }
   };
 
@@ -137,7 +134,7 @@ export const ProviderDocumentsReview = () => {
       toast.success("Document rejeté");
       setRejectingDoc(null);
       setRejectionReason("");
-      loadDocuments();
+      invalidate();
     }
   };
 
@@ -152,7 +149,6 @@ export const ProviderDocumentsReview = () => {
     }
   };
 
-  // Group documents by provider
   const grouped = documents.reduce<Record<string, { providerName: string; docs: ProviderDoc[] }>>((acc, doc) => {
     const key = doc.provider_id;
     if (!acc[key]) {
@@ -250,7 +246,6 @@ export const ProviderDocumentsReview = () => {
         })
       )}
 
-      {/* Rejection dialog */}
       <Dialog open={!!rejectingDoc} onOpenChange={() => setRejectingDoc(null)}>
         <DialogContent>
           <DialogHeader>

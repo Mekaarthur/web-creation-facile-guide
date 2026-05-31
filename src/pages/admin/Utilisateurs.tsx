@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -24,63 +25,41 @@ interface User {
   auth_data?: any;
 }
 
+const QUERY_KEY = ['admin-utilisateurs'] as const;
+
 export default function AdminUtilisateurs() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadUsers();
-
-    // Abonnement temps réel aux changements de profils
-    const channel = supabase
-      .channel('admin-users')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
-        loadUsers();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  const loadUsers = async () => {
-    try {
-      // Utiliser l'edge function pour récupérer les utilisateurs
+  const { data: users = [], isLoading: loading } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: async () => {
       const { data, error } = await supabase.functions.invoke('admin-users-management', {
         body: { action: 'list' }
       });
-
       if (error) throw new Error(`[${error.status || 500}] ${error.message}`);
-      
-      const transformedUsers: User[] = data.users?.map((user: any) => {
-        return {
-          id: user.id,
-          email: user.email || 'Email non disponible',
-          created_at: user.created_at,
-          banned_until: user.banned_until,
-          profiles: user.profiles
-        };
-      }) || [];
-      
-      setUsers(transformedUsers);
-    } catch (error: any) {
-      console.error('Erreur détaillée:', error);
-      const errorMessage = error.message?.includes('[') 
-        ? error.message 
-        : `[500] Erreur inconnue: ${error.message || 'Impossible de charger les utilisateurs'}`;
-      
-      toast({
-        title: "Erreur de chargement",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+      return (data.users || []).map((user: any): User => ({
+        id: user.id,
+        email: user.email || 'Email non disponible',
+        created_at: user.created_at,
+        banned_until: user.banned_until,
+        profiles: user.profiles,
+      }));
+    },
+    staleTime: 60 * 1000,
+  });
+
+  // Realtime subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-users')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+        qc.invalidateQueries({ queryKey: QUERY_KEY });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [qc]);
 
   const handleUserAction = async (userId: string, action: 'activate' | 'suspend' | 'examine') => {
     try {
@@ -121,8 +100,7 @@ export default function AdminUtilisateurs() {
         description: data.message,
       });
 
-      // Recharger la liste
-      loadUsers();
+      qc.invalidateQueries({ queryKey: QUERY_KEY });
     } catch (error: any) {
       console.error('Erreur action utilisateur:', error);
       const errorMsg = error.message?.includes('[') 
@@ -138,12 +116,8 @@ export default function AdminUtilisateurs() {
   };
 
   const handleRefresh = () => {
-    setLoading(true);
-    loadUsers();
-    toast({
-      title: "Actualisation",
-      description: "Liste des utilisateurs actualisée",
-    });
+    qc.invalidateQueries({ queryKey: QUERY_KEY });
+    toast({ title: "Actualisation", description: "Liste des utilisateurs actualisée" });
   };
 
   const getUserDisplayName = (user: User) => {

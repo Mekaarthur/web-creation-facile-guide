@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { debounce } from 'lodash-es';
+import { sanitizeSearch } from '@/lib/sanitizeSearch';
 
 interface SearchResult {
   id: string;
@@ -58,7 +59,7 @@ export const useSmartSearch = () => {
         const { data: services } = await supabase
           .from('services')
           .select('*')
-          .ilike('name', `%${query}%`)
+          .ilike('name', `%${sanitizeSearch(query)}%`)
           .limit(5);
 
         services?.forEach(service => {
@@ -189,7 +190,7 @@ export const useSmartSearch = () => {
       const { data: services } = await supabase
         .from('services')
         .select('name')
-        .ilike('name', `%${query}%`)
+        .ilike('name', `%${sanitizeSearch(query)}%`)
         .limit(5);
 
       const serviceSuggestions = services?.map(s => s.name) || [];

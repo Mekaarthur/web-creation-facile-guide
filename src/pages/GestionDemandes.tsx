@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,12 +10,12 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ClientRequestsList } from "@/components/ClientRequestsList";
 import { GoogleFormsAnalytics } from "@/components/GoogleFormsAnalytics";
-import { 
-  Search, 
-  Filter, 
-  Download, 
-  TrendingUp, 
-  Users, 
+import {
+  Search,
+  Filter,
+  Download,
+  TrendingUp,
+  Users,
   Calendar,
   MapPin,
   BarChart3,
@@ -31,23 +32,59 @@ interface RequestStats {
   thisWeek: number;
 }
 
+interface DemandesData {
+  stats: RequestStats;
+  recentActivity: any[];
+  topLocations: { location: string; count: number }[];
+}
+
+const DEMANDES_KEY = ['gestion-demandes-stats'] as const;
+
+async function fetchDemandesData(): Promise<DemandesData> {
+  const { data: allRequests, error } = await supabase
+    .from('client_requests')
+    .select('*');
+
+  if (error) throw error;
+
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+  const recentActivity = [...(allRequests || [])]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 5);
+
+  const locationCounts = (allRequests || []).reduce((acc, req) => {
+    acc[req.location] = (acc[req.location] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const topLocations = Object.entries(locationCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5)
+    .map(([location, count]) => ({ location, count }));
+
+  return {
+    stats: {
+      total: allRequests?.length || 0,
+      new: allRequests?.filter(r => r.status === 'new').length || 0,
+      assigned: allRequests?.filter(r => r.status === 'assigned').length || 0,
+      converted: allRequests?.filter(r => r.status === 'converted').length || 0,
+      thisWeek: allRequests?.filter(r => new Date(r.created_at) >= oneWeekAgo).length || 0,
+    },
+    recentActivity,
+    topLocations,
+  };
+}
+
 export const GestionDemandes = () => {
   const { isAdmin, loading: adminLoading } = useAdminRole();
   const navigate = useNavigate();
-  const [stats, setStats] = useState<RequestStats>({
-    total: 0,
-    new: 0,
-    assigned: 0,
-    converted: 0,
-    thisWeek: 0
-  });
+  const qc = useQueryClient();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterService, setFilterService] = useState("all");
-  const [recentActivity, setRecentActivity] = useState<any[]>([]);
-  const [topLocations, setTopLocations] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
 
   useEffect(() => {
     if (!adminLoading && !isAdmin) {
@@ -55,83 +92,39 @@ export const GestionDemandes = () => {
     }
   }, [adminLoading, isAdmin, navigate]);
 
-  const fetchStats = async () => {
-    try {
-      // Statistiques générales
-      const { data: allRequests, error } = await supabase
-        .from('client_requests')
-        .select('*');
+  const { data, isLoading: loading } = useQuery<DemandesData>({
+    queryKey: DEMANDES_KEY,
+    queryFn: fetchDemandesData,
+    enabled: !!isAdmin,
+  });
 
-      if (error) throw error;
+  useEffect(() => {
+    if (!isAdmin) return;
+    const channel = supabase
+      .channel('requests-stats')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'client_requests' },
+        () => qc.invalidateQueries({ queryKey: DEMANDES_KEY }))
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [isAdmin, qc]);
 
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-
-      const thisWeekRequests = allRequests?.filter(request => 
-        new Date(request.created_at) >= oneWeekAgo
-      ).length || 0;
-
-      setStats({
-        total: allRequests?.length || 0,
-        new: allRequests?.filter(r => r.status === 'new').length || 0,
-        assigned: allRequests?.filter(r => r.status === 'assigned').length || 0,
-        converted: allRequests?.filter(r => r.status === 'converted').length || 0,
-        thisWeek: thisWeekRequests
-      });
-
-      // Activité récente
-      const { data: recent } = await supabase
-        .from('client_requests')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      setRecentActivity(recent || []);
-
-      // Top locations
-      const locationCounts = allRequests?.reduce((acc, request) => {
-        const location = request.location;
-        acc[location] = (acc[location] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>) || {};
-
-      const sortedLocations = Object.entries(locationCounts)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 5)
-        .map(([location, count]) => ({ location, count }));
-
-      setTopLocations(sortedLocations);
-
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les statistiques",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const stats = data?.stats ?? { total: 0, new: 0, assigned: 0, converted: 0, thisWeek: 0 };
+  const recentActivity = data?.recentActivity ?? [];
+  const topLocations = data?.topLocations ?? [];
 
   const exportRequests = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: exportData, error } = await supabase
         .from('client_requests')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      // Créer CSV
-      const headers = [
-        'Date', 'Client', 'Email', 'Service', 'Localisation', 
-        'Statut', 'Urgence', 'Budget'
-      ];
-      
+      const headers = ['Date', 'Client', 'Email', 'Service', 'Localisation', 'Statut', 'Urgence', 'Budget'];
       const csvContent = [
         headers.join(','),
-        ...data.map(request => [
+        ...exportData.map(request => [
           new Date(request.created_at).toLocaleDateString('fr-FR'),
           request.client_name,
           request.client_email,
@@ -143,7 +136,6 @@ export const GestionDemandes = () => {
         ].join(','))
       ].join('\n');
 
-      // Télécharger
       const blob = new Blob([csvContent], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -151,41 +143,11 @@ export const GestionDemandes = () => {
       link.download = `demandes-clients-${new Date().toISOString().split('T')[0]}.csv`;
       link.click();
 
-      toast({
-        title: "Export réussi",
-        description: "Les demandes ont été exportées en CSV",
-      });
+      toast({ title: "Export réussi", description: "Les demandes ont été exportées en CSV" });
     } catch (error) {
-      console.error('Error exporting:', error);
-      toast({
-        title: "Erreur d'export",
-        description: "Impossible d'exporter les données",
-        variant: "destructive",
-      });
+      toast({ title: "Erreur d'export", description: "Impossible d'exporter les données", variant: "destructive" });
     }
   };
-
-  useEffect(() => {
-    fetchStats();
-
-    // Mise à jour en temps réel
-    const channel = supabase
-      .channel('requests-stats')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'client_requests'
-        },
-        () => fetchStats()
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
 
   if (loading) {
     return (
@@ -209,7 +171,6 @@ export const GestionDemandes = () => {
   return (
     <div className="min-h-screen bg-background pt-16 lg:pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Gestion des Demandes</h1>
@@ -223,7 +184,6 @@ export const GestionDemandes = () => {
           </Button>
         </div>
 
-        {/* Statistiques */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
@@ -286,7 +246,6 @@ export const GestionDemandes = () => {
           </Card>
         </div>
 
-        {/* Contenu principal */}
         <Tabs defaultValue="demandes" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="demandes">Toutes les demandes</TabsTrigger>
@@ -295,7 +254,6 @@ export const GestionDemandes = () => {
           </TabsList>
 
           <TabsContent value="demandes" className="space-y-6">
-            {/* Filtres */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -341,22 +299,17 @@ export const GestionDemandes = () => {
               </CardContent>
             </Card>
 
-            {/* Liste des demandes */}
             <ClientRequestsList />
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
-            {/* Analytics avancées */}
             <GoogleFormsAnalytics />
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-              {/* Activité récente */}
               <Card>
                 <CardHeader>
                   <CardTitle>Activité récente</CardTitle>
-                  <CardDescription>
-                    Dernières demandes reçues
-                  </CardDescription>
+                  <CardDescription>Dernières demandes reçues</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -381,7 +334,6 @@ export const GestionDemandes = () => {
                 </CardContent>
               </Card>
 
-              {/* Top locations */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">

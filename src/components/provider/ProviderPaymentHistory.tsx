@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -42,49 +43,41 @@ interface Props {
   providerId: string;
 }
 
+async function fetchTransactions(providerId: string): Promise<Transaction[]> {
+  const { data, error } = await supabase
+    .from('financial_transactions')
+    .select('id, booking_id, service_category, provider_payment, payment_status, provider_paid_at, created_at, paid_via, bookings(scheduled_date, status)')
+    .eq('provider_id', providerId)
+    .order('created_at', { ascending: false })
+    .limit(100);
+  if (error) throw error;
+  return (data as unknown as Transaction[]) || [];
+}
+
 export const ProviderPaymentHistory = ({ providerId }: Props) => {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading]           = useState(true);
-  const [error, setError]               = useState(false);
-
-  const fetchTransactions = async () => {
-    setLoading(true);
-    setError(false);
-    try {
-      const { data, error: err } = await supabase
-        .from('financial_transactions')
-        .select('id, booking_id, service_category, provider_payment, payment_status, provider_paid_at, created_at, paid_via, bookings(scheduled_date, status)')
-        .eq('provider_id', providerId)
-        .order('created_at', { ascending: false })
-        .limit(100);
-
-      if (err) throw err;
-      setTransactions((data as unknown as Transaction[]) || []);
-    } catch {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (providerId) fetchTransactions();
-  }, [providerId]);
+  const { data: transactions = [], isLoading, isError, refetch } = useQuery<Transaction[]>({
+    queryKey: ['provider-transactions', providerId],
+    queryFn: () => fetchTransactions(providerId),
+    enabled: !!providerId,
+  });
 
   const now = new Date();
   const monthStart = startOfMonth(now);
   const monthEnd   = endOfMonth(now);
 
-  const paid = transactions.filter(t => t.payment_status === 'paid' || t.payment_status === 'completed');
-  const monthTotal = paid
-    .filter(t => {
-      const d = new Date(t.provider_paid_at || t.created_at);
-      return d >= monthStart && d <= monthEnd;
-    })
-    .reduce((sum, t) => sum + (t.provider_payment || 0), 0);
-  const cumulTotal = paid.reduce((sum, t) => sum + (t.provider_payment || 0), 0);
+  const { monthTotal, cumulTotal } = useMemo(() => {
+    const paid = transactions.filter(t => t.payment_status === 'paid' || t.payment_status === 'completed');
+    const monthTotal = paid
+      .filter(t => {
+        const d = new Date(t.provider_paid_at || t.created_at);
+        return d >= monthStart && d <= monthEnd;
+      })
+      .reduce((sum, t) => sum + (t.provider_payment || 0), 0);
+    const cumulTotal = paid.reduce((sum, t) => sum + (t.provider_payment || 0), 0);
+    return { monthTotal, cumulTotal };
+  }, [transactions]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
@@ -92,11 +85,11 @@ export const ProviderPaymentHistory = ({ providerId }: Props) => {
     );
   }
 
-  if (error) {
+  if (isError) {
     return (
       <div className="text-center py-16 space-y-4">
         <p className="text-muted-foreground">Impossible de charger l'historique.</p>
-        <Button variant="outline" size="sm" onClick={fetchTransactions}>
+        <Button variant="outline" size="sm" onClick={() => refetch()}>
           <RefreshCw className="w-4 h-4 mr-2" /> Réessayer
         </Button>
       </div>
@@ -105,7 +98,6 @@ export const ProviderPaymentHistory = ({ providerId }: Props) => {
 
   return (
     <div className="space-y-6">
-      {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-5 flex items-center gap-4">
@@ -142,14 +134,13 @@ export const ProviderPaymentHistory = ({ providerId }: Props) => {
         </Card>
       </div>
 
-      {/* Liste */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Euro className="w-4 h-4 text-primary" />
             Historique des paiements
           </CardTitle>
-          <Button variant="outline" size="sm" onClick={fetchTransactions} disabled={loading}>
+          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>
             <RefreshCw className="w-4 h-4 mr-2" /> Actualiser
           </Button>
         </CardHeader>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MessageSquare, MapPin, Calendar, Clock, Euro, RefreshCw } from 'lucide-react';
@@ -35,32 +35,23 @@ const URGENCY_LABEL: Record<string, string> = {
   very_high: 'Très urgent',
 };
 
+async function fetchCustomRequests(): Promise<CustomRequest[]> {
+  const { data, error } = await supabase
+    .from('custom_requests')
+    .select('id, service_description, location, preferred_date, preferred_time, budget_range, urgency_level, additional_notes, status, created_at')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
 export const ClientCustomRequests = () => {
   const { user } = useAuth();
-  const [requests, setRequests] = useState<CustomRequest[]>([]);
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState(false);
 
-  const fetchRequests = async () => {
-    if (!user) return;
-    setLoading(true);
-    setError(false);
-    try {
-      const { data, error: err } = await supabase
-        .from('custom_requests')
-        .select('id, service_description, location, preferred_date, preferred_time, budget_range, urgency_level, additional_notes, status, created_at')
-        .order('created_at', { ascending: false });
-
-      if (err) throw err;
-      setRequests(data || []);
-    } catch {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchRequests(); }, [user]);
+  const { data: requests = [], isLoading, isError, refetch } = useQuery<CustomRequest[]>({
+    queryKey: ['custom-requests', user?.id],
+    queryFn: fetchCustomRequests,
+    enabled: !!user,
+  });
 
   const adminNote = (notes: string | null) => {
     if (!notes) return null;
@@ -68,7 +59,7 @@ export const ClientCustomRequests = () => {
     return lines.length ? lines[lines.length - 1].replace('[Admin] ', '') : null;
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
@@ -76,11 +67,11 @@ export const ClientCustomRequests = () => {
     );
   }
 
-  if (error) {
+  if (isError) {
     return (
       <div className="text-center py-16 space-y-4">
         <p className="text-muted-foreground">Impossible de charger vos demandes.</p>
-        <Button variant="outline" size="sm" onClick={fetchRequests}>
+        <Button variant="outline" size="sm" onClick={() => refetch()}>
           <RefreshCw className="w-4 h-4 mr-2" /> Réessayer
         </Button>
       </div>
@@ -109,7 +100,7 @@ export const ClientCustomRequests = () => {
           </h2>
           <p className="text-sm text-muted-foreground mt-0.5">{requests.length} demande{requests.length > 1 ? 's' : ''}</p>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchRequests} disabled={loading}>
+        <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>
           <RefreshCw className="w-4 h-4 mr-2" /> Actualiser
         </Button>
       </div>

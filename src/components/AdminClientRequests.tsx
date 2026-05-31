@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
+import { sanitizeSearch } from '@/lib/sanitizeSearch';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,19 +8,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { 
+import {
   Search,
-  Filter,
   Eye,
   CheckCircle,
   Clock,
   AlertTriangle,
   MapPin,
-  Calendar,
-  Euro,
   MessageSquare,
-  UserCheck,
-  Users,
   Timer,
   Ban,
   Send
@@ -47,103 +44,84 @@ interface ClientRequest {
   assigned_provider_id: string | null;
 }
 
+async function fetchRequests(searchTerm: string, statusFilter: string, urgencyFilter: string): Promise<ClientRequest[]> {
+  let query = supabase
+    .from('client_requests')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (statusFilter !== 'all') query = query.eq('status', statusFilter);
+  if (urgencyFilter !== 'all') query = query.eq('urgency_level', urgencyFilter);
+  if (searchTerm) {
+    query = query.or(`client_name.ilike.%${sanitizeSearch(searchTerm)}%,service_type.ilike.%${sanitizeSearch(searchTerm)}%,location.ilike.%${sanitizeSearch(searchTerm)}%`);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return data || [];
+}
+
 export const AdminClientRequests = () => {
-  const [requests, setRequests] = useState<ClientRequest[]>([]);
-  const [loading, setLoading] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<ClientRequest | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [urgencyFilter, setUrgencyFilter] = useState<string>('all');
   const { toast } = useToast();
+  const qc = useQueryClient();
 
-  useEffect(() => {
-    fetchRequests();
-  }, [searchTerm, statusFilter, urgencyFilter]);
+  const { data: requests = [] } = useQuery<ClientRequest[]>({
+    queryKey: ['admin-client-requests', searchTerm, statusFilter, urgencyFilter],
+    queryFn: () => fetchRequests(searchTerm, statusFilter, urgencyFilter),
+  });
 
-  const fetchRequests = async () => {
-    setLoading(true);
-    try {
-      let query = supabase
-        .from('client_requests')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      // Appliquer les filtres
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
-      }
-      
-      if (urgencyFilter !== 'all') {
-        query = query.eq('urgency_level', urgencyFilter);
-      }
-
-      if (searchTerm) {
-        query = query.or(`client_name.ilike.%${searchTerm}%,service_type.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%`);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      setRequests(data || []);
-    } catch (error) {
-      console.error('Erreur lors du chargement des demandes:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les demandes",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const stats = useMemo(() => ({
+    total: requests.length,
+    new: requests.filter(r => r.status === 'new').length,
+    searching_provider: requests.filter(r => r.status === 'searching_provider').length,
+    awaiting_client_confirmation: requests.filter(r => r.status === 'awaiting_client_confirmation').length,
+    confirmed: requests.filter(r => r.status === 'confirmed').length,
+    in_progress: requests.filter(r => r.status === 'in_progress').length,
+    completed: requests.filter(r => r.status === 'completed').length,
+    dispute: requests.filter(r => r.status === 'dispute').length,
+    unmatched: requests.filter(r => r.status === 'unmatched').length,
+    urgent: requests.filter(r => r.urgency_level === 'urgent').length,
+  }), [requests]);
 
   const handleStatusUpdate = async (requestId: string, newStatus: string) => {
     try {
       const { error } = await supabase
         .from('client_requests')
-        .update({ 
-          status: newStatus,
-          updated_at: new Date().toISOString()
-        })
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
         .eq('id', requestId);
-
       if (error) throw error;
 
-      toast({
-        title: "Statut mis à jour",
-        description: `La demande a été marquée comme ${newStatus}`,
-      });
-
-      // Mettre à jour l'état local
-      setRequests(requests.map(req => 
-        req.id === requestId 
-          ? { ...req, status: newStatus }
-          : req
-      ));
-    } catch (error) {
-      console.error('Erreur:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour le statut",
-        variant: "destructive",
-      });
+      toast({ title: "Statut mis à jour", description: `La demande a été marquée comme ${newStatus}` });
+      qc.invalidateQueries({ queryKey: ['admin-client-requests'] });
+      if (selectedRequest?.id === requestId) {
+        setSelectedRequest({ ...selectedRequest, status: newStatus });
+      }
+    } catch {
+      toast({ title: "Erreur", description: "Impossible de mettre à jour le statut", variant: "destructive" });
     }
   };
 
-  const getStatusStats = () => {
-    const stats = {
-      total: requests.length,
-      new: requests.filter(r => r.status === 'new').length,
-      searching_provider: requests.filter(r => r.status === 'searching_provider').length,
-      awaiting_client_confirmation: requests.filter(r => r.status === 'awaiting_client_confirmation').length,
-      confirmed: requests.filter(r => r.status === 'confirmed').length,
-      in_progress: requests.filter(r => r.status === 'in_progress').length,
-      completed: requests.filter(r => r.status === 'completed').length,
-      dispute: requests.filter(r => r.status === 'dispute').length,
-      unmatched: requests.filter(r => r.status === 'unmatched').length,
-      urgent: requests.filter(r => r.urgency_level === 'urgent').length,
-    };
-    return stats;
+  const handleSearchProviders = async (requestId: string) => {
+    try {
+      const { error } = await supabase.functions.invoke('match-providers', { body: { requestId } });
+      if (error) throw error;
+      await handleStatusUpdate(requestId, 'searching_provider');
+      toast({ title: "Recherche lancée", description: "Recherche de prestataires en cours" });
+    } catch {
+      toast({ title: "Erreur", description: "Impossible de lancer la recherche", variant: "destructive" });
+    }
+  };
+
+  const handleSendNotification = async (_requestId: string, message: string) => {
+    try {
+      toast({ title: "Notification envoyée", description: message });
+    } catch {
+      toast({ title: "Erreur", description: "Impossible d'envoyer la notification", variant: "destructive" });
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -205,52 +183,8 @@ export const AdminClientRequests = () => {
     }
   };
 
-  const handleSearchProviders = async (requestId: string) => {
-    try {
-      const { error } = await supabase.functions.invoke('match-providers', {
-        body: { requestId }
-      });
-      
-      if (error) throw error;
-      
-      await handleStatusUpdate(requestId, 'searching_provider');
-      
-      toast({
-        title: "Recherche lancée",
-        description: "Recherche de prestataires en cours",
-      });
-    } catch (error) {
-      console.error('Erreur:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de lancer la recherche",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleSendNotification = async (requestId: string, message: string) => {
-    try {
-      // Logique d'envoi de notification
-      toast({
-        title: "Notification envoyée",
-        description: message,
-      });
-    } catch (error) {
-      console.error('Erreur:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'envoyer la notification",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const stats = getStatusStats();
-
   return (
     <div className="space-y-6">
-      {/* Statistiques */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         <Card>
           <CardHeader className="pb-2">
@@ -302,7 +236,6 @@ export const AdminClientRequests = () => {
         </Card>
       </div>
 
-      {/* Filtres et recherche */}
       <Card>
         <CardHeader>
           <CardTitle>Demandes clients</CardTitle>
@@ -350,7 +283,6 @@ export const AdminClientRequests = () => {
             </Select>
           </div>
 
-          {/* Table des demandes */}
           <Table>
             <TableHeader>
               <TableRow>
@@ -387,13 +319,13 @@ export const AdminClientRequests = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getUrgencyColor(request.urgency_level)} className="flex items-center gap-1 w-fit">
+                    <Badge variant={getUrgencyColor(request.urgency_level) as any} className="flex items-center gap-1 w-fit">
                       {getUrgencyIcon(request.urgency_level)}
                       {request.urgency_level}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getStatusColor(request.status)} className="flex items-center gap-1 w-fit">
+                    <Badge variant={getStatusColor(request.status) as any} className="flex items-center gap-1 w-fit">
                       {getStatusIcon(request.status)}
                       {getStatusLabel(request.status)}
                     </Badge>
@@ -416,8 +348,7 @@ export const AdminClientRequests = () => {
                             Voir
                           </Button>
                         </DialogTrigger>
-                        
-                        {/* Actions rapides selon le statut */}
+
                         {request.status === 'new' && (
                           <Button
                             variant="default"
@@ -428,7 +359,7 @@ export const AdminClientRequests = () => {
                             Rechercher
                           </Button>
                         )}
-                        
+
                         {request.status === 'unmatched' && (
                           <Button
                             variant="outline"
@@ -439,6 +370,7 @@ export const AdminClientRequests = () => {
                             Proposer
                           </Button>
                         )}
+
                         <DialogContent className="max-w-2xl">
                           <DialogHeader>
                             <DialogTitle>Détails de la demande</DialogTitle>
@@ -461,16 +393,12 @@ export const AdminClientRequests = () => {
                               </div>
                               <div>
                                 <h4 className="font-semibold">Description</h4>
-                                <p className="text-sm bg-gray-50 p-3 rounded">
-                                  {selectedRequest.service_description}
-                                </p>
+                                <p className="text-sm bg-gray-50 p-3 rounded">{selectedRequest.service_description}</p>
                               </div>
                               {selectedRequest.additional_notes && (
                                 <div>
                                   <h4 className="font-semibold">Notes supplémentaires</h4>
-                                  <p className="text-sm bg-gray-50 p-3 rounded">
-                                    {selectedRequest.additional_notes}
-                                  </p>
+                                  <p className="text-sm bg-gray-50 p-3 rounded">{selectedRequest.additional_notes}</p>
                                 </div>
                               )}
                               <div className="flex gap-2">

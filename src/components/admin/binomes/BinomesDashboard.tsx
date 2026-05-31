@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, Calendar, Star, TrendingUp, Users, Clock, Loader2 } from "lucide-react";
+import { Heart, Star, TrendingUp, Users, Clock, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -21,90 +22,64 @@ interface Binome {
   primary_provider?: any;
 }
 
+const QUERY_KEY = ['admin-binomes'] as const;
+
 const getStatusBadge = (status: string) => {
   switch (status) {
-    case "excellent":
-      return <Badge className="bg-green-100 text-green-800 border-green-200">Excellent</Badge>;
-    case "etabli":
-      return <Badge className="bg-blue-100 text-blue-800 border-blue-200">Établi</Badge>;
-    case "nouveau":
-      return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Nouveau</Badge>;
-    case "a_surveiller":
-      return <Badge className="bg-red-100 text-red-800 border-red-200">À surveiller</Badge>;
-    default:
-      return <Badge variant="secondary">{status}</Badge>;
+    case "excellent":    return <Badge className="bg-green-100 text-green-800 border-green-200">Excellent</Badge>;
+    case "etabli":      return <Badge className="bg-blue-100 text-blue-800 border-blue-200">Établi</Badge>;
+    case "nouveau":     return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Nouveau</Badge>;
+    case "a_surveiller": return <Badge className="bg-red-100 text-red-800 border-red-200">À surveiller</Badge>;
+    default:            return <Badge variant="secondary">{status}</Badge>;
   }
 };
 
+function getStatusFromScore(score: number | null): string {
+  if (!score) return 'nouveau';
+  if (score >= 0.8) return 'excellent';
+  if (score >= 0.6) return 'etabli';
+  if (score >= 0.4) return 'nouveau';
+  return 'a_surveiller';
+}
+
+async function fetchBinomes(): Promise<Binome[]> {
+  const { data: binomesRaw, error } = await supabase
+    .from('binomes')
+    .select(`*, primary_provider:providers!binomes_primary_provider_id_fkey(business_name)`)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+
+  const clientIds = [...new Set((binomesRaw || []).map(b => b.client_id))];
+  let profilesMap: Record<string, any> = {};
+
+  if (clientIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, first_name, last_name')
+      .in('id', clientIds);
+    (profiles || []).forEach(p => { profilesMap[p.id] = p; });
+  }
+
+  return (binomesRaw || []).map(b => ({ ...b, client_profile: profilesMap[b.client_id] || null }));
+}
+
 export const BinomesDashboard = () => {
-  const [binomesData, setBinomesData] = useState<Binome[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  const { data: binomesData = [], isLoading: loading, isError } = useQuery<Binome[]>({
+    queryKey: QUERY_KEY,
+    queryFn: fetchBinomes,
+  });
+
   useEffect(() => {
-    loadBinomes();
-  }, []);
+    if (isError) toast({ title: "Erreur", description: "Impossible de charger les binômes", variant: "destructive" });
+  }, [isError]);
 
-  const loadBinomes = async () => {
-    try {
-      setLoading(true);
-      // First fetch binomes with provider data
-      const { data: binomesRaw, error } = await supabase
-        .from('binomes')
-        .select(`
-          *,
-          primary_provider:providers!binomes_primary_provider_id_fkey(
-            business_name
-          )
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Fetch client profiles separately since there's no FK to profiles
-      const clientIds = [...new Set((binomesRaw || []).map(b => b.client_id))];
-      let profilesMap: Record<string, any> = {};
-      
-      if (clientIds.length > 0) {
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('id, first_name, last_name')
-          .in('id', clientIds);
-        
-        (profiles || []).forEach(p => { profilesMap[p.id] = p; });
-      }
-
-      const data = (binomesRaw || []).map(b => ({
-        ...b,
-        client_profile: profilesMap[b.client_id] || null
-      }));
-
-      if (error) throw error;
-      setBinomesData(data || []);
-    } catch (error) {
-      console.error('Erreur chargement binômes:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les binômes",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getStatusFromScore = (score: number | null): string => {
-    if (!score) return 'nouveau';
-    if (score >= 0.8) return 'excellent';
-    if (score >= 0.6) return 'etabli';
-    if (score >= 0.4) return 'nouveau';
-    return 'a_surveiller';
-  };
-
-  const excellentBinomes = binomesData.filter(b => getStatusFromScore(b.compatibility_score) === "excellent").length;
-  const etablisBinomes = binomesData.filter(b => getStatusFromScore(b.compatibility_score) === "etabli").length;
-  const nouveauBinomes = binomesData.filter(b => getStatusFromScore(b.compatibility_score) === "nouveau").length;
-  const aSurveillerBinomes = binomesData.filter(b => getStatusFromScore(b.compatibility_score) === "a_surveiller").length;
+  const excellentBinomes    = binomesData.filter(b => getStatusFromScore(b.compatibility_score) === "excellent").length;
+  const etablisBinomes      = binomesData.filter(b => getStatusFromScore(b.compatibility_score) === "etabli").length;
+  const nouveauBinomes      = binomesData.filter(b => getStatusFromScore(b.compatibility_score) === "nouveau").length;
+  const aSurveillerBinomes  = binomesData.filter(b => getStatusFromScore(b.compatibility_score) === "a_surveiller").length;
 
   if (loading) {
     return (
@@ -116,7 +91,6 @@ export const BinomesDashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Statistiques rapides */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -163,56 +137,43 @@ export const BinomesDashboard = () => {
         </Card>
       </div>
 
-      {/* Liste des binômes */}
       <Card>
         <CardHeader>
           <CardTitle>Binômes Actifs</CardTitle>
-          <CardDescription>
-            Liste des relations client-prestataire avec leur statut et performance
-          </CardDescription>
+          <CardDescription>Liste des relations client-prestataire avec leur statut et performance</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {binomesData.map((binome) => {
-              const clientName = binome.client_profile 
+              const clientName = binome.client_profile
                 ? `${binome.client_profile.first_name} ${binome.client_profile.last_name}`
                 : 'Client inconnu';
-              const providerName = binome.primary_provider?.business_name || 
-                (binome.primary_provider?.profiles 
-                  ? `${binome.primary_provider.profiles.first_name} ${binome.primary_provider.profiles.last_name}`
-                  : 'Prestataire inconnu');
+              const providerName = binome.primary_provider?.business_name || 'Prestataire inconnu';
               const status = getStatusFromScore(binome.compatibility_score);
               const satisfaction = binome.compatibility_score ? (binome.compatibility_score * 5).toFixed(1) : '0.0';
-              
+
               return (
                 <div key={binome.id} className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/5 transition-colors">
                   <div className="flex items-center space-x-4 flex-1">
                     <div className="flex flex-col">
                       <span className="font-medium">{clientName}</span>
                       <span className="text-sm text-muted-foreground flex items-center">
-                        <Users className="h-3 w-3 mr-1" />
-                        {providerName}
+                        <Users className="h-3 w-3 mr-1" />{providerName}
                       </span>
                     </div>
                   </div>
-                  
                   <div className="flex items-center space-x-6">
                     <div className="text-center">
                       <div className="text-sm font-medium">{binome.missions_count || 0}</div>
                       <div className="text-xs text-muted-foreground">missions</div>
                     </div>
-                    
                     <div className="flex items-center space-x-1">
                       <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                       <span className="font-medium">{satisfaction}</span>
                     </div>
-                    
                     {getStatusBadge(status)}
-                    
                     <div className="flex gap-2">
-                      <Button variant="ghost" size="sm">
-                        Détails
-                      </Button>
+                      <Button variant="ghost" size="sm">Détails</Button>
                     </div>
                   </div>
                 </div>
@@ -222,35 +183,23 @@ export const BinomesDashboard = () => {
         </CardContent>
       </Card>
 
-      {/* Évolution des binômes */}
       <Card>
         <CardHeader>
           <CardTitle>Évolution des Relations</CardTitle>
-          <CardDescription>
-            Progression des binômes vers l'excellence
-          </CardDescription>
+          <CardDescription>Progression des binômes vers l'excellence</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span>Nouveau → Établi</span>
-                <span>75%</span>
-              </div>
+              <div className="flex justify-between text-sm mb-2"><span>Nouveau → Établi</span><span>75%</span></div>
               <Progress value={75} className="h-2" />
             </div>
             <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span>Établi → Excellent</span>
-                <span>60%</span>
-              </div>
+              <div className="flex justify-between text-sm mb-2"><span>Établi → Excellent</span><span>60%</span></div>
               <Progress value={60} className="h-2" />
             </div>
             <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span>Taux de rétention global</span>
-                <span>85%</span>
-              </div>
+              <div className="flex justify-between text-sm mb-2"><span>Taux de rétention global</span><span>85%</span></div>
               <Progress value={85} className="h-2" />
             </div>
           </div>

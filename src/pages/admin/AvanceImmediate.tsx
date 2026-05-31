@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,9 +28,92 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+async function fetchDeclarations(statusFilter: string): Promise<any[]> {
+  let query = supabase
+    .from("urssaf_declarations")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (statusFilter !== "all") {
+    query = query.eq("status", statusFilter);
+  }
+  const { data, error } = await query;
+  if (error) throw error;
+  return data || [];
+}
+
+async function fetchIncidents(): Promise<any[]> {
+  const { data } = await supabase
+    .from("urssaf_declarations")
+    .select(`
+      *,
+      bookings (
+        booking_date, start_time, end_time, total_price, address,
+        services ( name )
+      )
+    `)
+    .in("status", ["rejected", "error", "pending"])
+    .order("created_at", { ascending: false });
+  return data || [];
+}
+
+interface FinancialStats {
+  totalDeclared: number;
+  totalStateAmount: number;
+  totalClientAmount: number;
+  monthlyCount: number;
+}
+
+const DEFAULT_FINANCIAL_STATS: FinancialStats = {
+  totalDeclared: 0,
+  totalStateAmount: 0,
+  totalClientAmount: 0,
+  monthlyCount: 0,
+};
+
+async function fetchFinancialStats(): Promise<FinancialStats> {
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+  const { data } = await supabase
+    .from("urssaf_declarations")
+    .select("total_amount, client_amount, state_amount")
+    .gte("created_at", startOfMonth.toISOString())
+    .eq("status", "validated");
+  if (!data) return DEFAULT_FINANCIAL_STATS;
+  return {
+    totalDeclared: data.reduce((s, d) => s + Number(d.total_amount), 0),
+    totalStateAmount: data.reduce((s, d) => s + Number(d.state_amount), 0),
+    totalClientAmount: data.reduce((s, d) => s + Number(d.client_amount), 0),
+    monthlyCount: data.length,
+  };
+}
+
+const getDeclarationStatusBadge = (status: string) => {
+  const map: Record<string, { variant: any; label: string; icon: any }> = {
+    created: { variant: "outline", label: "Créée", icon: Clock },
+    sent: { variant: "secondary", label: "Envoyée", icon: Send },
+    pending_client_validation: { variant: "outline", label: "Attente validation client", icon: Clock },
+    validated: { variant: "default", label: "Validée", icon: CheckCircle },
+    rejected: { variant: "destructive", label: "Rejetée", icon: XCircle },
+    expired: { variant: "destructive", label: "Expirée (48h)", icon: Ban },
+    retry: { variant: "secondary", label: "Relance", icon: RefreshCw },
+    paid: { variant: "default", label: "Payée", icon: Euro },
+    archived: { variant: "secondary", label: "Archivée", icon: CheckCircle },
+    error: { variant: "destructive", label: "Erreur", icon: AlertTriangle },
+  };
+  const config = map[status] || { variant: "secondary", label: status, icon: Clock };
+  const Icon = config.icon;
+  return (
+    <Badge variant={config.variant}>
+      <Icon className="h-3 w-3 mr-1" />
+      {config.label}
+    </Badge>
+  );
+};
+
 // Bloc 1 — Statut Habilitation
 const HabilitationStatus = () => {
-  const hasCredentials = false; // Will check env/secrets
+  const hasCredentials = false;
   const sapNumber = "SAP 880491436";
   const environment = "sandbox";
 
@@ -85,7 +169,7 @@ const HabilitationStatus = () => {
               <div>
                 <p className="text-sm font-medium text-destructive">API URSSAF non connectée</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Les secrets URSSAF_API_URL, URSSAF_CLIENT_ID, URSSAF_CLIENT_SECRET et URSSAF_SIRET 
+                  Les secrets URSSAF_API_URL, URSSAF_CLIENT_ID, URSSAF_CLIENT_SECRET et URSSAF_SIRET
                   doivent être configurés pour activer l'avance immédiate.
                 </p>
               </div>
@@ -99,59 +183,13 @@ const HabilitationStatus = () => {
 
 // Bloc 2 — Suivi des déclarations
 const DeclarationsTracking = () => {
-  const [declarations, setDeclarations] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(() => {
-    loadDeclarations();
-  }, [statusFilter]);
-
-  const loadDeclarations = async () => {
-    try {
-      setLoading(true);
-      let query = supabase
-        .from("urssaf_declarations")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (statusFilter !== "all") {
-        query = query.eq("status", statusFilter);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      setDeclarations(data || []);
-    } catch (err) {
-      console.error("Error loading declarations:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const map: Record<string, { variant: any; label: string; icon: any }> = {
-      created: { variant: "outline", label: "Créée", icon: Clock },
-      sent: { variant: "secondary", label: "Envoyée", icon: Send },
-      pending_client_validation: { variant: "outline", label: "Attente validation client", icon: Clock },
-      validated: { variant: "default", label: "Validée", icon: CheckCircle },
-      rejected: { variant: "destructive", label: "Rejetée", icon: XCircle },
-      expired: { variant: "destructive", label: "Expirée (48h)", icon: Ban },
-      retry: { variant: "secondary", label: "Relance", icon: RefreshCw },
-      paid: { variant: "default", label: "Payée", icon: Euro },
-      archived: { variant: "secondary", label: "Archivée", icon: CheckCircle },
-      error: { variant: "destructive", label: "Erreur", icon: AlertTriangle },
-    };
-    const config = map[status] || { variant: "secondary", label: status, icon: Clock };
-    const Icon = config.icon;
-    return (
-      <Badge variant={config.variant}>
-        <Icon className="h-3 w-3 mr-1" />
-        {config.label}
-      </Badge>
-    );
-  };
+  const { data: declarations = [], isLoading: loading } = useQuery<any[]>({
+    queryKey: ['urssaf-declarations', statusFilter],
+    queryFn: () => fetchDeclarations(statusFilter),
+  });
 
   const filtered = declarations.filter(
     (d) =>
@@ -234,7 +272,7 @@ const DeclarationsTracking = () => {
                   const deadlineDate = d.client_validation_deadline ? new Date(d.client_validation_deadline) : null;
                   const isUrgent = deadlineDate && deadlineDate.getTime() - Date.now() < 12 * 60 * 60 * 1000 && deadlineDate.getTime() > Date.now();
                   const isExpiredDeadline = deadlineDate && deadlineDate.getTime() < Date.now();
-                  
+
                   return (
                     <tr key={d.id} className={`border-b last:border-0 hover:bg-muted/30 ${isUrgent ? 'bg-amber-50' : ''} ${isExpiredDeadline && d.status !== 'expired' ? 'bg-red-50' : ''}`}>
                       <td className="py-2">{new Date(d.created_at).toLocaleDateString("fr-FR")}</td>
@@ -256,7 +294,7 @@ const DeclarationsTracking = () => {
                         ) : "—"}
                       </td>
                       <td className="py-2 text-xs">{d.retry_count ?? 0}/3</td>
-                      <td className="py-2">{getStatusBadge(d.status)}</td>
+                      <td className="py-2">{getDeclarationStatusBadge(d.status)}</td>
                     </tr>
                   );
                 })}
@@ -271,33 +309,18 @@ const DeclarationsTracking = () => {
 
 // Bloc 3 — Monitoring incidents
 const IncidentsMonitoring = () => {
-  const [incidents, setIncidents] = useState<any[]>([]);
+  const qc = useQueryClient();
   const [retrying, setRetrying] = useState<string | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadIncidents();
-  }, []);
-
-  const loadIncidents = async () => {
-    const { data } = await supabase
-      .from("urssaf_declarations")
-      .select(`
-        *,
-        bookings (
-          booking_date, start_time, end_time, total_price, address,
-          services ( name )
-        )
-      `)
-      .in("status", ["rejected", "error", "pending"])
-      .order("created_at", { ascending: false });
-    setIncidents(data || []);
-  };
+  const { data: incidents = [] } = useQuery<any[]>({
+    queryKey: ['urssaf-incidents'],
+    queryFn: fetchIncidents,
+  });
 
   const handleRetry = async (inc: any) => {
     setRetrying(inc.id);
     try {
-      // Incrémenter le compteur et remettre en statut "sent"
       await supabase
         .from("urssaf_declarations")
         .update({
@@ -307,7 +330,6 @@ const IncidentsMonitoring = () => {
         })
         .eq("id", inc.id);
 
-      // Appeler réellement l'Edge Function URSSAF avec les données de la réservation
       const booking = inc.bookings;
       if (booking) {
         const { error } = await supabase.functions.invoke("urssaf-register-service", {
@@ -351,8 +373,8 @@ const IncidentsMonitoring = () => {
         });
       }
 
-      loadIncidents();
-    } catch (err) {
+      qc.invalidateQueries({ queryKey: ['urssaf-incidents'] });
+    } catch {
       toast({ variant: "destructive", title: "Erreur", description: "Impossible de relancer la déclaration." });
     } finally {
       setRetrying(null);
@@ -364,7 +386,7 @@ const IncidentsMonitoring = () => {
       .from("urssaf_declarations")
       .update({ status: "archived" })
       .eq("id", id);
-    loadIncidents();
+    qc.invalidateQueries({ queryKey: ['urssaf-incidents'] });
   };
 
   return (
@@ -433,37 +455,10 @@ const IncidentsMonitoring = () => {
 
 // Bloc 4 — Vue financière
 const FinancialOverview = () => {
-  const [stats, setStats] = useState({
-    totalDeclared: 0,
-    totalStateAmount: 0,
-    totalClientAmount: 0,
-    monthlyCount: 0,
+  const { data: stats = DEFAULT_FINANCIAL_STATS } = useQuery<FinancialStats>({
+    queryKey: ['urssaf-financial-overview'],
+    queryFn: fetchFinancialStats,
   });
-
-  useEffect(() => {
-    loadStats();
-  }, []);
-
-  const loadStats = async () => {
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
-
-    const { data } = await supabase
-      .from("urssaf_declarations")
-      .select("total_amount, client_amount, state_amount")
-      .gte("created_at", startOfMonth.toISOString())
-      .eq("status", "validated");
-
-    if (data) {
-      setStats({
-        totalDeclared: data.reduce((s, d) => s + Number(d.total_amount), 0),
-        totalStateAmount: data.reduce((s, d) => s + Number(d.state_amount), 0),
-        totalClientAmount: data.reduce((s, d) => s + Number(d.client_amount), 0),
-        monthlyCount: data.length,
-      });
-    }
-  };
 
   return (
     <Card>

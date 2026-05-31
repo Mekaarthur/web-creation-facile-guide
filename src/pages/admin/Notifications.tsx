@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
-  Search, 
+import {
+  Search,
   Bell,
   User,
   Calendar,
@@ -14,11 +15,9 @@ import {
   MessageSquare,
   AlertCircle,
   CheckCircle,
-  X,
   ExternalLink,
   Trash2,
   CheckCheck,
-  Filter,
   RefreshCw,
   ShieldAlert,
   UserCheck,
@@ -50,10 +49,131 @@ interface NotificationStats {
   resolved_today: number;
 }
 
+async function fetchNotifications(typeFilter: string, priorityFilter: string): Promise<AdminNotification[]> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  let query = supabase
+    .from('realtime_notifications')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(100);
+
+  if (typeFilter !== 'all') query = query.eq('type', typeFilter);
+  if (priorityFilter !== 'all') query = query.eq('priority', priorityFilter);
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  return (data || []).map(n => {
+    const validPriority = ['low', 'normal', 'high', 'urgent'].includes(n.priority)
+      ? n.priority as 'low' | 'normal' | 'high' | 'urgent'
+      : 'normal';
+    return {
+      ...n,
+      priority: validPriority,
+      status: n.is_read ? 'read' as const : 'unread' as const,
+    };
+  });
+}
+
+async function fetchNotificationStats(): Promise<NotificationStats> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { total: 0, unread: 0, high_priority: 0, resolved_today: 0 };
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const [allNotifs, unreadNotifs, highPriorityNotifs, resolvedToday] = await Promise.all([
+    supabase.from('realtime_notifications').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
+    supabase.from('realtime_notifications').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_read', false),
+    supabase.from('realtime_notifications').select('*', { count: 'exact', head: true }).eq('user_id', user.id).in('priority', ['high', 'urgent']),
+    supabase.from('realtime_notifications').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_read', true).gte('updated_at', today.toISOString()),
+  ]);
+
+  return {
+    total: allNotifs.count || 0,
+    unread: unreadNotifs.count || 0,
+    high_priority: highPriorityNotifs.count || 0,
+    resolved_today: resolvedToday.count || 0,
+  };
+}
+
+const getNotificationIcon = (type: string) => {
+  switch (type) {
+    case 'new_user':
+    case 'new_client':
+      return <User className="w-4 h-4 text-blue-600" />;
+    case 'new_provider':
+    case 'provider_application':
+      return <UserCheck className="w-4 h-4 text-green-600" />;
+    case 'booking':
+    case 'booking_confirmed':
+    case 'booking_cancelled':
+      return <Calendar className="w-4 h-4 text-purple-600" />;
+    case 'payment':
+    case 'payment_success':
+    case 'payment_failed':
+      return <CreditCard className="w-4 h-4 text-emerald-600" />;
+    case 'new_message':
+    case 'conversation_alert':
+      return <MessageSquare className="w-4 h-4 text-orange-600" />;
+    case 'system':
+    case 'emergency_escalated':
+      return <AlertCircle className="w-4 h-4 text-red-600" />;
+    case 'moderation':
+      return <ShieldAlert className="w-4 h-4 text-yellow-600" />;
+    default:
+      return <Bell className="w-4 h-4 text-gray-600" />;
+  }
+};
+
+const getTypeLabel = (type: string) => {
+  const labels: Record<string, string> = {
+    'new_user': '🧍 Nouvel utilisateur',
+    'new_client': '👩‍🦰 Nouveau client',
+    'new_provider': '🧑‍💼 Nouveau prestataire',
+    'provider_application': '📋 Candidature prestataire',
+    'booking': '📅 Réservation',
+    'booking_confirmed': '✅ Réservation confirmée',
+    'booking_cancelled': '❌ Réservation annulée',
+    'payment': '💳 Paiement',
+    'payment_success': '💰 Paiement réussi',
+    'payment_failed': '⚠️ Paiement échoué',
+    'new_message': '📩 Nouveau message',
+    'conversation_alert': '🚨 Alerte conversation',
+    'system': '⚙️ Système',
+    'emergency_escalated': '🚨 URGENCE',
+    'moderation': '🛡️ Modération',
+  };
+  return labels[type] || type;
+};
+
+const getPriorityBadge = (priority: string) => {
+  switch (priority) {
+    case 'urgent':
+      return <Badge className="bg-red-100 dark:bg-red-950 text-red-800 dark:text-red-200">🔴 Urgent</Badge>;
+    case 'high':
+      return <Badge className="bg-orange-100 dark:bg-orange-950 text-orange-800 dark:text-orange-200">🟠 Important</Badge>;
+    case 'normal':
+      return <Badge className="bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-200">🔵 Normal</Badge>;
+    case 'low':
+      return <Badge variant="outline">⚪ Faible</Badge>;
+    default:
+      return <Badge variant="outline">{priority}</Badge>;
+  }
+};
+
+const getStatusBadge = (_status: string, is_read: boolean) => {
+  if (!is_read) {
+    return <Badge className="bg-yellow-100 dark:bg-yellow-950 text-yellow-800 dark:text-yellow-200">🟡 Non lue</Badge>;
+  }
+  return <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">⚪ Lue</Badge>;
+};
+
 export default function AdminNotifications() {
-  const [notifications, setNotifications] = useState<AdminNotification[]>([]);
-  const [stats, setStats] = useState<NotificationStats | null>(null);
-  const [loading, setLoading] = useState(false);
+  const qc = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -61,110 +181,30 @@ export default function AdminNotifications() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    loadNotifications();
-    loadStats();
+  const { data: notifications = [], isLoading: loading, refetch } = useQuery<AdminNotification[]>({
+    queryKey: ['admin-notifications', typeFilter, priorityFilter],
+    queryFn: () => fetchNotifications(typeFilter, priorityFilter),
+  });
 
-    // Real-time subscriptions
+  const { data: stats } = useQuery<NotificationStats>({
+    queryKey: ['admin-notifications-stats'],
+    queryFn: fetchNotificationStats,
+  });
+
+  useEffect(() => {
     const channel = supabase
       .channel('admin-notifications')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'realtime_notifications' }, () => {
-        loadNotifications();
-        loadStats();
+        qc.invalidateQueries({ queryKey: ['admin-notifications'] });
+        qc.invalidateQueries({ queryKey: ['admin-notifications-stats'] });
       })
       .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [qc]);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [typeFilter, statusFilter, priorityFilter]);
-
-  const loadNotifications = async () => {
-    try {
-      setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // Récupérer toutes les notifications pour l'admin
-      let query = supabase
-        .from('realtime_notifications')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(100);
-
-      // Appliquer les filtres
-      if (typeFilter !== 'all') {
-        query = query.eq('type', typeFilter);
-      }
-      
-      if (priorityFilter !== 'all') {
-        query = query.eq('priority', priorityFilter);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-
-      // Calculer le statut en fonction de is_read et mapper les types
-      const notificationsWithStatus = (data || []).map(n => {
-        // Valider et normaliser la priorité
-        const validPriority = ['low', 'normal', 'high', 'urgent'].includes(n.priority) 
-          ? n.priority as 'low' | 'normal' | 'high' | 'urgent'
-          : 'normal';
-
-        return {
-          ...n,
-          priority: validPriority,
-          status: n.is_read ? 'read' as const : 'unread' as const
-        };
-      });
-
-      // Filtrer par statut
-      let filtered = notificationsWithStatus;
-      if (statusFilter === 'unread') {
-        filtered = notificationsWithStatus.filter(n => !n.is_read);
-      } else if (statusFilter === 'read') {
-        filtered = notificationsWithStatus.filter(n => n.is_read);
-      }
-
-      setNotifications(filtered);
-    } catch (error) {
-      console.error('Erreur chargement notifications:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les notifications",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadStats = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-      const [allNotifs, unreadNotifs, highPriorityNotifs, resolvedToday] = await Promise.all([
-        supabase.from('realtime_notifications').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('realtime_notifications').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_read', false),
-        supabase.from('realtime_notifications').select('*', { count: 'exact', head: true }).eq('user_id', user.id).in('priority', ['high', 'urgent']),
-        supabase.from('realtime_notifications').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_read', true).gte('updated_at', today.toISOString())
-      ]);
-
-      setStats({
-        total: allNotifs.count || 0,
-        unread: unreadNotifs.count || 0,
-        high_priority: highPriorityNotifs.count || 0,
-        resolved_today: resolvedToday.count || 0
-      });
-    } catch (error) {
-      console.error('Erreur stats:', error);
-    }
+  const invalidateAll = () => {
+    qc.invalidateQueries({ queryKey: ['admin-notifications'] });
+    qc.invalidateQueries({ queryKey: ['admin-notifications-stats'] });
   };
 
   const markAsRead = async (notificationId: string) => {
@@ -173,18 +213,10 @@ export default function AdminNotifications() {
         .from('realtime_notifications')
         .update({ is_read: true })
         .eq('id', notificationId);
-
       if (error) throw error;
-
-      loadNotifications();
-      loadStats();
-    } catch (error) {
-      console.error('Erreur marquage lu:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de marquer comme lu",
-        variant: "destructive"
-      });
+      invalidateAll();
+    } catch {
+      toast({ title: "Erreur", description: "Impossible de marquer comme lu", variant: "destructive" });
     }
   };
 
@@ -192,28 +224,16 @@ export default function AdminNotifications() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-
       const { error } = await supabase
         .from('realtime_notifications')
         .update({ is_read: true })
         .eq('user_id', user.id)
         .eq('is_read', false);
-
       if (error) throw error;
-
-      toast({
-        title: "Notifications marquées comme lues",
-        description: "Toutes les notifications ont été marquées comme lues"
-      });
-
-      loadNotifications();
-      loadStats();
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de marquer toutes comme lues",
-        variant: "destructive"
-      });
+      toast({ title: "Notifications marquées comme lues", description: "Toutes les notifications ont été marquées comme lues" });
+      invalidateAll();
+    } catch {
+      toast({ title: "Erreur", description: "Impossible de marquer toutes comme lues", variant: "destructive" });
     }
   };
 
@@ -223,124 +243,32 @@ export default function AdminNotifications() {
         .from('realtime_notifications')
         .delete()
         .eq('id', notificationId);
-
       if (error) throw error;
-
-      toast({
-        title: "Notification supprimée",
-        description: "La notification a été supprimée avec succès"
-      });
-
-      loadNotifications();
-      loadStats();
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de supprimer la notification",
-        variant: "destructive"
-      });
+      toast({ title: "Notification supprimée", description: "La notification a été supprimée avec succès" });
+      invalidateAll();
+    } catch {
+      toast({ title: "Erreur", description: "Impossible de supprimer la notification", variant: "destructive" });
     }
   };
 
   const handleNotificationClick = (notification: AdminNotification) => {
-    // Marquer comme lue
-    if (!notification.is_read) {
-      markAsRead(notification.id);
-    }
-
-    // Rediriger vers la page appropriée
+    if (!notification.is_read) markAsRead(notification.id);
     if (notification.data) {
       const { conversation_id, booking_id, user_id, payment_id } = notification.data;
-      
-      if (conversation_id) {
-        navigate(`/modern-admin/messages?conversation=${conversation_id}`);
-      } else if (booking_id) {
-        navigate(`/modern-admin/bookings?booking=${booking_id}`);
-      } else if (user_id) {
-        navigate(`/modern-admin/users?user=${user_id}`);
-      } else if (payment_id) {
-        navigate(`/modern-admin/payments?payment=${payment_id}`);
-      }
+      if (conversation_id) navigate(`/modern-admin/messages?conversation=${conversation_id}`);
+      else if (booking_id) navigate(`/modern-admin/bookings?booking=${booking_id}`);
+      else if (user_id) navigate(`/modern-admin/users?user=${user_id}`);
+      else if (payment_id) navigate(`/modern-admin/payments?payment=${payment_id}`);
     }
   };
 
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'new_user':
-      case 'new_client':
-        return <User className="w-4 h-4 text-blue-600" />;
-      case 'new_provider':
-      case 'provider_application':
-        return <UserCheck className="w-4 h-4 text-green-600" />;
-      case 'booking':
-      case 'booking_confirmed':
-      case 'booking_cancelled':
-        return <Calendar className="w-4 h-4 text-purple-600" />;
-      case 'payment':
-      case 'payment_success':
-      case 'payment_failed':
-        return <CreditCard className="w-4 h-4 text-emerald-600" />;
-      case 'new_message':
-      case 'conversation_alert':
-        return <MessageSquare className="w-4 h-4 text-orange-600" />;
-      case 'system':
-      case 'emergency_escalated':
-        return <AlertCircle className="w-4 h-4 text-red-600" />;
-      case 'moderation':
-        return <ShieldAlert className="w-4 h-4 text-yellow-600" />;
-      default:
-        return <Bell className="w-4 h-4 text-gray-600" />;
-    }
-  };
-
-  const getTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      'new_user': '🧍 Nouvel utilisateur',
-      'new_client': '👩‍🦰 Nouveau client',
-      'new_provider': '🧑‍💼 Nouveau prestataire',
-      'provider_application': '📋 Candidature prestataire',
-      'booking': '📅 Réservation',
-      'booking_confirmed': '✅ Réservation confirmée',
-      'booking_cancelled': '❌ Réservation annulée',
-      'payment': '💳 Paiement',
-      'payment_success': '💰 Paiement réussi',
-      'payment_failed': '⚠️ Paiement échoué',
-      'new_message': '📩 Nouveau message',
-      'conversation_alert': '🚨 Alerte conversation',
-      'system': '⚙️ Système',
-      'emergency_escalated': '🚨 URGENCE',
-      'moderation': '🛡️ Modération'
-    };
-    return labels[type] || type;
-  };
-
-  const getPriorityBadge = (priority: string) => {
-    switch (priority) {
-      case 'urgent':
-        return <Badge className="bg-red-100 dark:bg-red-950 text-red-800 dark:text-red-200">🔴 Urgent</Badge>;
-      case 'high':
-        return <Badge className="bg-orange-100 dark:bg-orange-950 text-orange-800 dark:text-orange-200">🟠 Important</Badge>;
-      case 'normal':
-        return <Badge className="bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-200">🔵 Normal</Badge>;
-      case 'low':
-        return <Badge variant="outline">⚪ Faible</Badge>;
-      default:
-        return <Badge variant="outline">{priority}</Badge>;
-    }
-  };
-
-  const getStatusBadge = (status: string, is_read: boolean) => {
-    if (!is_read) {
-      return <Badge className="bg-yellow-100 dark:bg-yellow-950 text-yellow-800 dark:text-yellow-200">🟡 Non lue</Badge>;
-    }
-    return <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">⚪ Lue</Badge>;
-  };
-
-  const filteredNotifications = notifications.filter(notif =>
-    notif.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    notif.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    notif.type.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredNotifications = notifications
+    .filter(n => statusFilter === 'all' || (statusFilter === 'unread' ? !n.is_read : n.is_read))
+    .filter(n =>
+      n.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      n.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      n.type.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
   if (loading && notifications.length === 0) {
     return (
@@ -364,7 +292,6 @@ export default function AdminNotifications() {
         <p className="text-muted-foreground">Suivi des événements importants de la plateforme</p>
       </div>
 
-      {/* Statistiques */}
       {stats && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
@@ -379,7 +306,6 @@ export default function AdminNotifications() {
               <p className="text-xs text-muted-foreground">Notifications totales</p>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -392,7 +318,6 @@ export default function AdminNotifications() {
               <p className="text-xs text-muted-foreground">En attente</p>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -405,7 +330,6 @@ export default function AdminNotifications() {
               <p className="text-xs text-muted-foreground">Haute priorité</p>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -421,7 +345,6 @@ export default function AdminNotifications() {
         </div>
       )}
 
-      {/* Filtres et actions */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -433,7 +356,7 @@ export default function AdminNotifications() {
                   Tout marquer comme lu
                 </Button>
               )}
-              <Button variant="outline" size="sm" onClick={loadNotifications}>
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Actualiser
               </Button>
@@ -451,7 +374,6 @@ export default function AdminNotifications() {
                 className="pl-10"
               />
             </div>
-
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="Type" />
@@ -469,7 +391,6 @@ export default function AdminNotifications() {
                 <SelectItem value="moderation">Modération</SelectItem>
               </SelectContent>
             </Select>
-
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="Statut" />
@@ -480,7 +401,6 @@ export default function AdminNotifications() {
                 <SelectItem value="read">Lues</SelectItem>
               </SelectContent>
             </Select>
-
             <Select value={priorityFilter} onValueChange={setPriorityFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="Priorité" />
@@ -497,7 +417,6 @@ export default function AdminNotifications() {
         </CardContent>
       </Card>
 
-      {/* Table des notifications */}
       <Card>
         <CardContent className="p-0">
           <Table>
@@ -522,14 +441,12 @@ export default function AdminNotifications() {
                 </TableRow>
               ) : (
                 filteredNotifications.map((notification) => (
-                  <TableRow 
+                  <TableRow
                     key={notification.id}
                     className={`cursor-pointer ${!notification.is_read ? 'bg-blue-50/30 dark:bg-blue-950/20' : ''}`}
                     onClick={() => handleNotificationClick(notification)}
                   >
-                    <TableCell>
-                      {getNotificationIcon(notification.type)}
-                    </TableCell>
+                    <TableCell>{getNotificationIcon(notification.type)}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className="text-xs">
                         {getTypeLabel(notification.type)}
@@ -538,17 +455,11 @@ export default function AdminNotifications() {
                     <TableCell>
                       <div className="space-y-1">
                         <p className="font-semibold text-sm">{notification.title}</p>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {notification.message}
-                        </p>
+                        <p className="text-xs text-muted-foreground line-clamp-2">{notification.message}</p>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      {getPriorityBadge(notification.priority)}
-                    </TableCell>
-                    <TableCell>
-                      {getStatusBadge(notification.status, notification.is_read)}
-                    </TableCell>
+                    <TableCell>{getPriorityBadge(notification.priority)}</TableCell>
+                    <TableCell>{getStatusBadge(notification.status, notification.is_read)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Clock className="w-3 h-3" />
@@ -561,10 +472,7 @@ export default function AdminNotifications() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              markAsRead(notification.id);
-                            }}
+                            onClick={(e) => { e.stopPropagation(); markAsRead(notification.id); }}
                             title="Marquer comme lu"
                           >
                             <CheckCircle className="w-4 h-4" />
@@ -573,10 +481,7 @@ export default function AdminNotifications() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleNotificationClick(notification);
-                          }}
+                          onClick={(e) => { e.stopPropagation(); handleNotificationClick(notification); }}
                           title="Voir les détails"
                         >
                           <ExternalLink className="w-4 h-4" />
@@ -584,10 +489,7 @@ export default function AdminNotifications() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteNotification(notification.id);
-                          }}
+                          onClick={(e) => { e.stopPropagation(); deleteNotification(notification.id); }}
                           title="Supprimer"
                         >
                           <Trash2 className="w-4 h-4" />

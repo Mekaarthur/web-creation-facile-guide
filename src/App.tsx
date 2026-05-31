@@ -12,9 +12,10 @@ import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { OfflineBanner } from "@/components/pwa/OfflineBanner";
 import { MobileBottomNav } from "@/components/mobile/MobileBottomNav";
 
-import { HomeTutorial, TutorialHelpButton } from "@/components/tutorial/HomeTutorial";
-import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
-import { ConnectionIndicator } from "@/components/feedback/ConnectionIndicator";
+const HomeTutorial = lazy(() => import("@/components/tutorial/HomeTutorial").then(m => ({ default: m.HomeTutorial })));
+const TutorialHelpButton = lazy(() => import("@/components/tutorial/HomeTutorial").then(m => ({ default: m.TutorialHelpButton })));
+const FeedbackWidget = lazy(() => import("@/components/feedback/FeedbackWidget").then(m => ({ default: m.FeedbackWidget })));
+const ConnectionIndicator = lazy(() => import("@/components/feedback/ConnectionIndicator").then(m => ({ default: m.ConnectionIndicator })));
 import { NavigationBehaviors } from "@/components/NavigationBehaviors";
 import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
 import { PageLoadingBar } from "@/components/ui/PageLoadingBar";
@@ -26,8 +27,8 @@ import Index from "./pages/Index";
 const LiveRequestNotifications = lazy(() => import("@/components/LiveRequestNotifications").then(m => ({ default: m.LiveRequestNotifications })));
 
 // Auth pages - lazy loaded
-const Auth = lazy(() => import("./pages/Auth"));
-const ProviderAuth = lazy(() => import("./pages/ProviderAuth"));
+const Auth = lazy(() => import("./components/EnhancedAuth"));
+const ProviderAuth = lazy(() => import("./components/ProviderAuth"));
 const AuthComplete = lazy(() => import("./pages/AuthComplete"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const UpdatePassword = lazy(() => import("./pages/UpdatePassword"));
@@ -149,12 +150,12 @@ const App = () => (
           <Sonner />
           <InstallPrompt />
           
-          <FeedbackWidget />
-          <ConnectionIndicator />
+          <Suspense fallback={null}><FeedbackWidget /></Suspense>
+          <Suspense fallback={null}><ConnectionIndicator /></Suspense>
           <BrowserRouter>
             <CookieConsentBanner />
-            <HomeTutorial />
-            <TutorialHelpButton />
+            <Suspense fallback={null}><HomeTutorial /></Suspense>
+            <Suspense fallback={null}><TutorialHelpButton /></Suspense>
             <PageLoadingBar />
             <NavigationBehaviors />
             <KeyboardShortcuts />

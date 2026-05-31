@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,65 +17,55 @@ interface Candidature {
   mission?: { status: string; client_request_id: string };
 }
 
+const QUERY_KEY = ['admin-candidatures'] as const;
+
 export const CandidaturesPrestatairesPanel = () => {
-  const [candidatures, setCandidatures] = useState<Candidature[]>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
 
-  useEffect(() => {
-    loadCandidatures();
-  }, []);
-
-  const loadCandidatures = async () => {
-    const { data, error } = await supabase
-      .from("candidatures_prestataires")
-      .select(`
-        *,
-        provider:providers!provider_responses_provider_id_fkey(business_name, rating),
-        mission:missions!provider_responses_mission_assignment_id_fkey(status, client_request_id)
-      `)
-      .order("created_at", { ascending: false })
-      .limit(50);
-
-    if (error) { console.error(error); toast.error("Erreur chargement candidatures"); }
-    else setCandidatures(data || []);
-    setLoading(false);
-  };
+  const { data: candidatures = [], isLoading: loading } = useQuery<Candidature[]>({
+    queryKey: QUERY_KEY,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("candidatures_prestataires")
+        .select(`
+          *,
+          provider:providers!provider_responses_provider_id_fkey(business_name, rating),
+          mission:missions!provider_responses_mission_assignment_id_fkey(status, client_request_id)
+        `)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) { toast.error("Erreur chargement candidatures"); throw error; }
+      return data || [];
+    },
+  });
 
   const handleAccept = async (candidature: Candidature) => {
     try {
-      // Update mission status
       await supabase
         .from("missions")
         .update({ status: "assigned", assigned_provider_id: candidature.provider_id })
         .eq("id", candidature.mission_assignment_id);
-
       toast.success("Candidature acceptée");
-      loadCandidatures();
-    } catch (error) {
+      qc.invalidateQueries({ queryKey: QUERY_KEY });
+    } catch {
       toast.error("Erreur lors de l'acceptation");
     }
   };
 
   const handleReject = async (candidature: Candidature) => {
     try {
-      await supabase
-        .from("candidatures_prestataires")
-        .delete()
-        .eq("id", candidature.id);
-
+      await supabase.from("candidatures_prestataires").delete().eq("id", candidature.id);
       toast.success("Candidature refusée");
-      loadCandidatures();
-    } catch (error) {
+      qc.invalidateQueries({ queryKey: QUERY_KEY });
+    } catch {
       toast.error("Erreur lors du refus");
     }
   };
 
   const getStatusBadge = (type: string) => {
-    switch (type) {
-      case "accepted": return <Badge className="bg-primary/10 text-primary">Acceptée</Badge>;
-      case "declined": return <Badge variant="destructive">Refusée</Badge>;
-      default: return <Badge variant="secondary">En attente</Badge>;
-    }
+    if (type === "accepted") return <Badge className="bg-primary/10 text-primary">Acceptée</Badge>;
+    if (type === "declined") return <Badge variant="destructive">Refusée</Badge>;
+    return <Badge variant="secondary">En attente</Badge>;
   };
 
   if (loading) return <div className="p-4">Chargement...</div>;

@@ -1,196 +1,132 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  AlertTriangle, 
-  Clock, 
-  UserX, 
-  MessageCircle,
+import {
+  AlertTriangle,
+  Clock,
+  UserX,
   ArrowRight,
   Zap
 } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from "@/hooks/use-toast";
-import { format, formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
-interface Alert {
+interface AlertData {
   id: string;
   type: 'urgent_request' | 'inactive_provider' | 'waiting_client';
   title: string;
   description: string;
   count: number;
   urgency: 'high' | 'medium' | 'low';
-  action?: () => void;
-  data?: any;
+  navigateTo?: string;
 }
 
-export const AdminAlertsPanel = ({ onNavigate }: { onNavigate?: (tab: string) => void }) => {
+const ALERTS_KEY = ['admin-alerts'] as const;
+
+async function fetchAlerts(): Promise<AlertData[]> {
+  const alertsData: AlertData[] = [];
+
+  const urgentCutoff  = new Date(Date.now() - 2  * 60 * 60 * 1000).toISOString();
+  const inactiveDate  = new Date(Date.now() - 7  * 24 * 60 * 60 * 1000).toISOString();
+  const waitingCutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const blockedCutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+
+  const [
+    { data: urgentRequests },
+    { data: inactiveProviders },
+    { data: waitingClients },
+    { data: blockedMissions },
+    { data: openComplaints },
+    { data: failedPayments },
+  ] = await Promise.all([
+    supabase.from('client_requests').select('id').in('status', ['new', 'unmatched']).lt('created_at', urgentCutoff),
+    supabase.from('providers').select('id').eq('status', 'active').or(`last_mission_date.is.null,last_mission_date.lt.${inactiveDate}`),
+    supabase.from('client_requests').select('id').eq('status', 'assigned').lt('updated_at', waitingCutoff),
+    supabase.from('client_requests').select('id').eq('status', 'en_cours').lt('started_at', blockedCutoff),
+    supabase.from('complaints').select('id, priority').in('status', ['open', 'pending', 'in_progress']),
+    supabase.from('financial_transactions').select('id').eq('payment_status', 'failed'),
+  ]);
+
+  if (urgentRequests?.length) {
+    alertsData.push({
+      id: 'urgent_requests', type: 'urgent_request',
+      title: 'Demandes urgentes',
+      description: `${urgentRequests.length} demande(s) non attribuée(s) depuis plus de 2h`,
+      count: urgentRequests.length, urgency: 'high', navigateTo: '/modern-admin/missions',
+    });
+  }
+  if (inactiveProviders?.length) {
+    alertsData.push({
+      id: 'inactive_providers', type: 'inactive_provider',
+      title: 'Prestataires inactifs',
+      description: `${inactiveProviders.length} prestataire(s) sans mission depuis 7+ jours`,
+      count: inactiveProviders.length, urgency: 'medium', navigateTo: '/modern-admin/providers',
+    });
+  }
+  if (waitingClients?.length) {
+    alertsData.push({
+      id: 'waiting_clients', type: 'waiting_client',
+      title: 'Clients en attente',
+      description: `${waitingClients.length} client(s) sans réponse depuis 24h+`,
+      count: waitingClients.length, urgency: 'medium', navigateTo: '/modern-admin/clients',
+    });
+  }
+  if (blockedMissions?.length) {
+    alertsData.push({
+      id: 'blocked_missions', type: 'waiting_client',
+      title: 'Missions bloquées',
+      description: `${blockedMissions.length} mission(s) en cours depuis 48h+`,
+      count: blockedMissions.length, urgency: 'high', navigateTo: '/modern-admin/missions',
+    });
+  }
+  if (openComplaints?.length) {
+    const urgentCount = openComplaints.filter(c => c.priority === 'urgent' || c.priority === 'high').length;
+    alertsData.push({
+      id: 'open_complaints', type: 'urgent_request',
+      title: 'Réclamations clients',
+      description: `${openComplaints.length} réclamation(s) en cours${urgentCount > 0 ? ` dont ${urgentCount} urgente(s)` : ''}`,
+      count: openComplaints.length, urgency: urgentCount > 0 ? 'high' : 'medium',
+      navigateTo: '/modern-admin/reclamations',
+    });
+  }
+  if (failedPayments?.length) {
+    alertsData.push({
+      id: 'failed_payments', type: 'urgent_request',
+      title: 'Paiements échoués',
+      description: `${failedPayments.length} paiement(s) en échec nécessitant une intervention`,
+      count: failedPayments.length, urgency: 'high', navigateTo: '/modern-admin/payments',
+    });
+  }
+
+  return alertsData;
+}
+
+export const AdminAlertsPanel = () => {
   const navigate = useNavigate();
-  const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
 
-  useEffect(() => {
-    loadAlerts();
-    
-    // Recharger les alertes toutes les 30 secondes
-    const interval = setInterval(loadAlerts, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const loadAlerts = async () => {
-    try {
-      const alertsData: Alert[] = [];
-
-      // 1. Demandes urgentes non attribuées (> 2h)
-      const urgentCutoff = new Date(Date.now() - 2 * 60 * 60 * 1000); // 2h ago
-      const { data: urgentRequests, error: urgentError } = await supabase
-        .from('client_requests')
-        .select('*')
-        .in('status', ['new', 'unmatched'])
-        .lt('created_at', urgentCutoff.toISOString());
-
-      if (!urgentError && urgentRequests?.length > 0) {
-        alertsData.push({
-          id: 'urgent_requests',
-          type: 'urgent_request',
-          title: 'Demandes urgentes',
-          description: `${urgentRequests.length} demande(s) non attribuée(s) depuis plus de 2h`,
-          count: urgentRequests.length,
-          urgency: 'high',
-          action: () => navigate('/modern-admin/missions'),
-          data: urgentRequests
-        });
-      }
-
-      // 2. Prestataires inactifs depuis 7 jours
-      const inactiveDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
-      const { data: inactiveProviders, error: inactiveError } = await supabase
-        .from('providers')
-        .select('*')
-        .eq('status', 'active')
-        .or(`last_mission_date.is.null,last_mission_date.lt.${inactiveDate.toISOString()}`);
-
-      if (!inactiveError && inactiveProviders?.length > 0) {
-        alertsData.push({
-          id: 'inactive_providers',
-          type: 'inactive_provider',
-          title: 'Prestataires inactifs',
-          description: `${inactiveProviders.length} prestataire(s) sans mission depuis 7+ jours`,
-          count: inactiveProviders.length,
-          urgency: 'medium',
-          action: () => navigate('/modern-admin/providers'),
-          data: inactiveProviders
-        });
-      }
-
-      // 3. Clients en attente de réponse depuis > 24h
-      const waitingCutoff = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24h ago
-      const { data: waitingClients, error: waitingError } = await supabase
-        .from('client_requests')
-        .select('*')
-        .eq('status', 'assigned')
-        .lt('updated_at', waitingCutoff.toISOString());
-
-      if (!waitingError && waitingClients?.length > 0) {
-        alertsData.push({
-          id: 'waiting_clients',
-          type: 'waiting_client',
-          title: 'Clients en attente',
-          description: `${waitingClients.length} client(s) sans réponse depuis 24h+`,
-          count: waitingClients.length,
-          urgency: 'medium',
-          action: () => navigate('/modern-admin/clients'),
-          data: waitingClients
-        });
-      }
-
-      // 4. Missions bloquées (en cours depuis > 48h)
-      const blockedCutoff = new Date(Date.now() - 48 * 60 * 60 * 1000); // 48h ago
-      const { data: blockedMissions, error: blockedError } = await supabase
-        .from('client_requests')
-        .select('*')
-        .eq('status', 'en_cours')
-        .lt('started_at', blockedCutoff.toISOString());
-
-      if (!blockedError && blockedMissions?.length > 0) {
-        alertsData.push({
-          id: 'blocked_missions',
-          type: 'waiting_client',
-          title: 'Missions bloquées',
-          description: `${blockedMissions.length} mission(s) en cours depuis 48h+`,
-          count: blockedMissions.length,
-          urgency: 'high',
-          action: () => navigate('/modern-admin/missions'),
-          data: blockedMissions
-        });
-      }
-
-      // 5. Réclamations clients non résolues (table complaints)
-      const { data: openComplaints, error: complaintsError } = await supabase
-        .from('complaints')
-        .select('*')
-        .in('status', ['open', 'pending', 'in_progress']);
-
-      if (!complaintsError && openComplaints?.length > 0) {
-        const urgentComplaints = openComplaints.filter(c => c.priority === 'urgent' || c.priority === 'high');
-        alertsData.push({
-          id: 'open_complaints',
-          type: 'urgent_request',
-          title: 'Réclamations clients',
-          description: `${openComplaints.length} réclamation(s) en cours${urgentComplaints.length > 0 ? ` dont ${urgentComplaints.length} urgente(s)` : ''}`,
-          count: openComplaints.length,
-          urgency: urgentComplaints.length > 0 ? 'high' : 'medium',
-          action: () => navigate('/modern-admin/reclamations'),
-          data: openComplaints
-        });
-      }
-
-      // 6. Paiements échoués (financial_transactions avec statut failed)
-      const { data: failedPayments, error: failedError } = await supabase
-        .from('financial_transactions')
-        .select('*')
-        .eq('payment_status', 'failed');
-
-      if (!failedError && failedPayments?.length > 0) {
-        alertsData.push({
-          id: 'failed_payments',
-          type: 'urgent_request',
-          title: 'Paiements échoués',
-          description: `${failedPayments.length} paiement(s) en échec nécessitant une intervention`,
-          count: failedPayments.length,
-          urgency: 'high',
-          action: () => navigate('/modern-admin/payments'),
-          data: failedPayments
-        });
-      }
-
-      setAlerts(alertsData);
-    } catch (error) {
-      console.error('Error loading alerts:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: alerts = [], isLoading: loading } = useQuery<AlertData[]>({
+    queryKey: ALERTS_KEY,
+    queryFn: fetchAlerts,
+    refetchInterval: 30000,
+  });
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
-      case 'high': return 'destructive';
+      case 'high':   return 'destructive';
       case 'medium': return 'warning';
-      case 'low': return 'secondary';
-      default: return 'secondary';
+      default:       return 'secondary';
     }
   };
 
   const getUrgencyIcon = (type: string) => {
     switch (type) {
-      case 'urgent_request': return <Zap className="w-4 h-4" />;
+      case 'urgent_request':   return <Zap className="w-4 h-4" />;
       case 'inactive_provider': return <UserX className="w-4 h-4" />;
-      case 'waiting_client': return <Clock className="w-4 h-4" />;
-      default: return <AlertTriangle className="w-4 h-4" />;
+      case 'waiting_client':   return <Clock className="w-4 h-4" />;
+      default:                  return <AlertTriangle className="w-4 h-4" />;
     }
   };
 
@@ -241,7 +177,7 @@ export const AdminAlertsPanel = ({ onNavigate }: { onNavigate?: (tab: string) =>
       </CardHeader>
       <CardContent className="space-y-3">
         {alerts.map((alert) => (
-          <div 
+          <div
             key={alert.id}
             className="flex items-center justify-between p-3 bg-white rounded-lg border shadow-sm hover:shadow-md transition-shadow"
           >
@@ -259,12 +195,12 @@ export const AdminAlertsPanel = ({ onNavigate }: { onNavigate?: (tab: string) =>
                 <p className="text-sm text-muted-foreground">{alert.description}</p>
               </div>
             </div>
-            
-            {alert.action && (
-              <Button 
-                variant="outline" 
+
+            {alert.navigateTo && (
+              <Button
+                variant="outline"
                 size="sm"
-                onClick={alert.action}
+                onClick={() => navigate(alert.navigateTo!)}
                 className="flex items-center gap-1"
               >
                 Traiter
@@ -273,10 +209,10 @@ export const AdminAlertsPanel = ({ onNavigate }: { onNavigate?: (tab: string) =>
             )}
           </div>
         ))}
-        
+
         <div className="pt-2 border-t">
           <p className="text-xs text-muted-foreground">
-            Dernière mise à jour : {format(new Date(), 'HH:mm:ss', { locale: fr })} - 
+            Dernière mise à jour : {format(new Date(), 'HH:mm:ss', { locale: fr })} -
             Actualisation automatique toutes les 30s
           </p>
         </div>

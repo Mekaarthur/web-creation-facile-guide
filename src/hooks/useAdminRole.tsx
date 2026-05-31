@@ -1,44 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useAdminRole = () => {
   const { user } = useAuth();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!user) {
-      setIsAdmin(false);
-      setLoading(false);
-      return;
-    }
+  const { data: isAdmin = false, isLoading: loading } = useQuery({
+    queryKey: ['admin-role', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user!.id)
+        .eq('role', 'admin')
+        .maybeSingle();
 
-    const checkAdminRole = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .eq('role', 'admin')
-          .maybeSingle();
-
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error checking admin role:', error);
-          setIsAdmin(false);
-        } else {
-          setIsAdmin(!!data);
-        }
-      } catch (error) {
+      if (error && error.code !== 'PGRST116') {
         console.error('Error checking admin role:', error);
-        setIsAdmin(false);
-      } finally {
-        setLoading(false);
+        return false;
       }
-    };
-
-    checkAdminRole();
-  }, [user]);
+      return !!data;
+    },
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  });
 
   return { isAdmin, loading };
 };

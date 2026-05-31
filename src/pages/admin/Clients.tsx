@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,79 +49,48 @@ interface Stats {
   average_revenue_per_client: number;
 }
 
+const DEFAULT_STATS: Stats = {
+  total: 0, new: 0, active: 0, blocked: 0,
+  activity_rate: 0, retention_rate: 0,
+  total_revenue: 0, average_revenue_per_client: 0,
+};
+
 const AdminClients = () => {
-  const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [serviceFilter, setServiceFilter] = useState("all");
-  const [stats, setStats] = useState<Stats>({
-    total: 0,
-    new: 0,
-    active: 0,
-    blocked: 0,
-    activity_rate: 0,
-    retention_rate: 0,
-    total_revenue: 0,
-    average_revenue_per_client: 0
-  });
   const { toast } = useToast();
+  const qc = useQueryClient();
 
-  useEffect(() => {
-    loadClients();
-  }, [searchTerm, statusFilter, serviceFilter]);
-
-  useEffect(() => {
-    loadStats();
-  }, []);
-
-  const loadClients = async () => {
-    try {
-      setLoading(true);
+  const { data: clients = [], isLoading: loading } = useQuery({
+    queryKey: ['admin-clients', searchTerm, statusFilter, serviceFilter],
+    queryFn: async () => {
       const { data, error } = await supabase.functions.invoke('admin-clients', {
-        body: { 
-          action: 'list', 
-          searchTerm, 
-          statusFilter,
-          serviceFilter,
-          limit: 100 
-        }
+        body: { action: 'list', searchTerm, statusFilter, serviceFilter, limit: 100 }
       });
-
       if (error) throw error;
+      if (!data?.success) throw new Error('Failed to load clients');
+      return data.clients as Client[];
+    },
+    staleTime: 60 * 1000,
+    meta: {
+      onError: () => toast({ title: "Erreur", description: "Impossible de charger les clients", variant: "destructive" }),
+    },
+  });
 
-      if (data?.success) {
-        setClients(data.clients);
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des clients:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les clients",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadStats = async () => {
-    try {
+  const { data: stats = DEFAULT_STATS } = useQuery({
+    queryKey: ['admin-clients-stats'],
+    queryFn: async () => {
       const { data, error } = await supabase.functions.invoke('admin-clients', {
         body: { action: 'get_stats', timeRange: '30d' }
       });
-
       if (error) throw error;
-
-      if (data?.success) {
-        setStats(data.stats);
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des stats:', error);
-    }
-  };
+      return data?.success ? (data.stats as Stats) : DEFAULT_STATS;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { variant: any, label: string }> = {
@@ -420,8 +390,8 @@ const AdminClients = () => {
         isOpen={!!selectedClientId}
         onClose={() => setSelectedClientId(null)}
         onClientUpdated={() => {
-          loadClients();
-          loadStats();
+          qc.invalidateQueries({ queryKey: ['admin-clients'] });
+          qc.invalidateQueries({ queryKey: ['admin-clients-stats'] });
         }}
       />
 
@@ -429,8 +399,8 @@ const AdminClients = () => {
         isOpen={createDialogOpen}
         onClose={() => setCreateDialogOpen(false)}
         onClientCreated={() => {
-          loadClients();
-          loadStats();
+          qc.invalidateQueries({ queryKey: ['admin-clients'] });
+          qc.invalidateQueries({ queryKey: ['admin-clients-stats'] });
         }}
       />
     </div>

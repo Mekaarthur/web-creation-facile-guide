@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,111 +28,98 @@ interface AccessLog {
   new_data: any;
 }
 
+interface AccessTrackingData {
+  currentAdmins: AdminUser[];
+  accessLogs: AccessLog[];
+  roleLogs: AccessLog[];
+}
+
+async function fetchAccessTrackingData(): Promise<AccessTrackingData> {
+  const { data: roles } = await supabase
+    .from('user_roles')
+    .select('user_id, role, created_at')
+    .eq('role', 'admin');
+
+  const adminIds = roles?.map(r => r.user_id) || [];
+
+  let currentAdmins: AdminUser[] = [];
+  if (adminIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, email, first_name, last_name')
+      .in('user_id', adminIds);
+
+    currentAdmins = (roles || []).map(role => {
+      const profile = profiles?.find(p => p.user_id === role.user_id);
+      return {
+        user_id: role.user_id,
+        email: profile?.email || 'N/A',
+        first_name: profile?.first_name || null,
+        last_name: profile?.last_name || null,
+        role: role.role,
+        role_granted_at: role.created_at,
+      };
+    });
+  }
+
+  const enrichLog = (log: any): AccessLog => ({
+    ...log,
+    ip_address: log.ip_address as string | null,
+    description: log.description || '',
+    admin_email: typeof log.new_data === 'object' && log.new_data !== null
+      ? (log.new_data as any).admin_email || (log.new_data as any).email || 'Inconnu'
+      : 'Inconnu',
+  });
+
+  const [{ data: connLogs }, { data: roleChangeLogs }] = await Promise.all([
+    supabase.from('admin_actions_log')
+      .select('id, admin_user_id, action_type, description, created_at, ip_address, new_data')
+      .in('action_type', ['login', 'logout'])
+      .order('created_at', { ascending: false })
+      .limit(200),
+    supabase.from('admin_actions_log')
+      .select('id, admin_user_id, action_type, description, created_at, ip_address, new_data')
+      .in('action_type', ['promote_admin', 'revoke_admin'])
+      .order('created_at', { ascending: false })
+      .limit(200),
+  ]);
+
+  return {
+    currentAdmins,
+    accessLogs: (connLogs || []).map(enrichLog),
+    roleLogs: (roleChangeLogs || []).map(enrichLog),
+  };
+}
+
+const getActionIcon = (type: string) => {
+  switch (type) {
+    case 'login': return <LogIn className="h-4 w-4 text-green-600" />;
+    case 'logout': return <LogOut className="h-4 w-4 text-orange-600" />;
+    case 'promote_admin': return <UserPlus className="h-4 w-4 text-blue-600" />;
+    case 'revoke_admin': return <UserMinus className="h-4 w-4 text-red-600" />;
+    default: return <Clock className="h-4 w-4" />;
+  }
+};
+
+const getActionBadge = (type: string) => {
+  switch (type) {
+    case 'login': return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Connexion</Badge>;
+    case 'logout': return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">Déconnexion</Badge>;
+    case 'promote_admin': return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Promotion</Badge>;
+    case 'revoke_admin': return <Badge variant="destructive">Révocation</Badge>;
+    default: return <Badge variant="secondary">{type}</Badge>;
+  }
+};
+
 const AdminAccessTracking = () => {
-  const [currentAdmins, setCurrentAdmins] = useState<AdminUser[]>([]);
-  const [accessLogs, setAccessLogs] = useState<AccessLog[]>([]);
-  const [roleLogs, setRoleLogs] = useState<AccessLog[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading: loading } = useQuery<AccessTrackingData>({
+    queryKey: ['admin-access-tracking'],
+    queryFn: fetchAccessTrackingData,
+  });
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    try {
-      setLoading(true);
-
-      // Load current admins
-      const { data: roles } = await supabase
-        .from('user_roles')
-        .select('user_id, role, created_at')
-        .eq('role', 'admin');
-
-      const adminIds = roles?.map(r => r.user_id) || [];
-
-      let adminsWithProfiles: AdminUser[] = [];
-      if (adminIds.length > 0) {
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('user_id, email, first_name, last_name')
-          .in('user_id', adminIds);
-
-        adminsWithProfiles = (roles || []).map(role => {
-          const profile = profiles?.find(p => p.user_id === role.user_id);
-          return {
-            user_id: role.user_id,
-            email: profile?.email || 'N/A',
-            first_name: profile?.first_name || null,
-            last_name: profile?.last_name || null,
-            role: role.role,
-            role_granted_at: role.created_at,
-          };
-        });
-      }
-      setCurrentAdmins(adminsWithProfiles);
-
-      // Load connection logs (login/logout)
-      const { data: connLogs } = await supabase
-        .from('admin_actions_log')
-        .select('id, admin_user_id, action_type, description, created_at, ip_address, new_data')
-        .in('action_type', ['login', 'logout'])
-        .order('created_at', { ascending: false })
-        .limit(200);
-
-      const enrichedConnLogs = (connLogs || []).map(log => ({
-        ...log,
-        ip_address: log.ip_address as string | null,
-        description: log.description || '',
-        admin_email: typeof log.new_data === 'object' && log.new_data !== null
-          ? (log.new_data as any).admin_email || (log.new_data as any).email || 'Inconnu'
-          : 'Inconnu',
-      }));
-      setAccessLogs(enrichedConnLogs);
-
-      // Load role change logs
-      const { data: roleChangeLogs } = await supabase
-        .from('admin_actions_log')
-        .select('id, admin_user_id, action_type, description, created_at, ip_address, new_data')
-        .in('action_type', ['promote_admin', 'revoke_admin'])
-        .order('created_at', { ascending: false })
-        .limit(200);
-
-      const enrichedRoleLogs = (roleChangeLogs || []).map(log => ({
-        ...log,
-        ip_address: log.ip_address as string | null,
-        description: log.description || '',
-        admin_email: typeof log.new_data === 'object' && log.new_data !== null
-          ? (log.new_data as any).admin_email || 'Inconnu'
-          : 'Inconnu',
-      }));
-      setRoleLogs(enrichedRoleLogs);
-
-    } catch (error) {
-      console.error('Error loading access tracking data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getActionIcon = (type: string) => {
-    switch (type) {
-      case 'login': return <LogIn className="h-4 w-4 text-green-600" />;
-      case 'logout': return <LogOut className="h-4 w-4 text-orange-600" />;
-      case 'promote_admin': return <UserPlus className="h-4 w-4 text-blue-600" />;
-      case 'revoke_admin': return <UserMinus className="h-4 w-4 text-red-600" />;
-      default: return <Clock className="h-4 w-4" />;
-    }
-  };
-
-  const getActionBadge = (type: string) => {
-    switch (type) {
-      case 'login': return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Connexion</Badge>;
-      case 'logout': return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">Déconnexion</Badge>;
-      case 'promote_admin': return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Promotion</Badge>;
-      case 'revoke_admin': return <Badge variant="destructive">Révocation</Badge>;
-      default: return <Badge variant="secondary">{type}</Badge>;
-    }
-  };
+  const currentAdmins = data?.currentAdmins ?? [];
+  const accessLogs = data?.accessLogs ?? [];
+  const roleLogs = data?.roleLogs ?? [];
 
   if (loading) {
     return (
@@ -154,7 +141,6 @@ const AdminAccessTracking = () => {
         </p>
       </div>
 
-      {/* Current Admins */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -208,7 +194,6 @@ const AdminAccessTracking = () => {
         </CardContent>
       </Card>
 
-      {/* Tabs for logs */}
       <Tabs defaultValue="connections" className="space-y-4">
         <TabsList>
           <TabsTrigger value="connections" className="flex items-center gap-2">

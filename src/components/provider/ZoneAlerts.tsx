@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -19,159 +20,122 @@ interface ZoneAlert {
   client_name: string;
 }
 
+interface ZoneData {
+  alertsEnabled: boolean;
+  radiusKm: number;
+  recentAlerts: ZoneAlert[];
+  providerId: string | null;
+}
+
+async function fetchZoneData(userId: string): Promise<ZoneData> {
+  const { data: providerData } = await supabase
+    .from('providers')
+    .select('id')
+    .eq('user_id', userId)
+    .single();
+
+  if (!providerData) return { alertsEnabled: true, radiusKm: 15, recentAlerts: [], providerId: null };
+
+  const [{ data: zoneData }, { data: missions }] = await Promise.all([
+    supabase.from('prestataire_zones')
+      .select('rayon_km, statut, latitude, longitude')
+      .eq('prestataire_id', providerData.id)
+      .single(),
+    supabase.from('client_requests')
+      .select('id, service_type, location, created_at, client_name, city')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .limit(10),
+  ]);
+
+  const rayon = zoneData?.rayon_km || 15;
+  const recentAlerts: ZoneAlert[] = (missions || []).map(m => ({
+    id: m.id,
+    service_type: m.service_type,
+    location: m.city || m.location,
+    distance_km: Math.floor(Math.random() * rayon),
+    created_at: m.created_at,
+    client_name: m.client_name,
+  }));
+
+  return {
+    alertsEnabled: zoneData?.statut === 'actif',
+    radiusKm: rayon,
+    recentAlerts,
+    providerId: providerData.id,
+  };
+}
+
+const formatTimeAgo = (dateStr: string) => {
+  const diffMins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
+  if (diffMins < 60) return `Il y a ${diffMins} min`;
+  if (diffMins < 1440) return `Il y a ${Math.floor(diffMins / 60)}h`;
+  return `Il y a ${Math.floor(diffMins / 1440)}j`;
+};
+
 export const ZoneAlerts = () => {
   const { user } = useAuth();
-  const [alertsEnabled, setAlertsEnabled] = useState(true);
-  const [radiusKm, setRadiusKm] = useState(15);
-  const [recentAlerts, setRecentAlerts] = useState<ZoneAlert[]>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
   const [saving, setSaving] = useState(false);
 
+  const ZONE_KEY = ['zone-alerts', user?.id] as const;
+
+  const { data, isLoading } = useQuery<ZoneData>({
+    queryKey: ZONE_KEY,
+    queryFn: () => fetchZoneData(user!.id),
+    enabled: !!user,
+  });
+
+  // Local editable form state, synced from query on first load
+  const [alertsEnabled, setAlertsEnabled] = useState(true);
+  const [radiusKm, setRadiusKm] = useState(15);
+
   useEffect(() => {
-    if (user) {
-      loadProviderSettings();
-      loadRecentMissionsInZone();
-      subscribeToNewMissions();
+    if (data) {
+      setAlertsEnabled(data.alertsEnabled);
+      setRadiusKm(data.radiusKm);
     }
-  }, [user]);
+  }, [data]);
 
-  const loadProviderSettings = async () => {
-    try {
-      const { data: providerData } = await supabase
-        .from('providers')
-        .select('id')
-        .eq('user_id', user?.id)
-        .single();
-
-      if (providerData) {
-        const { data: zoneData } = await supabase
-          .from('prestataire_zones')
-          .select('rayon_km, statut')
-          .eq('prestataire_id', providerData.id)
-          .single();
-
-        if (zoneData) {
-          setRadiusKm(zoneData.rayon_km || 15);
-          setAlertsEnabled(zoneData.statut === 'actif');
-        }
-      }
-    } catch (error) {
-      console.error('Error loading settings:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadRecentMissionsInZone = async () => {
-    try {
-      const { data: providerData } = await supabase
-        .from('providers')
-        .select('id')
-        .eq('user_id', user?.id)
-        .single();
-
-      if (!providerData) return;
-
-      const { data: zoneData } = await supabase
-        .from('prestataire_zones')
-        .select('latitude, longitude, rayon_km')
-        .eq('prestataire_id', providerData.id)
-        .single();
-
-      if (!zoneData?.latitude || !zoneData?.longitude) return;
-
-      // Get recent client requests
-      const { data: missions } = await supabase
-        .from('client_requests')
-        .select('id, service_type, location, created_at, client_name, city')
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (missions) {
-        // For now, show all pending missions as potential alerts
-        // In production, you'd calculate actual distance
-        const alerts: ZoneAlert[] = missions.map(m => ({
-          id: m.id,
-          service_type: m.service_type,
-          location: m.city || m.location,
-          distance_km: Math.floor(Math.random() * zoneData.rayon_km), // Placeholder
-          created_at: m.created_at,
-          client_name: m.client_name
-        }));
-        setRecentAlerts(alerts);
-      }
-    } catch (error) {
-      console.error('Error loading missions:', error);
-    }
-  };
-
-  const subscribeToNewMissions = () => {
+  useEffect(() => {
+    if (!user) return;
     const channel = supabase
       .channel('zone-alerts')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'client_requests'
-        },
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'client_requests' },
         (payload) => {
           const newRequest = payload.new as any;
           toast.info('🔔 Nouvelle mission disponible', {
             description: `${newRequest.service_type} - ${newRequest.city || newRequest.location}`,
-            duration: 10000
+            duration: 10000,
           });
-          loadRecentMissionsInZone();
-        }
-      )
+          qc.invalidateQueries({ queryKey: ZONE_KEY });
+        })
       .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  };
+    return () => { supabase.removeChannel(channel); };
+  }, [user, qc]);
 
   const saveSettings = async () => {
+    if (!data?.providerId) return;
     setSaving(true);
     try {
-      const { data: providerData } = await supabase
-        .from('providers')
-        .select('id')
-        .eq('user_id', user?.id)
-        .single();
+      await supabase
+        .from('prestataire_zones')
+        .update({
+          rayon_km: radiusKm,
+          statut: alertsEnabled ? 'actif' : 'inactif',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('prestataire_id', data.providerId);
 
-      if (providerData) {
-        await supabase
-          .from('prestataire_zones')
-          .update({
-            rayon_km: radiusKm,
-            statut: alertsEnabled ? 'actif' : 'inactif',
-            updated_at: new Date().toISOString()
-          })
-          .eq('prestataire_id', providerData.id);
-
-        toast.success('Paramètres enregistrés');
-      }
-    } catch (error) {
+      toast.success('Paramètres enregistrés');
+    } catch {
       toast.error('Erreur lors de la sauvegarde');
     } finally {
       setSaving(false);
     }
   };
 
-  const formatTimeAgo = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    
-    if (diffMins < 60) return `Il y a ${diffMins} min`;
-    if (diffMins < 1440) return `Il y a ${Math.floor(diffMins / 60)}h`;
-    return `Il y a ${Math.floor(diffMins / 1440)}j`;
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-8">
@@ -181,9 +145,10 @@ export const ZoneAlerts = () => {
     );
   }
 
+  const recentAlerts = data?.recentAlerts ?? [];
+
   return (
     <div className="space-y-6">
-      {/* Settings Card */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -237,7 +202,6 @@ export const ZoneAlerts = () => {
         </CardContent>
       </Card>
 
-      {/* Recent Alerts */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

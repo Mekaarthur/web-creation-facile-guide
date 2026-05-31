@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sanitizeSearch } from '../_shared/sanitize.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -187,9 +188,10 @@ async function searchFAQ(supabase: any, query: string): Promise<FAQResult[]> {
       .select('*')
       .eq('is_active', true)
       .or(
-        keywords.map(keyword => 
-          `question.ilike.%${keyword}%,answer.ilike.%${keyword}%,keywords.cs.{${keyword}}`
-        ).join(',')
+        keywords.map(keyword => {
+          const safe = sanitizeSearch(keyword);
+          return `question.ilike.%${safe}%,answer.ilike.%${safe}%,keywords.cs.{${safe}}`;
+        }).join(',')
       )
       .order('priority', { ascending: false })
       .limit(5);

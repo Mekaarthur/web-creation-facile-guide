@@ -1,53 +1,28 @@
 import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { 
-  Search, 
+import {
+  Search,
   Star,
   Eye,
   CheckCircle,
   X,
   Trash2,
-  Edit3,
   RefreshCw,
-  Filter,
   TrendingUp,
   AlertTriangle,
-  Award,
   Clock
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-
-interface Review {
-  id: string;
-  client_id: string;
-  provider_id: string;
-  service_id: string | null;
-  booking_id: string;
-  rating: number;
-  comment: string | null;
-  status: 'pending' | 'published' | 'rejected' | 'deleted';
-  admin_notes: string | null;
-  moderated_by: string | null;
-  moderated_at: string | null;
-  created_at: string;
-  updated_at: string;
-  punctuality_rating?: number;
-  quality_rating?: number;
-  is_approved?: boolean;
-  client?: { first_name: string; last_name: string; email: string };
-  provider?: { first_name: string; last_name: string };
-  service?: { name: string; category: string };
-}
+import { ReviewDetailModal, getRatingStars, getStatusBadge, getRatingColor, type Review } from '@/components/admin/ReviewDetailModal';
 
 interface ReviewStats {
   total_reviews: number;
@@ -62,216 +37,141 @@ interface ReviewStats {
 }
 
 export default function AdminReviews() {
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [stats, setStats] = useState<ReviewStats | null>(null);
-  const [loading, setLoading] = useState(false);
+  const qc = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [ratingFilter, setRatingFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
-  const [moderationNotes, setModerationNotes] = useState('');
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadReviews();
-    loadStats();
-
-    // Real-time subscriptions
-    const channel = supabase
-      .channel('admin-reviews')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'reviews' }, () => {
-        loadReviews();
-        loadStats();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [ratingFilter, statusFilter]);
-
-  const loadReviews = async () => {
-    try {
-      setLoading(true);
-      
-      let query = supabase
-        .from('reviews')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      // Appliquer les filtres
-      if (statusFilter !== 'all') {
-        if (statusFilter === 'pending') {
-          query = query.or('status.eq.pending,status.is.null');
-        } else {
-          query = query.eq('status', statusFilter);
-        }
-      }
-      
-      if (ratingFilter !== 'all') {
-        const rating = parseInt(ratingFilter);
-        query = query.eq('rating', rating);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      
-      // Récupérer les profils séparément
-      if (data && data.length > 0) {
-        const clientIds = [...new Set(data.map(r => r.client_id))];
-        const providerIds = [...new Set(data.map(r => r.provider_id))];
-        const serviceIds = [...new Set(data.map(r => r.service_id).filter(Boolean))];
-
-        const [clientsData, providersData, servicesData] = await Promise.all([
-          supabase.from('profiles').select('id, first_name, last_name, email').in('id', clientIds),
-          supabase.from('profiles').select('id, first_name, last_name').in('id', providerIds),
-          serviceIds.length > 0 
-            ? supabase.from('services').select('id, name, category').in('id', serviceIds) 
-            : Promise.resolve({ data: [] })
-        ]);
-
-        // Mapper les données
-        const clientsMap = new Map((clientsData.data || []).map(c => [c.id, c]));
-        const providersMap = new Map((providersData.data || []).map(p => [p.id, p]));
-        const servicesMap = new Map((servicesData.data || []).map(s => [s.id, s]));
-
-        const normalizedData = data.map(review => ({
-          ...review,
-          status: (review.status || (review.is_approved ? 'published' : 'pending')) as 'pending' | 'published' | 'rejected' | 'deleted',
-          client: clientsMap.get(review.client_id) || undefined,
-          provider: providersMap.get(review.provider_id) || undefined,
-          service: review.service_id ? servicesMap.get(review.service_id) : undefined
-        }));
-        
-        setReviews(normalizedData as Review[]);
-      } else {
-        setReviews([]);
-      }
-    } catch (error) {
-      console.error('Erreur chargement avis:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les avis",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ['admin-reviews'] });
+    qc.invalidateQueries({ queryKey: ['admin-reviews-stats'] });
   };
 
-  const loadStats = async () => {
-    try {
-      // Calculer les stats manuellement si la vue n'existe pas encore
-      const { data, error } = await supabase
-        .from('reviews')
-        .select('*');
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-reviews')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reviews' }, invalidate)
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
 
+  const { data: reviews = [], isLoading: loading } = useQuery({
+    queryKey: ['admin-reviews', ratingFilter, statusFilter],
+    queryFn: async () => {
+      let query = supabase.from('reviews').select('*').order('created_at', { ascending: false });
+      if (statusFilter !== 'all') {
+        query = statusFilter === 'pending' ? query.or('status.eq.pending,status.is.null') : query.eq('status', statusFilter);
+      }
+      if (ratingFilter !== 'all') query = query.eq('rating', parseInt(ratingFilter));
+
+      const { data, error } = await query;
       if (error) throw error;
+      if (!data?.length) return [] as Review[];
 
+      const clientIds = [...new Set(data.map(r => r.client_id))];
+      const providerIds = [...new Set(data.map(r => r.provider_id))];
+      const serviceIds = [...new Set(data.map(r => r.service_id).filter(Boolean))];
+
+      const [clientsData, providersData, servicesData] = await Promise.all([
+        supabase.from('profiles').select('id, first_name, last_name, email').in('id', clientIds),
+        supabase.from('profiles').select('id, first_name, last_name').in('id', providerIds),
+        serviceIds.length > 0 ? supabase.from('services').select('id, name, category').in('id', serviceIds) : Promise.resolve({ data: [] }),
+      ]);
+
+      const clientsMap = new Map((clientsData.data || []).map(c => [c.id, c]));
+      const providersMap = new Map((providersData.data || []).map(p => [p.id, p]));
+      const servicesMap = new Map((servicesData.data || []).map(s => [s.id, s]));
+
+      return data.map(review => ({
+        ...review,
+        status: (review.status || (review.is_approved ? 'published' : 'pending')) as Review['status'],
+        client: clientsMap.get(review.client_id) || undefined,
+        provider: providersMap.get(review.provider_id) || undefined,
+        service: review.service_id ? servicesMap.get(review.service_id) : undefined,
+      })) as Review[];
+    },
+    staleTime: 60 * 1000,
+  });
+
+  const { data: stats = null } = useQuery({
+    queryKey: ['admin-reviews-stats'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('reviews').select('*');
+      if (error) throw error;
       const now = new Date();
       const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const all = data || [];
+      const totalRating = all.reduce((sum, r) => sum + r.rating, 0);
+      return {
+        total_reviews: all.length,
+        pending_reviews: all.filter(r => !r.status || r.status === 'pending').length,
+        published_reviews: all.filter(r => r.status === 'published' || r.is_approved).length,
+        rejected_reviews: all.filter(r => r.status === 'rejected').length,
+        negative_reviews: all.filter(r => r.rating <= 2).length,
+        positive_reviews: all.filter(r => r.rating >= 4).length,
+        average_rating: all.length > 0 ? parseFloat((totalRating / all.length).toFixed(1)) : 0,
+        reviews_last_7_days: all.filter(r => new Date(r.created_at) >= sevenDaysAgo).length,
+        reviews_last_30_days: all.filter(r => new Date(r.created_at) >= thirtyDaysAgo).length,
+      } as ReviewStats;
+    },
+    staleTime: 2 * 60 * 1000,
+  });
 
-      const allReviews = data || [];
-      const totalRating = allReviews.reduce((sum, r) => sum + r.rating, 0);
-
-      setStats({
-        total_reviews: allReviews.length,
-        pending_reviews: allReviews.filter(r => !r.status || r.status === 'pending').length,
-        published_reviews: allReviews.filter(r => r.status === 'published' || r.is_approved).length,
-        rejected_reviews: allReviews.filter(r => r.status === 'rejected').length,
-        negative_reviews: allReviews.filter(r => r.rating <= 2).length,
-        positive_reviews: allReviews.filter(r => r.rating >= 4).length,
-        average_rating: allReviews.length > 0 ? parseFloat((totalRating / allReviews.length).toFixed(1)) : 0,
-        reviews_last_7_days: allReviews.filter(r => new Date(r.created_at) >= sevenDaysAgo).length,
-        reviews_last_30_days: allReviews.filter(r => new Date(r.created_at) >= thirtyDaysAgo).length
-      });
-    } catch (error) {
-      console.error('Erreur stats:', error);
-    }
-  };
-
-  const handleApproveReview = async (reviewId: string) => {
+  const handleApproveReview = async (reviewId: string, notes: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Non authentifié');
 
-      const { error } = await supabase
-        .from('reviews')
-        .update({
-          status: 'published',
-          is_approved: true,
-          moderated_by: user.id,
-          moderated_at: new Date().toISOString(),
-          admin_notes: moderationNotes || null
-        })
-        .eq('id', reviewId);
-
+      const { error } = await supabase.from('reviews').update({
+        status: 'published',
+        is_approved: true,
+        moderated_by: user.id,
+        moderated_at: new Date().toISOString(),
+        admin_notes: notes || null,
+      }).eq('id', reviewId);
       if (error) throw error;
 
-      toast({
-        title: "Avis approuvé",
-        description: "L'avis est maintenant publié"
-      });
+      toast({ title: "Avis approuvé", description: "L'avis est maintenant publié" });
 
-      // Notification admin
       await supabase.functions.invoke('create-admin-notification', {
         body: {
           type: 'system',
           title: '✅ Avis approuvé',
           message: `Un avis a été approuvé et publié`,
           data: { review_id: reviewId },
-          priority: 'low'
-        }
+          priority: 'low',
+        },
       });
 
       setSelectedReview(null);
-      setModerationNotes('');
-      loadReviews();
-      loadStats();
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible d'approuver l'avis",
-        variant: "destructive"
-      });
+      invalidate();
+    } catch {
+      toast({ title: "Erreur", description: "Impossible d'approuver l'avis", variant: "destructive" });
     }
   };
 
-  const handleRejectReview = async (reviewId: string) => {
+  const handleRejectReview = async (reviewId: string, notes: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Non authentifié');
 
-      const { error } = await supabase
-        .from('reviews')
-        .update({
-          status: 'rejected',
-          is_approved: false,
-          moderated_by: user.id,
-          moderated_at: new Date().toISOString(),
-          admin_notes: moderationNotes || null
-        })
-        .eq('id', reviewId);
-
+      const { error } = await supabase.from('reviews').update({
+        status: 'rejected',
+        is_approved: false,
+        moderated_by: user.id,
+        moderated_at: new Date().toISOString(),
+        admin_notes: notes || null,
+      }).eq('id', reviewId);
       if (error) throw error;
 
-      toast({
-        title: "Avis rejeté",
-        description: "L'avis a été rejeté"
-      });
-
+      toast({ title: "Avis rejeté", description: "L'avis a été rejeté" });
       setSelectedReview(null);
-      setModerationNotes('');
-      loadReviews();
-      loadStats();
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de rejeter l'avis",
-        variant: "destructive"
-      });
+      invalidate();
+    } catch {
+      toast({ title: "Erreur", description: "Impossible de rejeter l'avis", variant: "destructive" });
     }
   };
 
@@ -280,83 +180,30 @@ export default function AdminReviews() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Non authentifié');
 
-      const { error } = await supabase
-        .from('reviews')
-        .update({
-          status: 'deleted',
-          moderated_by: user.id,
-          moderated_at: new Date().toISOString()
-        })
-        .eq('id', reviewId);
-
+      const { error } = await supabase.from('reviews').update({
+        status: 'deleted',
+        moderated_by: user.id,
+        moderated_at: new Date().toISOString(),
+      }).eq('id', reviewId);
       if (error) throw error;
 
-      toast({
-        title: "Avis supprimé",
-        description: "L'avis a été supprimé définitivement"
-      });
-
+      toast({ title: "Avis supprimé", description: "L'avis a été supprimé définitivement" });
       setSelectedReview(null);
-      loadReviews();
-      loadStats();
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de supprimer l'avis",
-        variant: "destructive"
-      });
+      invalidate();
+    } catch {
+      toast({ title: "Erreur", description: "Impossible de supprimer l'avis", variant: "destructive" });
     }
-  };
-
-  const getRatingStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`w-4 h-4 ${
-          i < rating 
-            ? 'fill-yellow-400 text-yellow-400' 
-            : 'text-gray-300'
-        }`}
-      />
-    ));
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return <Badge className="bg-yellow-100 dark:bg-yellow-950 text-yellow-800 dark:text-yellow-200">🟡 En attente</Badge>;
-      case 'published':
-        return <Badge className="bg-green-100 dark:bg-green-950 text-green-800 dark:text-green-200">🟢 Publié</Badge>;
-      case 'rejected':
-        return <Badge className="bg-red-100 dark:bg-red-950 text-red-800 dark:text-red-200">🔴 Rejeté</Badge>;
-      case 'deleted':
-        return <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">⚪ Supprimé</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
-
-  const getRatingColor = (rating: number) => {
-    if (rating <= 2) return 'text-red-600';
-    if (rating === 3) return 'text-orange-600';
-    return 'text-green-600';
   };
 
   const filteredReviews = reviews.filter(review => {
-    const clientName = review.client 
-      ? `${review.client.first_name} ${review.client.last_name}` 
-      : '';
-    const providerName = review.provider 
-      ? `${review.provider.first_name} ${review.provider.last_name}` 
-      : '';
-    
-    const matchesSearch = 
+    const clientName = review.client ? `${review.client.first_name} ${review.client.last_name}` : '';
+    const providerName = review.provider ? `${review.provider.first_name} ${review.provider.last_name}` : '';
+    return (
       clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       providerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (review.comment && review.comment.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (review.service?.name && review.service.name.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    return matchesSearch;
+      (review.service?.name && review.service.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
   });
 
   if (loading && reviews.length === 0) {
@@ -381,7 +228,6 @@ export default function AdminReviews() {
         <p className="text-muted-foreground">Modération et analyse de la satisfaction client</p>
       </div>
 
-      {/* Statistiques */}
       {stats && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <Card>
@@ -454,12 +300,11 @@ export default function AdminReviews() {
         </div>
       )}
 
-      {/* Filtres et recherche */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">Recherche et filtres</CardTitle>
-            <Button variant="outline" size="sm" onClick={loadReviews}>
+            <Button variant="outline" size="sm" onClick={() => qc.invalidateQueries({ queryKey: ['admin-reviews'] })}>
               <RefreshCw className="w-4 h-4 mr-2" />
               Actualiser
             </Button>
@@ -506,7 +351,6 @@ export default function AdminReviews() {
         </CardContent>
       </Card>
 
-      {/* Table des avis */}
       <Card>
         <CardContent className="p-0">
           <Table>
@@ -533,7 +377,7 @@ export default function AdminReviews() {
                 </TableRow>
               ) : (
                 filteredReviews.map((review, index) => (
-                  <TableRow 
+                  <TableRow
                     key={review.id}
                     className={review.status === 'pending' || (!review.status && !review.is_approved) ? 'bg-yellow-50/30 dark:bg-yellow-950/20' : ''}
                   >
@@ -543,9 +387,7 @@ export default function AdminReviews() {
                     <TableCell>
                       <div>
                         <p className="font-semibold text-sm">
-                          {review.client 
-                            ? `${review.client.first_name} ${review.client.last_name}` 
-                            : 'Client'}
+                          {review.client ? `${review.client.first_name} ${review.client.last_name}` : 'Client'}
                         </p>
                         {review.client?.email && (
                           <p className="text-xs text-muted-foreground">{review.client.email}</p>
@@ -554,18 +396,14 @@ export default function AdminReviews() {
                     </TableCell>
                     <TableCell>
                       <p className="font-medium text-sm">
-                        {review.provider 
-                          ? `${review.provider.first_name} ${review.provider.last_name}` 
-                          : 'Prestataire'}
+                        {review.provider ? `${review.provider.first_name} ${review.provider.last_name}` : 'Prestataire'}
                       </p>
                     </TableCell>
                     <TableCell>
                       {review.service ? (
                         <div>
                           <p className="text-sm font-medium">{review.service.name}</p>
-                          <Badge variant="outline" className="text-xs mt-1">
-                            {review.service.category}
-                          </Badge>
+                          <Badge variant="outline" className="text-xs mt-1">{review.service.category}</Badge>
                         </div>
                       ) : (
                         <span className="text-muted-foreground text-sm">N/A</span>
@@ -573,12 +411,8 @@ export default function AdminReviews() {
                     </TableCell>
                     <TableCell>
                       <div className="space-y-1">
-                        <div className="flex items-center gap-1">
-                          {getRatingStars(review.rating)}
-                        </div>
-                        <p className={`text-sm font-bold ${getRatingColor(review.rating)}`}>
-                          {review.rating}/5
-                        </p>
+                        <div className="flex items-center gap-1">{getRatingStars(review.rating)}</div>
+                        <p className={`text-sm font-bold ${getRatingColor(review.rating)}`}>{review.rating}/5</p>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -599,10 +433,7 @@ export default function AdminReviews() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => {
-                            setSelectedReview(review);
-                            setModerationNotes(review.admin_notes || '');
-                          }}
+                          onClick={() => setSelectedReview(review)}
                           title="Voir détails"
                         >
                           <Eye className="w-4 h-4" />
@@ -612,7 +443,7 @@ export default function AdminReviews() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleApproveReview(review.id)}
+                              onClick={() => handleApproveReview(review.id, '')}
                               title="Approuver"
                               className="text-green-600 hover:text-green-700"
                             >
@@ -621,10 +452,7 @@ export default function AdminReviews() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => {
-                                setSelectedReview(review);
-                                setModerationNotes('');
-                              }}
+                              onClick={() => setSelectedReview(review)}
                               title="Rejeter"
                               className="text-red-600 hover:text-red-700"
                             >
@@ -651,136 +479,13 @@ export default function AdminReviews() {
         </CardContent>
       </Card>
 
-      {/* Modal de détails */}
-      {selectedReview && (
-        <Dialog open={!!selectedReview} onOpenChange={() => setSelectedReview(null)}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Détails de l'avis</DialogTitle>
-              <DialogDescription>
-                {getStatusBadge(selectedReview.status || (selectedReview.is_approved ? 'published' : 'pending'))}
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4">
-              {/* Info client/prestataire */}
-              <div className="grid grid-cols-2 gap-4">
-                <Card>
-                  <CardContent className="p-4">
-                    <p className="text-sm font-medium text-muted-foreground mb-2">Client</p>
-                    <p className="font-semibold">
-                      {selectedReview.client 
-                        ? `${selectedReview.client.first_name} ${selectedReview.client.last_name}` 
-                        : 'Client'}
-                    </p>
-                    {selectedReview.client?.email && (
-                      <p className="text-xs text-muted-foreground">{selectedReview.client.email}</p>
-                    )}
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="p-4">
-                    <p className="text-sm font-medium text-muted-foreground mb-2">Prestataire</p>
-                    <p className="font-semibold">
-                      {selectedReview.provider 
-                        ? `${selectedReview.provider.first_name} ${selectedReview.provider.last_name}` 
-                        : 'Prestataire'}
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Note et commentaire */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Évaluation</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <p className="text-sm font-medium mb-2">Note globale</p>
-                    <div className="flex items-center gap-2">
-                      {getRatingStars(selectedReview.rating)}
-                      <span className={`text-xl font-bold ${getRatingColor(selectedReview.rating)}`}>
-                        {selectedReview.rating}/5
-                      </span>
-                    </div>
-                  </div>
-
-                  {selectedReview.punctuality_rating && (
-                    <div>
-                      <p className="text-sm font-medium mb-2">Ponctualité</p>
-                      <div className="flex items-center gap-2">
-                        {getRatingStars(selectedReview.punctuality_rating)}
-                        <span className="text-sm">{selectedReview.punctuality_rating}/5</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedReview.quality_rating && (
-                    <div>
-                      <p className="text-sm font-medium mb-2">Qualité du travail</p>
-                      <div className="flex items-center gap-2">
-                        {getRatingStars(selectedReview.quality_rating)}
-                        <span className="text-sm">{selectedReview.quality_rating}/5</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedReview.comment && (
-                    <div>
-                      <p className="text-sm font-medium mb-2">Commentaire</p>
-                      <div className="bg-muted p-3 rounded-lg">
-                        <p className="text-sm italic">"{selectedReview.comment}"</p>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Notes de modération */}
-              <div>
-                <label className="text-sm font-medium mb-2 block">Notes de modération (privées)</label>
-                <Textarea
-                  placeholder="Raison de l'approbation/rejet..."
-                  value={moderationNotes}
-                  onChange={(e) => setModerationNotes(e.target.value)}
-                  rows={3}
-                />
-              </div>
-
-              {/* Actions */}
-              {(selectedReview.status === 'pending' || (!selectedReview.status && !selectedReview.is_approved)) && (
-                <div className="flex items-center gap-2 pt-4 border-t">
-                  <Button
-                    onClick={() => handleApproveReview(selectedReview.id)}
-                    className="flex-1"
-                    variant="default"
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Approuver et publier
-                  </Button>
-                  <Button
-                    onClick={() => handleRejectReview(selectedReview.id)}
-                    className="flex-1"
-                    variant="destructive"
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Rejeter
-                  </Button>
-                </div>
-              )}
-
-              <div className="text-xs text-muted-foreground pt-2 border-t">
-                <p>Créé le {format(new Date(selectedReview.created_at), 'dd/MM/yyyy à HH:mm', { locale: fr })}</p>
-                {selectedReview.moderated_at && (
-                  <p>Modéré le {format(new Date(selectedReview.moderated_at), 'dd/MM/yyyy à HH:mm', { locale: fr })}</p>
-                )}
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+      <ReviewDetailModal
+        review={selectedReview}
+        onClose={() => setSelectedReview(null)}
+        onApprove={handleApproveReview}
+        onReject={handleRejectReview}
+        onDelete={handleDeleteReview}
+      />
     </div>
   );
 }

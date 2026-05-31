@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FileText, Download, Calendar, ShieldCheck } from 'lucide-react';
@@ -19,41 +19,32 @@ interface ProviderAttestation {
   created_at: string;
 }
 
+async function fetchProviderAttestations(userId: string): Promise<ProviderAttestation[]> {
+  const { data: provider } = await supabase
+    .from('providers')
+    .select('id')
+    .eq('user_id', userId)
+    .single();
+  if (!provider) return [];
+
+  const { data, error } = await supabase
+    .from('provider_attestations')
+    .select('*')
+    .eq('provider_id', provider.id)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+}
+
 const ProviderAttestationsTab = () => {
   const { user } = useAuth();
-  const [attestations, setAttestations] = useState<ProviderAttestation[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) loadAttestations();
-  }, [user]);
-
-  const loadAttestations = async () => {
-    if (!user) return;
-
-    // Get provider ID for current user
-    const { data: provider } = await supabase
-      .from('providers')
-      .select('id')
-      .eq('user_id', user.id)
-      .single();
-
-    if (!provider) {
-      setLoading(false);
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from('provider_attestations')
-      .select('*')
-      .eq('provider_id', provider.id)
-      .order('created_at', { ascending: false });
-
-    if (!error) {
-      setAttestations(data || []);
-    }
-    setLoading(false);
-  };
+  const { data: attestations = [], isLoading } = useQuery<ProviderAttestation[]>({
+    queryKey: ['provider-attestations', user?.id],
+    queryFn: () => fetchProviderAttestations(user!.id),
+    enabled: !!user,
+  });
 
   const getStatusBadge = (status: string) => {
     if (status === 'active') return <Badge variant="default">Actif</Badge>;
@@ -71,7 +62,7 @@ const ProviderAttestationsTab = () => {
     return labels[type] || type;
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card className="border-0 shadow-lg">
         <CardContent className="flex items-center justify-center py-8">

@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,30 +43,21 @@ interface Reservation {
   } | null;
 }
 
+const DEFAULT_STATS = {
+  total: 0, pending: 0, confirmed: 0, cancelled: 0,
+  convertedToMission: 0, revenue: 0,
+  byStatus: [] as { name: string; value: number; color: string }[]
+};
+
 const AdminReservations = () => {
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [universeFilter, setUniverseFilter] = useState("all");
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
-  const [stats, setStats] = useState({
-    total: 0,
-    pending: 0,
-    confirmed: 0,
-    cancelled: 0,
-    convertedToMission: 0,
-    revenue: 0,
-    byStatus: [] as { name: string; value: number; color: string }[]
-  });
 
-  useEffect(() => {
-    loadReservations();
-  }, []);
-
-  const loadReservations = async () => {
-    try {
-      setLoading(true);
+  const { data, isLoading: loading } = useQuery({
+    queryKey: ['admin-reservations'],
+    queryFn: async () => {
       const { data: bookingsData, error } = await supabase
         .from('bookings')
         .select(`
@@ -116,63 +108,47 @@ const AdminReservations = () => {
         })
       );
 
-      setReservations(reservationsWithDetails as Reservation[]);
+      const reservations = reservationsWithDetails as Reservation[];
 
       // Calculer les stats
-      const totalRevenue = reservationsWithDetails
+      const totalRevenue = reservations
         .filter(r => r.status !== 'cancelled')
         .reduce((sum, r) => sum + (Number(r.total_price) || 0), 0);
 
-      const pending = reservationsWithDetails.filter(r => r.status === 'pending').length;
-      const confirmed = reservationsWithDetails.filter(r => r.status === 'confirmed').length;
-      const cancelled = reservationsWithDetails.filter(r => r.status === 'cancelled').length;
-      const convertedToMission = reservationsWithDetails.filter(r => r.status === 'in_progress' || r.status === 'completed').length;
+      const pending = reservations.filter(r => r.status === 'pending').length;
+      const confirmed = reservations.filter(r => r.status === 'confirmed').length;
+      const cancelled = reservations.filter(r => r.status === 'cancelled').length;
+      const convertedToMission = reservations.filter(r => r.status === 'in_progress' || r.status === 'completed').length;
 
-      // Stats par statut pour le graphique
       const statusColors: Record<string, string> = {
-        pending: 'hsl(var(--chart-1))',
-        confirmed: 'hsl(var(--chart-3))',
-        assigned: 'hsl(var(--chart-2))',
-        in_progress: 'hsl(var(--chart-4))',
-        completed: 'hsl(var(--chart-5))',
-        cancelled: 'hsl(var(--destructive))'
+        pending: 'hsl(var(--chart-1))', confirmed: 'hsl(var(--chart-3))',
+        assigned: 'hsl(var(--chart-2))', in_progress: 'hsl(var(--chart-4))',
+        completed: 'hsl(var(--chart-5))', cancelled: 'hsl(var(--destructive))'
       };
-
       const statusLabels: Record<string, string> = {
-        pending: 'En attente',
-        confirmed: 'Confirmée',
-        assigned: 'Assignée',
-        in_progress: 'En cours',
-        completed: 'Terminée',
-        cancelled: 'Annulée'
+        pending: 'En attente', confirmed: 'Confirmée', assigned: 'Assignée',
+        in_progress: 'En cours', completed: 'Terminée', cancelled: 'Annulée'
       };
-
-      const statusCounts = reservationsWithDetails.reduce((acc, r) => {
+      const statusCounts = reservations.reduce((acc, r) => {
         acc[r.status] = (acc[r.status] || 0) + 1;
         return acc;
       }, {} as Record<string, number>);
-
       const byStatus = Object.entries(statusCounts).map(([status, count]) => ({
         name: statusLabels[status] || status,
         value: count,
         color: statusColors[status] || 'hsl(var(--muted))'
       }));
 
-      setStats({
-        total: reservationsWithDetails.length,
-        pending,
-        confirmed,
-        cancelled,
-        convertedToMission,
-        revenue: totalRevenue,
-        byStatus
-      });
-    } catch (error) {
-      console.error('Error loading reservations:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return {
+        reservations,
+        stats: { total: reservations.length, pending, confirmed, cancelled, convertedToMission, revenue: totalRevenue, byStatus }
+      };
+    },
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const reservations = data?.reservations ?? [];
+  const stats = data?.stats ?? DEFAULT_STATS;
 
   const filteredReservations = reservations.filter(reservation => {
     const matchesSearch = 

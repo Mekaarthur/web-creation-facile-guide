@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -37,68 +38,53 @@ interface CancelledBooking {
   }[];
 }
 
+const REFUNDS_KEY = ['admin-refunds'] as const;
+
+async function fetchCancelledBookings(): Promise<CancelledBooking[]> {
+  const { data, error } = await supabase
+    .from('bookings')
+    .select(`
+      *,
+      service:services(name),
+      client:profiles!bookings_client_id_fkey(first_name, last_name),
+      payments(id, status, refund_amount, stripe_payment_intent_id)
+    `)
+    .eq('status', 'cancelled')
+    .order('cancelled_at', { ascending: false });
+
+  if (error) throw error;
+  return (data as any) || [];
+}
+
 export const AdminRefundManager = () => {
-  const [bookings, setBookings] = useState<CancelledBooking[]>([]);
-  const [loading, setLoading] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<CancelledBooking | null>(null);
   const [refundAmount, setRefundAmount] = useState('');
   const [refundReason, setRefundReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const { toast } = useToast();
+  const qc = useQueryClient();
 
-  useEffect(() => {
-    loadCancelledBookings();
-  }, []);
-
-  const loadCancelledBookings = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('bookings')
-        .select(`
-          *,
-          service:services(name),
-          client:profiles!bookings_client_id_fkey(first_name, last_name),
-          payments(id, status, refund_amount, stripe_payment_intent_id)
-        `)
-        .eq('status', 'cancelled')
-        .order('cancelled_at', { ascending: false });
-
-      if (error) throw error;
-      setBookings((data as any) || []);
-    } catch (error) {
-      console.error('Error loading cancelled bookings:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les réservations annulées",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: bookings = [], isLoading } = useQuery<CancelledBooking[]>({
+    queryKey: REFUNDS_KEY,
+    queryFn: fetchCancelledBookings,
+  });
 
   const processManualRefund = async () => {
     if (!selectedBooking || !refundAmount) return;
-
     setActionLoading(true);
     try {
       const payment = selectedBooking.payments[0];
-      if (!payment?.stripe_payment_intent_id) {
-        throw new Error('Aucun paiement Stripe trouvé');
-      }
+      if (!payment?.stripe_payment_intent_id) throw new Error('Aucun paiement Stripe trouvé');
 
-      const { data, error } = await supabase.functions.invoke('process-refund', {
+      const { error } = await supabase.functions.invoke('process-refund', {
         body: {
           paymentIntentId: payment.stripe_payment_intent_id,
           refundAmount: Math.round(parseFloat(refundAmount) * 100),
           reason: refundReason || 'Manual refund by admin'
         }
       });
-
       if (error) throw error;
 
-      // Mettre à jour le paiement
       await supabase
         .from('payments')
         .update({
@@ -109,22 +95,13 @@ export const AdminRefundManager = () => {
         })
         .eq('id', payment.id);
 
-      toast({
-        title: "Remboursement effectué",
-        description: `${refundAmount}€ remboursés avec succès`,
-      });
-
+      toast({ title: "Remboursement effectué", description: `${refundAmount}€ remboursés avec succès` });
       setSelectedBooking(null);
       setRefundAmount('');
       setRefundReason('');
-      loadCancelledBookings();
-    } catch (error) {
-      console.error('Error processing refund:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de traiter le remboursement",
-        variant: "destructive",
-      });
+      qc.invalidateQueries({ queryKey: REFUNDS_KEY });
+    } catch (error: any) {
+      toast({ title: "Erreur", description: error.message || "Impossible de traiter le remboursement", variant: "destructive" });
     } finally {
       setActionLoading(false);
     }
@@ -132,16 +109,13 @@ export const AdminRefundManager = () => {
 
   const getRefundStatus = (booking: CancelledBooking) => {
     const payment = booking.payments?.[0];
-    if (!payment) return { status: 'no_payment', badge: 'secondary', text: 'Aucun paiement' };
-    
+    if (!payment) return { status: 'no_payment', badge: 'secondary', text: 'Aucun paiement', icon: undefined };
     if (payment.refund_amount && payment.refund_amount > 0) {
       return { status: 'refunded', badge: 'default', text: 'Remboursé', icon: CheckCircle };
     }
-    
     if (payment.status === 'remboursé') {
       return { status: 'refunded', badge: 'default', text: 'Remboursé', icon: CheckCircle };
     }
-    
     return { status: 'pending', badge: 'destructive', text: 'À rembourser', icon: AlertCircle };
   };
 
@@ -152,7 +126,6 @@ export const AdminRefundManager = () => {
         <p className="text-muted-foreground text-xs sm:text-sm md:text-base">Gérez les remboursements des réservations annulées</p>
       </div>
 
-      {/* Statistiques */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4">
@@ -165,7 +138,6 @@ export const AdminRefundManager = () => {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -179,7 +151,6 @@ export const AdminRefundManager = () => {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -195,7 +166,6 @@ export const AdminRefundManager = () => {
         </Card>
       </div>
 
-      {/* Liste des réservations annulées */}
       <div className="space-y-4">
         {bookings.map((booking) => {
           const refundStatus = getRefundStatus(booking);
@@ -222,7 +192,7 @@ export const AdminRefundManager = () => {
                         <strong>Date:</strong> {format(new Date(booking.booking_date), 'PPP', { locale: fr })}
                       </div>
                       <div>
-                        <strong>Annulé le:</strong> {format(new Date(booking.cancelled_at), 'PPP', { locale: fr })}
+                        <strong>Annulé le:</strong> {booking.cancelled_at ? format(new Date(booking.cancelled_at), 'PPP', { locale: fr }) : 'N/A'}
                       </div>
                       <div>
                         <strong>Annulé par:</strong> {booking.cancelled_by === 'client' ? 'Client' : 'Prestataire'}
@@ -265,7 +235,6 @@ export const AdminRefundManager = () => {
                             Effectuer un remboursement pour cette réservation annulée
                           </DialogDescription>
                         </DialogHeader>
-
                         <div className="space-y-4">
                           <div className="space-y-2">
                             <Label htmlFor="refund-amount">
@@ -280,7 +249,6 @@ export const AdminRefundManager = () => {
                               onChange={(e) => setRefundAmount(e.target.value)}
                             />
                           </div>
-
                           <div className="space-y-2">
                             <Label htmlFor="refund-reason">Raison du remboursement</Label>
                             <Textarea
@@ -292,7 +260,6 @@ export const AdminRefundManager = () => {
                             />
                           </div>
                         </div>
-
                         <DialogFooter>
                           <Button
                             variant="outline"
@@ -317,7 +284,7 @@ export const AdminRefundManager = () => {
           );
         })}
 
-        {bookings.length === 0 && !loading && (
+        {bookings.length === 0 && !isLoading && (
           <Card>
             <CardContent className="p-8 text-center">
               <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />

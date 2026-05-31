@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -26,121 +27,60 @@ interface ConversationListProps {
   embedded?: boolean;
 }
 
+async function fetchConversations(userId: string): Promise<Conversation[]> {
+  const { data, error } = await supabase
+    .from('chat_conversations')
+    .select('*, bookings(id, services(name))')
+    .or(`client_id.eq.${userId},provider_id.eq.${userId}`)
+    .order('last_message_at', { ascending: false });
+
+  if (error) throw error;
+
+  return Promise.all(
+    (data || []).map(async (conv) => {
+      const otherUserId = conv.client_id === userId ? conv.provider_id : conv.client_id;
+
+      const [{ data: profile }, { count }, { data: lastMsg }] = await Promise.all([
+        supabase.from('profiles').select('first_name, last_name').eq('user_id', otherUserId).single(),
+        supabase.from('chat_messages').select('*', { count: 'exact', head: true })
+          .eq('booking_id', conv.booking_id).eq('receiver_id', userId).eq('is_read', false),
+        supabase.from('chat_messages').select('message').eq('booking_id', conv.booking_id)
+          .order('created_at', { ascending: false }).limit(1).single(),
+      ]);
+
+      return {
+        ...conv,
+        other_user_name: profile ? `${profile.first_name} ${profile.last_name}` : 'Utilisateur',
+        unread_count: count || 0,
+        last_message: lastMsg?.message,
+      };
+    })
+  );
+}
+
 export const ConversationList = ({ onSelectConversation, embedded = false }: ConversationListProps) => {
   const { user } = useAuth();
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
+
+  const { data: conversations = [], isLoading } = useQuery<Conversation[]>({
+    queryKey: ['conversations', user?.id],
+    queryFn: () => fetchConversations(user!.id),
+    enabled: !!user,
+  });
 
   useEffect(() => {
     if (!user) return;
-
-    loadConversations();
-    const cleanup = setupRealtimeSubscription();
-
-    return () => {
-      cleanup?.();
-    };
-  }, [user]);
-
-  const loadConversations = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('chat_conversations')
-        .select(`
-          *,
-          bookings (
-            id,
-            services (name)
-          )
-        `)
-        .or(`client_id.eq.${user.id},provider_id.eq.${user.id}`)
-        .order('last_message_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Get unread counts and last messages for each conversation
-      const conversationsWithDetails = await Promise.all(
-        (data || []).map(async (conv) => {
-          const otherUserId = conv.client_id === user.id ? conv.provider_id : conv.client_id;
-          
-          // Get other user's name
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('first_name, last_name')
-            .eq('user_id', otherUserId)
-            .single();
-
-          // Get unread count
-          const { count } = await supabase
-            .from('chat_messages')
-            .select('*', { count: 'exact', head: true })
-            .eq('booking_id', conv.booking_id)
-            .eq('receiver_id', user.id)
-            .eq('is_read', false);
-
-          // Get last message
-          const { data: lastMsg } = await supabase
-            .from('chat_messages')
-            .select('message')
-            .eq('booking_id', conv.booking_id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .single();
-
-          return {
-            ...conv,
-            other_user_name: profile ? `${profile.first_name} ${profile.last_name}` : 'Utilisateur',
-            unread_count: count || 0,
-            last_message: lastMsg?.message
-          };
-        })
-      );
-
-      setConversations(conversationsWithDetails);
-    } catch (error) {
-      console.error('Erreur chargement conversations:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const setupRealtimeSubscription = () => {
-    if (!user) return;
-
     const channel = supabase
       .channel('conversations-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'chat_conversations'
-        },
-        () => {
-          loadConversations();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'chat_messages'
-        },
-        () => {
-          loadConversations();
-        }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_conversations' },
+        () => qc.invalidateQueries({ queryKey: ['conversations', user.id] }))
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' },
+        () => qc.invalidateQueries({ queryKey: ['conversations', user.id] }))
       .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, qc]);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className={`${embedded ? 'h-full' : 'h-96'} flex items-center justify-center`}>
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -195,9 +135,7 @@ export const ConversationList = ({ onSelectConversation, embedded = false }: Con
     </ScrollArea>
   );
 
-  if (embedded) {
-    return content;
-  }
+  if (embedded) return content;
 
   return (
     <Card>
@@ -207,9 +145,7 @@ export const ConversationList = ({ onSelectConversation, embedded = false }: Con
           Mes conversations
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-0">
-        {content}
-      </CardContent>
+      <CardContent className="p-0">{content}</CardContent>
     </Card>
   );
 };

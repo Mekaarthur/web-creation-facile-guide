@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { checkEmailExists, mapAuthError } from '@/lib/authUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -76,12 +77,7 @@ const ProviderAuth = () => {
         password: data.password,
       });
 
-      if (error) {
-        if (error.message.includes('Invalid login credentials')) {
-          throw new Error('Email ou mot de passe incorrect');
-        }
-        throw error;
-      }
+      if (error) throw mapAuthError(error);
 
       if (!authData.user) {
         throw new Error('Erreur lors de la connexion');
@@ -132,27 +128,11 @@ const ProviderAuth = () => {
     setLoading(true);
 
     try {
-      try {
-        const { data: existsResp, error: existsErr } = await supabase.functions.invoke('check-email-exists', {
-          body: { email: data.email, phone: data.phone }
-        });
-        if (existsErr) {
-          console.warn('check-email-exists error:', existsErr);
-        }
-        if ((existsResp as any)?.exists) {
-          if ((existsResp as any)?.field === 'email') {
-            throw new Error('Cette adresse email est déjà utilisée');
-          } else if ((existsResp as any)?.field === 'phone') {
-            throw new Error('Ce numéro de téléphone est déjà utilisé');
-          } else {
-            throw new Error('Cet identifiant est déjà utilisé');
-          }
-        }
-      } catch (err) {
-        if (err instanceof Error && (err.message.includes('déjà utilisé') || err.message.includes('déjà utilisée'))) {
-          throw err;
-        }
-        console.warn('check-email-exists invocation failed:', err);
+      const existsCheck = await checkEmailExists(data.email, data.phone);
+      if (existsCheck.exists) {
+        if (existsCheck.field === 'email') throw new Error('Cette adresse email est déjà utilisée');
+        if (existsCheck.field === 'phone') throw new Error('Ce numéro de téléphone est déjà utilisé');
+        throw new Error('Cet identifiant est déjà utilisé');
       }
 
       const redirectUrl = `${window.location.origin}/auth/complete`;
@@ -170,12 +150,7 @@ const ProviderAuth = () => {
         },
       });
 
-      if (error) {
-        if (error.message.includes('already') || error.message.includes('exists')) {
-          throw new Error('Cette adresse email est déjà utilisée');
-        }
-        throw error;
-      }
+      if (error) throw mapAuthError(error);
 
       if (authData.user && Array.isArray((authData.user as any).identities) && (authData.user as any).identities.length === 0) {
         throw new Error('Cette adresse email est déjà utilisée');

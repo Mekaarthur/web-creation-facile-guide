@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -22,119 +23,93 @@ export interface MatchingStatus {
   priority: number;
 }
 
-export const useAdminMatching = () => {
-  const [metrics, setMetrics] = useState<MatchingMetrics>({
-    totalRequests: 0,
-    pendingMatches: 0,
-    successRate: 0,
-    averageResponseTime: 0,
-    activeProviders: 0,
+const METRICS_KEY = ['admin-matching-metrics'] as const;
+const MATCHES_KEY = ['admin-active-matches'] as const;
+
+const DEFAULT_METRICS: MatchingMetrics = {
+  totalRequests: 0, pendingMatches: 0, successRate: 0,
+  averageResponseTime: 0, activeProviders: 0, backupProviders: 0,
+};
+
+async function fetchMetrics(): Promise<MatchingMetrics> {
+  const today = new Date().toISOString().split('T')[0];
+  const [
+    { count: totalCount },
+    { count: pendingCount },
+    { count: assignedCount },
+    { count: activeCount },
+  ] = await Promise.all([
+    supabase.from('client_requests').select('*', { count: 'exact', head: true }).gte('created_at', today),
+    supabase.from('client_requests').select('*', { count: 'exact', head: true }).eq('status', 'new'),
+    supabase.from('client_requests').select('*', { count: 'exact', head: true }).eq('status', 'assigned').gte('created_at', today),
+    supabase.from('providers').select('*', { count: 'exact', head: true }).eq('is_verified', true).eq('status', 'active'),
+  ]);
+  return {
+    totalRequests: totalCount || 0,
+    pendingMatches: pendingCount || 0,
+    successRate: totalCount ? Math.round(((assignedCount || 0) / totalCount) * 100) : 0,
+    averageResponseTime: 15,
+    activeProviders: activeCount || 0,
     backupProviders: 0,
+  };
+}
+
+async function fetchActiveMatches(): Promise<MatchingStatus[]> {
+  const { data, error } = await supabase
+    .from('missions')
+    .select(`
+      id, client_request_id, assigned_provider_id, status,
+      priority, match_score, assigned_at, expires_at,
+      providers(business_name),
+      client_requests(service_type, location)
+    `)
+    .in('status', ['pending', 'backup'])
+    .order('priority', { ascending: true })
+    .order('assigned_at', { ascending: false })
+    .limit(20);
+  if (error) throw error;
+  return (data || []).map(m => ({
+    id: m.id,
+    clientRequestId: m.client_request_id,
+    providerName: (m.providers as any)?.business_name || 'En attente',
+    status: m.status as MatchingStatus['status'],
+    score: m.match_score || 0,
+    assignedAt: m.assigned_at || '',
+    expiresAt: m.expires_at || new Date(new Date(m.assigned_at ?? '').getTime() + 30 * 60 * 1000).toISOString(),
+    priority: m.priority,
+  }));
+}
+
+export const useAdminMatching = () => {
+  const qc = useQueryClient();
+
+  const { data: metrics = DEFAULT_METRICS, isLoading: metricsLoading } = useQuery({
+    queryKey: METRICS_KEY,
+    queryFn: fetchMetrics,
+    refetchInterval: 30_000,
   });
 
-  const [activeMatches, setActiveMatches] = useState<MatchingStatus[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: activeMatches = [], isLoading: matchesLoading } = useQuery({
+    queryKey: MATCHES_KEY,
+    queryFn: fetchActiveMatches,
+    refetchInterval: 30_000,
+  });
 
-  // Charger les métriques
-  const loadMetrics = async () => {
-    try {
-      // Requêtes totales aujourd'hui
-      const { count: totalCount } = await supabase
-        .from('client_requests')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', new Date().toISOString().split('T')[0]);
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-matching-requests')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'client_requests' }, () => {
+        qc.invalidateQueries({ queryKey: METRICS_KEY });
+        qc.invalidateQueries({ queryKey: MATCHES_KEY });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [qc]);
 
-      // Demandes en attente d'attribution
-      const { count: pendingCount } = await supabase
-        .from('client_requests')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'new');
-
-      // Demandes assignées (taux de succès)
-      const { count: assignedCount } = await supabase
-        .from('client_requests')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'assigned')
-        .gte('created_at', new Date().toISOString().split('T')[0]);
-
-      // Providers actifs
-      const { count: activeCount } = await supabase
-        .from('providers')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_verified', true)
-        .eq('status', 'active');
-
-      setMetrics({
-        totalRequests: totalCount || 0,
-        pendingMatches: pendingCount || 0,
-        successRate: totalCount ? Math.round(((assignedCount || 0) / totalCount) * 100) : 0,
-        averageResponseTime: 15,
-        activeProviders: activeCount || 0,
-        backupProviders: 0,
-      });
-    } catch (error) {
-      console.error('Error loading metrics:', error);
-    }
-  };
-
-  // Charger les matchs actifs depuis la table missions
-  const loadActiveMatches = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('missions')
-        .select(`
-          id,
-          client_request_id,
-          assigned_provider_id,
-          status,
-          priority,
-          match_score,
-          assigned_at,
-          expires_at,
-          providers (
-            business_name
-          ),
-          client_requests (
-            service_type,
-            location
-          )
-        `)
-        .in('status', ['pending', 'backup'])
-        .order('priority', { ascending: true })
-        .order('assigned_at', { ascending: false })
-        .limit(20);
-
-      if (error) throw error;
-
-      const matches = data?.map(m => ({
-        id: m.id,
-        clientRequestId: m.client_request_id,
-        providerName: m.providers?.business_name || 'En attente',
-        status: m.status as any,
-        score: m.match_score || 0,
-        assignedAt: m.assigned_at || '',
-        expiresAt: m.expires_at || new Date(new Date(m.assigned_at).getTime() + 30 * 60 * 1000).toISOString(),
-        priority: m.priority,
-      })) || [];
-
-      setActiveMatches(matches);
-    } catch (error) {
-      console.error('Error loading active matches:', error);
-    }
-  };
-
-  // Déclencher un matching intelligent
   const triggerMatching = async (requestId: string) => {
     try {
-      setLoading(true);
-
-      // Récupérer les détails de la demande
       const { data: request, error: requestError } = await supabase
-        .from('client_requests')
-        .select('*')
-        .eq('id', requestId)
-        .single();
-
+        .from('client_requests').select('*').eq('id', requestId).single();
       if (requestError) throw requestError;
 
       const { data, error } = await supabase.functions.invoke('intelligent-matching', {
@@ -143,92 +118,44 @@ export const useAdminMatching = () => {
           serviceType: request.service_type,
           location: request.location,
           urgency: request.urgency_level || 'normal',
-          budget: parseFloat(request.budget_range) || undefined,
+          budget: parseFloat(request.budget_range ?? '') || undefined,
           preferredDate: request.preferred_date,
-        }
+        },
       });
-
       if (error) throw error;
 
       if (data?.success) {
         toast.success(`✅ ${data.message}`);
-        await loadMetrics();
-        await loadActiveMatches();
+        qc.invalidateQueries({ queryKey: METRICS_KEY });
+        qc.invalidateQueries({ queryKey: MATCHES_KEY });
         return data;
-      } else {
-        toast.error(data?.message || 'Erreur lors du matching');
-        return null;
       }
+      toast.error(data?.message || 'Erreur lors du matching');
+      return null;
     } catch (error: any) {
       console.error('Matching error:', error);
       toast.error('Erreur lors du matching intelligent');
       return null;
-    } finally {
-      setLoading(false);
     }
   };
 
-  // Gérer les timeouts automatiques (simplifié)
   const checkTimeouts = async () => {
-    try {
-      // Vérifier les demandes qui traînent depuis plus de 24h
-      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      
-      const { data: oldRequests } = await supabase
-        .from('client_requests')
-        .select('id')
-        .eq('status', 'new')
-        .lt('created_at', yesterday);
-
-      if (oldRequests && oldRequests.length > 0) {
-        console.log(`⏱️ Found ${oldRequests.length} old unprocessed requests`);
-        toast.warning(`${oldRequests.length} demande(s) en attente depuis plus de 24h`);
-      }
-    } catch (error) {
-      console.error('Error checking timeouts:', error);
-    }
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { data: oldRequests } = await supabase
+      .from('client_requests').select('id').eq('status', 'new').lt('created_at', yesterday);
+    if (oldRequests?.length)
+      toast.warning(`${oldRequests.length} demande(s) en attente depuis plus de 24h`);
   };
-
-  // Surveillance en temps réel
-  useEffect(() => {
-    loadMetrics();
-    loadActiveMatches();
-    setLoading(false);
-
-    // Refresh toutes les 30 secondes
-    const interval = setInterval(() => {
-      loadMetrics();
-      loadActiveMatches();
-      checkTimeouts();
-    }, 30000);
-
-    // Realtime subscriptions
-    const requestsChannel = supabase
-      .channel('requests-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'client_requests' },
-        () => {
-          loadMetrics();
-          loadActiveMatches();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      clearInterval(interval);
-      supabase.removeChannel(requestsChannel);
-    };
-  }, []);
 
   return {
     metrics,
     activeMatches,
-    loading,
+    loading: metricsLoading || matchesLoading,
     triggerMatching,
+    checkTimeouts,
     refreshData: () => {
-      loadMetrics();
-      loadActiveMatches();
-    }
+      qc.invalidateQueries({ queryKey: METRICS_KEY });
+      qc.invalidateQueries({ queryKey: MATCHES_KEY });
+    },
   };
 };

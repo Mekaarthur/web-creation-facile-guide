@@ -1,16 +1,12 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import Cart, { useCart } from "@/components/Cart";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { servicesData } from "@/utils/servicesData";
 import { serviceTranslations } from "@/utils/serviceTranslations";
 
-// Import des images
 import serviceChildcareEducation from "@/assets/service-childcare-education.jpg";
 import serviceHouseLogistics from "@/assets/service-house-logistics.jpg";
 import serviceAdminSupport from "@/assets/service-admin-support.jpg";
@@ -19,56 +15,16 @@ import servicePremiumConcierge from "@/assets/service-premium-concierge.jpg";
 import servicePetCare from "@/assets/service-pet-care.jpg";
 import serviceSeniorsAssistance from "@/assets/service-seniors-assistance.jpg";
 import serviceBusinessExecutive from "@/assets/service-business-executive.jpg";
-import { PaymentLogos } from "@/components/PaymentLogos";
-import { 
-  Baby, 
-  Home, 
-  FileText, 
-  Plane,
-  Crown,
-  Briefcase,
-  ArrowRight,
-  Clock,
-  Shield,
-  Star,
-  Heart,
-  MessageSquare,
-  Car,
-  Calendar,
-  Utensils,
-  Gamepad2,
-  ShoppingCart,
-  Package,
-  Phone,
-  MapPin,
-  Luggage,
-  Users,
-  PawPrint,
-  UserCheck,
-  Euro,
-  Check
-} from "lucide-react";
-import ServicesBooking from "@/components/ServicesBooking";
-import ServiceBookingForm from "@/components/ServiceBookingForm";
+
+import { Baby, Home, FileText, Plane, Crown, Briefcase, PawPrint, UserCheck } from "lucide-react";
 import SubscriptionBooking from "@/components/SubscriptionBooking";
 
 const ServicesPackages = () => {
-  const [selectedPackage, setSelectedPackage] = useState<any>(null);
-  const [showCart, setShowCart] = useState(false);
   const [showSubscription, setShowSubscription] = useState(false);
   const [selectedServiceForSubscription, setSelectedServiceForSubscription] = useState<any>(null);
-  const { addToCart, getCartItemsCount } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { i18n, t } = useTranslation();
-
-  const handleReservation = (pkg: any) => {
-    if (!user) {
-      navigate('/auth');
-    } else {
-      setSelectedPackage(pkg);
-    }
-  };
 
   const handleSubscriptionReservation = (pkg: any) => {
     if (!user) {
@@ -83,8 +39,8 @@ const ServicesPackages = () => {
       setShowSubscription(true);
     }
   };
-  
-  const iconMapping = {
+
+  const iconMapping: Record<string, React.ElementType> = {
     kids: Baby,
     maison: Home,
     vie: FileText,
@@ -95,7 +51,7 @@ const ServicesPackages = () => {
     plus: Crown
   };
 
-  const imageMapping = {
+  const imageMapping: Record<string, string> = {
     kids: serviceChildcareEducation,
     maison: serviceHouseLogistics,
     vie: serviceAdminSupport,
@@ -147,38 +103,6 @@ const ServicesPackages = () => {
     };
   });
 
-  const pricingOptions = [
-    {
-      title: t('servicesPackages.pricingOptions.carte.title'),
-      price: "22-25€",
-      description: t('servicesPackages.pricingOptions.carte.description'),
-      features: t('servicesPackages.pricingOptions.carte.features', { returnObjects: true }) as string[],
-      color: "outline"
-    },
-    {
-      title: t('servicesPackages.pricingOptions.hebdo.title'),
-      price: "10h - 200€",
-      description: t('servicesPackages.pricingOptions.hebdo.description'),
-      features: t('servicesPackages.pricingOptions.hebdo.features', { returnObjects: true }) as string[],
-      color: "primary",
-      popular: true
-    },
-    {
-      title: t('servicesPackages.pricingOptions.mensuel.title'), 
-      price: "40h - 800€",
-      description: t('servicesPackages.pricingOptions.mensuel.description'),
-      features: t('servicesPackages.pricingOptions.mensuel.features', { returnObjects: true }) as string[],
-      color: "accent"
-    },
-    {
-      title: t('servicesPackages.pricingOptions.premium.title'),
-      price: "≥ 1400€",
-      description: t('servicesPackages.pricingOptions.premium.description'),
-      features: t('servicesPackages.pricingOptions.premium.features', { returnObjects: true }) as string[],
-      color: "hero"
-    }
-  ];
-
   return (
     <section id="services" className="py-20 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -188,38 +112,37 @@ const ServicesPackages = () => {
           {packages.map((pkg, index) => {
             const IconComponent = pkg.icon;
             return (
-              <Card 
-                key={pkg.id} 
+              <Card
+                key={pkg.id}
                 className={`relative p-3 sm:p-4 lg:p-6 hover:shadow-glow transition-all duration-300 hover:scale-[1.02] group border ${
                   pkg.popular ? 'border-accent' : 'border-border'
-                } animate-fade-in-up h-full flex flex-col`}
+                } animate-fade-in-up h-full flex flex-col cursor-pointer`}
                 style={{ animationDelay: `${index * 0.1}s` }}
+                onClick={() => handleSubscriptionReservation(pkg)}
               >
                 {pkg.popular && (
                   <div className="absolute -top-3 left-6 bg-accent text-accent-foreground px-3 py-1 rounded-full text-xs font-medium">
                     {t('servicesPackages.mostPopular')}
                   </div>
                 )}
-                
+
                 <div className="space-y-3 lg:space-y-4 flex flex-col h-full">
-                  {/* Service Image - responsive height */}
                   {pkg.image && (
                     <div className="w-full h-24 sm:h-28 lg:h-32 rounded-lg overflow-hidden flex-shrink-0">
-                      <img 
-                        src={pkg.image} 
+                      <img
+                        src={pkg.image}
                         alt={pkg.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"
                       />
                     </div>
                   )}
-                  
-                  {/* Icon & Title */}
+
                   <div className="space-y-2">
                     <div className={`w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-lg ${
                       pkg.color === 'primary' ? 'bg-gradient-primary' : 'bg-gradient-accent'
                     } flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0`}>
-                      <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
+                      {IconComponent && <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />}
                     </div>
                     <div>
                       <h3 className="text-base sm:text-lg lg:text-xl font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
@@ -229,42 +152,37 @@ const ServicesPackages = () => {
                     </div>
                   </div>
 
-                  {/* Description */}
                   <p className="text-muted-foreground text-xs sm:text-sm line-clamp-3 flex-grow">
                     {pkg.description}
                   </p>
 
-                   {/* Services List */}
-                   <ul className="space-y-2">
-                     {pkg.services.slice(0, 3).map((service, idx) => (
-                       <li key={idx} className="flex items-start space-x-2 text-sm">
-                         <div className={`w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 ${
-                           pkg.color === 'primary' ? 'bg-primary' : 'bg-accent'
-                         }`}></div>
-                         <span className="text-muted-foreground">{typeof service === 'string' ? service : service.name}</span>
-                       </li>
-                     ))}
-                      {pkg.services.length > 3 && (
-                        <li className="text-xs text-accent font-medium">
-                          +{pkg.services.length - 3} {t('servicesPackages.moreServices')}
-                        </li>
-                      )}
-                   </ul>
+                  <ul className="space-y-2">
+                    {pkg.services.slice(0, 3).map((service, idx) => (
+                      <li key={idx} className="flex items-start space-x-2 text-sm">
+                        <div className={`w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 ${
+                          pkg.color === 'primary' ? 'bg-primary' : 'bg-accent'
+                        }`}></div>
+                        <span className="text-muted-foreground">{typeof service === 'string' ? service : service.name}</span>
+                      </li>
+                    ))}
+                    {pkg.services.length > 3 && (
+                      <li className="text-xs text-accent font-medium">
+                        +{pkg.services.length - 3} {t('servicesPackages.moreServices')}
+                      </li>
+                    )}
+                  </ul>
 
-                  {/* Price */}
                   <div className="pt-2 border-t border-border">
                     <span className="text-sm font-semibold text-foreground">{pkg.price}</span>
                   </div>
-
                 </div>
-               </Card>
-             );
-           })}
+              </Card>
+            );
+          })}
         </div>
 
       </div>
 
-      {/* Subscription Booking Modal */}
       <SubscriptionBooking
         isOpen={showSubscription}
         onClose={() => setShowSubscription(false)}

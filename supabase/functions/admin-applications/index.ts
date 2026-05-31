@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.3';
+import { sanitizeSearch } from '../_shared/sanitize.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -65,7 +66,7 @@ serve(async (req) => {
       }
 
       if (body.searchTerm) {
-        query = query.or(`first_name.ilike.%${body.searchTerm}%,last_name.ilike.%${body.searchTerm}%,email.ilike.%${body.searchTerm}%`);
+        query = query.or(`first_name.ilike.%${sanitizeSearch(body.searchTerm)}%,last_name.ilike.%${sanitizeSearch(body.searchTerm)}%,email.ilike.%${sanitizeSearch(body.searchTerm)}%`);
       }
 
       if (body.limit) {

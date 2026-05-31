@@ -50,8 +50,18 @@ interface ModernNotificationRequest {
     // Status-change notifications
     | 'provider_assigned'
     | 'dispute_opened'
-    | 'booking_completed';
-    
+    | 'booking_completed'
+    // Provider onboarding
+    | 'provider_signup_candidate'
+    | 'provider_signup_admin'
+    // Application status
+    | 'job_status_update'
+    // Client reports
+    | 'anomaly_report'
+    // Document validation
+    | 'document_approved'
+    | 'document_rejected';
+
   recipient: {
     email: string;
     name: string;
@@ -77,6 +87,20 @@ interface ModernNotificationRequest {
     reason?: string;
     newDate?: string;
     newTime?: string;
+    // Provider signup
+    services?: string;
+    // Document validation
+    documentLabel?: string;
+    rejectionReason?: string;
+    // Job status update
+    newStatus?: string;
+    oldStatus?: string;
+    comments?: string;
+    language?: string;
+    // Anomaly report / contact form
+    description?: string;
+    contactEmail?: string;
+    phone?: string;
   };
 }
 
@@ -1405,6 +1429,230 @@ const getModernEmailTemplate = (type: string, recipient: any, data: any) => {
       `
     },
 
+    // 🌟 CANDIDATURE REÇUE (candidat prestataire)
+    provider_signup_candidate: {
+      subject: `✅ Candidature reçue - Bikawo`,
+      html: `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
+            <h1 style="margin: 0; font-size: 26px;">✅ Candidature bien reçue !</h1>
+            <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Merci de votre intérêt pour Bikawo</p>
+          </div>
+          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+            <p style="font-size: 16px; color: #374151;">Bonjour ${firstName},</p>
+            <p style="font-size: 16px; line-height: 1.6; color: #374151;">
+              Nous avons bien reçu votre candidature pour rejoindre l'équipe Bikawo en tant que prestataire.
+            </p>
+            ${data.services ? `
+              <div style="background: #f0fdf4; padding: 18px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #059669;">
+                <p style="margin: 0; color: #065f46;"><strong>Services sélectionnés :</strong><br/>${data.services}</p>
+              </div>
+            ` : ''}
+            <div style="background: #dbeafe; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 0; color: #1e40af; font-weight: 500;">📧 Nous vous recontacterons sous 48h maximum</p>
+            </div>
+            <p style="font-size: 15px; color: #374151; line-height: 1.6;">
+              Notre équipe va examiner votre candidature et vous contactera très prochainement.<br/>
+              En cas de question : <a href="mailto:contact@bikawo.com" style="color: #059669;">contact@bikawo.com</a> | 06 09 08 53 90
+            </p>
+          </div>
+          ${bikawoSignature}
+        </div>
+      `
+    },
+
+    // 🌟 NOUVELLE CANDIDATURE (admin)
+    provider_signup_admin: {
+      subject: `🚨 Nouvelle candidature - ${data.clientName || 'Nouveau candidat'}`,
+      html: `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: white; padding: 25px; text-align: center; border-radius: 12px 12px 0 0;">
+            <h1 style="margin: 0; font-size: 22px;">🚨 Nouvelle candidature prestataire</h1>
+          </div>
+          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+            <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 20px;">
+              <ul style="color: #374151; line-height: 1.8; margin: 0; padding-left: 20px;">
+                <li><strong>Nom :</strong> ${data.clientName || '—'}</li>
+                <li><strong>Email :</strong> ${data.contactEmail || '—'}</li>
+                ${data.services ? `<li><strong>Services :</strong> ${data.services}</li>` : ''}
+              </ul>
+              <div style="text-align: center; margin-top: 20px;">
+                <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.fr'}/admin/applications"
+                   style="background: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">
+                  Voir dans l'admin
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      `
+    },
+
+    // 🌟 MISE À JOUR STATUT CANDIDATURE
+    job_status_update: (() => {
+      const isFrench = !data.language || data.language === 'fr';
+      const statusLabels: Record<string, Record<string, string>> = {
+        fr: {
+          pending: 'En attente', under_review: 'En cours d\'examen',
+          interview_scheduled: 'Entretien programmé', approved: 'Approuvée',
+          rejected: 'Rejetée', onboarding: 'En formation', active: 'Actif'
+        },
+        en: {
+          pending: 'Pending', under_review: 'Under Review',
+          interview_scheduled: 'Interview Scheduled', approved: 'Approved',
+          rejected: 'Rejected', onboarding: 'Onboarding', active: 'Active'
+        }
+      };
+      const lang = isFrench ? 'fr' : 'en';
+      const statusLabel = statusLabels[lang]?.[data.newStatus as string] || data.newStatus || '';
+      return {
+        subject: isFrench
+          ? `Mise à jour de votre candidature - ${statusLabel}`
+          : `Application Status Update - ${statusLabel}`,
+        html: isFrench ? `
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
+              <h1 style="margin: 0; font-size: 26px;">Bikawo</h1>
+              <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Mise à jour de candidature</p>
+            </div>
+            <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+              <p style="font-size: 16px; color: #374151;">Bonjour ${firstName},</p>
+              <p style="font-size: 16px; line-height: 1.6; color: #374151;">Le statut de votre candidature a été mis à jour.</p>
+              <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+                <h3 style="color: #1976d2; margin: 0 0 10px 0;">Nouveau statut</h3>
+                <p style="font-size: 18px; font-weight: bold; color: #333; margin: 0;">${statusLabel}</p>
+              </div>
+              ${data.comments ? `
+                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                  <h4 style="color: #856404; margin-top: 0;">Commentaires de notre équipe :</h4>
+                  <p style="color: #333; margin-bottom: 0;">${data.comments}</p>
+                </div>
+              ` : ''}
+              ${data.newStatus === 'approved' ? `
+                <div style="background: #d4edda; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                  <h3 style="color: #155724; margin-top: 0;">🎉 Félicitations !</h3>
+                  <p style="color: #333; margin-bottom: 0;">Votre candidature a été approuvée ! Notre équipe vous contactera prochainement.</p>
+                </div>
+              ` : ''}
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="mailto:recrutement@bikawo.com"
+                   style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+                  Nous contacter
+                </a>
+              </div>
+            </div>
+            ${bikawoSignature}
+          </div>
+        ` : `
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
+              <h1 style="margin: 0; font-size: 26px;">Bikawo</h1>
+              <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Application Update</p>
+            </div>
+            <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+              <p style="font-size: 16px; color: #374151;">Hello ${firstName},</p>
+              <p style="font-size: 16px; line-height: 1.6; color: #374151;">Your application status has been updated.</p>
+              <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+                <h3 style="color: #1976d2; margin: 0 0 10px 0;">New Status</h3>
+                <p style="font-size: 18px; font-weight: bold; color: #333; margin: 0;">${statusLabel}</p>
+              </div>
+              ${data.comments ? `
+                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                  <h4 style="color: #856404; margin-top: 0;">Comments from our team:</h4>
+                  <p style="color: #333; margin-bottom: 0;">${data.comments}</p>
+                </div>
+              ` : ''}
+              ${data.newStatus === 'approved' ? `
+                <div style="background: #d4edda; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                  <h3 style="color: #155724; margin-top: 0;">🎉 Congratulations!</h3>
+                  <p style="color: #333; margin-bottom: 0;">Your application has been approved! Our team will contact you soon.</p>
+                </div>
+              ` : ''}
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="mailto:recruitment@bikawo.com"
+                   style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+                  Contact Us
+                </a>
+              </div>
+            </div>
+          </div>
+        `
+      };
+    })(),
+
+    // 🌟 SIGNALEMENT ANOMALIE (admin)
+    anomaly_report: {
+      subject: `⚠️ Signalement anomalie – ${data.serviceName || 'Prestation'}`,
+      from: 'Bikawo Support <noreply@bikawo.com>',
+      replyTo: data.contactEmail,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #0f172a;">⚠️ Nouveau signalement d'anomalie</h2>
+          <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+            <tr><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>Réservation</strong></td><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${data.bookingId || '—'}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>Service</strong></td><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${data.serviceName || '—'}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>Date</strong></td><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${data.bookingDate || '—'}</td></tr>
+            <tr><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>Client</strong></td><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${data.contactEmail || '—'}</td></tr>
+          </table>
+          <h3 style="color: #0f172a;">Description :</h3>
+          <p style="background: #f9fafb; padding: 15px; border-radius: 8px; border-left: 4px solid #ef4444; white-space: pre-wrap;">${(data.description || '').replace(/</g, '&lt;')}</p>
+          <p style="color: #6b7280; font-size: 12px; margin-top: 20px;">Délai de réponse engagé : 48h ouvrées.</p>
+        </div>
+      `
+    },
+
+    // 🌟 DOCUMENT APPROUVÉ
+    document_approved: {
+      subject: `✅ Document approuvé - ${data.documentLabel || 'Document'}`,
+      html: `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; padding: 25px; text-align: center; border-radius: 12px 12px 0 0;">
+            <h1 style="margin: 0; font-size: 24px;">✅ Document approuvé</h1>
+          </div>
+          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+            <p style="font-size: 16px; color: #374151;">Bonjour ${firstName},</p>
+            <p style="font-size: 16px; line-height: 1.6; color: #374151;">
+              Bonne nouvelle ! Votre document <strong>${data.documentLabel || 'document'}</strong> a été approuvé par notre équipe.
+            </p>
+            <div style="background: #f0fdf4; padding: 18px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #059669;">
+              <p style="margin: 0; color: #065f46;">Nous continuons l'examen de votre candidature et vous tiendrons informé(e).</p>
+            </div>
+            <p style="font-size: 14px; color: #6b7280; text-align: center; margin-top: 20px;">
+              Cordialement, <strong>L'équipe Bikawo</strong>
+            </p>
+          </div>
+          ${bikawoSignature}
+        </div>
+      `
+    },
+
+    // 🌟 DOCUMENT À CORRIGER
+    document_rejected: {
+      subject: `❌ Document à corriger - ${data.documentLabel || 'Document'}`,
+      html: `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: white; padding: 25px; text-align: center; border-radius: 12px 12px 0 0;">
+            <h1 style="margin: 0; font-size: 24px;">❌ Document à corriger</h1>
+          </div>
+          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+            <p style="font-size: 16px; color: #374151;">Bonjour ${firstName},</p>
+            <p style="font-size: 16px; line-height: 1.6; color: #374151;">
+              Nous avons examiné votre document <strong>${data.documentLabel || 'document'}</strong>, mais nous avons besoin que vous le soumettiez à nouveau.
+            </p>
+            ${data.rejectionReason ? `
+              <div style="background: #fef2f2; border-left: 4px solid #dc2626; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p style="margin: 0; color: #991b1b;"><strong>Raison :</strong> ${data.rejectionReason}</p>
+              </div>
+            ` : ''}
+            <p style="font-size: 14px; color: #6b7280; text-align: center; margin-top: 20px;">
+              Cordialement, <strong>L'équipe Bikawo</strong>
+            </p>
+          </div>
+          ${bikawoSignature}
+        </div>
+      `
+    },
+
     // 🌟 TEMPLATE PAR DÉFAUT
     default: {
       subject: `📧 Notification Bikawo`,
@@ -1454,12 +1702,16 @@ serve(async (req) => {
     const template = getModernEmailTemplate(requestData.type, requestData.recipient, requestData.data);
 
     // Envoyer l'email via Resend
-    const emailResult = await resend.emails.send({
-      from: "Bikawo - Votre assistant personnel au quotidien <notifications@bikawo.com>",
+    const sendPayload: Parameters<typeof resend.emails.send>[0] = {
+      from: (template as any).from || "Bikawo - Votre assistant personnel au quotidien <notifications@bikawo.com>",
       to: [requestData.recipient.email],
       subject: template.subject,
       html: template.html,
-    });
+    };
+    if ((template as any).replyTo) {
+      (sendPayload as any).replyTo = (template as any).replyTo;
+    }
+    const emailResult = await resend.emails.send(sendPayload);
 
     if (emailResult.error) {
       throw new Error(emailResult.error.message);

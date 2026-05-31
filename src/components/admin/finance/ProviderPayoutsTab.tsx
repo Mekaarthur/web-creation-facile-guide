@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,67 +17,63 @@ interface ProviderPayout {
   payout_frequency: string;
   total_due: number;
   transaction_count: number;
-  ready_count: number;       // nb transactions ready_for_payout
-  blocked_count: number;     // nb transactions needs_stripe_setup
+  ready_count: number;
+  blocked_count: number;
   transactions: any[];
 }
 
+const QUERY_KEY = ['admin-provider-payouts'] as const;
+
+async function fetchPayouts(): Promise<ProviderPayout[]> {
+  const { data, error } = await supabase
+    .from("financial_transactions")
+    .select(`
+      *,
+      provider:providers(id, business_name, stripe_account_id, stripe_onboarding_complete, payout_frequency, profiles(first_name, last_name))
+    `)
+    .in("payment_status", ["client_paid", "paid", "completed", "ready_for_payout", "needs_stripe_setup"])
+    .is("provider_paid_at", null);
+
+  if (error) throw error;
+
+  const grouped: Record<string, ProviderPayout> = {};
+  data?.forEach((t: any) => {
+    const pid = t.provider_id;
+    if (!grouped[pid]) {
+      const provider = t.provider;
+      grouped[pid] = {
+        provider_id: pid,
+        provider_name: provider?.business_name ||
+          `${provider?.profiles?.first_name || ""} ${provider?.profiles?.last_name || ""}`.trim() || "Inconnu",
+        stripe_connected: !!provider?.stripe_account_id && !!provider?.stripe_onboarding_complete,
+        payout_frequency: provider?.payout_frequency || "weekly",
+        total_due: 0,
+        transaction_count: 0,
+        ready_count: 0,
+        blocked_count: 0,
+        transactions: [],
+      };
+    }
+    grouped[pid].total_due += Number(t.provider_payment);
+    grouped[pid].transaction_count++;
+    if (t.payment_status === "ready_for_payout") grouped[pid].ready_count++;
+    if (t.payment_status === "needs_stripe_setup") grouped[pid].blocked_count++;
+    grouped[pid].transactions.push(t);
+  });
+
+  return Object.values(grouped).sort((a, b) => b.total_due - a.total_due);
+}
+
 export const ProviderPayoutsTab = () => {
-  const [payouts, setPayouts] = useState<ProviderPayout[]>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
   const [processing, setProcessing] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadPayouts();
-  }, []);
+  const { data: payouts = [], isLoading: loading, refetch } = useQuery<ProviderPayout[]>({
+    queryKey: QUERY_KEY,
+    queryFn: fetchPayouts,
+  });
 
-  const loadPayouts = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("financial_transactions")
-        .select(`
-          *,
-          provider:providers(id, business_name, stripe_account_id, stripe_onboarding_complete, payout_frequency, profiles(first_name, last_name))
-        `)
-        .in("payment_status", ["client_paid", "paid", "completed", "ready_for_payout", "needs_stripe_setup"])
-        .is("provider_paid_at", null);
-
-      if (error) throw error;
-
-      // Group by provider
-      const grouped: Record<string, ProviderPayout> = {};
-      data?.forEach((t: any) => {
-        const pid = t.provider_id;
-        if (!grouped[pid]) {
-          const provider = t.provider;
-          grouped[pid] = {
-            provider_id: pid,
-            provider_name: provider?.business_name ||
-              `${provider?.profiles?.first_name || ""} ${provider?.profiles?.last_name || ""}`.trim() || "Inconnu",
-            stripe_connected: !!provider?.stripe_account_id && !!provider?.stripe_onboarding_complete,
-            payout_frequency: provider?.payout_frequency || "weekly",
-            total_due: 0,
-            transaction_count: 0,
-            ready_count: 0,
-            blocked_count: 0,
-            transactions: [],
-          };
-        }
-        grouped[pid].total_due += Number(t.provider_payment);
-        grouped[pid].transaction_count++;
-        if (t.payment_status === "ready_for_payout") grouped[pid].ready_count++;
-        if (t.payment_status === "needs_stripe_setup") grouped[pid].blocked_count++;
-        grouped[pid].transactions.push(t);
-      });
-
-      setPayouts(Object.values(grouped).sort((a, b) => b.total_due - a.total_due));
-    } catch (error: any) {
-      console.error("Error loading payouts:", error);
-      toast.error("Erreur de chargement des paiements");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const invalidate = () => qc.invalidateQueries({ queryKey: QUERY_KEY });
 
   const handleStripeTransfer = async (payout: ProviderPayout) => {
     setProcessing(payout.provider_id);
@@ -85,12 +82,10 @@ export const ProviderPayoutsTab = () => {
       const { data, error } = await supabase.functions.invoke("transfer-provider-payment", {
         body: { action: "transfer_bulk", transactionIds },
       });
-
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-
       toast.success(`${data.successCount} paiement(s) envoyé(s) via Stripe - ${data.totalAmount?.toFixed(2)}€`);
-      loadPayouts();
+      invalidate();
     } catch (error: any) {
       toast.error(error.message || "Erreur lors du transfert");
     } finally {
@@ -107,7 +102,7 @@ export const ProviderPayoutsTab = () => {
         });
       }
       toast.success(`${payout.transaction_count} transaction(s) marquée(s) payées manuellement`);
-      loadPayouts();
+      invalidate();
     } catch (error: any) {
       toast.error(error.message || "Erreur");
     } finally {
@@ -116,7 +111,7 @@ export const ProviderPayoutsTab = () => {
   };
 
   const handleExportCSV = () => {
-    const BOM = "\uFEFF";
+    const BOM = "﻿";
     const headers = ["Prestataire", "Montant dû (€)", "Nb missions", "Stripe Connect", "Transactions IDs"];
     const rows = payouts.map((p) => [
       p.provider_name,
@@ -125,7 +120,6 @@ export const ProviderPayoutsTab = () => {
       p.stripe_connected ? "Oui" : "Non",
       p.transactions.map((t: any) => t.id).join(" | "),
     ]);
-
     const csv = BOM + [headers.join(";"), ...rows.map((r) => r.join(";"))].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -155,13 +149,11 @@ export const ProviderPayoutsTab = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => { setLoading(true); loadPayouts(); }}>
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Actualiser
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            <RefreshCw className="w-4 h-4 mr-2" />Actualiser
           </Button>
           <Button variant="outline" onClick={handleExportCSV} disabled={payouts.length === 0}>
-            <Download className="w-4 h-4 mr-2" />
-            Exporter récapitulatif
+            <Download className="w-4 h-4 mr-2" />Exporter récapitulatif
           </Button>
         </div>
       </div>
@@ -180,19 +172,15 @@ export const ProviderPayoutsTab = () => {
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1.5 flex-1 min-w-0">
                   <div className="font-medium text-base">{payout.provider_name}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {payout.transaction_count} mission(s)
-                  </div>
+                  <div className="text-sm text-muted-foreground">{payout.transaction_count} mission(s)</div>
                   <div className="flex flex-wrap items-center gap-2">
                     {payout.stripe_connected ? (
                       <Badge variant="default" className="text-xs flex items-center gap-1">
-                        <CreditCard className="w-3 h-3" />
-                        Stripe Connect
+                        <CreditCard className="w-3 h-3" />Stripe Connect
                       </Badge>
                     ) : (
                       <Badge variant="secondary" className="text-xs flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" />
-                        Virement manuel
+                        <AlertCircle className="w-3 h-3" />Virement manuel
                       </Badge>
                     )}
                     <Badge variant="outline" className="text-xs flex items-center gap-1">
@@ -201,14 +189,12 @@ export const ProviderPayoutsTab = () => {
                     </Badge>
                     {payout.ready_count > 0 && (
                       <Badge className="text-xs bg-green-100 text-green-800 border-green-300 flex items-center gap-1">
-                        <CheckCircle className="w-3 h-3" />
-                        {payout.ready_count} prêt(s) au virement
+                        <CheckCircle className="w-3 h-3" />{payout.ready_count} prêt(s) au virement
                       </Badge>
                     )}
                     {payout.blocked_count > 0 && (
                       <Badge variant="destructive" className="text-xs flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" />
-                        {payout.blocked_count} bloqué(s) — Stripe non configuré
+                        <AlertCircle className="w-3 h-3" />{payout.blocked_count} bloqué(s) — Stripe non configuré
                       </Badge>
                     )}
                   </div>
@@ -219,33 +205,15 @@ export const ProviderPayoutsTab = () => {
                     <div className="text-xl font-bold">{payout.total_due.toFixed(2)}€</div>
                     <div className="text-xs text-muted-foreground">à verser</div>
                   </div>
-
                   <div className="flex flex-col gap-2">
                     {payout.stripe_connected && (
-                      <Button
-                        size="sm"
-                        onClick={() => handleStripeTransfer(payout)}
-                        disabled={processing === payout.provider_id}
-                      >
-                        {processing === payout.provider_id ? (
-                          <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                        ) : (
-                          <Send className="w-4 h-4 mr-1" />
-                        )}
+                      <Button size="sm" onClick={() => handleStripeTransfer(payout)} disabled={processing === payout.provider_id}>
+                        {processing === payout.provider_id ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Send className="w-4 h-4 mr-1" />}
                         Payer via Stripe
                       </Button>
                     )}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleMarkAllManualPaid(payout)}
-                      disabled={processing === payout.provider_id}
-                    >
-                      {processing === payout.provider_id ? (
-                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                      ) : (
-                        <BanknoteIcon className="w-4 h-4 mr-1" />
-                      )}
+                    <Button size="sm" variant="outline" onClick={() => handleMarkAllManualPaid(payout)} disabled={processing === payout.provider_id}>
+                      {processing === payout.provider_id ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <BanknoteIcon className="w-4 h-4 mr-1" />}
                       Marquer payé manuellement
                     </Button>
                   </div>

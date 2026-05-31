@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.3';
+import { sanitizeSearch } from '../_shared/sanitize.ts';
 import { Resend } from "npm:resend@2.0.0";
 import React from 'npm:react@18.3.1';
 import { renderAsync } from 'npm:@react-email/components@0.0.22';
@@ -74,7 +75,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { data: profiles } = await supabase
       .from('profiles')
       .select('user_id')
-      .ilike('email', email);
+      .ilike('email', sanitizeSearch(email));
 
     if (!profiles || profiles.length === 0) {
       console.log('❌ No account found for provided email (not revealed to caller)');

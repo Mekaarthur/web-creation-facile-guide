@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,75 +10,77 @@ import { MandateSignature } from '@/components/provider/MandateSignature';
 import { TrainingModule } from '@/components/provider/TrainingModule';
 import { CheckCircle, Loader2, ArrowLeft, FileText, PenLine, GraduationCap, BadgeCheck } from 'lucide-react';
 
+interface OnboardingData {
+  provider: any;
+  currentStep: number;
+}
+
+async function fetchOnboardingData(): Promise<OnboardingData | null> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data, error } = await supabase
+    .from('providers')
+    .select('*')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return null;
+
+  if (data.status === 'active') return { provider: data, currentStep: -1 };
+
+  const { data: approvedDocs } = await supabase
+    .from('provider_documents')
+    .select('document_type')
+    .eq('provider_id', data.id)
+    .eq('status', 'approved');
+
+  const requiredDocTypes = ['identity_document', 'siret_document', 'rib_iban', 'certification'];
+  const documentsApproved = requiredDocTypes.every(type =>
+    approvedDocs?.some((doc: any) => doc.document_type === type)
+  );
+
+  let currentStep: number;
+  if (!data.documents_submitted || !documentsApproved) {
+    currentStep = 1;
+  } else if (!data.mandat_facturation_accepte) {
+    currentStep = 2;
+  } else if (!data.formation_completed) {
+    currentStep = 3;
+  } else {
+    currentStep = 4;
+  }
+
+  return { provider: data, currentStep };
+}
+
 const ProviderOnboarding = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [provider, setProvider] = useState<any>(null);
   const [currentStep, setCurrentStep] = useState(1);
 
+  const { data, isLoading: loading, refetch } = useQuery<OnboardingData | null>({
+    queryKey: ['provider-onboarding'],
+    queryFn: fetchOnboardingData,
+  });
+
   useEffect(() => {
-    loadProviderData();
-  }, []);
-
-  const loadProviderData = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate('/auth/provider');
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('providers')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error) throw error;
-      
-      if (!data) {
-        toast.error('Profil prestataire non trouvé', {
-          description: 'Veuillez d\'abord créer votre compte prestataire.'
-        });
-        navigate('/auth/provider');
-        return;
-      }
-
-      setProvider(data);
-
-      if (data.status === 'active') {
-        navigate('/espace-prestataire');
-        return;
-      }
-
-      // Vérifier les documents approuvés par l'admin
-      const { data: approvedDocs } = await supabase
-        .from('provider_documents')
-        .select('document_type')
-        .eq('provider_id', data.id)
-        .eq('status', 'approved');
-
-      const requiredDocTypes = ['identity_document', 'siret_document', 'rib_iban', 'certification'];
-      const documentsApproved = requiredDocTypes.every(type =>
-        approvedDocs?.some((doc: any) => doc.document_type === type)
-      );
-
-      // Déterminer l'étape actuelle
-      if (!data.documents_submitted || !documentsApproved) {
-        setCurrentStep(1);
-      } else if (!data.mandat_facturation_accepte) {
-        setCurrentStep(2);
-      } else if (!data.formation_completed) {
-        setCurrentStep(3);
-      } else {
-        setCurrentStep(4);
-      }
-    } catch (error: any) {
-      toast.error('Erreur', { description: error.message });
-    } finally {
-      setLoading(false);
+    if (data === undefined) return;
+    if (data === null) {
+      toast.error('Profil prestataire non trouvé', {
+        description: "Veuillez d'abord créer votre compte prestataire.",
+      });
+      navigate('/auth/provider');
+      return;
     }
-  };
+    if (data.currentStep === -1) {
+      navigate('/espace-prestataire');
+      return;
+    }
+    setCurrentStep(data.currentStep);
+  }, [data, navigate]);
+
+  const provider = data?.provider ?? null;
 
   if (loading) {
     return (
@@ -106,7 +109,6 @@ const ProviderOnboarding = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
-      {/* Header */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/auth/provider" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
@@ -114,9 +116,9 @@ const ProviderOnboarding = () => {
             <span className="text-sm hidden sm:inline">Retour</span>
           </Link>
           <Link to="/" className="flex items-center gap-2">
-            <img 
-              src="/lovable-uploads/4c766686-0c19-4be4-b410-bc4ee2dc5c59.png" 
-              alt="Bikawo" 
+            <img
+              src="/lovable-uploads/4c766686-0c19-4be4-b410-bc4ee2dc5c59.png"
+              alt="Bikawo"
               className="h-8 w-auto"
             />
           </Link>
@@ -125,7 +127,6 @@ const ProviderOnboarding = () => {
       </header>
 
       <div className="container mx-auto px-4 py-8 lg:py-12 max-w-4xl">
-        {/* Header section */}
         <div className="text-center space-y-4 mb-8">
           <h1 className="text-2xl lg:text-3xl font-bold">
             Bienvenue chez <span className="text-primary">Bikawo</span> 👋
@@ -133,8 +134,6 @@ const ProviderOnboarding = () => {
           <p className="text-muted-foreground max-w-lg mx-auto">
             Complétez ces étapes pour activer votre compte prestataire et commencer à recevoir des missions.
           </p>
-          
-          {/* Progress bar */}
           <div className="max-w-md mx-auto space-y-2">
             <Progress value={progress} className="h-2" />
             <p className="text-sm text-muted-foreground">
@@ -143,13 +142,12 @@ const ProviderOnboarding = () => {
           </div>
         </div>
 
-        {/* Steps indicator - improved */}
         <div className="grid grid-cols-4 gap-2 sm:gap-4 mb-8">
           {steps.map((step) => {
             const StepIcon = step.icon;
             const isActive = step.id === currentStep;
             const isCompleted = step.completed;
-            
+
             return (
               <div
                 key={step.id}
@@ -181,8 +179,6 @@ const ProviderOnboarding = () => {
                     {step.title}
                   </span>
                 </div>
-                
-                {/* Step number badge */}
                 <div className={`absolute -top-2 -right-2 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center ${
                   isCompleted
                     ? 'bg-green-500 text-white'
@@ -197,12 +193,11 @@ const ProviderOnboarding = () => {
           })}
         </div>
 
-        {/* Content based on current step */}
         <div className="space-y-6">
           {currentStep === 1 && (
             <DocumentUploadSection
               providerId={provider.id}
-              onDocumentsUpdated={loadProviderData}
+              onDocumentsUpdated={() => refetch()}
             />
           )}
 
@@ -211,7 +206,7 @@ const ProviderOnboarding = () => {
               providerId={provider.id}
               providerName={provider.business_name || 'Prestataire'}
               onSigned={() => {
-                loadProviderData();
+                refetch();
                 setCurrentStep(3);
               }}
             />
@@ -221,7 +216,7 @@ const ProviderOnboarding = () => {
             <TrainingModule
               providerId={provider.id}
               onCompleted={() => {
-                loadProviderData();
+                refetch();
                 setCurrentStep(4);
               }}
             />
@@ -234,7 +229,7 @@ const ProviderOnboarding = () => {
               </div>
               <h3 className="text-xl font-semibold">Vérification en cours</h3>
               <p className="text-muted-foreground max-w-md mx-auto">
-                Félicitations ! Votre dossier est complet et en cours de vérification par notre équipe. 
+                Félicitations ! Votre dossier est complet et en cours de vérification par notre équipe.
                 Vous recevrez un email dès que votre compte sera activé.
               </p>
               <div className="pt-4 space-y-2">

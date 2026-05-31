@@ -1,29 +1,17 @@
 import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { openDocument } from '@/utils/storageHelpers';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  FileText, 
-  Eye, 
-  CheckCircle, 
-  XCircle, 
-  AlertCircle,
-  Shield,
-  Building,
-  User,
-  CreditCard,
-  Award,
-  Download
+import {
+  Eye, CheckCircle, XCircle, AlertCircle,
+  Shield, Building, User, CreditCard, Award
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 
 interface DocumentValidation {
@@ -42,8 +30,6 @@ interface DocumentInfo {
   icon: any;
   required: boolean;
   url: string | null;
-  status?: 'pending' | 'approved' | 'rejected';
-  rejection_reason?: string;
 }
 
 interface ApplicationDocumentsValidatorProps {
@@ -62,49 +48,39 @@ interface ApplicationDocumentsValidatorProps {
   onDocumentUpdated?: () => void;
 }
 
-export const ApplicationDocumentsValidator = ({ 
-  application, 
-  onDocumentUpdated 
+const VALIDATIONS_KEY = (applicationId: string) => ['app-doc-validations', applicationId] as const;
+
+const requiredDocumentTypes = ['identity_document', 'siret_document', 'rib_iban', 'certifications'];
+
+export const ApplicationDocumentsValidator = ({
+  application,
+  onDocumentUpdated,
 }: ApplicationDocumentsValidatorProps) => {
   const { toast } = useToast();
+  const qc = useQueryClient();
   const [validatingDoc, setValidatingDoc] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [currentDocType, setCurrentDocType] = useState('');
-  const [validations, setValidations] = useState<DocumentValidation[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  const requiredDocumentTypes = [
-    'identity_document',
-    'siret_document',
-    'rib_iban',
-    'certifications',
-  ];
-
-  useEffect(() => {
-    loadValidations();
-  }, [application.id]);
-
-  const loadValidations = async () => {
-    try {
+  const { data: validations = [], isLoading: loading } = useQuery<DocumentValidation[]>({
+    queryKey: VALIDATIONS_KEY(application.id),
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('application_document_validations')
         .select('*')
         .eq('application_id', application.id);
-
       if (error) throw error;
-      setValidations((data || []) as DocumentValidation[]);
-    } catch (error) {
-      console.error('Erreur chargement validations:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return (data || []) as DocumentValidation[];
+    },
+  });
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: VALIDATIONS_KEY(application.id) });
 
   const documents: DocumentInfo[] = [
     {
       type: 'identity_document',
-      label: 'Pièce d\'identité',
+      label: "Pièce d'identité",
       description: 'CNI, Passeport ou Permis de conduire',
       icon: User,
       required: true,
@@ -129,7 +105,7 @@ export const ApplicationDocumentsValidator = ({
     {
       type: 'rib_iban',
       label: 'RIB / IBAN',
-      description: 'Relevé d\'identité bancaire',
+      description: "Relevé d'identité bancaire",
       icon: CreditCard,
       required: true,
       url: application.rib_iban_url,
@@ -145,31 +121,16 @@ export const ApplicationDocumentsValidator = ({
   ];
 
   const getDocumentStatus = (doc: DocumentInfo): 'missing' | 'pending' | 'approved' | 'rejected' => {
-    if (!doc.url) {
-      return 'missing';
-    }
-    
-    // Vérifier si le document a une validation en DB
+    if (!doc.url) return 'missing';
     const validation = validations.find(v => v.document_type === doc.type);
-    if (validation) {
-      return validation.status;
-    }
-    
-    return 'pending';
+    return validation ? validation.status : 'pending';
   };
 
-  const getDocumentRejectionReason = (docType: string): string | null => {
-    const validation = validations.find(v => v.document_type === docType);
-    return validation?.rejection_reason || null;
-  };
+  const getDocumentRejectionReason = (docType: string): string | null =>
+    validations.find(v => v.document_type === docType)?.rejection_reason || null;
 
-  const buildNextValidations = (
-    docType: string,
-    status: DocumentValidation['status'],
-    reason: string | null,
-    userId?: string
-  ) => {
-    const nextValidation: DocumentValidation = {
+  const buildNextValidations = (docType: string, status: DocumentValidation['status'], reason: string | null, userId?: string) => {
+    const next: DocumentValidation = {
       id: validations.find(v => v.document_type === docType)?.id || `local-${docType}`,
       document_type: docType,
       status,
@@ -177,29 +138,21 @@ export const ApplicationDocumentsValidator = ({
       validated_at: new Date().toISOString(),
       validated_by: userId || null,
     };
-
     return validations.some(v => v.document_type === docType)
-      ? validations.map(v => (v.document_type === docType ? nextValidation : v))
-      : [...validations, nextValidation];
+      ? validations.map(v => (v.document_type === docType ? next : v))
+      : [...validations, next];
   };
 
   const syncApplicationState = async (nextValidations: DocumentValidation[]) => {
-    const allRequiredPresent = requiredDocumentTypes.every((docType) => {
-      const document = documents.find(doc => doc.type === docType);
-      return Boolean(document?.url);
-    });
-
-    const allRequiredApproved = requiredDocumentTypes.every((docType) => {
-      const validation = nextValidations.find(v => v.document_type === docType);
-      return validation?.status === 'approved';
-    });
-
+    const allRequiredPresent = requiredDocumentTypes.every(docType =>
+      Boolean(documents.find(doc => doc.type === docType)?.url)
+    );
+    const allRequiredApproved = requiredDocumentTypes.every(docType =>
+      nextValidations.find(v => v.document_type === docType)?.status === 'approved'
+    );
     const nextStatus = application.status === 'approved' || application.status === 'rejected'
       ? application.status
-      : allRequiredPresent
-        ? 'documents_pending'
-        : 'pending';
-
+      : allRequiredPresent ? 'documents_pending' : 'pending';
     const { error } = await supabase
       .from('job_applications')
       .update({
@@ -208,22 +161,16 @@ export const ApplicationDocumentsValidator = ({
         status: nextStatus,
       })
       .eq('id', application.id);
-
     if (error) throw error;
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'missing':
-        return <Badge variant="destructive"><AlertCircle className="w-3 h-3 mr-1" />Manquant</Badge>;
-      case 'pending':
-        return <Badge variant="secondary"><AlertCircle className="w-3 h-3 mr-1" />En attente</Badge>;
-      case 'approved':
-        return <Badge variant="default" className="bg-success"><CheckCircle className="w-3 h-3 mr-1" />Approuvé</Badge>;
-      case 'rejected':
-        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Rejeté</Badge>;
-      default:
-        return null;
+      case 'missing':  return <Badge variant="destructive"><AlertCircle className="w-3 h-3 mr-1" />Manquant</Badge>;
+      case 'pending':  return <Badge variant="secondary"><AlertCircle className="w-3 h-3 mr-1" />En attente</Badge>;
+      case 'approved': return <Badge variant="default" className="bg-success"><CheckCircle className="w-3 h-3 mr-1" />Approuvé</Badge>;
+      case 'rejected': return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Rejeté</Badge>;
+      default: return null;
     }
   };
 
@@ -231,8 +178,6 @@ export const ApplicationDocumentsValidator = ({
     setValidatingDoc(docType);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
-      // Étape 1: Upsert la validation dans la DB
       const { error: upsertError } = await supabase
         .from('application_document_validations')
         .upsert({
@@ -241,52 +186,22 @@ export const ApplicationDocumentsValidator = ({
           status: 'approved',
           validated_by: user?.id,
           validated_at: new Date().toISOString(),
-          rejection_reason: null
-        }, {
-          onConflict: 'application_id,document_type'
-        });
+          rejection_reason: null,
+        }, { onConflict: 'application_id,document_type' });
+      if (upsertError) throw new Error(`Validation: ${upsertError.message}`);
 
-      if (upsertError) {
-        console.error('Erreur upsert validation:', upsertError);
-        throw new Error(`Validation: ${upsertError.message}`);
-      }
-
-      // Étape 2: Sync application state
       const nextValidations = buildNextValidations(docType, 'approved', null, user?.id);
-      setValidations(nextValidations);
-      
-      try {
-        await syncApplicationState(nextValidations);
-      } catch (syncError: any) {
-        console.error('Erreur sync état candidature:', syncError);
-        // Ne pas bloquer - la validation est déjà enregistrée
-      }
+      try { await syncApplicationState(nextValidations); } catch (_) {}
 
-      // Étape 3: Envoyer notification email (non-bloquant)
       supabase.functions.invoke('send-document-validation-email', {
-        body: {
-          applicationId: application.id,
-          documentType: docType,
-          status: 'approved'
-        }
-      }).catch((emailErr: any) => {
-        console.warn('Email notification non envoyée:', emailErr);
-      });
-      
-      toast({
-        title: "Document approuvé",
-        description: `Le document "${documents.find(d => d.type === docType)?.label}" a été approuvé avec succès.`,
-      });
+        body: { applicationId: application.id, documentType: docType, status: 'approved' },
+      }).catch(() => {});
 
-      await loadValidations();
+      toast({ title: "Document approuvé", description: `Le document "${documents.find(d => d.type === docType)?.label}" a été approuvé avec succès.` });
+      invalidate();
       onDocumentUpdated?.();
     } catch (error: any) {
-      console.error('Erreur approbation document:', error);
-      toast({
-        title: "Erreur d'approbation",
-        description: error?.message || "Impossible d'approuver le document.",
-        variant: "destructive"
-      });
+      toast({ title: "Erreur d'approbation", description: error?.message || "Impossible d'approuver le document.", variant: "destructive" });
     } finally {
       setValidatingDoc(null);
     }
@@ -294,19 +209,12 @@ export const ApplicationDocumentsValidator = ({
 
   const handleRejectDocument = async () => {
     if (!rejectionReason.trim()) {
-      toast({
-        title: "Raison requise",
-        description: "Veuillez indiquer la raison du rejet.",
-        variant: "destructive"
-      });
+      toast({ title: "Raison requise", description: "Veuillez indiquer la raison du rejet.", variant: "destructive" });
       return;
     }
-
     setValidatingDoc(currentDocType);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
-      // Étape 1: Upsert la validation dans la DB
       const { error: upsertError } = await supabase
         .from('application_document_validations')
         .upsert({
@@ -315,85 +223,35 @@ export const ApplicationDocumentsValidator = ({
           status: 'rejected',
           validated_by: user?.id,
           validated_at: new Date().toISOString(),
-          rejection_reason: rejectionReason
-        }, {
-          onConflict: 'application_id,document_type'
-        });
+          rejection_reason: rejectionReason,
+        }, { onConflict: 'application_id,document_type' });
+      if (upsertError) throw new Error(`Rejet: ${upsertError.message}`);
 
-      if (upsertError) {
-        console.error('Erreur upsert rejet:', upsertError);
-        throw new Error(`Rejet: ${upsertError.message}`);
-      }
-
-      // Étape 2: Sync application state (non-bloquant)
       const nextValidations = buildNextValidations(currentDocType, 'rejected', rejectionReason, user?.id);
-      setValidations(nextValidations);
-      
-      try {
-        await syncApplicationState(nextValidations);
-      } catch (syncError: any) {
-        console.error('Erreur sync état candidature:', syncError);
-      }
+      try { await syncApplicationState(nextValidations); } catch (_) {}
 
-      // Étape 3: Email (non-bloquant)
       supabase.functions.invoke('send-document-validation-email', {
-        body: {
-          applicationId: application.id,
-          documentType: currentDocType,
-          status: 'rejected',
-          rejectionReason
-        }
-      }).catch((emailErr: any) => {
-        console.warn('Email notification non envoyée:', emailErr);
-      });
-      
-      toast({
-        title: "Document rejeté",
-        description: `Le document a été rejeté. Le candidat sera notifié.`,
-      });
+        body: { applicationId: application.id, documentType: currentDocType, status: 'rejected', rejectionReason },
+      }).catch(() => {});
 
+      toast({ title: "Document rejeté", description: "Le document a été rejeté. Le candidat sera notifié." });
       setShowRejectDialog(false);
       setRejectionReason('');
       setCurrentDocType('');
-      await loadValidations();
+      invalidate();
       onDocumentUpdated?.();
     } catch (error: any) {
-      console.error('Erreur rejet document:', error);
-      toast({
-        title: "Erreur de rejet",
-        description: error?.message || "Impossible de rejeter le document.",
-        variant: "destructive"
-      });
+      toast({ title: "Erreur de rejet", description: error?.message || "Impossible de rejeter le document.", variant: "destructive" });
     } finally {
       setValidatingDoc(null);
     }
   };
 
-  const openRejectDialog = (docType: string) => {
-    setCurrentDocType(docType);
-    setShowRejectDialog(true);
-  };
-
   const viewDocument = async (url: string) => {
     const success = await openDocument(url, 'provider-applications');
-    if (!success) {
-      toast({
-        title: "Erreur",
-        description: "Impossible d'ouvrir le document.",
-        variant: "destructive"
-      });
-    }
+    if (!success) toast({ title: "Erreur", description: "Impossible d'ouvrir le document.", variant: "destructive" });
   };
 
-  const allRequiredDocsPresent = documents
-    .filter(d => d.required)
-    .every(d => getDocumentStatus(d) !== 'missing');
-
-  const allRequiredDocsApproved = documents
-    .filter(d => d.required)
-    .every(d => getDocumentStatus(d) === 'approved');
-
-  // Vérifier si le casier judiciaire a plus de 3 mois
   const isCriminalRecordExpired = () => {
     if (!application.criminal_record_date) return false;
     const recordDate = new Date(application.criminal_record_date);
@@ -402,9 +260,10 @@ export const ApplicationDocumentsValidator = ({
     return recordDate < threeMonthsAgo;
   };
 
-  if (loading) {
-    return <div className="p-4 text-center text-muted-foreground">Chargement des documents...</div>;
-  }
+  const allRequiredDocsPresent  = documents.filter(d => d.required).every(d => getDocumentStatus(d) !== 'missing');
+  const allRequiredDocsApproved = documents.filter(d => d.required).every(d => getDocumentStatus(d) === 'approved');
+
+  if (loading) return <div className="p-4 text-center text-muted-foreground">Chargement des documents...</div>;
 
   return (
     <div className="space-y-4">
@@ -412,20 +271,11 @@ export const ApplicationDocumentsValidator = ({
         <h3 className="font-semibold text-lg">Documents du candidat</h3>
         <div className="flex items-center gap-2">
           {allRequiredDocsApproved ? (
-            <Badge variant="default" className="bg-success">
-              <CheckCircle className="w-4 h-4 mr-1" />
-              Tous validés
-            </Badge>
+            <Badge variant="default" className="bg-success"><CheckCircle className="w-4 h-4 mr-1" />Tous validés</Badge>
           ) : allRequiredDocsPresent ? (
-            <Badge variant="secondary">
-              <AlertCircle className="w-4 h-4 mr-1" />
-              En attente de validation
-            </Badge>
+            <Badge variant="secondary"><AlertCircle className="w-4 h-4 mr-1" />En attente de validation</Badge>
           ) : (
-            <Badge variant="destructive">
-              <AlertCircle className="w-4 h-4 mr-1" />
-              Documents manquants
-            </Badge>
+            <Badge variant="destructive"><AlertCircle className="w-4 h-4 mr-1" />Documents manquants</Badge>
           )}
         </div>
       </div>
@@ -434,23 +284,15 @@ export const ApplicationDocumentsValidator = ({
         {documents.map((doc) => {
           const status = getDocumentStatus(doc);
           const Icon = doc.icon;
-          
           return (
-            <div 
-              key={doc.type}
-              className="border rounded-lg p-4 bg-muted/30 hover:bg-muted/50 transition-colors"
-            >
+            <div key={doc.type} className="border rounded-lg p-4 bg-muted/30 hover:bg-muted/50 transition-colors">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3 flex-1">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <Icon className="w-5 h-5 text-primary" />
-                  </div>
+                  <div className="p-2 rounded-lg bg-primary/10"><Icon className="w-5 h-5 text-primary" /></div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <h4 className="font-medium">{doc.label}</h4>
-                      {doc.required && (
-                        <Badge variant="outline" className="text-xs">Obligatoire</Badge>
-                      )}
+                      {doc.required && <Badge variant="outline" className="text-xs">Obligatoire</Badge>}
                     </div>
                     <p className="text-sm text-muted-foreground">{doc.description}</p>
                     {status === 'rejected' && (
@@ -466,39 +308,24 @@ export const ApplicationDocumentsValidator = ({
                     )}
                   </div>
                 </div>
-
                 <div className="flex items-center gap-2">
                   {getStatusBadge(status)}
-                  
                   {status !== 'missing' && (
                     <div className="flex gap-1">
                       {doc.url && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => viewDocument(doc.url!)}
-                        >
+                        <Button size="sm" variant="outline" onClick={() => viewDocument(doc.url!)}>
                           <Eye className="w-4 h-4" />
                         </Button>
                       )}
-                      
                       {status === 'pending' && (
                         <>
-                          <Button
-                            size="sm"
-                            variant="default"
-                            onClick={() => handleApproveDocument(doc.type)}
-                            disabled={validatingDoc === doc.type}
-                            className="bg-success hover:bg-success/90"
-                          >
+                          <Button size="sm" variant="default" className="bg-success hover:bg-success/90"
+                            onClick={() => handleApproveDocument(doc.type)} disabled={validatingDoc === doc.type}>
                             <CheckCircle className="w-4 h-4" />
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => openRejectDialog(doc.type)}
-                            disabled={validatingDoc === doc.type}
-                          >
+                          <Button size="sm" variant="destructive"
+                            onClick={() => { setCurrentDocType(doc.type); setShowRejectDialog(true); }}
+                            disabled={validatingDoc === doc.type}>
                             <XCircle className="w-4 h-4" />
                           </Button>
                         </>
@@ -527,12 +354,9 @@ export const ApplicationDocumentsValidator = ({
         </div>
       )}
 
-      {/* Dialog de rejet */}
       <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Rejeter le document</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Rejeter le document</DialogTitle></DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-muted-foreground">
               Veuillez indiquer la raison du rejet de ce document. Le candidat recevra cette information.
@@ -545,23 +369,11 @@ export const ApplicationDocumentsValidator = ({
             />
           </div>
           <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setShowRejectDialog(false);
-                setRejectionReason('');
-                setCurrentDocType('');
-              }}
-            >
+            <Button variant="outline" onClick={() => { setShowRejectDialog(false); setRejectionReason(''); setCurrentDocType(''); }}>
               Annuler
             </Button>
-            <Button 
-              variant="destructive" 
-              onClick={handleRejectDocument}
-              disabled={!rejectionReason.trim()}
-            >
-              <XCircle className="w-4 h-4 mr-2" />
-              Rejeter le document
+            <Button variant="destructive" onClick={handleRejectDocument} disabled={!rejectionReason.trim()}>
+              <XCircle className="w-4 h-4 mr-2" />Rejeter le document
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useGeolocation } from './useGeolocation';
 import { debounce } from '@/utils/performanceOptimizer';
+import { sanitizeSearch } from '@/lib/sanitizeSearch';
 
 interface IntelligentMatchingFilters {
   serviceType: string;
@@ -97,7 +98,7 @@ export const useIntelligentMatching = () => {
       const { data, error } = await supabase
         .from('client_requests')
         .select('service_type, location')
-        .ilike('service_type', `%${serviceType}%`)
+        .ilike('service_type', `%${sanitizeSearch(serviceType)}%`)
         .order('created_at', { ascending: false })
         .limit(5);
 

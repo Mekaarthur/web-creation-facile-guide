@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,32 +19,34 @@ interface Incident {
   created_at: string;
 }
 
+const QUERY_KEY = ['admin-incidents'] as const;
+
 export const IncidentsPanel = () => {
-  const [incidents, setIncidents] = useState<Incident[]>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
+
+  const { data: incidents = [], isLoading: loading } = useQuery<Incident[]>({
+    queryKey: QUERY_KEY,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("incidents")
+        .select("*")
+        .in("status", ["open", "investigating"])
+        .order("created_at", { ascending: false });
+      if (error) { toast.error("Erreur chargement incidents"); throw error; }
+      return data || [];
+    },
+  });
 
   useEffect(() => {
-    loadIncidents();
     const channel = supabase
-      .channel("admin-incidents")
+      .channel("admin-incidents-rt")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "incidents" }, (payload) => {
         toast.error("🚨 Nouvel incident signalé!", { description: (payload.new as Incident).description, duration: 8000 });
-        loadIncidents();
+        qc.invalidateQueries({ queryKey: QUERY_KEY });
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, []);
-
-  const loadIncidents = async () => {
-    const { data, error } = await supabase
-      .from("incidents")
-      .select("*")
-      .in("status", ["open", "investigating"])
-      .order("created_at", { ascending: false });
-    if (error) { console.error(error); toast.error("Erreur chargement incidents"); }
-    else setIncidents(data || []);
-    setLoading(false);
-  };
+  }, [qc]);
 
   const handleResolve = async (id: string) => {
     const { error } = await supabase
@@ -51,14 +54,11 @@ export const IncidentsPanel = () => {
       .update({ status: "resolved", resolved_at: new Date().toISOString() })
       .eq("id", id);
     if (error) toast.error("Erreur résolution");
-    else { toast.success("Incident résolu"); loadIncidents(); }
+    else { toast.success("Incident résolu"); qc.invalidateQueries({ queryKey: QUERY_KEY }); }
   };
 
-  const getSeverityVariant = (severity: string) => {
-    if (severity === "critical") return "destructive" as const;
-    if (severity === "high") return "destructive" as const;
-    return "secondary" as const;
-  };
+  const getSeverityVariant = (severity: string): 'destructive' | 'secondary' =>
+    severity === "critical" || severity === "high" ? "destructive" : "secondary";
 
   if (loading) return <div className="p-4">Chargement...</div>;
 
@@ -79,9 +79,7 @@ export const IncidentsPanel = () => {
               <div key={incident.id} className="flex items-start justify-between p-4 border rounded-lg">
                 <div className="space-y-1 flex-1">
                   <div className="flex items-center gap-2">
-                    <Badge variant={getSeverityVariant(incident.severity)}>
-                      {incident.severity.toUpperCase()}
-                    </Badge>
+                    <Badge variant={getSeverityVariant(incident.severity)}>{incident.severity.toUpperCase()}</Badge>
                     <Badge variant="outline">{incident.type}</Badge>
                     <span className="text-xs text-muted-foreground">
                       <Clock className="inline h-3 w-3 mr-1" />
@@ -91,8 +89,7 @@ export const IncidentsPanel = () => {
                   <p className="text-sm">{incident.description}</p>
                 </div>
                 <Button size="sm" variant="outline" onClick={() => handleResolve(incident.id)}>
-                  <CheckCircle className="h-4 w-4 mr-1" />
-                  Résoudre
+                  <CheckCircle className="h-4 w-4 mr-1" />Résoudre
                 </Button>
               </div>
             ))}

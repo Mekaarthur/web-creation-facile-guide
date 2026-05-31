@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
+import { sanitizeSearch } from '@/lib/sanitizeSearch';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,8 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { 
+import {
   Search,
   Eye,
   CheckCircle,
@@ -59,115 +60,108 @@ interface ActionHistory {
   admin_user_id: string | null;
 }
 
+interface FiltersData {
+  cities: string[];
+  services: string[];
+}
+
+async function fetchRequests(
+  searchTerm: string, statusFilter: string, cityFilter: string,
+  serviceFilter: string, paymentFilter: string, urgencyFilter: string
+): Promise<ClientRequest[]> {
+  let query = supabase.from('client_requests').select('*').order('created_at', { ascending: false });
+  if (statusFilter !== 'all')  query = query.eq('status', statusFilter);
+  if (cityFilter !== 'all')    query = query.eq('city', cityFilter);
+  if (serviceFilter !== 'all') query = query.eq('service_type', serviceFilter);
+  if (paymentFilter !== 'all') query = query.eq('payment_status', paymentFilter);
+  if (urgencyFilter !== 'all') query = query.eq('urgency_level', urgencyFilter);
+  if (searchTerm) {
+    query = query.or(`client_name.ilike.%${sanitizeSearch(searchTerm)}%,service_type.ilike.%${sanitizeSearch(searchTerm)}%,location.ilike.%${sanitizeSearch(searchTerm)}%`);
+  }
+  const { data, error } = await query;
+  if (error) throw error;
+  return data || [];
+}
+
+async function fetchFiltersData(): Promise<FiltersData> {
+  const [{ data: cityData }, { data: serviceData }] = await Promise.all([
+    supabase.from('client_requests').select('city').not('city', 'is', null),
+    supabase.from('client_requests').select('service_type'),
+  ]);
+  const cities = [...new Set((cityData || []).map(item => item.city).filter(Boolean))] as string[];
+  const services = [...new Set((serviceData || []).map(item => item.service_type))];
+  return { cities, services };
+}
+
+async function fetchActionHistory(requestId: string): Promise<ActionHistory[]> {
+  const { data, error } = await supabase
+    .from('action_history')
+    .select('*')
+    .eq('entity_type', 'client_request')
+    .eq('entity_id', requestId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
 export const AdminClientRequestsEnhanced = () => {
-  const [requests, setRequests] = useState<ClientRequest[]>([]);
-  const [loading, setLoading] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<ClientRequest | null>(null);
-  const [actionHistory, setActionHistory] = useState<ActionHistory[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [cityFilter, setCityFilter] = useState<string>('all');
   const [serviceFilter, setServiceFilter] = useState<string>('all');
   const [paymentFilter, setPaymentFilter] = useState<string>('all');
   const [urgencyFilter, setUrgencyFilter] = useState<string>('all');
-  const [cities, setCities] = useState<string[]>([]);
-  const [services, setServices] = useState<string[]>([]);
   const { toast } = useToast();
+  const qc = useQueryClient();
 
-  useEffect(() => {
-    fetchRequests();
-    fetchFiltersData();
-  }, [searchTerm, statusFilter, cityFilter, serviceFilter, paymentFilter, urgencyFilter]);
+  const { data: requests = [] } = useQuery<ClientRequest[]>({
+    queryKey: ['admin-requests-enhanced', searchTerm, statusFilter, cityFilter, serviceFilter, paymentFilter, urgencyFilter],
+    queryFn: () => fetchRequests(searchTerm, statusFilter, cityFilter, serviceFilter, paymentFilter, urgencyFilter),
+  });
 
-  const fetchRequests = async () => {
-    setLoading(true);
-    try {
-      let query = supabase
-        .from('client_requests')
-        .select('*')
-        .order('created_at', { ascending: false });
+  const { data: filtersData } = useQuery<FiltersData>({
+    queryKey: ['admin-requests-filters'],
+    queryFn: fetchFiltersData,
+    staleTime: 5 * 60 * 1000,
+  });
 
-      // Appliquer les filtres
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
-      }
-      
-      if (cityFilter !== 'all') {
-        query = query.eq('city', cityFilter);
-      }
-      
-      if (serviceFilter !== 'all') {
-        query = query.eq('service_type', serviceFilter);
-      }
-      
-      if (paymentFilter !== 'all') {
-        query = query.eq('payment_status', paymentFilter);
-      }
-      
-      if (urgencyFilter !== 'all') {
-        query = query.eq('urgency_level', urgencyFilter);
-      }
+  const { data: actionHistory = [] } = useQuery<ActionHistory[]>({
+    queryKey: ['admin-request-history', selectedRequest?.id],
+    queryFn: () => fetchActionHistory(selectedRequest!.id),
+    enabled: !!selectedRequest,
+  });
 
-      if (searchTerm) {
-        query = query.or(`client_name.ilike.%${searchTerm}%,service_type.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%`);
-      }
+  const cities = filtersData?.cities ?? [];
+  const services = filtersData?.services ?? [];
 
-      const { data, error } = await query;
+  const stats = useMemo(() => ({
+    total: requests.length,
+    new: requests.filter(r => r.status === 'new').length,
+    searching_provider: requests.filter(r => r.status === 'searching_provider').length,
+    awaiting_client_confirmation: requests.filter(r => r.status === 'awaiting_client_confirmation').length,
+    confirmed: requests.filter(r => r.status === 'confirmed').length,
+    in_progress: requests.filter(r => r.status === 'in_progress').length,
+    completed: requests.filter(r => r.status === 'completed').length,
+    dispute: requests.filter(r => r.status === 'dispute').length,
+    unmatched: requests.filter(r => r.status === 'unmatched').length,
+    urgent: requests.filter(r => r.urgency_level === 'urgent').length,
+    pending_payment: requests.filter(r => r.payment_status === 'pending').length,
+    paid: requests.filter(r => r.payment_status === 'paid').length,
+    blocked: requests.filter(r => r.payment_status === 'blocked').length,
+  }), [requests]);
 
-      if (error) throw error;
-      setRequests(data || []);
-    } catch (error) {
-      console.error('Erreur lors du chargement des demandes:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les demandes",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchFiltersData = async () => {
-    try {
-      // Récupérer les villes uniques
-      const { data: cityData } = await supabase
-        .from('client_requests')
-        .select('city')
-        .not('city', 'is', null);
-      
-      if (cityData) {
-        const uniqueCities = [...new Set(cityData.map(item => item.city).filter(Boolean))];
-        setCities(uniqueCities);
-      }
-
-      // Récupérer les types de services uniques
-      const { data: serviceData } = await supabase
-        .from('client_requests')
-        .select('service_type');
-      
-      if (serviceData) {
-        const uniqueServices = [...new Set(serviceData.map(item => item.service_type))];
-        setServices(uniqueServices);
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des données de filtres:', error);
-    }
-  };
-
-  const fetchActionHistory = async (requestId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('action_history')
-        .select('*')
-        .eq('entity_type', 'client_request')
-        .eq('entity_id', requestId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setActionHistory(data || []);
-    } catch (error) {
-      console.error('Erreur lors du chargement de l\'historique:', error);
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'new': return 'Nouvelle demande';
+      case 'searching_provider': return 'Recherche prestataire';
+      case 'awaiting_client_confirmation': return 'Attente confirmation';
+      case 'confirmed': return 'Confirmée';
+      case 'in_progress': return 'En cours';
+      case 'completed': return 'Terminée';
+      case 'dispute': return 'Litige';
+      case 'unmatched': return 'Non pourvue';
+      default: return status;
     }
   };
 
@@ -175,39 +169,18 @@ export const AdminClientRequestsEnhanced = () => {
     try {
       const { error } = await supabase
         .from('client_requests')
-        .update({ 
-          status: newStatus,
-          updated_at: new Date().toISOString()
-        })
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
         .eq('id', requestId);
-
       if (error) throw error;
 
-      // Si le statut passe à "searching_provider", déclencher l'attribution automatique
-      if (newStatus === 'searching_provider') {
-        await triggerAutoAssignment(requestId);
-      }
-
-      // Envoyer notification automatique
+      if (newStatus === 'searching_provider') await triggerAutoAssignment(requestId);
       await sendStatusNotification(requestId, newStatus);
 
-      toast({
-        title: "Statut mis à jour",
-        description: `La demande a été marquée comme ${getStatusLabel(newStatus)}`,
-      });
-
-      setRequests(requests.map(req => 
-        req.id === requestId 
-          ? { ...req, status: newStatus }
-          : req
-      ));
-    } catch (error) {
-      console.error('Erreur:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour le statut",
-        variant: "destructive",
-      });
+      toast({ title: "Statut mis à jour", description: `La demande a été marquée comme ${getStatusLabel(newStatus)}` });
+      qc.invalidateQueries({ queryKey: ['admin-requests-enhanced'] });
+      if (selectedRequest?.id === requestId) setSelectedRequest({ ...selectedRequest, status: newStatus });
+    } catch {
+      toast({ title: "Erreur", description: "Impossible de mettre à jour le statut", variant: "destructive" });
     }
   };
 
@@ -216,28 +189,14 @@ export const AdminClientRequestsEnhanced = () => {
       const { data, error } = await supabase.functions.invoke('auto-assign-mission', {
         body: { clientRequestId: requestId }
       });
-
       if (error) throw error;
-
       if (data.success) {
-        toast({
-          title: "Attribution automatique",
-          description: `Mission envoyée à ${data.eligibleProvidersCount} prestataire(s) éligible(s)`,
-        });
+        toast({ title: "Attribution automatique", description: `Mission envoyée à ${data.eligibleProvidersCount} prestataire(s) éligible(s)` });
       } else {
-        toast({
-          title: "Attention",
-          description: data.message || "Aucun prestataire éligible trouvé",
-          variant: "destructive",
-        });
+        toast({ title: "Attention", description: data.message || "Aucun prestataire éligible trouvé", variant: "destructive" });
       }
-    } catch (error) {
-      console.error('Erreur attribution automatique:', error);
-      toast({
-        title: "Erreur",
-        description: "Erreur lors de l'attribution automatique",
-        variant: "destructive",
-      });
+    } catch {
+      toast({ title: "Erreur", description: "Erreur lors de l'attribution automatique", variant: "destructive" });
     }
   };
 
@@ -245,31 +204,15 @@ export const AdminClientRequestsEnhanced = () => {
     try {
       const { error } = await supabase
         .from('client_requests')
-        .update({ 
-          payment_status: newPaymentStatus,
-          updated_at: new Date().toISOString()
-        })
+        .update({ payment_status: newPaymentStatus, updated_at: new Date().toISOString() })
         .eq('id', requestId);
-
       if (error) throw error;
 
-      toast({
-        title: "Statut de paiement mis à jour",
-        description: `Le paiement a été marqué comme ${getPaymentStatusLabel(newPaymentStatus)}`,
-      });
-
-      setRequests(requests.map(req => 
-        req.id === requestId 
-          ? { ...req, payment_status: newPaymentStatus }
-          : req
-      ));
-    } catch (error) {
-      console.error('Erreur:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour le statut de paiement",
-        variant: "destructive",
-      });
+      toast({ title: "Statut de paiement mis à jour", description: `Le paiement a été marqué comme ${getPaymentStatusLabel(newPaymentStatus)}` });
+      qc.invalidateQueries({ queryKey: ['admin-requests-enhanced'] });
+      if (selectedRequest?.id === requestId) setSelectedRequest({ ...selectedRequest, payment_status: newPaymentStatus });
+    } catch {
+      toast({ title: "Erreur", description: "Impossible de mettre à jour le statut de paiement", variant: "destructive" });
     }
   };
 
@@ -277,8 +220,7 @@ export const AdminClientRequestsEnhanced = () => {
     try {
       const request = requests.find(r => r.id === requestId);
       if (!request) return;
-
-      const messages = {
+      const messages: Record<string, string> = {
         'new': "Votre demande a bien été reçue, nous recherchons un prestataire disponible.",
         'searching_provider': "Nous recherchons un prestataire pour votre demande.",
         'awaiting_client_confirmation': "Un prestataire est disponible pour votre demande.",
@@ -288,67 +230,32 @@ export const AdminClientRequestsEnhanced = () => {
         'dispute': "Nous avons bien pris en compte votre réclamation.",
         'unmatched': "Aucun prestataire n'était disponible, souhaitez-vous reprogrammer ?"
       };
-
       await supabase.functions.invoke('send-notification-email', {
         body: {
-          email: request.client_email,
-          name: request.client_name,
+          email: request.client_email, name: request.client_name,
           subject: `Mise à jour de votre demande - ${getStatusLabel(status)}`,
-          message: messages[status as keyof typeof messages] || 'Mise à jour de votre demande'
+          message: messages[status] || 'Mise à jour de votre demande'
         }
       });
-
-      // Enregistrer la notification dans les logs
-      await supabase
-        .from('notification_logs')
-        .insert({
-          user_id: request.client_email, // Utiliser l'email comme identifiant temporaire
-          notification_type: 'email',
-          subject: `Mise à jour de votre demande - ${getStatusLabel(status)}`,
-          content: messages[status as keyof typeof messages] || 'Mise à jour de votre demande',
-          entity_type: 'client_request',
-          entity_id: requestId,
-          status: 'sent',
-          sent_at: new Date().toISOString()
-        });
-    } catch (error) {
-      console.error('Erreur envoi notification:', error);
+      await supabase.from('notification_logs').insert({
+        user_id: request.client_email,
+        notification_type: 'email',
+        subject: `Mise à jour de votre demande - ${getStatusLabel(status)}`,
+        content: messages[status] || 'Mise à jour de votre demande',
+        entity_type: 'client_request', entity_id: requestId,
+        status: 'sent', sent_at: new Date().toISOString()
+      });
+    } catch {
+      // silent - notification failure shouldn't block status update
     }
   };
 
-  const openMessaging = (requestId: string) => {
-    // Logique pour ouvrir la messagerie
-    toast({
-      title: "Messagerie",
-      description: "Ouverture de la messagerie interne",
-    });
+  const openMessaging = (_requestId: string) => {
+    toast({ title: "Messagerie", description: "Ouverture de la messagerie interne" });
   };
 
-  const processPayment = (requestId: string) => {
-    // Logique pour traiter le paiement
-    toast({
-      title: "Paiement",
-      description: "Traitement du paiement en cours",
-    });
-  };
-
-  const getStatusStats = () => {
-    const stats = {
-      total: requests.length,
-      new: requests.filter(r => r.status === 'new').length,
-      searching_provider: requests.filter(r => r.status === 'searching_provider').length,
-      awaiting_client_confirmation: requests.filter(r => r.status === 'awaiting_client_confirmation').length,
-      confirmed: requests.filter(r => r.status === 'confirmed').length,
-      in_progress: requests.filter(r => r.status === 'in_progress').length,
-      completed: requests.filter(r => r.status === 'completed').length,
-      dispute: requests.filter(r => r.status === 'dispute').length,
-      unmatched: requests.filter(r => r.status === 'unmatched').length,
-      urgent: requests.filter(r => r.urgency_level === 'urgent').length,
-      pending_payment: requests.filter(r => r.payment_status === 'pending').length,
-      paid: requests.filter(r => r.payment_status === 'paid').length,
-      blocked: requests.filter(r => r.payment_status === 'blocked').length,
-    };
-    return stats;
+  const processPayment = (_requestId: string) => {
+    toast({ title: "Paiement", description: "Traitement du paiement en cours" });
   };
 
   const getStatusColor = (status: string) => {
@@ -362,20 +269,6 @@ export const AdminClientRequestsEnhanced = () => {
       case 'dispute': return 'destructive';
       case 'unmatched': return 'destructive';
       default: return 'outline';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'new': return 'Nouvelle demande';
-      case 'searching_provider': return 'Recherche prestataire';
-      case 'awaiting_client_confirmation': return 'Attente confirmation';
-      case 'confirmed': return 'Confirmée';
-      case 'in_progress': return 'En cours';
-      case 'completed': return 'Terminée';
-      case 'dispute': return 'Litige';
-      case 'unmatched': return 'Non pourvue';
-      default: return status;
     }
   };
 
@@ -406,63 +299,35 @@ export const AdminClientRequestsEnhanced = () => {
     }
   };
 
-  const stats = getStatusStats();
-
   return (
     <div className="space-y-6">
-      {/* Statistiques étendues */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs sm:text-sm font-medium">Total</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg sm:text-xl md:text-2xl font-bold">{stats.total}</div>
-          </CardContent>
+          <CardHeader className="pb-2"><CardTitle className="text-xs sm:text-sm font-medium">Total</CardTitle></CardHeader>
+          <CardContent><div className="text-lg sm:text-xl md:text-2xl font-bold">{stats.total}</div></CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs sm:text-sm font-medium">Nouvelles</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">{stats.new}</div>
-          </CardContent>
+          <CardHeader className="pb-2"><CardTitle className="text-xs sm:text-sm font-medium">Nouvelles</CardTitle></CardHeader>
+          <CardContent><div className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">{stats.new}</div></CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs sm:text-sm font-medium">En cours</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg sm:text-xl md:text-2xl font-bold text-orange-600">{stats.in_progress}</div>
-          </CardContent>
+          <CardHeader className="pb-2"><CardTitle className="text-xs sm:text-sm font-medium">En cours</CardTitle></CardHeader>
+          <CardContent><div className="text-lg sm:text-xl md:text-2xl font-bold text-orange-600">{stats.in_progress}</div></CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs sm:text-sm font-medium">Terminées</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg sm:text-xl md:text-2xl font-bold text-green-600">{stats.completed}</div>
-          </CardContent>
+          <CardHeader className="pb-2"><CardTitle className="text-xs sm:text-sm font-medium">Terminées</CardTitle></CardHeader>
+          <CardContent><div className="text-lg sm:text-xl md:text-2xl font-bold text-green-600">{stats.completed}</div></CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs sm:text-sm font-medium">Paiements</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg sm:text-xl md:text-2xl font-bold text-purple-600">{stats.paid}</div>
-          </CardContent>
+          <CardHeader className="pb-2"><CardTitle className="text-xs sm:text-sm font-medium">Paiements</CardTitle></CardHeader>
+          <CardContent><div className="text-lg sm:text-xl md:text-2xl font-bold text-purple-600">{stats.paid}</div></CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs sm:text-sm font-medium">Litiges</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg sm:text-xl md:text-2xl font-bold text-red-600">{stats.dispute}</div>
-          </CardContent>
+          <CardHeader className="pb-2"><CardTitle className="text-xs sm:text-sm font-medium">Litiges</CardTitle></CardHeader>
+          <CardContent><div className="text-lg sm:text-xl md:text-2xl font-bold text-red-600">{stats.dispute}</div></CardContent>
         </Card>
       </div>
 
-      {/* Filtres étendus */}
       <Card>
         <CardHeader>
           <CardTitle>Demandes clients - Gestion avancée</CardTitle>
@@ -480,11 +345,9 @@ export const AdminClientRequestsEnhanced = () => {
                 />
               </div>
             </div>
-            
+
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Statut" />
-              </SelectTrigger>
+              <SelectTrigger className="w-[200px]"><SelectValue placeholder="Statut" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous les statuts</SelectItem>
                 <SelectItem value="new">Nouvelles demandes</SelectItem>
@@ -497,33 +360,23 @@ export const AdminClientRequestsEnhanced = () => {
             </Select>
 
             <Select value={cityFilter} onValueChange={setCityFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Ville" />
-              </SelectTrigger>
+              <SelectTrigger className="w-[150px]"><SelectValue placeholder="Ville" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Toutes villes</SelectItem>
-                {cities.map(city => (
-                  <SelectItem key={city} value={city}>{city}</SelectItem>
-                ))}
+                {cities.map(city => <SelectItem key={city} value={city}>{city}</SelectItem>)}
               </SelectContent>
             </Select>
 
             <Select value={serviceFilter} onValueChange={setServiceFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Service" />
-              </SelectTrigger>
+              <SelectTrigger className="w-[150px]"><SelectValue placeholder="Service" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous services</SelectItem>
-                {services.map(service => (
-                  <SelectItem key={service} value={service}>{service}</SelectItem>
-                ))}
+                {services.map(service => <SelectItem key={service} value={service}>{service}</SelectItem>)}
               </SelectContent>
             </Select>
 
             <Select value={paymentFilter} onValueChange={setPaymentFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Paiement" />
-              </SelectTrigger>
+              <SelectTrigger className="w-[150px]"><SelectValue placeholder="Paiement" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous paiements</SelectItem>
                 <SelectItem value="pending">En attente</SelectItem>
@@ -533,7 +386,6 @@ export const AdminClientRequestsEnhanced = () => {
             </Select>
           </div>
 
-          {/* Table avec colonnes étendues */}
           <Table>
             <TableHeader>
               <TableRow>
@@ -568,12 +420,10 @@ export const AdminClientRequestsEnhanced = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getStatusColor(request.status)}>
-                      {getStatusLabel(request.status)}
-                    </Badge>
+                    <Badge variant={getStatusColor(request.status) as any}>{getStatusLabel(request.status)}</Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getPaymentStatusColor(request.payment_status)}>
+                    <Badge variant={getPaymentStatusColor(request.payment_status) as any}>
                       {getPaymentStatusLabel(request.payment_status)}
                     </Badge>
                   </TableCell>
@@ -590,10 +440,7 @@ export const AdminClientRequestsEnhanced = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => {
-                              setSelectedRequest(request);
-                              fetchActionHistory(request.id);
-                            }}
+                            onClick={() => setSelectedRequest(request)}
                           >
                             <Eye className="w-4 h-4 mr-1" />
                             Gérer
@@ -606,7 +453,6 @@ export const AdminClientRequestsEnhanced = () => {
                           </DialogHeader>
                           {selectedRequest && (
                             <div className="space-y-6">
-                              {/* Informations principales */}
                               <div className="grid grid-cols-2 gap-6">
                                 <div>
                                   <h4 className="font-semibold mb-3">Informations client</h4>
@@ -615,9 +461,7 @@ export const AdminClientRequestsEnhanced = () => {
                                     <p><strong>Email:</strong> {selectedRequest.client_email}</p>
                                     <p><strong>Téléphone:</strong> {selectedRequest.client_phone || 'Non renseigné'}</p>
                                     <p><strong>Lieu:</strong> {selectedRequest.location}</p>
-                                    {selectedRequest.city && (
-                                      <p><strong>Ville:</strong> {selectedRequest.city}</p>
-                                    )}
+                                    {selectedRequest.city && <p><strong>Ville:</strong> {selectedRequest.city}</p>}
                                   </div>
                                 </div>
                                 <div>
@@ -631,15 +475,11 @@ export const AdminClientRequestsEnhanced = () => {
                                 </div>
                               </div>
 
-                              {/* Description */}
                               <div>
                                 <h4 className="font-semibold mb-3">Description</h4>
-                                <p className="text-sm bg-gray-50 p-3 rounded">
-                                  {selectedRequest.service_description}
-                                </p>
+                                <p className="text-sm bg-gray-50 p-3 rounded">{selectedRequest.service_description}</p>
                               </div>
 
-                              {/* Gestion des statuts */}
                               <div className="grid grid-cols-2 gap-6">
                                 <div>
                                   <h4 className="font-semibold mb-3">Statut de la demande</h4>
@@ -647,9 +487,7 @@ export const AdminClientRequestsEnhanced = () => {
                                     value={selectedRequest.status}
                                     onValueChange={(value) => handleStatusUpdate(selectedRequest.id, value)}
                                   >
-                                    <SelectTrigger>
-                                      <SelectValue />
-                                    </SelectTrigger>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
                                       <SelectItem value="new">Nouvelle demande</SelectItem>
                                       <SelectItem value="searching_provider">Recherche prestataire</SelectItem>
@@ -662,16 +500,14 @@ export const AdminClientRequestsEnhanced = () => {
                                     </SelectContent>
                                   </Select>
                                 </div>
-                                
+
                                 <div>
                                   <h4 className="font-semibold mb-3">Statut de paiement</h4>
                                   <Select
                                     value={selectedRequest.payment_status}
                                     onValueChange={(value) => handlePaymentStatusUpdate(selectedRequest.id, value)}
                                   >
-                                    <SelectTrigger>
-                                      <SelectValue />
-                                    </SelectTrigger>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
                                       <SelectItem value="pending">En attente de paiement</SelectItem>
                                       <SelectItem value="paid">Payé</SelectItem>
@@ -681,7 +517,6 @@ export const AdminClientRequestsEnhanced = () => {
                                 </div>
                               </div>
 
-                              {/* Historique des actions */}
                               <div>
                                 <h4 className="font-semibold mb-3 flex items-center gap-2">
                                   <History className="w-4 h-4" />
@@ -713,34 +548,21 @@ export const AdminClientRequestsEnhanced = () => {
                                 </div>
                               </div>
 
-                              {/* Actions rapides */}
                               <div>
                                 <h4 className="font-semibold mb-3">Actions rapides</h4>
                                 <div className="flex gap-2 flex-wrap">
-                                   <Button 
-                                     variant="outline" 
-                                     size="sm"
-                                     onClick={() => sendStatusNotification(selectedRequest.id, selectedRequest.status)}
-                                   >
-                                     <Send className="w-4 h-4 mr-1" />
-                                     Notifier client
-                                   </Button>
-                                   <Button 
-                                     variant="outline" 
-                                     size="sm"
-                                     onClick={() => openMessaging(selectedRequest.id)}
-                                   >
-                                     <MessageSquare className="w-4 h-4 mr-1" />
-                                     Messagerie
-                                   </Button>
-                                   <Button 
-                                     variant="outline" 
-                                     size="sm"
-                                     onClick={() => processPayment(selectedRequest.id)}
-                                   >
-                                     <CreditCard className="w-4 h-4 mr-1" />
-                                     Paiement
-                                   </Button>
+                                  <Button variant="outline" size="sm" onClick={() => sendStatusNotification(selectedRequest.id, selectedRequest.status)}>
+                                    <Send className="w-4 h-4 mr-1" />
+                                    Notifier client
+                                  </Button>
+                                  <Button variant="outline" size="sm" onClick={() => openMessaging(selectedRequest.id)}>
+                                    <MessageSquare className="w-4 h-4 mr-1" />
+                                    Messagerie
+                                  </Button>
+                                  <Button variant="outline" size="sm" onClick={() => processPayment(selectedRequest.id)}>
+                                    <CreditCard className="w-4 h-4 mr-1" />
+                                    Paiement
+                                  </Button>
                                 </div>
                               </div>
                             </div>

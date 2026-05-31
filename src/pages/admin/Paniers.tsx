@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,90 +17,74 @@ interface Cart {
   status: string;
   expires_at: string;
   created_at: string;
-  profiles?: {
-    first_name: string;
-    last_name: string;
-  };
+  profiles?: { first_name: string; last_name: string; };
   cart_items: Array<{
     id: string;
     quantity: number;
     unit_price: number;
     total_price: number;
-    services: {
-      name: string;
-    };
+    services: { name: string; };
   }>;
 }
 
+async function fetchCarts(statusFilter: string, searchTerm: string): Promise<Cart[]> {
+  const { data, error } = await supabase.functions.invoke('admin-carts', {
+    body: {
+      filters: {
+        status: statusFilter !== 'all' ? statusFilter : undefined,
+        search: searchTerm || undefined,
+      },
+    },
+  });
+  if (error) throw error;
+  return data.carts;
+}
+
+const getStatusBadge = (status: string) => {
+  switch (status) {
+    case 'active': return <Badge variant="default" className="bg-blue-100 text-blue-800">Actif</Badge>;
+    case 'validé': return <Badge variant="default" className="bg-green-100 text-green-800">Validé</Badge>;
+    case 'expiré': return <Badge variant="outline" className="bg-gray-100 text-gray-800">Expiré</Badge>;
+    case 'annulé': return <Badge variant="destructive">Annulé</Badge>;
+    case 'payé': return <Badge variant="default" className="bg-emerald-100 text-emerald-800">Payé</Badge>;
+    default: return <Badge variant="outline">{status}</Badge>;
+  }
+};
+
+const isExpiringSoon = (expiresAt: string) => {
+  const expiryTime = new Date(expiresAt).getTime();
+  const now = Date.now();
+  const oneHour = 60 * 60 * 1000;
+  return expiryTime - now < oneHour && expiryTime > now;
+};
+
 export default function AdminPaniers() {
-  const [carts, setCarts] = useState<Cart[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+  const qc = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedCart, setSelectedCart] = useState<Cart | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [expireReason, setExpireReason] = useState('');
-  const { toast } = useToast();
 
-  const loadCarts = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase.functions.invoke('admin-carts', {
-        body: {
-          filters: {
-            status: statusFilter !== 'all' ? statusFilter : undefined,
-            search: searchTerm || undefined
-          }
-        }
-      });
-
-      if (error) throw error;
-
-      setCarts(data.carts);
-    } catch (error) {
-      console.error('Erreur:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les paniers",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: carts = [], isLoading: loading, refetch } = useQuery<Cart[]>({
+    queryKey: ['admin-carts', statusFilter, searchTerm],
+    queryFn: () => fetchCarts(statusFilter, searchTerm),
+  });
 
   const handleCartAction = async (action: string, cartId: string, extraData?: any) => {
     try {
       setActionLoading(cartId);
-      
       const { data, error } = await supabase.functions.invoke('admin-carts', {
-        body: {
-          action,
-          cartId,
-          ...extraData
-        }
+        body: { action, cartId, ...extraData },
       });
-
       if (error) throw error;
-
-      // Afficher le message personnalisé si disponible
-      const description = data?.message || `Action ${action} effectuée avec succès`;
-
-      toast({
-        title: "Succès",
-        description,
-      });
-
-      loadCarts();
+      toast({ title: "Succès", description: data?.message || `Action ${action} effectuée avec succès` });
+      qc.invalidateQueries({ queryKey: ['admin-carts'] });
       setSelectedCart(null);
       setExpireReason('');
     } catch (error) {
-      console.error('Erreur:', error);
-      toast({
-        title: "Erreur",
-        description: `Impossible d'effectuer l'action ${action}`,
-        variant: "destructive"
-      });
+      toast({ title: "Erreur", description: `Impossible d'effectuer l'action ${action}`, variant: "destructive" });
     } finally {
       setActionLoading(null);
     }
@@ -108,58 +93,24 @@ export default function AdminPaniers() {
   const expireOldCarts = async () => {
     try {
       const { data, error } = await supabase.functions.invoke('admin-carts', {
-        body: { action: 'expire-old' }
+        body: { action: 'expire-old' },
       });
-
       if (error) throw error;
-
-      toast({
-        title: "Succès",
-        description: `${data.expiredCount} paniers expirés automatiquement`,
-      });
-
-      loadCarts();
+      toast({ title: "Succès", description: `${data.expiredCount} paniers expirés automatiquement` });
+      qc.invalidateQueries({ queryKey: ['admin-carts'] });
     } catch (error) {
-      console.error('Erreur:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'expirer les anciens paniers",
-        variant: "destructive"
-      });
+      toast({ title: "Erreur", description: "Impossible d'expirer les anciens paniers", variant: "destructive" });
     }
   };
-
-  useEffect(() => {
-    loadCarts();
-  }, [statusFilter, searchTerm]);
 
   const filteredCarts = carts.filter(cart => {
     const clientName = cart.profiles ? `${cart.profiles.first_name} ${cart.profiles.last_name}` : '';
-    const matchesSearch = 
-      clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cart.id.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' || cart.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
+    return (
+      (clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+       cart.id.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (statusFilter === 'all' || cart.status === statusFilter)
+    );
   });
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <Badge variant="default" className="bg-blue-100 text-blue-800">Actif</Badge>;
-      case 'validé':
-        return <Badge variant="default" className="bg-green-100 text-green-800">Validé</Badge>;
-      case 'expiré':
-        return <Badge variant="outline" className="bg-gray-100 text-gray-800">Expiré</Badge>;
-      case 'annulé':
-        return <Badge variant="destructive">Annulé</Badge>;
-      case 'payé':
-        return <Badge variant="default" className="bg-emerald-100 text-emerald-800">Payé</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
 
   const statusCounts = {
     all: carts.length,
@@ -167,13 +118,6 @@ export default function AdminPaniers() {
     validé: carts.filter(c => c.status === 'validé').length,
     expiré: carts.filter(c => c.status === 'expiré').length,
     payé: carts.filter(c => c.status === 'payé').length,
-  };
-
-  const isExpiringSoon = (expiresAt: string) => {
-    const expiryTime = new Date(expiresAt).getTime();
-    const now = Date.now();
-    const oneHour = 60 * 60 * 1000;
-    return expiryTime - now < oneHour && expiryTime > now;
   };
 
   if (loading) {
@@ -194,7 +138,6 @@ export default function AdminPaniers() {
         <p className="text-muted-foreground">Suivi des paniers clients et validation des commandes</p>
       </div>
 
-      {/* Statistiques */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
@@ -246,7 +189,6 @@ export default function AdminPaniers() {
         </Card>
       </div>
 
-      {/* Filtres et actions */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Recherche et actions</CardTitle>
@@ -273,7 +215,7 @@ export default function AdminPaniers() {
               <option value="expiré">Expirés</option>
               <option value="payé">Payés</option>
             </select>
-            <Button variant="outline" size="sm" onClick={loadCarts} className="w-full sm:w-auto">
+            <Button variant="outline" size="sm" onClick={() => refetch()} className="w-full sm:w-auto">
               <RefreshCw className="w-4 h-4 mr-2" />
               Actualiser
             </Button>
@@ -285,7 +227,6 @@ export default function AdminPaniers() {
         </CardContent>
       </Card>
 
-      {/* Liste des paniers */}
       <Card>
         <CardContent className="p-0 overflow-x-auto">
           {filteredCarts.length === 0 ? (
@@ -308,40 +249,32 @@ export default function AdminPaniers() {
               </TableHeader>
               <TableBody>
                 {filteredCarts.map((cart) => {
-                  const clientName = cart.profiles 
+                  const clientName = cart.profiles
                     ? `${cart.profiles.first_name} ${cart.profiles.last_name}`
                     : 'N/A';
-                  
-                  const expiringSoon = isExpiringSoon(cart.expires_at);
-                  
+                  const expiring = isExpiringSoon(cart.expires_at);
                   return (
-                    <TableRow key={cart.id} className={expiringSoon ? 'bg-orange-50' : ''}>
+                    <TableRow key={cart.id} className={expiring ? 'bg-orange-50' : ''}>
                       <TableCell className="font-medium">{clientName}</TableCell>
                       <TableCell>€{cart.total_estimated.toFixed(2)}</TableCell>
                       <TableCell>{cart.cart_items.length} article(s)</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           {getStatusBadge(cart.status)}
-                          {expiringSoon && <AlertCircle className="w-4 h-4 text-orange-500" />}
+                          {expiring && <AlertCircle className="w-4 h-4 text-orange-500" />}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className={expiringSoon ? 'text-orange-600 font-medium' : ''}>
+                        <span className={expiring ? 'text-orange-600 font-medium' : ''}>
                           {new Date(cart.expires_at).toLocaleString('fr-FR')}
                         </span>
                       </TableCell>
-                      <TableCell>
-                        {new Date(cart.created_at).toLocaleDateString('fr-FR')}
-                      </TableCell>
+                      <TableCell>{new Date(cart.created_at).toLocaleDateString('fr-FR')}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center gap-2 justify-end">
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => setSelectedCart(cart)}
-                              >
+                              <Button variant="outline" size="sm" onClick={() => setSelectedCart(cart)}>
                                 Détails
                               </Button>
                             </DialogTrigger>
@@ -355,20 +288,11 @@ export default function AdminPaniers() {
                               {selectedCart && (
                                 <div className="space-y-4">
                                   <div className="grid grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                      <span className="font-medium">Total estimé:</span> €{selectedCart.total_estimated.toFixed(2)}
-                                    </div>
-                                    <div>
-                                      <span className="font-medium">Statut:</span> {getStatusBadge(selectedCart.status)}
-                                    </div>
-                                    <div>
-                                      <span className="font-medium">Expire le:</span> {new Date(selectedCart.expires_at).toLocaleString('fr-FR')}
-                                    </div>
-                                    <div>
-                                      <span className="font-medium">Créé le:</span> {new Date(selectedCart.created_at).toLocaleString('fr-FR')}
-                                    </div>
+                                    <div><span className="font-medium">Total estimé:</span> €{selectedCart.total_estimated.toFixed(2)}</div>
+                                    <div><span className="font-medium">Statut:</span> {getStatusBadge(selectedCart.status)}</div>
+                                    <div><span className="font-medium">Expire le:</span> {new Date(selectedCart.expires_at).toLocaleString('fr-FR')}</div>
+                                    <div><span className="font-medium">Créé le:</span> {new Date(selectedCart.created_at).toLocaleString('fr-FR')}</div>
                                   </div>
-                                  
                                   <div>
                                     <h4 className="font-medium mb-2">Articles du panier:</h4>
                                     <div className="space-y-2">
@@ -383,7 +307,6 @@ export default function AdminPaniers() {
                                       ))}
                                     </div>
                                   </div>
-
                                   <div className="flex gap-2 pt-4">
                                     {selectedCart.status === 'active' && (
                                       <>
@@ -394,7 +317,6 @@ export default function AdminPaniers() {
                                           <CheckCircle className="w-4 h-4 mr-2" />
                                           Valider panier
                                         </Button>
-                                        
                                         <Dialog>
                                           <DialogTrigger asChild>
                                             <Button variant="destructive" disabled={actionLoading === selectedCart.id}>
@@ -405,9 +327,7 @@ export default function AdminPaniers() {
                                           <DialogContent>
                                             <DialogHeader>
                                               <DialogTitle>Expirer le panier</DialogTitle>
-                                              <DialogDescription>
-                                                Pourquoi souhaitez-vous expirer ce panier ?
-                                              </DialogDescription>
+                                              <DialogDescription>Pourquoi souhaitez-vous expirer ce panier ?</DialogDescription>
                                             </DialogHeader>
                                             <div className="space-y-4">
                                               <Textarea

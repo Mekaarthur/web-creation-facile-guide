@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { checkEmailExists, mapAuthError } from '@/lib/authUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -51,23 +52,8 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
   const { handleSubmit: handleSignupSubmit, isSubmitting: isSignupSubmitting, errors: signupErrors } = useSecureForm({
     schema: signupSchema,
     onSubmit: async (validatedData) => {
-      // Vérifier si l'email existe déjà
-      try {
-        const { data: existsResp, error: existsErr } = await supabase.functions.invoke('check-email-exists', {
-          body: { email: validatedData.email }
-        });
-        if (existsErr) {
-          console.warn('check-email-exists error:', existsErr);
-        }
-        if ((existsResp as any)?.exists) {
-          throw new Error('Cet email est déjà utilisé');
-        }
-      } catch (err) {
-        if (err instanceof Error && err.message === 'Cet email est déjà utilisé') {
-          throw err;
-        }
-        console.warn('check-email-exists invocation failed:', err);
-      }
+      const emailCheck = await checkEmailExists(validatedData.email);
+      if (emailCheck.exists) throw new Error('Cet email est déjà utilisé');
 
       const redirectUrl = `${window.location.origin}/auth/complete`;
       
@@ -180,17 +166,8 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
 
       if (error) {
         console.error('Login error:', error);
-        if (error.message.includes('Invalid login credentials')) {
-          throw new Error('Email ou mot de passe incorrect. Veuillez vérifier vos identifiants.');
-        }
-        if (error.message.includes('Email not confirmed')) {
-          setUnconfirmedEmail(validatedData.email);
-          throw new Error('Votre email n\'est pas encore confirmé. Vérifiez votre boîte mail (y compris les spams) ou cliquez sur "Renvoyer l\'email de confirmation".');
-        }
-        if (error.message.includes('User not found')) {
-          throw new Error('Aucun compte trouvé avec cet email. Veuillez créer un compte.');
-        }
-        throw new Error(error.message || 'Erreur de connexion. Veuillez réessayer.');
+        if (error.message.includes('Email not confirmed')) setUnconfirmedEmail(validatedData.email);
+        throw mapAuthError(error);
       }
 
       // Vérifier si l'email est confirmé

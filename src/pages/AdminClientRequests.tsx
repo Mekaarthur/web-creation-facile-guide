@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
+import { sanitizeSearch } from '@/lib/sanitizeSearch';
 import { Helmet } from 'react-helmet-async';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -9,9 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Dialog,
   DialogContent,
@@ -19,21 +18,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { 
-  Search, 
+import {
+  Search,
   Filter,
-  Users, 
-  Mail, 
-  Phone, 
-  Calendar, 
-  MapPin, 
-  Award,
-  Clock,
-  CheckCircle,
-  XCircle,
+  Users,
+  Mail,
+  Phone,
+  Calendar,
   Eye,
   TrendingUp,
-  AlertTriangle
+  AlertTriangle,
+  CheckCircle,
+  Clock
 } from 'lucide-react';
 
 interface ClientRequest {
@@ -55,105 +51,75 @@ interface ClientRequest {
   updated_at: string;
 }
 
+async function fetchClientRequests(
+  searchTerm: string,
+  statusFilter: string,
+  serviceFilter: string
+): Promise<ClientRequest[]> {
+  let query = supabase
+    .from('client_requests')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (statusFilter !== 'all') {
+    query = query.eq('status', statusFilter);
+  }
+  if (serviceFilter !== 'all') {
+    query = query.eq('service_type', serviceFilter);
+  }
+  if (searchTerm) {
+    query = query.or(
+      `client_name.ilike.%${sanitizeSearch(searchTerm)}%,client_email.ilike.%${sanitizeSearch(searchTerm)}%,service_description.ilike.%${sanitizeSearch(searchTerm)}%`
+    );
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return data || [];
+}
+
+const getUrgencyColor = (urgency: string) => {
+  switch (urgency) {
+    case 'urgent': return 'bg-red-100 text-red-800';
+    case 'high': return 'bg-orange-100 text-orange-800';
+    case 'normal': return 'bg-blue-100 text-blue-800';
+    default: return 'bg-gray-100 text-gray-800';
+  }
+};
+
+const getUrgencyIcon = (urgency: string) => {
+  switch (urgency) {
+    case 'urgent': return <AlertTriangle className="w-4 h-4" />;
+    case 'high': return <TrendingUp className="w-4 h-4" />;
+    default: return <Clock className="w-4 h-4" />;
+  }
+};
+
 const AdminClientRequests = () => {
-  const { t } = useTranslation();
-  const { toast } = useToast();
-  const [requests, setRequests] = useState<ClientRequest[]>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
   const [selectedRequest, setSelectedRequest] = useState<ClientRequest | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [serviceFilter, setServiceFilter] = useState('all');
 
-  useEffect(() => {
-    fetchRequests();
-  }, []);
+  const queryKey = ['admin-client-requests', statusFilter, serviceFilter, searchTerm] as const;
 
-  const fetchRequests = async () => {
-    try {
-      let query = supabase
-        .from('client_requests')
-        .select('*')
-        .order('created_at', { ascending: false });
+  const { data: requests = [], isLoading: loading, refetch } = useQuery<ClientRequest[]>({
+    queryKey,
+    queryFn: () => fetchClientRequests(searchTerm, statusFilter, serviceFilter),
+  });
 
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
-      }
-
-      if (serviceFilter !== 'all') {
-        query = query.eq('service_type', serviceFilter);
-      }
-
-      if (searchTerm) {
-        query = query.or(
-          `client_name.ilike.%${searchTerm}%,client_email.ilike.%${searchTerm}%,service_description.ilike.%${searchTerm}%`
-        );
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      setRequests(data || []);
-    } catch (error) {
-      console.error('Error fetching requests:', error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de charger les demandes"
-      });
-    } finally {
-      setLoading(false);
-    }
+  const handleStatusUpdate = () => {
+    qc.invalidateQueries({ queryKey: ['admin-client-requests'] });
   };
 
-  useEffect(() => {
-    fetchRequests();
-  }, [searchTerm, statusFilter, serviceFilter]);
-
-  const handleStatusUpdate = (requestId: string, newStatus: string) => {
-    setRequests(prev => 
-      prev.map(req => 
-        req.id === requestId ? { ...req, status: newStatus } : req
-      )
-    );
-  };
-
-  const getStatusStats = () => {
-    const stats = {
-      total: requests.length,
-      new: requests.filter(r => r.status === 'new').length,
-      processing: requests.filter(r => r.status === 'processing').length,
-      assigned: requests.filter(r => r.status === 'assigned').length,
-      converted: requests.filter(r => r.status === 'converted').length,
-      urgent: requests.filter(r => r.urgency_level === 'urgent').length,
-    };
-    return stats;
-  };
-
-  const stats = getStatusStats();
-
-  const getUrgencyColor = (urgency: string) => {
-    switch (urgency) {
-      case 'urgent':
-        return 'bg-red-100 text-red-800';
-      case 'high':
-        return 'bg-orange-100 text-orange-800';
-      case 'normal':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getUrgencyIcon = (urgency: string) => {
-    switch (urgency) {
-      case 'urgent':
-        return <AlertTriangle className="w-4 h-4" />;
-      case 'high':
-        return <TrendingUp className="w-4 h-4" />;
-      default:
-        return <Clock className="w-4 h-4" />;
-    }
+  const stats = {
+    total: requests.length,
+    new: requests.filter(r => r.status === 'new').length,
+    processing: requests.filter(r => r.status === 'processing').length,
+    assigned: requests.filter(r => r.status === 'assigned').length,
+    converted: requests.filter(r => r.status === 'converted').length,
+    urgent: requests.filter(r => r.urgency_level === 'urgent').length,
   };
 
   return (
@@ -164,7 +130,7 @@ const AdminClientRequests = () => {
       </Helmet>
 
       <Navbar />
-      
+
       <div className="pt-16 lg:pt-20 pb-12">
         <div className="container mx-auto px-4">
           <div className="mb-8">
@@ -187,7 +153,7 @@ const AdminClientRequests = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="flex items-center p-4">
                 <Clock className="w-6 h-6 text-blue-500 mr-3" />
@@ -197,7 +163,7 @@ const AdminClientRequests = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="flex items-center p-4">
                 <Eye className="w-6 h-6 text-yellow-500 mr-3" />
@@ -207,7 +173,7 @@ const AdminClientRequests = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="flex items-center p-4">
                 <Users className="w-6 h-6 text-purple-500 mr-3" />
@@ -217,7 +183,7 @@ const AdminClientRequests = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="flex items-center p-4">
                 <CheckCircle className="w-6 h-6 text-green-500 mr-3" />
@@ -227,7 +193,7 @@ const AdminClientRequests = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="flex items-center p-4">
                 <AlertTriangle className="w-6 h-6 text-red-500 mr-3" />
@@ -258,7 +224,7 @@ const AdminClientRequests = () => {
                     className="pl-9"
                   />
                 </div>
-                
+
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger>
                     <SelectValue placeholder="Filtrer par statut" />
@@ -272,7 +238,7 @@ const AdminClientRequests = () => {
                     <SelectItem value="rejected">Rejetées</SelectItem>
                   </SelectContent>
                 </Select>
-                
+
                 <Select value={serviceFilter} onValueChange={setServiceFilter}>
                   <SelectTrigger>
                     <SelectValue placeholder="Filtrer par service" />
@@ -286,8 +252,8 @@ const AdminClientRequests = () => {
                     <SelectItem value="bricolage">Bricolage</SelectItem>
                   </SelectContent>
                 </Select>
-                
-                <Button onClick={fetchRequests} variant="outline">
+
+                <Button onClick={() => refetch()} variant="outline">
                   Actualiser
                 </Button>
               </div>
@@ -328,16 +294,16 @@ const AdminClientRequests = () => {
                             {request.service_type} • {request.location}
                           </p>
                         </div>
-                        
+
                         <StatusManager
                           itemId={request.id}
                           currentStatus={request.status}
                           itemType="client_request"
-                          onStatusUpdate={(newStatus) => handleStatusUpdate(request.id, newStatus)}
+                          onStatusUpdate={handleStatusUpdate}
                           itemData={request}
                         />
                       </div>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground mb-3">
                         <div className="flex items-center gap-2">
                           <Mail className="w-4 h-4" />
@@ -352,26 +318,26 @@ const AdminClientRequests = () => {
                           {request.preferred_date && new Date(request.preferred_date).toLocaleDateString('fr-FR')}
                         </div>
                       </div>
-                      
+
                       <p className="text-sm mb-3 text-foreground">
                         <strong>Service:</strong> {request.service_description}
                       </p>
-                      
+
                       {request.budget_range && (
                         <p className="text-sm text-muted-foreground">
                           <strong>Budget:</strong> {request.budget_range}
                         </p>
                       )}
-                      
+
                       <div className="flex justify-between items-center mt-4">
                         <span className="text-xs text-muted-foreground">
                           Créée le {new Date(request.created_at).toLocaleString('fr-FR')}
                         </span>
-                        
+
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button 
-                              variant="outline" 
+                            <Button
+                              variant="outline"
                               size="sm"
                               onClick={() => setSelectedRequest(request)}
                             >
@@ -385,7 +351,7 @@ const AdminClientRequests = () => {
                                 Demande de {selectedRequest?.client_name}
                               </DialogTitle>
                             </DialogHeader>
-                            
+
                             {selectedRequest && (
                               <div className="space-y-6">
                                 <div className="grid grid-cols-2 gap-4">
@@ -398,7 +364,7 @@ const AdminClientRequests = () => {
                                       <p><strong>Localisation:</strong> {selectedRequest.location}</p>
                                     </div>
                                   </div>
-                                  
+
                                   <div>
                                     <h4 className="font-semibold mb-2">Détails du service</h4>
                                     <div className="space-y-2 text-sm">
@@ -410,14 +376,14 @@ const AdminClientRequests = () => {
                                     </div>
                                   </div>
                                 </div>
-                                
+
                                 <div>
                                   <h4 className="font-semibold mb-2">Description du service</h4>
                                   <p className="text-sm bg-muted p-3 rounded-lg">
                                     {selectedRequest.service_description}
                                   </p>
                                 </div>
-                                
+
                                 {selectedRequest.additional_notes && (
                                   <div>
                                     <h4 className="font-semibold mb-2">Notes supplémentaires</h4>

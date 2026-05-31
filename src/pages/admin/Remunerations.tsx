@@ -1,18 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Building2, 
-  Download, 
-  Send, 
-  Eye, 
-  Search, 
-  Filter,
-  Calendar,
-  Euro,
+import {
+  Download,
+  Send,
+  Eye,
   Clock,
   CheckCircle,
   AlertCircle,
@@ -22,7 +15,6 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
 
 interface FicheRemuneration {
   id: string;
@@ -36,96 +28,72 @@ interface FicheRemuneration {
   heures: number;
 }
 
-const Remunerations: React.FC = () => {
-  const [fiches, setFiches] = useState<FicheRemuneration[]>([]);
-  const [recherche, setRecherche] = useState('');
-  const [loading, setLoading] = useState(true);
+async function fetchRemunerations(): Promise<FicheRemuneration[]> {
+  const { data: transactions, error } = await supabase
+    .from('financial_transactions')
+    .select('*')
+    .eq('payment_status', 'completed')
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+
+  const grouped: any = {};
+  transactions?.forEach(t => {
+    const monthKey = format(new Date(t.created_at), 'yyyy-MM');
+    const providerId = t.provider_id;
+    const key = `${providerId}-${monthKey}`;
+
+    if (!grouped[key]) {
+      grouped[key] = {
+        provider_id: providerId,
+        provider_name: `Prestataire ${providerId?.slice(0, 8) || 'inconnu'}`,
+        month: monthKey,
+        total_brut: 0,
+        missions: 0,
+      };
+    }
+
+    grouped[key].total_brut += Number(t.provider_payment);
+    grouped[key].missions += 1;
+  });
+
+  return Object.entries(grouped).map(([key, data]: [string, any], index) => ({
+    id: key,
+    numero: `REM-${data.month}-${String(index + 1).padStart(4, '0')}`,
+    prestataire: data.provider_name,
+    montantBrut: data.total_brut,
+    montantNet: data.total_brut * 0.833,
+    periode: data.month,
+    statut: 'traite' as const,
+    missions: data.missions,
+    heures: data.missions * 2.5,
+  }));
+}
+
+const getStatutBadge = (statut: FicheRemuneration['statut']) => {
+  const variants = {
+    brouillon: { variant: 'secondary' as const, icon: Clock, label: 'Brouillon' },
+    envoye: { variant: 'default' as const, icon: Send, label: 'Envoyé' },
+    traite: { variant: 'default' as const, icon: CheckCircle, label: 'Traité' },
+    en_attente: { variant: 'default' as const, icon: AlertCircle, label: 'En attente' },
+  };
+  const config = variants[statut];
+  const IconComponent = config.icon;
+  return (
+    <Badge variant={config.variant} className="flex items-center gap-1">
+      <IconComponent className="h-3 w-3" />
+      {config.label}
+    </Badge>
+  );
+};
+
+const Remunerations = () => {
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadRemunerations();
-  }, []);
-
-  const loadRemunerations = async () => {
-    try {
-      setLoading(true);
-      
-      // Charger les transactions financières groupées par prestataire et mois
-      const { data: transactions, error } = await supabase
-        .from('financial_transactions')
-        .select('*')
-        .eq('payment_status', 'completed')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Grouper par prestataire et mois
-      const grouped: any = {};
-      transactions?.forEach(t => {
-        const monthKey = format(new Date(t.created_at), 'yyyy-MM');
-        const providerId = t.provider_id;
-        const key = `${providerId}-${monthKey}`;
-        
-        if (!grouped[key]) {
-          grouped[key] = {
-            provider_id: providerId,
-            provider_name: `Prestataire ${providerId?.slice(0, 8) || 'inconnu'}`,
-            month: monthKey,
-            total_brut: 0,
-            missions: 0,
-            transactions: []
-          };
-        }
-        
-        grouped[key].total_brut += Number(t.provider_payment);
-        grouped[key].missions += 1;
-        grouped[key].transactions.push(t);
-      });
-
-      // Convertir en format FicheRemuneration
-      const fichesArr: FicheRemuneration[] = Object.entries(grouped).map(([key, data]: [string, any], index) => ({
-        id: key,
-        numero: `REM-${data.month}-${String(index + 1).padStart(4, '0')}`,
-        prestataire: data.provider_name,
-        montantBrut: data.total_brut,
-        montantNet: data.total_brut * 0.833, // 83.3% après charges
-        periode: data.month,
-        statut: 'traite' as const,
-        missions: data.missions,
-        heures: data.missions * 2.5 // Estimation moyenne
-      }));
-
-      setFiches(fichesArr);
-    } catch (error) {
-      console.error('Erreur chargement rémunérations:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les rémunérations",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getStatutBadge = (statut: FicheRemuneration['statut']) => {
-    const variants = {
-      brouillon: { variant: 'secondary' as const, icon: Clock, label: 'Brouillon' },
-      envoye: { variant: 'default' as const, icon: Send, label: 'Envoyé' },
-      traite: { variant: 'default' as const, icon: CheckCircle, label: 'Traité' },
-      en_attente: { variant: 'default' as const, icon: AlertCircle, label: 'En attente' }
-    };
-
-    const config = variants[statut];
-    const IconComponent = config.icon;
-
-    return (
-      <Badge variant={config.variant} className="flex items-center gap-1">
-        <IconComponent className="h-3 w-3" />
-        {config.label}
-      </Badge>
-    );
-  };
+  const { data: fiches = [], isLoading } = useQuery<FicheRemuneration[]>({
+    queryKey: ['admin-remunerations'],
+    queryFn: fetchRemunerations,
+  });
 
   const handleTelechargerPDF = (fiche: FicheRemuneration) => {
     toast({
@@ -134,7 +102,7 @@ const Remunerations: React.FC = () => {
     });
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

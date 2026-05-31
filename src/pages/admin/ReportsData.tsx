@@ -1,44 +1,31 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, Download, Calendar, TrendingUp, Users, Euro, FileText, RefreshCw } from "lucide-react";
+import { Download, Calendar, TrendingUp, Users, Euro, FileText, RefreshCw } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+async function fetchReports(period: string): Promise<any> {
+  const { data, error } = await supabase.functions.invoke('admin-analytics', {
+    body: { action: 'get_reports', timeRange: period },
+  });
+  if (error) throw error;
+  return data;
+}
+
 const AdminReportsData = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("30d");
-  const [loading, setLoading] = useState(true);
-  const [reportsData, setReportsData] = useState<any>(null);
 
-  const loadReports = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase.functions.invoke('admin-analytics', {
-        body: { 
-          action: 'get_reports',
-          timeRange: selectedPeriod 
-        }
-      });
-
-      if (error) throw error;
-      setReportsData(data);
-    } catch (error: any) {
-      console.error('Erreur lors du chargement des rapports:', error);
-      toast.error('Erreur lors du chargement des rapports');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadReports();
-  }, [selectedPeriod]);
+  const { data: reportsData, isLoading: loading, refetch } = useQuery<any>({
+    queryKey: ['admin-reports', selectedPeriod],
+    queryFn: () => fetchReports(selectedPeriod),
+  });
 
   const handleExport = (type: string) => {
-    console.log(`Exporting ${type} report...`);
     toast.success(`Export ${type} en cours...`);
   };
 
@@ -61,7 +48,7 @@ const AdminReportsData = () => {
               <SelectItem value="1y">12 derniers mois</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" onClick={loadReports} disabled={loading}>
+          <Button variant="outline" onClick={() => refetch()} disabled={loading}>
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Actualiser
           </Button>
@@ -72,7 +59,6 @@ const AdminReportsData = () => {
         </div>
       </div>
 
-      {/* KPIs principaux */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -148,7 +134,7 @@ const AdminReportsData = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis />
-                    <Tooltip 
+                    <Tooltip
                       formatter={(value, name) => [
                         name === 'value' ? `€${value}` : value,
                         name === 'value' ? 'Revenus' : 'Réservations'
@@ -187,27 +173,15 @@ const AdminReportsData = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Button 
-                  variant="outline" 
-                  onClick={() => handleExport('revenue')}
-                  className="flex items-center justify-center"
-                >
+                <Button variant="outline" onClick={() => handleExport('revenue')} className="flex items-center justify-center">
                   <FileText className="h-4 w-4 mr-2" />
                   Rapport revenus
                 </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => handleExport('transactions')}
-                  className="flex items-center justify-center"
-                >
+                <Button variant="outline" onClick={() => handleExport('transactions')} className="flex items-center justify-center">
                   <FileText className="h-4 w-4 mr-2" />
                   Transactions
                 </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => handleExport('commissions')}
-                  className="flex items-center justify-center"
-                >
+                <Button variant="outline" onClick={() => handleExport('commissions')} className="flex items-center justify-center">
                   <FileText className="h-4 w-4 mr-2" />
                   Commissions
                 </Button>
@@ -259,12 +233,9 @@ const AdminReportsData = () => {
                         <span className="text-sm text-muted-foreground">€{service.revenue?.toLocaleString() || '0'}</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="h-2 rounded-full transition-all duration-300" 
-                          style={{ 
-                            width: `${service.value || 0}%`,
-                            backgroundColor: service.color || '#8884d8'
-                          }}
+                        <div
+                          className="h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${service.value || 0}%`, backgroundColor: service.color || '#8884d8' }}
                         ></div>
                       </div>
                     </div>
@@ -291,8 +262,8 @@ const AdminReportsData = () => {
                         <span className="text-sm text-muted-foreground">{item.count}</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-primary h-2 rounded-full transition-all duration-300" 
+                        <div
+                          className="bg-primary h-2 rounded-full transition-all duration-300"
                           style={{ width: `${item.percentage}%` }}
                         ></div>
                       </div>

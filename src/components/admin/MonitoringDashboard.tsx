@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,18 +16,6 @@ export const MonitoringDashboard = () => {
   const { data: dashboardStats, isLoading: loadingStats, refetch: refetchStats } = useDashboardStats();
   const { data: failedEmails, isLoading: loadingEmails, refetch: refetchEmails } = useFailedEmails();
   const { data: abandonedCarts, isLoading: loadingCarts, refetch: refetchCarts } = useAbandonedCarts();
-
-  // Auto-refresh toutes les 30 secondes
-  useEffect(() => {
-    const interval = setInterval(() => {
-      refetchAlerts();
-      refetchStats();
-      refetchEmails();
-      refetchCarts();
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [refetchAlerts, refetchStats, refetchEmails, refetchCarts]);
 
   const handleRetryEmails = async () => {
     try {

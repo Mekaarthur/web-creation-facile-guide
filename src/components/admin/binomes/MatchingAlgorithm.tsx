@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { sanitizeSearch } from "@/lib/sanitizeSearch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -85,7 +86,7 @@ export const MatchingAlgorithm = () => {
       const { data: clientProfile, error: clientError } = await supabase
         .from('profiles')
         .select('user_id')
-        .ilike('first_name', `%${selectedClient}%`)
+        .ilike('first_name', `%${sanitizeSearch(selectedClient)}%`)
         .single();
 
       if (clientError) throw clientError;

@@ -6,6 +6,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeSearch } from "@/lib/sanitizeSearch";
 import type { Database } from "@/integrations/supabase/types";
 
 export type Provider = Database["public"]["Tables"]["providers"]["Row"];
@@ -57,7 +58,7 @@ export const providerService = {
       if (filters.isVerified !== undefined) query = query.eq("is_verified", filters.isVerified);
       if (filters.minRating !== undefined) query = query.gte("rating", filters.minRating);
       if (filters.zone) query = query.contains("postal_codes", [filters.zone]);
-      if (filters.search) query = query.ilike("business_name", `%${filters.search}%`);
+      if (filters.search) query = query.ilike("business_name", `%${sanitizeSearch(filters.search)}%`);
       if (filters.limit) query = query.limit(filters.limit);
 
       const { data, error } = await query;

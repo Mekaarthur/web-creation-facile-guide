@@ -182,14 +182,15 @@ const StatusManager: React.FC<StatusManagerProps> = ({
       // Envoyer notification email si nécessaire
       if (itemType === 'job_application' && itemData?.email) {
         try {
-          await supabase.functions.invoke('send-job-status-notification', {
+          await supabase.functions.invoke('send-modern-notification', {
             body: {
-              email: itemData.email,
-              firstName: itemData.first_name,
-              lastName: itemData.last_name,
-              oldStatus: currentStatus,
-              newStatus: selectedStatus,
-              comments
+              type: 'job_status_update',
+              recipient: {
+                email: itemData.email,
+                name: `${itemData.first_name} ${itemData.last_name}`,
+                firstName: itemData.first_name
+              },
+              data: { oldStatus: currentStatus, newStatus: selectedStatus, comments }
             }
           });
         } catch (emailError) {

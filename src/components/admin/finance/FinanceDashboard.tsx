@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -8,68 +8,54 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ProviderPayoutsTab } from "./ProviderPayoutsTab";
 
-export const FinanceDashboard = () => {
-  const [loading, setLoading] = useState(true);
-  const [financialStats, setFinancialStats] = useState({
-    totalRevenue: 0,
-    totalCommission: 0,
-    pendingPayments: 0,
-    completedPayments: 0,
-    providerPayments: 0
-  });
-  const [transactions, setTransactions] = useState<any[]>([]);
-  const [providerPayments, setProviderPayments] = useState<any[]>([]);
-
-  useEffect(() => {
-    loadFinancialData();
-  }, []);
-
-  const loadFinancialData = async () => {
-    try {
-      // Charger les transactions financières
-      const { data: transactionsData } = await supabase
-        .from('financial_transactions')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      // Charger les paiements prestataires
-      const { data: providerInvoices } = await supabase
-        .from('provider_invoices')
-        .select(`
-          *,
-          provider:providers(business_name)
-        `)
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      // Calculer les stats
-      const totalRevenue = transactionsData?.reduce((sum, t) => sum + (t.client_price || 0), 0) || 0;
-      const totalCommission = transactionsData?.reduce((sum, t) => sum + (t.company_commission || 0), 0) || 0;
-      const pendingPayments = transactionsData?.filter(t => t.payment_status === 'pending').length || 0;
-      const completedPayments = transactionsData?.filter(t => t.payment_status === 'completed').length || 0;
-      const providerPayments = providerInvoices?.reduce((sum, i) => sum + (i.amount_brut || 0), 0) || 0;
-
-      setFinancialStats({
-        totalRevenue,
-        totalCommission,
-        pendingPayments,
-        completedPayments,
-        providerPayments
-      });
-
-      setTransactions(transactionsData || []);
-      setProviderPayments(providerInvoices || []);
-
-    } catch (error: any) {
-      console.error('Erreur chargement finances:', error);
-      toast.error('Erreur de chargement');
-    } finally {
-      setLoading(false);
-    }
+interface FinancialData {
+  stats: {
+    totalRevenue: number;
+    totalCommission: number;
+    pendingPayments: number;
+    completedPayments: number;
+    providerPayments: number;
   };
+  transactions: any[];
+  providerPaymentsList: any[];
+}
+
+const FINANCE_KEY = ['admin-finance-dashboard'] as const;
+
+const DEFAULT_STATS = { totalRevenue: 0, totalCommission: 0, pendingPayments: 0, completedPayments: 0, providerPayments: 0 };
+
+async function fetchFinancialData(): Promise<FinancialData> {
+  const [{ data: transactionsData }, { data: providerInvoices }] = await Promise.all([
+    supabase.from('financial_transactions').select('*').order('created_at', { ascending: false }).limit(50),
+    supabase.from('provider_invoices').select('*, provider:providers(business_name)').order('created_at', { ascending: false }).limit(20),
+  ]);
+
+  const totalRevenue      = transactionsData?.reduce((sum, t) => sum + (t.client_price || 0), 0) || 0;
+  const totalCommission   = transactionsData?.reduce((sum, t) => sum + (t.company_commission || 0), 0) || 0;
+  const pendingPayments   = transactionsData?.filter(t => t.payment_status === 'pending').length || 0;
+  const completedPayments = transactionsData?.filter(t => t.payment_status === 'completed').length || 0;
+  const providerPayments  = providerInvoices?.reduce((sum, i) => sum + (i.amount_brut || 0), 0) || 0;
+
+  return {
+    stats: { totalRevenue, totalCommission, pendingPayments, completedPayments, providerPayments },
+    transactions: transactionsData || [],
+    providerPaymentsList: providerInvoices || [],
+  };
+}
+
+export const FinanceDashboard = () => {
+  const { data, isLoading: loading } = useQuery<FinancialData>({
+    queryKey: FINANCE_KEY,
+    queryFn: fetchFinancialData,
+  });
+
+  const financialStats  = data?.stats ?? DEFAULT_STATS;
+  const transactions    = data?.transactions ?? [];
+  const providerPayments = data?.providerPaymentsList ?? [];
 
   const exportFinancialReport = () => {
+    if (transactions.length === 0) { toast.error('Aucune transaction à exporter'); return; }
+
     const csvData = transactions.map(t => ({
       Date: new Date(t.created_at).toLocaleDateString('fr-FR'),
       Client: `${t.client?.first_name} ${t.client?.last_name}`,
@@ -91,7 +77,7 @@ export const FinanceDashboard = () => {
     a.href = url;
     a.download = `rapport-financier-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
-    
+
     toast.success('Rapport exporté');
   };
 
@@ -141,7 +127,9 @@ export const FinanceDashboard = () => {
               {financialStats.totalCommission.toFixed(2)}€
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {((financialStats.totalCommission / financialStats.totalRevenue) * 100).toFixed(1)}% du CA
+              {financialStats.totalRevenue > 0
+                ? ((financialStats.totalCommission / financialStats.totalRevenue) * 100).toFixed(1)
+                : '0.0'}% du CA
             </p>
           </CardContent>
         </Card>

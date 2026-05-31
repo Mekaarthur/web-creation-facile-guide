@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -34,64 +35,53 @@ const DOCUMENT_TYPES = [
   { value: 'insurance', label: 'Assurance RC Pro', required: false },
 ];
 
+async function fetchDocuments(providerId: string): Promise<Document[]> {
+  const { data, error } = await supabase
+    .from('provider_documents')
+    .select('*')
+    .eq('provider_id', providerId)
+    .order('upload_date', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
 export const DocumentUploadSection = ({ providerId, onDocumentsUpdated }: DocumentUploadSectionProps) => {
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const qc = useQueryClient();
   const [uploading, setUploading] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
-  // Charger les documents au montage
-  useEffect(() => {
-    loadDocuments();
-  }, [providerId]);
+  const DOC_KEY = ['provider-documents', providerId] as const;
 
-  const loadDocuments = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('provider_documents')
-        .select('*')
-        .eq('provider_id', providerId)
-        .order('upload_date', { ascending: false });
-
-      if (error) throw error;
-      setDocuments(data || []);
-    } catch (error: any) {
-      toast.error('Erreur', { description: error.message });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: documents = [] } = useQuery<Document[]>({
+    queryKey: DOC_KEY,
+    queryFn: () => fetchDocuments(providerId),
+    enabled: !!providerId,
+  });
 
   const handleFileUpload = async (documentType: string, file: File) => {
     try {
       setUploading(documentType);
 
-      // Vérifier taille (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         throw new Error('Le fichier ne doit pas dépasser 5MB');
       }
 
-      // Vérifier format
       const allowedFormats = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
       if (!allowedFormats.includes(file.type)) {
         throw new Error('Format non autorisé. Utilisez PDF, JPG ou PNG');
       }
 
-      // Récupérer l'ID de l'utilisateur authentifié
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Non authentifié');
 
-      // Upload vers Supabase Storage avec auth.uid() dans le chemin
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${documentType}_${Date.now()}.${fileExt}`;
-      
-      const { data: uploadData, error: uploadError } = await supabase.storage
+
+      const { error: uploadError } = await supabase.storage
         .from('provider-documents')
         .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
-      // Store relative path for private bucket
       const { error: dbError } = await supabase
         .from('provider_documents')
         .insert({
@@ -104,14 +94,12 @@ export const DocumentUploadSection = ({ providerId, onDocumentsUpdated }: Docume
 
       if (dbError) throw dbError;
 
-      // Vérifier si tous les documents requis sont uploadés
       const allRequiredDocs = DOCUMENT_TYPES.filter(dt => dt.required);
       const uploadedDocs = [...documents, { document_type: documentType }];
-      const allRequiredUploaded = allRequiredDocs.every(reqDoc => 
+      const allRequiredUploaded = allRequiredDocs.every(reqDoc =>
         uploadedDocs.some(doc => doc.document_type === reqDoc.value)
       );
 
-      // Si tous les documents requis sont uploadés, mettre à jour le status provider
       if (allRequiredUploaded) {
         const { error: statusError } = await supabase
           .from('providers')
@@ -124,12 +112,11 @@ export const DocumentUploadSection = ({ providerId, onDocumentsUpdated }: Docume
 
         if (statusError) console.error('Status update error:', statusError);
 
-        // Notifier l'admin via communications table
         await supabase
           .from('communications')
           .insert({
             type: 'notification',
-            destinataire_id: null, // Admin notification
+            destinataire_id: null,
             sujet: 'Nouveaux documents à valider',
             contenu: `Un prestataire a soumis tous ses documents et attend validation. Provider ID: ${providerId}`,
             related_entity_type: 'provider',
@@ -139,7 +126,7 @@ export const DocumentUploadSection = ({ providerId, onDocumentsUpdated }: Docume
       }
 
       toast.success('Document uploadé avec succès');
-      loadDocuments();
+      qc.invalidateQueries({ queryKey: DOC_KEY });
       onDocumentsUpdated?.();
     } catch (error: any) {
       toast.error('Erreur lors de l\'upload', { description: error.message });
