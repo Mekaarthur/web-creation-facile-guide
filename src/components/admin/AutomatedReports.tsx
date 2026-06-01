@@ -43,10 +43,10 @@ export const AutomatedReports = () => {
     const { start, end } = getDateRange(period);
     
     const [bookingsRes, paymentsRes, providersRes, clientsRes] = await Promise.all([
-      supabase.from('bookings').select('*, services(name)').gte('created_at', start).lte('created_at', end),
-      supabase.from('payments').select('*').gte('created_at', start).lte('created_at', end),
-      supabase.from('providers').select('*').gte('created_at', start).lte('created_at', end),
-      supabase.from('profiles').select('*').gte('created_at', start).lte('created_at', end)
+      supabase.from('bookings').select('id, status, total_price, created_at, services(name)').gte('created_at', start).lte('created_at', end).limit(5000),
+      supabase.from('payments').select('id, status, amount, created_at').gte('created_at', start).lte('created_at', end).limit(5000),
+      supabase.from('providers').select('id, first_name, last_name, email, city, created_at').gte('created_at', start).lte('created_at', end).limit(5000),
+      supabase.from('profiles').select('id, first_name, last_name, email, created_at').gte('created_at', start).lte('created_at', end).limit(5000),
     ]);
     
     return {

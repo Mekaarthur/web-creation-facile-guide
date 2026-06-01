@@ -71,49 +71,55 @@ async function fetchModerationData(): Promise<ModerationData> {
     reports = data || [];
   } catch (_) {}
 
-  const { data: reviewsRaw } = await supabase
-    .from('reviews')
-    .select('*')
-    .eq('is_approved', false)
-    .order('created_at', { ascending: false })
-    .limit(20);
+  const [{ data: reviewsRaw }, { data: complaintsRaw }] = await Promise.all([
+    supabase
+      .from('reviews')
+      .select('*')
+      .eq('is_approved', false)
+      .order('created_at', { ascending: false })
+      .limit(20),
+    supabase
+      .from('complaints')
+      .select('*')
+      .in('status', ['new', 'in_progress'])
+      .order('created_at', { ascending: false })
+      .limit(20),
+  ]);
 
-  const reviews: Review[] = await Promise.all(
-    (reviewsRaw || []).map(async (review) => {
-      const [clientResult, providerResult] = await Promise.all([
-        supabase.from('profiles').select('first_name, last_name').eq('user_id', review.client_id).single(),
-        supabase.from('providers').select('business_name').eq('id', review.provider_id).single(),
-      ]);
-      return {
-        ...review,
-        client:   clientResult.data   || { first_name: '', last_name: '' },
-        provider: providerResult.data || { business_name: '' },
-      };
-    })
-  );
+  // Batch fetch — 2 requêtes au lieu de jusqu'à 80
+  const allClientIds = [...new Set([
+    ...(reviewsRaw  || []).map((r) => r.client_id),
+    ...(complaintsRaw || []).map((c) => c.client_id),
+  ].filter(Boolean))];
 
-  const { data: complaintsRaw } = await supabase
-    .from('complaints')
-    .select('*')
-    .in('status', ['new', 'in_progress'])
-    .order('created_at', { ascending: false })
-    .limit(20);
+  const allProviderIds = [...new Set([
+    ...(reviewsRaw  || []).map((r) => r.provider_id),
+    ...(complaintsRaw || []).map((c) => c.provider_id),
+  ].filter(Boolean))];
 
-  const complaints: Complaint[] = await Promise.all(
-    (complaintsRaw || []).map(async (complaint) => {
-      const [clientResult, providerResult] = await Promise.all([
-        supabase.from('profiles').select('first_name, last_name').eq('user_id', complaint.client_id).single(),
-        complaint.provider_id
-          ? supabase.from('providers').select('business_name').eq('id', complaint.provider_id).single()
-          : Promise.resolve({ data: null }),
-      ]);
-      return {
-        ...complaint,
-        client:   clientResult.data || { first_name: '', last_name: '' },
-        provider: providerResult.data,
-      };
-    })
-  );
+  const [profilesResult, providersResult] = await Promise.all([
+    allClientIds.length  > 0
+      ? supabase.from('profiles').select('user_id, first_name, last_name').in('user_id', allClientIds)
+      : Promise.resolve({ data: [] as { user_id: string; first_name: string; last_name: string }[] }),
+    allProviderIds.length > 0
+      ? supabase.from('providers').select('id, business_name').in('id', allProviderIds)
+      : Promise.resolve({ data: [] as { id: string; business_name: string }[] }),
+  ]);
+
+  const profilesMap  = new Map((profilesResult.data  || []).map((p) => [p.user_id, p]));
+  const providersMap = new Map((providersResult.data || []).map((p) => [p.id, p]));
+
+  const reviews: Review[] = (reviewsRaw || []).map((review) => ({
+    ...review,
+    client:   profilesMap.get(review.client_id)     || { first_name: '', last_name: '' },
+    provider: providersMap.get(review.provider_id)  || { business_name: '' },
+  }));
+
+  const complaints: Complaint[] = (complaintsRaw || []).map((complaint) => ({
+    ...complaint,
+    client:   profilesMap.get(complaint.client_id)                                        || { first_name: '', last_name: '' },
+    provider: complaint.provider_id ? (providersMap.get(complaint.provider_id) ?? null) : null,
+  }));
 
   return {
     stats: {

@@ -72,11 +72,11 @@ function determineStage(app: any | null, provider: any | null, docs?: DocumentIt
 
 async function fetchAll(): Promise<UnifiedPerson[]> {
   const [appsRes, providersRes, provDocsRes, validationsRes, provServicesRes, profilesRes] = await Promise.all([
-    supabase.from("job_applications").select("*").order("created_at", { ascending: false }),
-    supabase.from("providers").select("*").order("created_at", { ascending: false }),
-    supabase.from("provider_documents").select("*").order("created_at", { ascending: false }),
-    supabase.from("application_document_validations").select("*"),
-    supabase.from("provider_services").select("*, services(id, name, category)"),
+    supabase.from("job_applications").select("*").order("created_at", { ascending: false }).limit(500),
+    supabase.from("providers").select("*").order("created_at", { ascending: false }).limit(500),
+    supabase.from("provider_documents").select("*").order("created_at", { ascending: false }).limit(500),
+    supabase.from("application_document_validations").select("*").limit(500),
+    supabase.from("provider_services").select("*, services(id, name, category)").limit(500),
     supabase.from("profiles").select("user_id, email, first_name, last_name"),
   ]);
 

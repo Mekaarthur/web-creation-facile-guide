@@ -98,7 +98,10 @@ export default function AdminReviews() {
   const { data: stats = null } = useQuery({
     queryKey: ['admin-reviews-stats'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('reviews').select('*');
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('id, rating, is_approved, status, created_at')
+        .limit(5000);
       if (error) throw error;
       const now = new Date();
       const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);

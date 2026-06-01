@@ -208,25 +208,24 @@ export default function EnhancedModernDashboard() {
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
         supabase.from('providers').select('id', { count: 'exact', head: true }),
         supabase.from('bookings').select('id', { count: 'exact', head: true }),
-        supabase.from('reviews').select('*'),
+        supabase.from('reviews').select('id', { count: 'exact', head: true }).eq('is_approved', false),
         supabase.from('providers').select('id', { count: 'exact', head: true }).in('status', ['pending', 'pending_validation']),
         supabase.from('internal_messages').select('id', { count: 'exact', head: true }).eq('is_read', false),
         supabase.from('bookings').select('total_price').eq('status', 'completed'),
         supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
       ]);
 
-      const pendingReviews = reviewsData.data?.filter(r => !r.is_approved) || [];
-      const flaggedReviews = reviewsData.data?.filter(r => r.is_approved === false) || [];
-      const totalRevenue   = completedBookings.data?.reduce((s, b) => s + (b.total_price || 0), 0) || 0;
-      const alertsCount    = (pendingProvidersCount.count || 0) + (pendingBookingsCount.count || 0) + pendingReviews.length;
+      const unapprovedCount = reviewsData.count || 0;
+      const totalRevenue    = completedBookings.data?.reduce((s, b) => s + (b.total_price || 0), 0) || 0;
+      const alertsCount     = (pendingProvidersCount.count || 0) + (pendingBookingsCount.count || 0) + unapprovedCount;
 
       return {
         total_users:     usersCount.count    || 0,
         total_providers: providersCount.count || 0,
         total_bookings:  bookingsCount.count  || 0,
         total_revenue:   totalRevenue,
-        pending_reviews: pendingReviews.length,
-        flagged_reviews: flaggedReviews.length,
+        pending_reviews: unapprovedCount,
+        flagged_reviews: unapprovedCount,
         pendingProviders: pendingProvidersCount.count || 0,
         pendingAlerts:    alertsCount,
         unreadMessages:   unreadMessagesCount.count || 0,

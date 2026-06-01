@@ -17,9 +17,9 @@ export const SecurityMonitoring = () => {
     queryFn: async () => {
       const [{ data: rolesData, error: rolesError }, { data: providersData }, { data: providerRoles }] =
         await Promise.all([
-          supabase.from('user_roles').select('role'),
-          supabase.from('providers').select('user_id').not('user_id', 'is', null),
-          supabase.from('user_roles').select('user_id').eq('role', 'provider'),
+          supabase.from('user_roles').select('role').limit(10000),
+          supabase.from('providers').select('user_id').not('user_id', 'is', null).limit(5000),
+          supabase.from('user_roles').select('user_id').eq('role', 'provider').limit(5000),
         ]);
       if (rolesError) throw rolesError;
 

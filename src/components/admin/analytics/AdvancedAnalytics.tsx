@@ -8,11 +8,11 @@ import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Cart
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 async function fetchAnalytics() {
-  const [{ data: bookingsData }, { data: usersData }, { data: reviewsData }, { data: topProviders }] =
+  const [{ data: bookingsData }, profilesResult, { data: reviewsData }, { data: topProviders }] =
     await Promise.all([
-      supabase.from('bookings').select('total_price, created_at, status'),
-      supabase.from('profiles').select('id'),
-      supabase.from('reviews').select('rating').eq('is_approved', true),
+      supabase.from('bookings').select('total_price, created_at, status').limit(5000),
+      supabase.from('profiles').select('id', { count: 'exact', head: true }),
+      supabase.from('reviews').select('rating').eq('is_approved', true).limit(5000),
       supabase.from('providers').select('business_name, rating, missions_completed')
         .order('missions_completed', { ascending: false }).limit(5),
     ]);
@@ -45,7 +45,7 @@ async function fetchAnalytics() {
     metrics: {
       totalBookings: bookingsData?.length || 0,
       totalRevenue,
-      activeUsers: usersData?.length || 0,
+      activeUsers: profilesResult.count || 0,
       avgRating:   Math.round(avgRating * 10) / 10,
       growthRate:  12.5,
     },

@@ -25,7 +25,7 @@ interface ProviderStats {
 
 async function fetchProviderStats(providerId: string): Promise<ProviderStats> {
   const [{ data: missions, error: missionsError }, { data: providerData }] = await Promise.all([
-    supabase.from('bookings').select('*').eq('provider_id', providerId),
+    supabase.from('bookings').select('id, status, total_price, booking_date').eq('provider_id', providerId).limit(500),
     supabase.from('providers').select('rating, missions_completed, total_earnings').eq('id', providerId).maybeSingle(),
   ]);
   if (missionsError) throw missionsError;

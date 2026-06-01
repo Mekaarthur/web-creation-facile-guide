@@ -147,16 +147,16 @@ async function fetchMessagingStats(): Promise<MessagingStats> {
 
   const [chatConvs, internalConvs, chatMsgs, internalMsgs] = await Promise.all([
     supabase.from('chat_conversations').select('*', { count: 'exact', head: true }),
-    supabase.from('internal_conversations').select('*'),
-    supabase.from('chat_messages').select('*').gte('created_at', today.toISOString()),
-    supabase.from('internal_messages').select('*').gte('created_at', today.toISOString()),
+    supabase.from('internal_conversations').select('id, status').limit(500),
+    supabase.from('chat_messages').select('id', { count: 'exact', head: true }).gte('created_at', today.toISOString()),
+    supabase.from('internal_messages').select('id', { count: 'exact', head: true }).gte('created_at', today.toISOString()),
   ]);
 
   const totalConvs = (chatConvs.count || 0) + (internalConvs.data?.length || 0);
   const openConvs = (internalConvs.data || []).filter((c: any) => c.status === 'active').length;
   const closedConvs = (internalConvs.data || []).filter((c: any) => c.status === 'closed').length;
   const pendingConvs = (internalConvs.data || []).filter((c: any) => c.status === 'pending').length;
-  const todayMsgs = (chatMsgs.data?.length || 0) + (internalMsgs.data?.length || 0);
+  const todayMsgs = (chatMsgs.count || 0) + (internalMsgs.count || 0);
 
   return {
     total_conversations: totalConvs,
