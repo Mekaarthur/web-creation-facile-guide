@@ -44,6 +44,12 @@ Lors d'un `/compact`, conserver impérativement :
 
 Ne pas conserver : contenu complet des fichiers modifiés (lisibles via `Read`), historique git détaillé.
 
+## Règles d'architecture — non négociables
+- Ne jamais appeler `supabase.from()` ou `supabase.rpc()` directement depuis un composant React — passer par `src/services/` ou `src/hooks/queries/`.
+- Toute nouvelle Edge Function doit utiliser Stripe `apiVersion: "2025-08-27.basil"`.
+- Aucun nouveau composant ne dépasse 300 lignes — extraire dans un hook si le fichier grossit.
+- Aucun `TODO` sans numéro d'issue GitHub : `// TODO #123`.
+
 ## Règles de structure des composants
 - Quand on modifie un composant de plus de 400 lignes, extraire la logique touchée dans un hook dédié ou un sous-composant dans le cadre de la modification.
 - Ne jamais refactoriser des composants non touchés.
