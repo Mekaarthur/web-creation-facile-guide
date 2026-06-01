@@ -9,10 +9,12 @@ import type { Route, Page } from '@playwright/test';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-export const MOCK_USER_ID       = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
-export const MOCK_PROVIDER_ID   = 'bbbbbbbb-1111-2222-3333-ffffffffffff';
-export const MOCK_CLIENT_EMAIL  = 'client@test.bikawo.fr';
+export const MOCK_USER_ID        = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+export const MOCK_PROVIDER_ID    = 'bbbbbbbb-1111-2222-3333-ffffffffffff';
+export const MOCK_ADMIN_ID       = 'cccccccc-2222-3333-4444-aaaaaaaaaaaa';
+export const MOCK_CLIENT_EMAIL   = 'client@test.bikawo.fr';
 export const MOCK_PROVIDER_EMAIL = 'provider@test.bikawo.fr';
+export const MOCK_ADMIN_EMAIL    = 'admin@test.bikawo.fr';
 
 /**
  * Supabase localStorage key. Derived from the project URL.
@@ -87,8 +89,9 @@ export function makeSessionBody(opts: SessionOptions = {}) {
   };
 }
 
-export const makeClientSession  = (opts?: SessionOptions) => makeSessionBody({ email: MOCK_CLIENT_EMAIL,   userMeta: { user_type: 'client' },   ...opts });
-export const makeProviderSession = (opts?: SessionOptions) => makeSessionBody({ email: MOCK_PROVIDER_EMAIL, userMeta: { user_type: 'prestataire' }, ...opts });
+export const makeClientSession   = (opts?: SessionOptions) => makeSessionBody({ email: MOCK_CLIENT_EMAIL,   userMeta: { user_type: 'client' },        ...opts });
+export const makeProviderSession = (opts?: SessionOptions) => makeSessionBody({ email: MOCK_PROVIDER_EMAIL, userMeta: { user_type: 'prestataire' },   ...opts });
+export const makeAdminSession    = (opts?: SessionOptions) => makeSessionBody({ userId: MOCK_ADMIN_ID, email: MOCK_ADMIN_EMAIL, userMeta: { user_type: 'admin', first_name: 'Admin', last_name: 'Test' }, ...opts });
 
 // ─── Route-fulfillment helpers ────────────────────────────────────────────────
 
@@ -111,6 +114,7 @@ export const mockSignupGhostUser   : Handler = json(200, { ...makeSessionBody({ 
 // DB stubs
 export const mockUserRolesClient   : Handler = json(200, [{ role: 'client',   user_id: MOCK_USER_ID }]);
 export const mockUserRolesProvider : Handler = json(200, [{ role: 'provider', user_id: MOCK_USER_ID }]);
+export const mockUserRolesAdmin    : Handler = json(200, [{ role: 'admin',    user_id: MOCK_ADMIN_ID }]);
 export const mockUserRolesEmpty    : Handler = json(200, []);
 
 export const mockProviderUnverified: Handler = json(200, [{ id: MOCK_PROVIDER_ID, user_id: MOCK_USER_ID, is_verified: false,  status: 'pending', business_name: 'Test Provider', documents_submitted: false, mandat_facturation_accepte: false, formation_completed: false }]);

@@ -1,3 +1,5 @@
+import SEOComponent from "@/components/SEOComponent";
+import { generateServiceStructuredData } from "@/utils/seoData";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ChatBot from "@/components/ChatBot";
@@ -33,8 +35,21 @@ const BikaAnimals = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOComponent
+        title="Garde d'animaux & pet-sitting Paris | Bikawo"
+        description="Dog-sitting, promenades, visites à domicile pour vos animaux. Pet-sitters passionnés et assurés en Île-de-France. Réservation en ligne, crédit d'impôt 50%."
+        keywords="garde animaux Paris, pet-sitting, dog-sitting, promenade chien, Île-de-France"
+        url="/bika-animals"
+        structuredData={generateServiceStructuredData({
+          name: "Garde d'animaux & pet-sitting — BikaAnimals",
+          description: "Dog-sitting, promenades et soins à domicile pour vos animaux en Île-de-France.",
+          url: "/bika-animals",
+          priceFrom: "25",
+          priceAfterTax: "12,50€/h"
+        })}
+      />
       <Navbar />
-      
+
       <ServicePageLayout
         title="Garde d'animaux à domicile"
         subtitle="Pet-sitting et soins pour vos compagnons"

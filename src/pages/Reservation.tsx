@@ -10,8 +10,8 @@ const Reservation = () => {
     <div className="min-h-screen">
       <SEOComponent 
         title="Réserver un service Bikawo - Nos Services"
-        description="Choisissez un service Bikawo à réserver parmi nos catégories harmonisées comme sur la page d'accueil."
-        keywords="réserver, services Bikawo, bika kids, bika maison, bika seniors, bika travel, bika pro, bika plus"
+        description="Réservez votre prestation Bikawo en quelques clics : garde d'enfants, ménage, aide seniors. Disponibilités en temps réel. Intervention en Île-de-France."
+        keywords="réserver service à domicile en ligne, réservation garde enfants, ménage Paris, Île-de-France"
       />
       <Navbar />
 

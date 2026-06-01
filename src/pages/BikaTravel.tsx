@@ -1,3 +1,5 @@
+import SEOComponent from "@/components/SEOComponent";
+import { generateServiceStructuredData } from "@/utils/seoData";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ChatBot from "@/components/ChatBot";
@@ -33,8 +35,21 @@ const BikaTravel = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOComponent
+        title="Organisation & assistance voyage Paris | Bikawo"
+        description="Planification, réservations, formalités et conseils voyage personnalisés. Bikawo organise chaque détail de vos déplacements en Île-de-France. Crédit d'impôt 50%."
+        keywords="assistance voyage Paris, organisation voyage, réservations, formalités, Île-de-France"
+        url="/bika-travel"
+        structuredData={generateServiceStructuredData({
+          name: "Organisation & assistance voyage — BikaTravel",
+          description: "Planification, réservations et formalités de voyage personnalisées en Île-de-France.",
+          url: "/bika-travel",
+          priceFrom: "30",
+          priceAfterTax: "15€/h"
+        })}
+      />
       <Navbar />
-      
+
       <ServicePageLayout
         title="Assistance voyage"
         subtitle="Accompagnement et organisation de voyages"

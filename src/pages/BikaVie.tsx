@@ -1,3 +1,5 @@
+import SEOComponent from "@/components/SEOComponent";
+import { generateServiceStructuredData } from "@/utils/seoData";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ChatBot from "@/components/ChatBot";
@@ -33,8 +35,21 @@ const BikaVie = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOComponent
+        title="Assistant personnel à domicile Paris | Bikawo"
+        description="Gestion d'agenda, démarches administratives, organisation personnelle. Bikawo prend en charge votre quotidien en Île-de-France. Crédit d'impôt 50%."
+        keywords="assistant personnel Paris, gestion agenda, démarches administratives, organisation quotidien, Île-de-France"
+        url="/bika-vie"
+        structuredData={generateServiceStructuredData({
+          name: "Assistant personnel à domicile — BikaVie",
+          description: "Gestion d'agenda, démarches administratives et organisation du quotidien en Île-de-France.",
+          url: "/bika-vie",
+          priceFrom: "25",
+          priceAfterTax: "12,50€/h"
+        })}
+      />
       <Navbar />
-      
+
       <ServicePageLayout
         title="Assistant personnel"
         subtitle="Gestion de votre vie quotidienne"

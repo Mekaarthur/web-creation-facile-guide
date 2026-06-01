@@ -1,0 +1,15 @@
+{
+  "name": "mcp-gsc-bikawo",
+  "version": "1.0.0",
+  "description": "MCP server — Google Search Console pour Bikawo",
+  "type": "module",
+  "main": "index.mjs",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "dotenv": "^16.4.5",
+    "googleapis": "^148.0.0"
+  }
+}

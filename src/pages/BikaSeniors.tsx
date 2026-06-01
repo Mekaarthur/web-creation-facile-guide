@@ -1,3 +1,5 @@
+import SEOComponent from "@/components/SEOComponent";
+import { generateServiceStructuredData } from "@/utils/seoData";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ChatBot from "@/components/ChatBot";
@@ -33,8 +35,21 @@ const BikaSeniors = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOComponent
+        title="Aide à domicile seniors Paris & Île-de-France | Bikawo"
+        description="Accompagnement, courses, compagnie et démarches admin pour vos aînés. Intervenants qualifiés, organisme SAP déclaré. Crédit d'impôt 50% immédiat."
+        keywords="aide à domicile seniors Paris, accompagnement personnes âgées, maintien à domicile, Île-de-France"
+        url="/bika-seniors"
+        structuredData={generateServiceStructuredData({
+          name: "Aide à domicile seniors — BikaSeniors",
+          description: "Accompagnement, courses et démarches administratives pour personnes âgées en Île-de-France.",
+          url: "/bika-seniors",
+          priceFrom: "30",
+          priceAfterTax: "15€/h"
+        })}
+      />
       <Navbar />
-      
+
       <ServicePageLayout
         title="Aide aux seniors à domicile"
         subtitle="Accompagnement bienveillant pour nos aînés"

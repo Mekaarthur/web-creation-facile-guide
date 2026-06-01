@@ -1,3 +1,5 @@
+import SEOComponent from "@/components/SEOComponent";
+import { generateServiceStructuredData } from "@/utils/seoData";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ChatBot from "@/components/ChatBot";
@@ -33,8 +35,21 @@ const BikaPro = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOComponent
+        title="Assistance administrative pour entreprises | Bikawo Pro"
+        description="Assistants expérimentés pour optimiser vos processus administratifs. Solutions sur mesure pour entreprises en Île-de-France. Crédit d'impôt 50%."
+        keywords="assistance administrative entreprise Paris, services aux professionnels, optimisation processus, PME Île-de-France"
+        url="/bika-pro"
+        structuredData={generateServiceStructuredData({
+          name: "Assistance administrative pour entreprises — BikaPro",
+          description: "Assistants qualifiés pour la gestion administrative et le support aux PME en Île-de-France.",
+          url: "/bika-pro",
+          priceFrom: "40",
+          priceAfterTax: "20€/h"
+        })}
+      />
       <Navbar />
-      
+
       <ServicePageLayout
         title="Services aux professionnels"
         subtitle="Assistance administrative pour entreprises"

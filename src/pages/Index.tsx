@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import Navbar from "@/components/Navbar";
 import NewHero from "@/components/NewHero";
 import SEOOptimization from "@/components/SEOOptimization";
+import { seoStructuredData } from "@/utils/seoData";
 import { useTranslation } from 'react-i18next';
 import { ServicesGridSkeleton, TestimonialSkeleton } from "@/components/ui/skeleton";
 
@@ -43,10 +44,11 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Single SEO component - no duplicates */}
-      <SEOOptimization 
+      <SEOOptimization
         title="Bikawo - Débordé(e) par le quotidien ? | Assistant Personnel Paris"
         description="★ Déléguer vos missions quotidiennes n'a jamais été aussi simple ! Garde enfants, aide seniors, courses, démarches admin. La charge mentale en moins, la sérénité en plus. Crédit d'impôt 50%."
         keywords="débordé quotidien, déléguer missions, charge mentale, assistant personnel Paris, services domicile, garde enfants, aide seniors, sérénité famille, crédit impôt 50%"
+        structuredData={seoStructuredData.localBusiness}
       />
       
       {/* Deferred tracking/SEO components */}

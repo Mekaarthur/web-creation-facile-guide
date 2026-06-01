@@ -13,8 +13,8 @@ const ServicesPage = () => {
     <div className="min-h-screen">
       <SEOComponent 
         title="Services Bikawo - Tous nos services"
-        description="Parcourez tous les services Bikawo, harmonisés avec l'accueil et la page Services."
-        keywords="services Bikawo, bika kids, bika maison, bika seniors, bika travel, bika pro, bika plus"
+        description="Garde d'enfants, aide seniors, ménage, courses, animaux : tous les services Bikawo en Île-de-France. SAP déclaré, prestataires vérifiés. Crédit d'impôt 50% sur chaque prestation."
+        keywords="services à domicile Île-de-France, garde enfants, aide seniors, ménage à domicile, SAP déclaré, crédit d'impôt"
       />
       <Navbar />
       <div className="pt-16 lg:pt-20 bg-background">

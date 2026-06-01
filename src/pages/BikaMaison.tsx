@@ -1,3 +1,5 @@
+import SEOComponent from "@/components/SEOComponent";
+import { generateServiceStructuredData } from "@/utils/seoData";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ChatBot from "@/components/ChatBot";
@@ -33,8 +35,21 @@ const BikaMaison = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOComponent
+        title="Batch cooking & ménage à domicile Paris | Bikawo"
+        description="Préparation culinaire, batch cooking, repassage et entretien maison. Prestataires vérifiés, organisme SAP déclaré. Crédit d'impôt 50% dès la 1ère heure."
+        keywords="batch cooking Paris, ménage à domicile, préparation culinaire, repassage, Île-de-France"
+        url="/bika-maison"
+        structuredData={generateServiceStructuredData({
+          name: "Ménage & batch cooking à domicile — BikaMaison",
+          description: "Préparation culinaire, batch cooking, repassage et entretien maison à domicile en Île-de-France.",
+          url: "/bika-maison",
+          priceFrom: "25",
+          priceAfterTax: "12,50€/h"
+        })}
+      />
       <Navbar />
-      
+
       <ServicePageLayout
         title="Services maison à domicile"
         subtitle="Préparation culinaire / batch cooking, repassage et entretien"

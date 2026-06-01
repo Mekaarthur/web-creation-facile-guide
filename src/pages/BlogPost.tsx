@@ -593,7 +593,8 @@ const BlogPost = () => {
           author: post.author,
           publishedAt: post.publishedAt,
           image: post.image,
-          slug: slug || ''
+          slug: slug || '',
+          wordCount: post.content.replace(/<[^>]*>/g, ' ').split(/\s+/).filter(Boolean).length
         })}
       />
       <Navbar />

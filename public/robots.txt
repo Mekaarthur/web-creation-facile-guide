@@ -25,6 +25,36 @@ Allow: /
 
 Crawl-delay: 1
 
+# Crawlers IA — autorisés sur le contenu public (mêmes restrictions que *)
+User-agent: GPTBot
+User-agent: ClaudeBot
+User-agent: anthropic-ai
+User-agent: PerplexityBot
+User-agent: Googlebot-Extended
+User-agent: CCBot
+User-agent: meta-externalagent
+Disallow: /admin
+Disallow: /admin/
+Disallow: /modern-admin
+Disallow: /modern-admin/
+Disallow: /auth
+Disallow: /espace-personnel
+Disallow: /espace-prestataire
+Disallow: /panier
+Disallow: /cart
+Disallow: /payment
+Disallow: /payment-success
+Disallow: /payment-canceled
+Disallow: /reservation-confirmee
+Disallow: /provider-onboarding
+Disallow: /provider/zones
+Disallow: /analytics-seo
+Disallow: /config-messages
+Disallow: /audit-qualite
+Disallow: /gestion-demandes
+
+Allow: /
+
 # Sitemaps
 Sitemap: https://bikawo.com/sitemap-index.xml
 Sitemap: https://bikawo.com/sitemap.xml

@@ -1,6 +1,15 @@
-import { MessageCircle, Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instagram } from "lucide-react";
+import {
+  MessageCircle,
+  Mail,
+  Phone,
+  MapPin,
+  Facebook,
+  Twitter,
+  Linkedin,
+  Instagram,
+} from "lucide-react";
 import { Link } from "react-router-dom";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 import traceurSap from "@/assets/traceur-sap.jpg";
 import LogoUrssaf from "@/components/LogoUrssaf";
 
@@ -8,64 +17,67 @@ const Footer = () => {
   const { t } = useTranslation();
   const footerSections = [
     {
-      title: t('footer.services'),
+      title: t("footer.services"),
       links: [
         { name: "Bika Kids", href: "/bika-kids" },
         { name: "Bika Maison", href: "/bika-maison" },
         { name: "Bika Seniors", href: "/bika-seniors" },
+        { name: "Bika Animals", href: "/bika-animals" },
+        { name: "Bika Vie", href: "/bika-vie" },
         { name: "Bika Travel", href: "/bika-travel" },
         { name: "Bika Pro", href: "/bika-pro" },
-        { name: "Bika Plus", href: "/bika-plus" }
-      ]
+        { name: "Bika Plus", href: "/bika-plus" },
+      ],
     },
     {
-      title: t('footer.company'), 
+      title: t("footer.company"),
       links: [
-        { name: t('footer.about'), href: "/a-propos-de-nous" },
-        { name: t('footer.careers'), href: "/nous-recrutons" },
-        { name: t('nav.blog'), href: "/blog" },
-        { name: t('footer.partners'), href: "/contact" }
-      ]
+        { name: t("footer.about"), href: "/a-propos-de-nous" },
+        { name: t("footer.careers"), href: "/nous-recrutons" },
+        { name: t("nav.blog"), href: "/blog" },
+        { name: t("footer.partners"), href: "/contact" },
+      ],
     },
     {
-      title: t('footer.support'),
+      title: t("footer.support"),
       links: [
-        { name: t('footer.helpCenter'), href: "/aide" },
-        { name: t('nav.contact'), href: "/contact" },
-        { name: t('footer.faq'), href: "/aide" },
-        { name: t('footer.status'), href: "/aide" }
-      ]
-    }
+        { name: t("footer.helpCenter"), href: "/aide" },
+        { name: t("nav.contact"), href: "/contact" },
+        { name: t("footer.faq"), href: "/aide" },
+        { name: t("footer.status"), href: "/aide" },
+      ],
+    },
   ];
 
   const socialLinks = [
     { icon: Facebook, href: "https://facebook.com/bikawo", name: "Facebook" },
     { icon: Instagram, href: "https://www.instagram.com/bikawo_officiel", name: "Instagram" },
     { icon: Linkedin, href: "https://linkedin.com/company/bikawo", name: "LinkedIn" },
-    { icon: Twitter, href: "https://twitter.com/bikawo", name: "Twitter" }
+    { icon: Twitter, href: "https://twitter.com/bikawo", name: "Twitter" },
   ];
 
   return (
     <footer className="relative bg-foreground text-background overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.02)_50%,transparent_75%)] bg-[length:20px_20px]"></div>
-      
+
       <div className="relative">
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
           <div className="grid lg:grid-cols-4 gap-8 lg:gap-12">
-            
             {/* Brand Section */}
             <div className="lg:col-span-2 space-y-6">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center shadow-lg">
                   <MessageCircle className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-2xl font-bold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">{t('footer.title')}</span>
+                <span className="text-2xl font-bold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
+                  {t("footer.title")}
+                </span>
               </div>
-              
+
               <p className="text-white/70 text-lg leading-relaxed max-w-lg">
-                {t('footer.description')}
+                {t("footer.description")}
               </p>
 
               {/* Contact Cards */}
@@ -84,13 +96,13 @@ const Footer = () => {
                       <Phone className="w-4 h-4 text-primary" />
                     </div>
                     <div>
-                      <p className="text-xs text-white/60">{t('footer.phone')}</p>
+                      <p className="text-xs text-white/60">{t("footer.phone")}</p>
                       <p className="text-sm font-medium">06 09 08 53 90</p>
                     </div>
                   </div>
                 </a>
-                
-                <a 
+
+                <a
                   href="mailto:contact@bikawo.com"
                   className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:bg-white/10 transition-all duration-300 block"
                 >
@@ -99,7 +111,7 @@ const Footer = () => {
                       <Mail className="w-4 h-4 text-primary" />
                     </div>
                     <div>
-                      <p className="text-xs text-white/60">{t('footer.email')}</p>
+                      <p className="text-xs text-white/60">{t("footer.email")}</p>
                       <p className="text-sm font-medium">contact@bikawo.com</p>
                     </div>
                   </div>
@@ -119,7 +131,7 @@ const Footer = () => {
                     src={traceurSap}
                     alt="Services à la personne"
                     className="w-[80px] h-auto hover:opacity-80 transition-opacity duration-300"
-                    style={{ minWidth: '60px' }}
+                    style={{ minWidth: "60px" }}
                   />
                 </a>
                 <a
@@ -129,7 +141,10 @@ const Footer = () => {
                   className="inline-block"
                   aria-label="URSSAF - Avance immédiate"
                 >
-                  <LogoUrssaf width={80} className="hover:opacity-80 transition-opacity duration-300" />
+                  <LogoUrssaf
+                    width={80}
+                    className="hover:opacity-80 transition-opacity duration-300"
+                  />
                 </a>
               </div>
 
@@ -158,7 +173,9 @@ const Footer = () => {
               <div className="grid sm:grid-cols-3 gap-8">
                 {footerSections.map((section) => (
                   <div key={section.title} className="space-y-4">
-                    <h4 className="text-sm font-semibold text-white uppercase tracking-wider">{section.title}</h4>
+                    <h4 className="text-sm font-semibold text-white uppercase tracking-wider">
+                      {section.title}
+                    </h4>
                     <ul className="space-y-3">
                       {section.links.map((link) => (
                         <li key={link.name}>
@@ -183,16 +200,34 @@ const Footer = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
               <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-8 text-white/50 text-sm">
-                <span>{t('footer.copyright')}</span>
+                <span>{t("footer.copyright")}</span>
                 <div className="flex flex-wrap justify-center md:justify-start gap-x-6 gap-y-2">
-                  <Link to="/politique-confidentialite" className="hover:text-white transition-colors">{t('footer.privacy')}</Link>
-                  <Link to="/cgu" className="hover:text-white transition-colors">{t('footer.terms')}</Link>
-                  <Link to="/information-consommateurs" className="hover:text-white transition-colors">Information consommateurs</Link>
-                  <Link to="/mentions-legales" className="hover:text-white transition-colors">{t('footer.legal')}</Link>
-                  <Link to="/avance-immediate" className="hover:text-white transition-colors">Avance Immédiate</Link>
-                  <Link to="/politique-cookies" className="hover:text-white transition-colors">Politique de cookies</Link>
-                  <button 
-                    onClick={() => window.dispatchEvent(new CustomEvent('openCookieSettings'))}
+                  <Link
+                    to="/politique-confidentialite"
+                    className="hover:text-white transition-colors"
+                  >
+                    {t("footer.privacy")}
+                  </Link>
+                  <Link to="/cgu" className="hover:text-white transition-colors">
+                    {t("footer.terms")}
+                  </Link>
+                  <Link
+                    to="/information-consommateurs"
+                    className="hover:text-white transition-colors"
+                  >
+                    Information consommateurs
+                  </Link>
+                  <Link to="/mentions-legales" className="hover:text-white transition-colors">
+                    {t("footer.legal")}
+                  </Link>
+                  <Link to="/avance-immediate" className="hover:text-white transition-colors">
+                    Avance Immédiate
+                  </Link>
+                  <Link to="/politique-cookies" className="hover:text-white transition-colors">
+                    Politique de cookies
+                  </Link>
+                  <button
+                    onClick={() => window.dispatchEvent(new CustomEvent("openCookieSettings"))}
                     className="hover:text-white transition-colors"
                   >
                     Gérer mes cookies
@@ -201,7 +236,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-white/60 text-sm">{t('footer.support24')}</span>
+                <span className="text-white/60 text-sm">{t("footer.support24")}</span>
               </div>
             </div>
           </div>

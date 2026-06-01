@@ -22,8 +22,6 @@ import {
   ShoppingCart,
   Heart,
   Building2,
-  DollarSign,
-  GraduationCap,
   BookOpen,
   Plane
 } from "lucide-react";
@@ -58,49 +56,49 @@ const publicNavItems: MobileNavItem[] = [
 const servicesNavItems: MobileNavItem[] = [
   {
     title: "Bika Kids",
-    href: "/services/bika-kids",
+    href: "/bika-kids",
     icon: User,
     description: "Garde d'enfants"
   },
   {
     title: "Bika Maison",
-    href: "/services/bika-maison", 
+    href: "/bika-maison",
     icon: Home,
     description: "Préparation culinaire & entretien"
   },
   {
     title: "Bika Vie",
-    href: "/services/bika-vie",
+    href: "/bika-vie",
     icon: ShoppingCart,
-    description: "Courses & démarches"
+    description: "Assistant personnel"
   },
   {
     title: "Bika Travel",
-    href: "/services/bika-travel",
+    href: "/bika-travel",
     icon: Plane,
     description: "Assistance voyage"
   },
   {
     title: "Bika Plus",
-    href: "/services/bika-plus",
+    href: "/bika-plus",
     icon: Star,
     description: "Services premium"
   },
   {
     title: "Bika Animals",
-    href: "/services/bika-animals",
+    href: "/bika-animals",
     icon: Heart,
     description: "Garde d'animaux"
   },
   {
     title: "Bika Seniors",
-    href: "/services/bika-seniors",
+    href: "/bika-seniors",
     icon: User,
     description: "Aide aux seniors"
   },
   {
     title: "Bika Pro",
-    href: "/services/bika-pro",
+    href: "/bika-pro",
     icon: Building2,
     description: "Solutions entreprises"
   }
@@ -109,31 +107,19 @@ const servicesNavItems: MobileNavItem[] = [
 const providerNavItems: MobileNavItem[] = [
   {
     title: "Devenir Prestataire",
-    href: "/devenir-prestataire",
+    href: "/nous-recrutons",
     icon: Briefcase,
     description: "Rejoindre notre équipe"
   },
   {
-    title: "Espace Prestataire", 
+    title: "Espace Prestataire",
     href: "/espace-prestataire",
     icon: User,
     description: "Dashboard prestataire"
   },
   {
-    title: "Tarifs & Rémunération",
-    href: "/prestataire/tarifs",
-    icon: DollarSign,
-    description: "Grille tarifaire"
-  },
-  {
-    title: "Formation",
-    href: "/prestataire/formation",
-    icon: GraduationCap,
-    description: "Modules de formation"
-  },
-  {
     title: "Postuler Maintenant",
-    href: "/inscription-prestataire",
+    href: "/nous-recrutons",
     icon: FileText,
     description: "Inscription rapide"
   }

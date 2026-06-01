@@ -8,6 +8,7 @@ interface SEOOptimizationProps {
   image?: string;
   type?: string;
   noIndex?: boolean;
+  structuredData?: object;
 }
 
 const SEOOptimization = ({
@@ -17,6 +18,7 @@ const SEOOptimization = ({
   image = "/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png",
   type = "website",
   noIndex = false,
+  structuredData,
 }: SEOOptimizationProps) => {
   const location = useLocation();
   const currentUrl = `https://bikawo.com${location.pathname}`;
@@ -74,6 +76,13 @@ const SEOOptimization = ({
       {/* DNS prefetch */}
       <link rel="dns-prefetch" href="//fonts.googleapis.com" />
       <link rel="dns-prefetch" href="//www.google-analytics.com" />
+
+      {/* Structured data JSON-LD */}
+      {structuredData && (
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
+      )}
     </Helmet>
   );
 };
