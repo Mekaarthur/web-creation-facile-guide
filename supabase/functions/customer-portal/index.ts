@@ -28,7 +28,7 @@ serve(async (req) => {
     logStep("Stripe key found");
 
     const stripe = new Stripe(stripeSecretKey, {
-      apiVersion: "2023-10-16",
+      apiVersion: "2025-08-27.basil",
     });
 
     // Initialize Supabase client
