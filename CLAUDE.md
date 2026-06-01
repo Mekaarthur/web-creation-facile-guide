@@ -44,6 +44,10 @@ Lors d'un `/compact`, conserver impérativement :
 
 Ne pas conserver : contenu complet des fichiers modifiés (lisibles via `Read`), historique git détaillé.
 
+## Règles de structure des composants
+- Quand on modifie un composant de plus de 400 lignes, extraire la logique touchée dans un hook dédié ou un sous-composant dans le cadre de la modification.
+- Ne jamais refactoriser des composants non touchés.
+
 ## Règles générales
 - Ne pas commiter `.env` (contient des secrets).
 - Ne pas commiter `supabase/.temp/`, `test-results/`, `tests/auth-states/`.
