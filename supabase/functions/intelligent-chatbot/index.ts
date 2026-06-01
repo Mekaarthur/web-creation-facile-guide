@@ -11,9 +11,6 @@ const corsHeaders = {
 interface ChatRequest {
   message: string;
   conversationId?: string;
-  userEmail?: string;
-  userPhone?: string;
-  userType?: 'client' | 'provider' | 'anonymous';
 }
 
 interface FAQResult {
@@ -31,16 +28,33 @@ serve(async (req) => {
   }
 
   try {
-    const { message, conversationId, userEmail, userPhone, userType = 'anonymous' }: ChatRequest = await req.json();
+    // Auth check — avant de parser le body
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Non authentifié' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabase = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Token invalide' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const { message, conversationId }: ChatRequest = await req.json();
 
     if (!message?.trim()) {
       throw new Error('Message is required');
     }
-
-    // Initialiser Supabase
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
 
     console.log('💬 Nouvelle question reçue:', message);
 
@@ -75,9 +89,9 @@ serve(async (req) => {
       const { data: newConversation, error: convError } = await supabase
         .from('chatbot_conversations')
         .insert({
-          user_email: userEmail,
-          user_phone: userPhone,
-          user_type: userType,
+          user_id: user.id,
+          user_email: user.email,
+          user_type: 'client',
           status: needsHumanEscalation ? 'escalated' : 'active',
           escalated_to_human: needsHumanEscalation,
           escalated_at: needsHumanEscalation ? new Date().toISOString() : null
@@ -122,14 +136,13 @@ serve(async (req) => {
       });
 
     // Créer un ticket de support si escalation nécessaire
-    if (needsHumanEscalation && userEmail) {
-      console.log('📧 Création ticket de support pour:', userEmail);
+    if (needsHumanEscalation) {
+      console.log('📧 Création ticket de support pour:', user.email);
       await supabase
         .from('support_tickets')
         .insert({
           conversation_id: currentConversationId,
-          user_email: userEmail,
-          user_phone: userPhone,
+          user_email: user.email,
           subject: 'Demande d\'assistance via chatbot',
           description: `Message original: ${message}\n\nRéponse automatique: ${response}`,
           priority: 'medium',
