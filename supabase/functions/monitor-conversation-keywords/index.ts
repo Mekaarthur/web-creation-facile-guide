@@ -89,10 +89,7 @@ serve(async (req) => {
         if (conversation) {
           await supabaseAdmin
             .from('internal_conversations')
-            .update({ 
-              status: 'pending',
-              // TODO: Ajouter un champ priority si nécessaire
-            })
+            .update({ status: 'pending' })
             .eq('id', conversationId);
         }
       }

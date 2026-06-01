@@ -61,19 +61,17 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Pour SMS (à implémenter plus tard avec un service SMS)
+    // SMS non intégré — retourne 501 explicite plutôt qu'un succès fictif
     if (type === 'sms') {
-      console.log('SMS notification requested but not implemented yet');
-      return new Response(JSON.stringify({ 
-        success: true, 
-        message: 'SMS functionality not implemented yet',
-        type: 'sms'
+      console.log('SMS non disponible — intégration à venir');
+      return new Response(JSON.stringify({
+        success: false,
+        not_implemented: true,
+        message: 'SMS non disponible — intégration opérateur à venir',
+        type: 'sms',
       }), {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          ...corsHeaders,
-        },
+        status: 501,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 

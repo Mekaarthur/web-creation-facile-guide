@@ -1,5 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { Resend } from "npm:resend@2.0.0";
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY") ?? "");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -34,8 +37,7 @@ serve(async (req) => {
       throw new Error("User email not found");
     }
 
-    // TODO: Intégrer avec un service d'envoi d'emails (Resend, SendGrid, etc.)
-    // Pour l'instant, on crée juste une notification in-app
+    // Notification in-app (toujours créée, même si l'email échoue)
     await supabaseAdmin
       .from('realtime_notifications')
       .insert({
@@ -82,8 +84,18 @@ serve(async (req) => {
       `
     };
 
-    // Log pour débogage (à remplacer par un vrai envoi d'email)
-    console.log("📧 Email à envoyer:", emailData);
+    // Envoi email via Resend — non bloquant si clé absente ou erreur réseau
+    try {
+      await resend.emails.send({
+        from: "Bikawo <notifications@bikawo.fr>",
+        to: emailData.to,
+        subject: emailData.subject,
+        html: emailData.html,
+      });
+      console.log(`📧 Email envoyé à ${profile.email}`);
+    } catch (emailError) {
+      console.error("❌ Échec envoi email (notification in-app conservée):", emailError);
+    }
 
     return new Response(
       JSON.stringify({ 

@@ -425,9 +425,13 @@ serve(async (req) => {
         });
     }
 
-    return new Response(JSON.stringify({ error: 'Action not implemented' }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    // Atteint si action valide (approve/reject/examine) mais type ou id manquant
+    return new Response(JSON.stringify({
+      error: 'Paramètres manquants',
+      detail: `L'action "${action}" requiert type (review|report) et id.`,
+    }), {
+      status: 422,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {

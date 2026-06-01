@@ -65,7 +65,14 @@ serve(async (req) => {
 
     // Create PDF
     const doc = new jsPDF();
-    
+
+    // ⚠️ Avertissement légal — document provisoire non conforme URSSAF
+    doc.setFontSize(8);
+    doc.setTextColor(180, 0, 0);
+    doc.text("DOCUMENT PROVISOIRE — Non valide pour déclaration fiscale URSSAF.", 20, 10);
+    doc.text("Les factures officielles seront émises par NeedMe (mandataire agréé) après intégration.", 20, 16);
+    doc.setTextColor(0, 0, 0);
+
     // Header with Bikawo logo and info
     doc.setFontSize(20);
     doc.setTextColor(41, 128, 185); // Primary blue
@@ -107,20 +114,15 @@ serve(async (req) => {
     doc.text(`Description: ${invoice.service_description}`, 20, 150);
 
     // Amount details
-    const amountHT = invoice.amount / 1.20; // Assuming 20% VAT
-    const tvaAmount = invoice.amount - amountHT;
-
+    // Les services à la personne (SAP) sont exonérés de TVA — pas de calcul TVA ici.
     doc.line(20, 170, 190, 170); // Horizontal line
-    
-    doc.text("Montant HT:", 120, 180);
-    doc.text(`${amountHT.toFixed(2)} €`, 160, 180);
-    
-    doc.text("TVA (20%):", 120, 190);
-    doc.text(`${tvaAmount.toFixed(2)} €`, 160, 190);
-    
+
+    doc.setFontSize(10);
+    doc.text("Exonération TVA — Art. 261 D 4° CGI (Services à la personne)", 20, 180);
+
     doc.setFontSize(12);
-    doc.text("Total TTC:", 120, 200);
-    doc.text(`${invoice.amount.toFixed(2)} €`, 160, 200);
+    doc.text("Montant total:", 120, 195);
+    doc.text(`${invoice.amount.toFixed(2)} €`, 160, 195);
 
     // Footer
     doc.setFontSize(8);
