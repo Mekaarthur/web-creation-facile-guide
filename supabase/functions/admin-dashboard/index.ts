@@ -5,7 +5,7 @@ import { sanitizeSearch } from '../_shared/sanitize.ts';
 // Updated admin dashboard functions - version 1.2
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://bikawo.fr',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
