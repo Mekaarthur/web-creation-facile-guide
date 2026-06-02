@@ -11,7 +11,9 @@
     "./auth/useAuth": "./src/auth/useAuth.tsx",
     "./auth/*": "./src/auth/*.ts",
     "./lib/sanitizeSearch": "./src/lib/sanitizeSearch.ts",
+    "./lib/utils": "./src/lib/utils.ts",
     "./lib/*": "./src/lib/*.ts",
-    "./services/*": "./src/services/*.ts"
+    "./services/*": "./src/services/*.ts",
+    "./ui/*": "./src/ui/*.tsx"
   }
 }
