@@ -2,5 +2,10 @@
   "name": "@bikawo/shared",
   "private": true,
   "version": "0.0.0",
-  "type": "module"
+  "type": "module",
+  "exports": {
+    "./types": "./src/types/index.ts",
+    "./types/*": "./src/types/*.ts",
+    "./integrations/supabase/types": "./src/integrations/supabase/types.ts"
+  }
 }
