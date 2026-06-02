@@ -126,6 +126,9 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
       "@bikawo/shared": path.resolve(__dirname, "../../packages/shared/src"),
     },
+    // Force resolution from apps/public/node_modules for packages that packages/shared uses
+    // (pnpm isolated mode: packages/shared has no node_modules of its own)
+    dedupe: ['react', 'react-dom', '@supabase/supabase-js', 'react-router-dom', 'sonner'],
   },
   build: {
     target: 'esnext',
