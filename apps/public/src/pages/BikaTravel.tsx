@@ -1,0 +1,80 @@
+import SEOComponent from "@/components/SEOComponent";
+import { generateServiceStructuredData } from "@/utils/seoData";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import ChatBot from "@/components/ChatBot";
+import ServiceSubgrid from "@/components/ServiceSubgrid";
+import ServicePageLayout from "@/components/ServicePageLayout";
+import { Plane, MapPin, Luggage } from "lucide-react";
+import serviceTravelImage from "@/assets/service-travel.jpg";
+
+const BikaTravel = () => {
+  const benefits = [
+    {
+      icon: <Plane className="w-10 h-10 text-white" />,
+      title: "On est expert",
+      description: "Spécialistes du voyage avec connaissance approfondie des destinations et procédures.",
+      bgGradient: "bg-gradient-subtle",
+      iconGradient: "bg-gradient-primary"
+    },
+    {
+      icon: <MapPin className="w-10 h-10 text-white" />,
+      title: "On est organisé",
+      description: "Planification méticuleuse de vos voyages, rien n'est laissé au hasard.",
+      bgGradient: "bg-gradient-subtle",
+      iconGradient: "bg-gradient-accent"
+    },
+    {
+      icon: <Luggage className="w-10 h-10 text-white" />,
+      title: "On est pratique",
+      description: "Accompagnement personnalisé : réservations, formalités, conseils voyage.",
+      bgGradient: "bg-gradient-subtle",
+      iconGradient: "bg-gradient-hero"
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-background">
+      <SEOComponent
+        title="Organisation & assistance voyage Paris | Bikawo"
+        description="Planification, réservations, formalités et conseils voyage personnalisés. Bikawo organise chaque détail de vos déplacements en Île-de-France. Crédit d'impôt 50%."
+        keywords="assistance voyage Paris, organisation voyage, réservations, formalités, Île-de-France"
+        url="/bika-travel"
+        structuredData={generateServiceStructuredData({
+          name: "Organisation & assistance voyage — BikaTravel",
+          description: "Planification, réservations et formalités de voyage personnalisées en Île-de-France.",
+          url: "/bika-travel",
+          priceFrom: "30",
+          priceAfterTax: "15€/h"
+        })}
+      />
+      <Navbar />
+
+      <ServicePageLayout
+        title="Assistance voyage"
+        subtitle="Accompagnement et organisation de voyages"
+        rating={5}
+        reviewCount="450+ avis vérifiés"
+        price="Dès 30€/h"
+        heroImage={serviceTravelImage}
+        heroImageAlt="Services voyage Bika Travel"
+        keyPoints={[
+          "Experts en organisation de voyages",
+          "Accompagnement aéroport inclus",
+          "Formalités administratives simplifiées"
+        ]}
+        primaryCTA="Planifier mon voyage"
+        secondaryCTA="Devenir assistant voyage"
+        benefits={benefits}
+        heroGradient="bg-gradient-hero"
+      >
+        <ServiceSubgrid categoryKey="travel" />
+      </ServicePageLayout>
+      
+      <Footer />
+      <ChatBot />
+    </div>
+  );
+};
+
+export default BikaTravel;

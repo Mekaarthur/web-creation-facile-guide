@@ -1,0 +1,402 @@
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Menu, 
+  Home, 
+  Briefcase, 
+  User, 
+  Settings, 
+  HelpCircle,
+  Phone,
+  Star,
+  Calendar,
+  MessageCircle,
+  Bell,
+  CreditCard,
+  FileText,
+  Shield,
+  ShoppingCart,
+  Heart,
+  Building2,
+  BookOpen,
+  Plane
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import { useBikawoCart } from "@/hooks/useBikawoCart";
+import { SecureLogout } from "@/components/SecureLogout";
+
+interface MobileNavItem {
+  title: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge?: string;
+  description?: string;
+}
+
+const publicNavItems: MobileNavItem[] = [
+  {
+    title: "Accueil",
+    href: "/",
+    icon: Home,
+    description: "Retour à l'accueil"
+  },
+  {
+    title: "Tous nos services",
+    href: "/services",
+    icon: Briefcase,
+    description: "Catalogue complet"
+  }
+];
+
+const servicesNavItems: MobileNavItem[] = [
+  {
+    title: "Bika Kids",
+    href: "/bika-kids",
+    icon: User,
+    description: "Garde d'enfants"
+  },
+  {
+    title: "Bika Maison",
+    href: "/bika-maison",
+    icon: Home,
+    description: "Préparation culinaire & entretien"
+  },
+  {
+    title: "Bika Vie",
+    href: "/bika-vie",
+    icon: ShoppingCart,
+    description: "Assistant personnel"
+  },
+  {
+    title: "Bika Travel",
+    href: "/bika-travel",
+    icon: Plane,
+    description: "Assistance voyage"
+  },
+  {
+    title: "Bika Plus",
+    href: "/bika-plus",
+    icon: Star,
+    description: "Services premium"
+  },
+  {
+    title: "Bika Animals",
+    href: "/bika-animals",
+    icon: Heart,
+    description: "Garde d'animaux"
+  },
+  {
+    title: "Bika Seniors",
+    href: "/bika-seniors",
+    icon: User,
+    description: "Aide aux seniors"
+  },
+  {
+    title: "Bika Pro",
+    href: "/bika-pro",
+    icon: Building2,
+    description: "Solutions entreprises"
+  }
+];
+
+const providerNavItems: MobileNavItem[] = [
+  {
+    title: "Devenir Prestataire",
+    href: "/nous-recrutons",
+    icon: Briefcase,
+    description: "Rejoindre notre équipe"
+  },
+  {
+    title: "Espace Prestataire",
+    href: "/espace-prestataire",
+    icon: User,
+    description: "Dashboard prestataire"
+  },
+  {
+    title: "Postuler Maintenant",
+    href: "/nous-recrutons",
+    icon: FileText,
+    description: "Inscription rapide"
+  }
+];
+
+const aboutNavItems: MobileNavItem[] = [
+  {
+    title: "À propos",
+    href: "/a-propos-de-nous",
+    icon: Star,
+    description: "En savoir plus sur nous"
+  },
+  {
+    title: "Contact",
+    href: "/contact",
+    icon: Phone,
+    description: "Nous contacter"
+  },
+  {
+    title: "Blog", 
+    href: "/blog",
+    icon: BookOpen,
+    description: "Actualités & conseils"
+  }
+];
+
+const getClientNavItems = (cartCount: number): MobileNavItem[] => [
+  {
+    title: "Mon espace",
+    href: "/espace-personnel",
+    icon: User,
+    description: "Tableau de bord client"
+  },
+  {
+    title: "Mes réservations",
+    href: "/espace-personnel",
+    icon: Calendar,
+    description: "Gérer mes réservations"
+  },
+  {
+    title: "Mon panier",
+    href: "/panier",
+    icon: ShoppingCart,
+    badge: cartCount > 0 ? cartCount.toString() : undefined,
+    description: "Mes services sélectionnés"
+  },
+  {
+    title: "Factures",
+    href: "/espace-personnel",
+    icon: FileText,
+    description: "Historique des factures"
+  },
+  {
+    title: "Notifications",
+    href: "/espace-personnel",
+    icon: Bell,
+    badge: "2",
+    description: "Centre de notifications"
+  }
+];
+
+const mobileProviderNavItems: MobileNavItem[] = [
+  {
+    title: "Mon espace",
+    href: "/espace-prestataire",
+    icon: Briefcase,
+    description: "Tableau de bord prestataire"
+  },
+  {
+    title: "Mes missions",
+    href: "/espace-prestataire",
+    icon: Calendar,
+    description: "Gérer mes missions"
+  },
+  {
+    title: "Messages",
+    href: "/espace-prestataire",
+    icon: MessageCircle,
+    badge: "1",
+    description: "Conversations avec clients"
+  },
+  {
+    title: "Paiements",
+    href: "/espace-prestataire",
+    icon: CreditCard,
+    description: "Historique des gains"
+  },
+  {
+    title: "Disponibilités",
+    href: "/espace-prestataire",
+    icon: Settings,
+    description: "Gérer mes créneaux"
+  }
+];
+
+const adminNavItems: MobileNavItem[] = [
+  {
+    title: "Administration",
+    href: "/admin-system",
+    icon: Shield,
+    description: "Panneau d'administration"
+  },
+  {
+    title: "Prestataires",
+    href: "/admin-system",
+    icon: User,
+    badge: "5",
+    description: "Validation des prestataires"
+  },
+  {
+    title: "Demandes",
+    href: "/gestion-demandes",
+    icon: FileText,
+    description: "Gestion des demandes"
+  }
+];
+
+export const MobileNavigation = () => {
+  const [open, setOpen] = useState(false);
+  const location = useLocation();
+  const { user, primaryRole } = useAuth();
+  const { getCartItemsCount } = useBikawoCart();
+
+  // Déterminer le type d'utilisateur et les éléments de navigation
+  const getUserNavItems = () => {
+    const currentPath = location.pathname;
+    const cartCount = getCartItemsCount();
+    
+    if (currentPath.startsWith('/admin')) {
+      return [...publicNavItems, ...adminNavItems];
+    }
+    
+    if (currentPath.startsWith('/espace-prestataire')) {
+      return [...publicNavItems, ...providerNavItems];
+    }
+    
+    if (currentPath.startsWith('/espace-personnel') && user) {
+      return [...publicNavItems, ...getClientNavItems(cartCount)];
+    }
+    
+    return publicNavItems;
+  };
+
+  const navItems = getUserNavItems();
+
+  const isActiveLink = (href: string) => {
+    if (href === '/') {
+      return location.pathname === '/';
+    }
+    return location.pathname.startsWith(href);
+  };
+
+  return (
+    <div className="lg:hidden">
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetTrigger asChild>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-9 w-9 p-0 transition-all duration-200 hover:bg-primary/10"
+          >
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Ouvrir le menu</span>
+          </Button>
+        </SheetTrigger>
+        
+        <SheetContent side="left" className="w-80 p-0 bg-background/95 backdrop-blur-sm">
+          <div className="flex flex-col h-full">
+            {/* Header avec Logo */}
+            <div className="p-5 border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent">
+              <Link 
+                to="/" 
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 group"
+              >
+                <img 
+                  src="/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png" 
+                  alt="Bikawo Logo" 
+                  className="h-12 w-auto transition-transform group-hover:scale-105"
+                />
+                <div className="flex flex-col">
+                  <h2 className="font-bold text-xl text-foreground tracking-tight">Bikawo</h2>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    La sérénité au quotidien
+                  </p>
+                </div>
+              </Link>
+            </div>
+
+            {/* Navigation */}
+            <ScrollArea className="flex-1 py-4">
+              <div className="space-y-1 px-3">
+                {navItems.map((item, index) => (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    onClick={() => setOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-3 rounded-lg text-sm transition-all duration-200 group animate-fade-in-up",
+                      isActiveLink(item.href)
+                        ? "bg-primary/10 text-primary font-medium border-l-2 border-l-primary"
+                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                    )}
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <item.icon className={cn(
+                      "h-5 w-5 transition-all duration-200",
+                      isActiveLink(item.href) 
+                        ? "text-primary" 
+                        : "text-muted-foreground group-hover:text-foreground"
+                    )} />
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="truncate">{item.title}</span>
+                        {item.badge && (
+                          <Badge 
+                            variant="secondary" 
+                            className="h-5 px-1.5 text-xs bg-primary/20 text-primary animate-pulse-soft"
+                          >
+                            {item.badge}
+                          </Badge>
+                        )}
+                      </div>
+                      {item.description && (
+                        <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                          {item.description}
+                        </p>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </ScrollArea>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-border/50">
+              {user ? (
+                <div className="space-y-3">
+                  <Link 
+                    to={primaryRole === 'provider' ? '/espace-prestataire' : '/espace-personnel'} 
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
+                      <User className="h-4 w-4 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">Mon compte</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                  </Link>
+                  <SecureLogout 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    showIcon={true}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Link to="/auth" onClick={() => setOpen(false)}>
+                    <Button className="w-full" size="sm">
+                      Connexion
+                    </Button>
+                  </Link>
+                  <p className="text-xs text-center text-muted-foreground">
+                    Rejoignez la communauté Bikawo
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+};

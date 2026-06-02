@@ -1,0 +1,302 @@
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { 
+  ShoppingCart, 
+  Trash2, 
+  AlertTriangle, 
+  Clock, 
+  MapPin,
+  ArrowRight
+} from "lucide-react";
+import { useBikawoCart } from "@/hooks/useBikawoCart";
+import { useToast } from "@/hooks/use-toast";
+import BookingCheckout from "./BookingCheckout";
+import { cn } from "@/lib/utils";
+
+interface BikawoCartProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
+  const { 
+    cartItems, 
+    separatedBookings, 
+    removeFromCart, 
+    clearCart, 
+    getCartTotal, 
+    hasIncompatibleServices,
+    getSeparatedBookingsCount
+  } = useBikawoCart();
+  
+  const [isPaymentMode, setIsPaymentMode] = useState(false);
+  // Initialiser à isOpen pour éviter l'état opacity-0 quand la page est déjà ouverte
+  const [isVisible, setIsVisible] = useState(isOpen);
+  const { toast } = useToast();
+
+  // Animation d'entrée (sert pour l'ouverture depuis le modal navbar)
+  useEffect(() => {
+    if (isOpen) {
+      setIsVisible(true);
+    }
+  }, [isOpen]);
+
+  const formatTimeSlot = (timeSlot: any) => {
+    const date = new Date(timeSlot.date);
+    return {
+      date: date.toLocaleDateString('fr-FR', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      }),
+      time: `${timeSlot.startTime} - ${timeSlot.endTime}`
+    };
+  };
+
+  const proceedToCheckout = () => {
+    if (cartItems.length === 0) {
+      toast({
+        title: "Panier vide",
+        description: "Ajoutez des services avant de procéder au paiement",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Scroll vers le haut de la page pour voir le formulaire de paiement
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    setIsPaymentMode(true);
+  };
+
+  if (!isOpen) {
+    return null;
+  }
+
+  if (isPaymentMode) {
+    return (
+      <div className="animate-fade-in">
+        <BookingCheckout onBack={() => {
+          setIsPaymentMode(false);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full px-3 sm:px-4 lg:px-6">
+      <div className="mb-4 sm:mb-6 text-center">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Mon Panier</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Finalisez votre réservation</p>
+      </div>
+      
+      <Card className={cn(
+        "w-full max-w-4xl mx-auto transition-all duration-300",
+        isVisible ? "animate-fade-in" : "opacity-0"
+      )}>
+        <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="truncate">Panier ({cartItems.length})</span>
+          </CardTitle>
+        {cartItems.length > 0 && (
+          <Button variant="ghost" size="sm" onClick={clearCart} className="hover-scale text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3">
+            Vider
+          </Button>
+        )}
+      </CardHeader>
+      
+      <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
+        {cartItems.length === 0 ? (
+          <div className="text-center py-6 sm:py-8">
+            <ShoppingCart className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-muted-foreground mb-3 sm:mb-4" />
+            <p className="text-sm sm:text-base text-muted-foreground">Votre panier est vide</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+              Le panier est conservé pendant 30 minutes
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Alerte si services incompatibles */}
+            {hasIncompatibleServices() && (
+              <Alert className="border-orange-200 bg-orange-50 animate-fade-in">
+                <AlertTriangle className="w-4 h-4 text-orange-600" />
+                <AlertDescription className="text-xs sm:text-sm">
+                  Services incompatibles détectés. Ils seront séparés en <strong>{getSeparatedBookingsCount()} réservations</strong> distinctes.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Tableau desktop */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b bg-muted/30">
+                    <th className="text-left p-3 text-sm font-semibold">Service</th>
+                    <th className="text-left p-3 text-sm font-semibold">Date & Heure</th>
+                    <th className="text-center p-3 text-sm font-semibold">Durée</th>
+                    <th className="text-right p-3 text-sm font-semibold">Prix/h</th>
+                    <th className="text-right p-3 text-sm font-semibold">Total</th>
+                    <th className="text-center p-3 text-sm font-semibold w-16"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cartItems.map((item, index) => {
+                    const slot = formatTimeSlot(item.timeSlot);
+                    return (
+                      <tr 
+                        key={item.id}
+                        className="border-b hover:bg-muted/20 transition-colors animate-fade-in"
+                        style={{ animationDelay: `${index * 50}ms` }}
+                      >
+                        <td className="p-3">
+                          <div>
+                            <p className="font-semibold text-sm">{item.serviceName}</p>
+                            <p className="text-xs text-muted-foreground">{item.packageTitle}</p>
+                            {item.address && (
+                              <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                                <MapPin className="w-3 h-3" />
+                                {item.address}
+                              </p>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-3">
+                          <div className="text-sm">
+                            <p className="font-medium">{new Date(item.timeSlot.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
+                            <p className="text-xs text-muted-foreground">{item.timeSlot.startTime} - {item.timeSlot.endTime}</p>
+                          </div>
+                        </td>
+                        <td className="p-3 text-center">
+                          <Badge variant="secondary" className="text-xs">
+                            {item.quantity}h
+                          </Badge>
+                        </td>
+                        <td className="p-3 text-right font-medium">
+                          {item.price}€/h
+                        </td>
+                        <td className="p-3 text-right">
+                          <span className="text-lg font-bold text-primary">
+                            {item.price * item.quantity}€
+                          </span>
+                        </td>
+                        <td className="p-3 text-center">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => removeFromCart(item.id)}
+                            aria-label={`Supprimer ${item.name} du panier`}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10 hover-scale"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Vue mobile (cartes) */}
+            <div className="md:hidden space-y-2.5 sm:space-y-3 max-h-80 sm:max-h-96 overflow-y-auto">
+              {cartItems.map((item, index) => {
+                const slot = formatTimeSlot(item.timeSlot);
+                return (
+                  <div 
+                    key={item.id} 
+                    className="p-3 sm:p-4 bg-muted/50 rounded-lg transition-all duration-200 hover:shadow-md animate-fade-in"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <div className="flex justify-between items-start mb-2 sm:mb-3 gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-sm sm:text-base mb-0.5 sm:mb-1 truncate">{item.serviceName}</h4>
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3 line-clamp-1">{item.packageTitle}</p>
+                        
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-center gap-2">
+                            <Clock className="w-4 h-4 text-primary flex-shrink-0" />
+                            <div>
+                              <p className="font-medium">{new Date(item.timeSlot.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
+                              <p className="text-xs text-muted-foreground">{item.timeSlot.startTime} - {item.timeSlot.endTime}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
+                            <span className="text-sm">{item.address}</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => removeFromCart(item.id)}
+                        aria-label={`Supprimer ${item.name} du panier`}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10 hover-scale ml-2"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </Button>
+                    </div>
+                    
+                    <Separator className="my-3" />
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-3">
+                        <Badge variant="secondary">
+                          {item.quantity}h
+                        </Badge>
+                        <span className="text-sm text-muted-foreground">
+                          {item.price}€/h
+                        </span>
+                      </div>
+                      <span className="text-xl font-bold text-primary">
+                        {item.price * item.quantity}€
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <Separator />
+
+            <div className="space-y-2.5 sm:space-y-3 bg-gradient-subtle p-3 sm:p-4 rounded-lg">
+              <div className="flex justify-between items-center text-xs sm:text-sm text-muted-foreground">
+                <span>Sous-total</span>
+                <span className="font-medium">{getCartTotal()}€</span>
+              </div>
+              <Separator />
+              <div className="flex justify-between items-center gap-2">
+                <span className="text-base sm:text-lg font-semibold">Total à payer</span>
+                <span className="text-xl sm:text-2xl font-bold text-primary whitespace-nowrap">{getCartTotal()}€</span>
+              </div>
+              {hasIncompatibleServices() && (
+                <p className="text-xs text-muted-foreground text-center pt-2 border-t">
+                  💳 Un seul paiement pour {getSeparatedBookingsCount()} réservations séparées
+                </p>
+              )}
+            </div>
+
+            <Button 
+              onClick={proceedToCheckout} 
+              className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-200 text-sm sm:text-base h-12 sm:h-14"
+            >
+              <span>Procéder au paiement</span>
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </>
+        )}
+      </CardContent>
+    </Card>
+    </div>
+  );
+};
+
+export default BikawoCart;

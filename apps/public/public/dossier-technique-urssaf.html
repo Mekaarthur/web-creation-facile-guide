@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dossier Technique — Bikawo — URSSAF</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 11pt;
+      color: #1a1a2e;
+      background: #fff;
+      line-height: 1.6;
+    }
+
+    /* ── Page layout ── */
+    .page {
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 20mm 18mm;
+    }
+
+    @media print {
+      body { font-size: 10pt; }
+      .page { padding: 15mm 15mm; }
+      .no-break { page-break-inside: avoid; }
+      .page-break { page-break-before: always; }
+    }
+
+    /* ── Cover page ── */
+    .cover {
+      text-align: center;
+      padding: 30mm 0 20mm;
+      border-bottom: 3px solid #2563eb;
+      margin-bottom: 20mm;
+    }
+    .cover .logo-text {
+      font-size: 36pt;
+      font-weight: 900;
+      color: #2563eb;
+      letter-spacing: -1px;
+    }
+    .cover .tagline {
+      font-size: 13pt;
+      color: #64748b;
+      margin-top: 6px;
+      margin-bottom: 20mm;
+    }
+    .cover h1 {
+      font-size: 20pt;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 6px;
+    }
+    .cover .subtitle {
+      font-size: 13pt;
+      color: #2563eb;
+      font-weight: 600;
+      margin-bottom: 20mm;
+    }
+    .cover-info {
+      display: inline-block;
+      text-align: left;
+      background: #f0f4ff;
+      border-left: 4px solid #2563eb;
+      padding: 12px 20px;
+      border-radius: 4px;
+      font-size: 10pt;
+    }
+    .cover-info p { margin: 2px 0; }
+    .cover-info strong { color: #2563eb; }
+
+    /* ── Section headings ── */
+    h2 {
+      font-size: 15pt;
+      font-weight: 700;
+      color: #2563eb;
+      margin: 24px 0 10px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #dbeafe;
+    }
+    h3 {
+      font-size: 12pt;
+      font-weight: 700;
+      color: #1e3a8a;
+      margin: 16px 0 6px;
+    }
+    h4 {
+      font-size: 10.5pt;
+      font-weight: 700;
+      color: #374151;
+      margin: 10px 0 4px;
+    }
+
+    /* ── Text ── */
+    p { margin: 6px 0; }
+    ul { padding-left: 20px; margin: 6px 0; }
+    li { margin: 3px 0; }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 10pt;
+    }
+    th {
+      background: #2563eb;
+      color: #fff;
+      padding: 7px 10px;
+      text-align: left;
+      font-weight: 600;
+    }
+    td {
+      padding: 6px 10px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+    tr:nth-child(even) td { background: #f8fafc; }
+
+    /* ── Info boxes ── */
+    .info-box {
+      background: #eff6ff;
+      border-left: 4px solid #2563eb;
+      padding: 10px 14px;
+      border-radius: 4px;
+      margin: 10px 0;
+      font-size: 10pt;
+    }
+    .warn-box {
+      background: #fff7ed;
+      border-left: 4px solid #f97316;
+      padding: 10px 14px;
+      border-radius: 4px;
+      margin: 10px 0;
+      font-size: 10pt;
+    }
+    .ok-box {
+      background: #f0fdf4;
+      border-left: 4px solid #22c55e;
+      padding: 10px 14px;
+      border-radius: 4px;
+      margin: 10px 0;
+      font-size: 10pt;
+    }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-block;
+      background: #dbeafe;
+      color: #1e40af;
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-size: 9pt;
+      font-weight: 600;
+      margin: 2px;
+    }
+    .badge-green {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    /* ── Footer ── */
+    .doc-footer {
+      margin-top: 30mm;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 10px;
+      font-size: 9pt;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* ── Signature block ── */
+    .signature-block {
+      margin-top: 20mm;
+      display: flex;
+      gap: 40px;
+    }
+    .sign-field {
+      flex: 1;
+      border-top: 1px solid #64748b;
+      padding-top: 6px;
+      font-size: 9.5pt;
+      color: #374151;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ══════════════════════════════════════════════════════════
+       PAGE DE GARDE
+  ═══════════════════════════════════════════════════════════════ -->
+  <div class="cover">
+    <div class="logo-text">Bikawo</div>
+    <div class="tagline">La charge mentale en moins, la sérénité en plus</div>
+
+    <h1>Dossier Technique</h1>
+    <div class="subtitle">Plateforme de Services à la Personne<br>Avance Immédiate de Crédit d'Impôt — URSSAF</div>
+
+    <div class="cover-info">
+      <p><strong>Société :</strong> Bikawo (auto-entreprise)</p>
+      <p><strong>SIRET :</strong> 880 491 436</p>
+      <p><strong>N° SAP :</strong> SAP 880491436</p>
+      <p><strong>Directrice de la publication :</strong> BIKOKO Genevieve Anita</p>
+      <p><strong>Adresse :</strong> 231 rue Saint-Honoré, 75001 Paris</p>
+      <p><strong>Email :</strong> contact@bikawo.com</p>
+      <p><strong>Téléphone :</strong> +33 6 09 08 53 90</p>
+      <p><strong>Site web :</strong> https://bikawo.com</p>
+      <p><strong>Date du document :</strong> Mai 2026</p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SOMMAIRE
+  ═══════════════════════════════════════════════════════════════ -->
+  <div class="no-break">
+    <h2>Sommaire</h2>
+    <table>
+      <tr><td>1.</td><td>Identification de l'opérateur</td></tr>
+      <tr><td>2.</td><td>Description de la plateforme</td></tr>
+      <tr><td>3.</td><td>Services à la personne proposés</td></tr>
+      <tr><td>4.</td><td>Architecture technique</td></tr>
+      <tr><td>5.</td><td>Sécurité et protection des données (RGPD)</td></tr>
+      <tr><td>6.</td><td>Gestion des paiements et de la facturation</td></tr>
+      <tr><td>7.</td><td>Avance immédiate de crédit d'impôt</td></tr>
+      <tr><td>8.</td><td>Conformité réglementaire SAP</td></tr>
+      <tr><td>9.</td><td>Sous-traitants et hébergement</td></tr>
+      <tr><td>10.</td><td>Déclarations et engagements</td></tr>
+    </table>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       1. IDENTIFICATION
+  ═══════════════════════════════════════════════════════════════ -->
+  <div class="page-break"></div>
+
+  <h2>1. Identification de l'opérateur</h2>
+
+  <table>
+    <tr><th colspan="2">Informations légales</th></tr>
+    <tr><td><strong>Dénomination</strong></td><td>Bikawo</td></tr>
+    <tr><td><strong>Forme juridique</strong></td><td>Entreprise individuelle (auto-entrepreneur)</td></tr>
+    <tr><td><strong>Numéro SIRET</strong></td><td>880 491 436</td></tr>
+    <tr><td><strong>Numéro INPI</strong></td><td>880 491 436</td></tr>
+    <tr><td><strong>N° SAP</strong></td><td>SAP 880491436</td></tr>
+    <tr><td><strong>Organisme déclarant</strong></td><td>DRIEETS — Unité Départementale de Paris</td></tr>
+    <tr><td><strong>Date de déclaration SAP</strong></td><td>8 décembre 2025</td></tr>
+    <tr><td><strong>Récépissé préfectoral</strong></td><td>21 janvier 2025 — Préfet de Paris</td></tr>
+    <tr><td><strong>Portée de la déclaration</strong></td><td>Nationale, non limitée dans le temps</td></tr>
+    <tr><td><strong>Directrice de la publication</strong></td><td>BIKOKO Genevieve Anita</td></tr>
+    <tr><td><strong>Siège social</strong></td><td>231 rue Saint-Honoré, 75001 Paris</td></tr>
+    <tr><td><strong>Email</strong></td><td>contact@bikawo.com</td></tr>
+    <tr><td><strong>Téléphone</strong></td><td>+33 6 09 08 53 90</td></tr>
+    <tr><td><strong>Site web</strong></td><td>https://bikawo.com</td></tr>
+  </table>
+
+  <!-- ══════════════════════════════════════════════════════════
+       2. DESCRIPTION
+  ═══════════════════════════════════════════════════════════════ -->
+  <h2>2. Description de la plateforme</h2>
+
+  <p>Bikawo est une <strong>plateforme numérique de mise en relation</strong> permettant aux particuliers de réserver des prestations de services à la personne auprès de prestataires indépendants qualifiés intervenant en Île-de-France.</p>
+
+  <p>La plateforme opère en mode <strong>prestataire</strong> au sens de l'article L.7232-6 3° du Code du travail : Bikawo met en relation les clients avec des partenaires indépendants, organise la coordination des prestations, établit les factures par mandat, et gère les flux financiers via Stripe Connect.</p>
+
+  <div class="info-box">
+    <strong>Zone d'intervention :</strong> Île-de-France — départements 75, 77, 78, 91, 92, 93, 94, 95
+  </div>
+
+  <h3>Fonctionnalités principales</h3>
+  <ul>
+    <li>Inscription et authentification sécurisée des clients et prestataires</li>
+    <li>Réservation en ligne (sélection service, date, heure, durée)</li>
+    <li>Matching automatique client/prestataire par zone et disponibilité</li>
+    <li>Messagerie en temps réel entre client et prestataire</li>
+    <li>Paiement en ligne sécurisé (Stripe) avec pré-autorisation 24h avant</li>
+    <li>Facturation automatique après validation de la prestation</li>
+    <li>Attestations fiscales annuelles (crédit d'impôt)</li>
+    <li>Avance immédiate de crédit d'impôt (URSSAF)</li>
+    <li>Système de notation et avis clients</li>
+    <li>Espace personnel client et espace prestataire</li>
+    <li>Tableau de bord administrateur</li>
+  </ul>
+
+  <!-- ══════════════════════════════════════════════════════════
+       3. SERVICES SAP
+  ═══════════════════════════════════════════════════════════════ -->
+  <h2>3. Services à la personne proposés</h2>
+
+  <p>Les services proposés relèvent des articles L.7231-1 et D.7231-1 et suivants du Code du travail :</p>
+
+  <table>
+    <tr>
+      <th>Offre</th>
+      <th>Services inclus</th>
+      <th>Code activité SAP</th>
+    </tr>
+    <tr>
+      <td><strong>Bika Kids</strong></td>
+      <td>Garde d'enfants à domicile (dès 3 ans), aide aux devoirs, activités éducatives, accompagnement scolaire</td>
+      <td>Garde d'enfants à domicile</td>
+    </tr>
+    <tr>
+      <td><strong>Bika Maison</strong></td>
+      <td>Entretien de la maison, ménage, repassage, préparation culinaire / batch cooking, réception de colis</td>
+      <td>Entretien de la maison et travaux ménagers</td>
+    </tr>
+    <tr>
+      <td><strong>Bika Seniors</strong></td>
+      <td>Accompagnement personnes âgées, aide à l'autonomie, accompagnement médical, aide aux technologies</td>
+      <td>Assistance aux personnes âgées</td>
+    </tr>
+    <tr>
+      <td><strong>Bika Travel</strong></td>
+      <td>Assistance voyage, organisation de déplacements, vérification documents</td>
+      <td>Assistance administrative</td>
+    </tr>
+    <tr>
+      <td><strong>Bika Pro</strong></td>
+      <td>Services professionnels à domicile, assistance administrative</td>
+      <td>Assistance informatique et administrative</td>
+    </tr>
+    <tr>
+      <td><strong>Bika Plus</strong></td>
+      <td>Conciergerie personnalisée, gestion du quotidien, coordination prestataires</td>
+      <td>Coordination et délivrance de services à la personne</td>
+    </tr>
+    <tr>
+      <td><strong>Bika Animals</strong></td>
+      <td>Garde et soins aux animaux de compagnie à domicile</td>
+      <td>Soins et promenades d'animaux de compagnie</td>
+    </tr>
+  </table>
+
+  <div class="ok-box">
+    <strong>Horaires de service :</strong> Standards 7h–22h (semaine) / 8h–20h (week-end) — Urgences et nuit : 24h/24, 7j/7
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       4. ARCHITECTURE TECHNIQUE
+  ═══════════════════════════════════════════════════════════════ -->
+  <div class="page-break"></div>
+
+  <h2>4. Architecture technique</h2>
+
+  <h3>Stack technologique</h3>
+  <table>
+    <tr><th>Composant</th><th>Technologie</th><th>Rôle</th></tr>
+    <tr><td>Frontend</td><td>React 18 + TypeScript + Vite</td><td>Interface utilisateur — Progressive Web App (PWA)</td></tr>
+    <tr><td>UI Framework</td><td>Tailwind CSS + shadcn/ui</td><td>Design system cohérent et accessible</td></tr>
+    <tr><td>Backend / BDD</td><td>Supabase (PostgreSQL)</td><td>Base de données, authentification, stockage</td></tr>
+    <tr><td>Temps réel</td><td>Supabase Realtime</td><td>Messagerie instantanée client ↔ prestataire</td></tr>
+    <tr><td>Paiement</td><td>Stripe / Stripe Connect</td><td>Paiements, reversements prestataires, PCI-DSS</td></tr>
+    <tr><td>Edge Functions</td><td>Supabase Edge Functions (Deno)</td><td>Logique métier sécurisée, notifications email</td></tr>
+    <tr><td>Hébergement</td><td>IONOS SARL</td><td>Hébergement du site et des assets</td></tr>
+    <tr><td>Analytics</td><td>Google Analytics 4</td><td>Mesure d'audience (consentement requis)</td></tr>
+  </table>
+
+  <h3>Architecture de sécurité</h3>
+  <ul>
+    <li><strong>HTTPS / TLS 1.3</strong> — chiffrement de toutes les communications</li>
+    <li><strong>Row Level Security (RLS)</strong> — chaque utilisateur n'accède qu'à ses propres données en base</li>
+    <li><strong>Authentification JWT</strong> — tokens signés, expiration automatique</li>
+    <li><strong>Mots de passe</strong> — hachage bcrypt via Supabase Auth (jamais stockés en clair)</li>
+    <li><strong>Chiffrement colonne</strong> — IBAN et documents sensibles chiffrés via pgcrypto (AES-256)</li>
+    <li><strong>Clé de chiffrement</strong> — stockée dans Supabase Vault (chiffrement AES-256-GCM au repos)</li>
+    <li><strong>Validation des entrées</strong> — schémas Zod côté client, contraintes PostgreSQL côté serveur</li>
+    <li><strong>Rate limiting</strong> — limitation des tentatives de connexion et d'envoi de messages</li>
+  </ul>
+
+  <!-- ══════════════════════════════════════════════════════════
+       5. RGPD
+  ═══════════════════════════════════════════════════════════════ -->
+  <h2>5. Sécurité et protection des données (RGPD)</h2>
+
+  <div class="ok-box">
+    La plateforme Bikawo est conforme au Règlement Général sur la Protection des Données (RGPD — UE 2016/679) et à la loi Informatique et Libertés.
+  </div>
+
+  <h3>Données collectées</h3>
+  <table>
+    <tr><th>Catégorie</th><th>Données</th><th>Base légale</th><th>Durée de conservation</th></tr>
+    <tr><td>Identité client</td><td>Nom, prénom, email, téléphone</td><td>Exécution du contrat</td><td>5 ans après dernière prestation</td></tr>
+    <tr><td>Identité prestataire</td><td>Nom, prénom, SIRET, email, IBAN (chiffré)</td><td>Exécution du contrat</td><td>5 ans après fin de collaboration</td></tr>
+    <tr><td>Données de réservation</td><td>Adresse, créneau, service, notes</td><td>Exécution du contrat</td><td>10 ans (obligations comptables)</td></tr>
+    <tr><td>Données de paiement</td><td>Référence transaction (pas de CB)</td><td>Obligation légale</td><td>10 ans</td></tr>
+    <tr><td>Consentements</td><td>Type, date, version</td><td>Obligation légale RGPD</td><td>3 ans</td></tr>
+    <tr><td>Navigation</td><td>Données analytics anonymisées</td><td>Consentement</td><td>13 mois</td></tr>
+  </table>
+
+  <h3>Droits des personnes (Articles 15–22 RGPD)</h3>
+  <p>Les utilisateurs disposent des droits suivants, accessibles depuis leur espace personnel :</p>
+  <ul>
+    <li>✓ Droit d'accès (export des données personnelles)</li>
+    <li>✓ Droit de rectification</li>
+    <li>✓ Droit à l'effacement — Art. 17 (anonymisation en 30 jours avec délai de rétractation)</li>
+    <li>✓ Droit à la portabilité</li>
+    <li>✓ Droit à la limitation du traitement</li>
+    <li>✓ Droit d'opposition</li>
+    <li>✓ Droit de retrait du consentement cookies</li>
+  </ul>
+
+  <h3>Mesures organisationnelles</h3>
+  <ul>
+    <li>Aucune donnée personnelle (PII) dans les logs applicatifs</li>
+    <li>Accès aux données restreint par rôle (admin, prestataire, client)</li>
+    <li>Anonymisation automatique lors de la suppression de compte</li>
+    <li>Sous-traitants encadrés par des DPA (Data Processing Agreements)</li>
+    <li>Transferts hors UE encadrés par les Clauses Contractuelles Types (CCT)</li>
+  </ul>
+
+  <!-- ══════════════════════════════════════════════════════════
+       6. PAIEMENT ET FACTURATION
+  ═══════════════════════════════════════════════════════════════ -->
+  <div class="page-break"></div>
+
+  <h2>6. Gestion des paiements et de la facturation</h2>
+
+  <h3>Flux de paiement</h3>
+  <table>
+    <tr><th>Étape</th><th>Délai</th><th>Mécanisme</th></tr>
+    <tr><td>Pré-autorisation bancaire</td><td>24h avant la prestation</td><td>Stripe — empreinte CB</td></tr>
+    <tr><td>Débit client</td><td>Dans les 24h après la prestation</td><td>Capture Stripe</td></tr>
+    <tr><td>Reversement prestataire</td><td>Hebdomadaire (ou mensuel sur demande)</td><td>Stripe Connect — virement bancaire</td></tr>
+    <tr><td>Délai transmission bancaire</td><td>+2 à 5 jours ouvrés</td><td>Réseau bancaire standard</td></tr>
+  </table>
+
+  <h3>Facturation</h3>
+  <ul>
+    <li><strong>Mandat de facturation</strong> : Bikawo établit les factures au nom et pour le compte des partenaires (mandat exprès, section 8.4 des CGU)</li>
+    <li><strong>Factures clients</strong> : disponibles dans l'espace personnel dans les 24h suivant la prestation</li>
+    <li><strong>Attestations fiscales</strong> : générées automatiquement en début d'année civile (réduction/crédit d'impôt 50%)</li>
+    <li><strong>Archivage</strong> : 10 ans conformément aux obligations comptables</li>
+  </ul>
+
+  <h3>Conformité PCI-DSS</h3>
+  <div class="ok-box">
+    Bikawo ne stocke aucune donnée de carte bancaire. La totalité des transactions est traitée par <strong>Stripe</strong>, certifié PCI-DSS Level 1. Les données cartes sont tokenisées directement par les serveurs Stripe.
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       7. AVANCE IMMÉDIATE
+  ═══════════════════════════════════════════════════════════════ -->
+  <h2>7. Avance immédiate de crédit d'impôt</h2>
+
+  <p>Bikawo intègre le dispositif d'<strong>avance immédiate de crédit d'impôt</strong> conformément aux articles 199 sexdecies du CGI et au décret n°2020-1725 du 28 décembre 2020.</p>
+
+  <h3>Conditions d'éligibilité vérifiées côté plateforme</h3>
+  <ul>
+    <li>Client domicilié en France</li>
+    <li>Foyer fiscal ayant déclaré ses revenus et à jour de ses obligations</li>
+    <li>Mandat SEPA actif auprès de l'URSSAF Caisse nationale</li>
+    <li>Compte actif sur www.particulier.urssaf.fr</li>
+    <li>Provision suffisante sur le compte bancaire désigné</li>
+  </ul>
+
+  <h3>Flux de l'avance immédiate</h3>
+  <ol style="padding-left:20px; margin:8px 0;">
+    <li style="margin:4px 0">Le client active l'avance immédiate depuis son espace personnel Bikawo</li>
+    <li style="margin:4px 0">Bikawo transmet la déclaration de prestation à l'URSSAF Caisse nationale</li>
+    <li style="margin:4px 0">L'URSSAF calcule et verse directement l'avance à Bikawo</li>
+    <li style="margin:4px 0">Le client ne paie que sa part nette (après déduction du crédit d'impôt)</li>
+    <li style="margin:4px 0">L'URSSAF prélève le montant dû sur le compte bancaire du client via SEPA</li>
+  </ol>
+
+  <h3>Taux de crédit d'impôt applicable</h3>
+  <div class="info-box">
+    <strong>50%</strong> du montant des dépenses engagées au titre des services à la personne éligibles (Article 199 sexdecies du CGI), dans la limite des plafonds légaux en vigueur.
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       8. CONFORMITÉ SAP
+  ═══════════════════════════════════════════════════════════════ -->
+  <div class="page-break"></div>
+
+  <h2>8. Conformité réglementaire SAP</h2>
+
+  <table>
+    <tr><th>Obligation</th><th>Statut</th><th>Référence</th></tr>
+    <tr>
+      <td>Déclaration NOVA auprès de la DRIEETS</td>
+      <td><span class="badge badge-green">✓ Réalisé</span></td>
+      <td>SAP 880491436 — 8 déc. 2025</td>
+    </tr>
+    <tr>
+      <td>Récépissé préfectoral</td>
+      <td><span class="badge badge-green">✓ Obtenu</span></td>
+      <td>Préfet de Paris — 21 jan. 2025</td>
+    </tr>
+    <tr>
+      <td>Arrêté du 17 mars 2015 (info. préalable)</td>
+      <td><span class="badge badge-green">✓ Conforme</span></td>
+      <td>Affichage des prix, devis dès 75 € TTC</td>
+    </tr>
+    <tr>
+      <td>Articles D.7231-1 et suivants du Code du travail</td>
+      <td><span class="badge badge-green">✓ Respecté</span></td>
+      <td>Mode prestataire — Art. L.7232-6 3°</td>
+    </tr>
+    <tr>
+      <td>Casier judiciaire vierge des intervenants</td>
+      <td><span class="badge badge-green">✓ Vérifié</span></td>
+      <td>Contrôle à l'inscription de chaque partenaire</td>
+    </tr>
+    <tr>
+      <td>Attestation de vigilance URSSAF (6 mois)</td>
+      <td><span class="badge badge-green">✓ Requis</span></td>
+      <td>Obligatoire pour chaque partenaire actif</td>
+    </tr>
+    <tr>
+      <td>Assurance RC Pro</td>
+      <td><span class="badge badge-green">✓ Active</span></td>
+      <td>Couvre toutes les prestations Bikawo</td>
+    </tr>
+    <tr>
+      <td>Inscription Bloctel (démarchage téléphonique)</td>
+      <td><span class="badge badge-green">✓ Mentionné</span></td>
+      <td>Art. L.223-2 Code de la consommation — CGU §3</td>
+    </tr>
+    <tr>
+      <td>Médiateur de la consommation agréé</td>
+      <td><span class="badge badge-green">✓ Désigné</span></td>
+      <td>ANM Conso — 62 rue Tiquetonne, 75002 Paris</td>
+    </tr>
+    <tr>
+      <td>RGPD — Registre des traitements</td>
+      <td><span class="badge badge-green">✓ Tenu</span></td>
+      <td>Politique de confidentialité publiée</td>
+    </tr>
+    <tr>
+      <td>Droit à l'effacement Art. 17</td>
+      <td><span class="badge badge-green">✓ Implémenté</span></td>
+      <td>Anonymisation en 30 jours depuis l'espace personnel</td>
+    </tr>
+    <tr>
+      <td>Consentement explicite à l'inscription</td>
+      <td><span class="badge badge-green">✓ Requis</span></td>
+      <td>Checkbox obligatoire — CGU + politique de confidentialité</td>
+    </tr>
+    <tr>
+      <td>Certification majorité (18 ans)</td>
+      <td><span class="badge badge-green">✓ Requis</span></td>
+      <td>Checkbox obligatoire au formulaire d'inscription</td>
+    </tr>
+  </table>
+
+  <!-- ══════════════════════════════════════════════════════════
+       9. SOUS-TRAITANTS
+  ═══════════════════════════════════════════════════════════════ -->
+  <h2>9. Sous-traitants et hébergement</h2>
+
+  <table>
+    <tr>
+      <th>Sous-traitant</th>
+      <th>Rôle</th>
+      <th>Localisation</th>
+      <th>Garanties</th>
+    </tr>
+    <tr>
+      <td><strong>IONOS SARL</strong><br>7 pl. de la Gare, 57201 Sarreguemines</td>
+      <td>Hébergement du site web</td>
+      <td>Union Européenne</td>
+      <td>Certifié ISO 27001</td>
+    </tr>
+    <tr>
+      <td><strong>Supabase Inc.</strong><br>San Francisco, CA, USA</td>
+      <td>Base de données, authentification, stockage fichiers</td>
+      <td>USA (AWS eu-west)</td>
+      <td>CCT UE — DPA signé</td>
+    </tr>
+    <tr>
+      <td><strong>Stripe Inc.</strong><br>San Francisco, CA, USA</td>
+      <td>Traitement des paiements, reversements prestataires</td>
+      <td>USA</td>
+      <td>PCI-DSS Level 1 — CCT UE</td>
+    </tr>
+    <tr>
+      <td><strong>Google LLC</strong><br>Mountain View, CA, USA</td>
+      <td>Mesure d'audience (Google Analytics 4) — consentement requis</td>
+      <td>USA</td>
+      <td>CCT UE — Consent Mode v2</td>
+    </tr>
+  </table>
+
+  <div class="info-box">
+    <strong>Transferts hors UE :</strong> Tous les transferts de données personnelles vers des sous-traitants établis aux États-Unis sont encadrés par les <strong>Clauses Contractuelles Types</strong> adoptées par la Commission Européenne (décision 2021/914), conformément à l'article 46 du RGPD.
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       10. DÉCLARATIONS ET ENGAGEMENTS
+  ═══════════════════════════════════════════════════════════════ -->
+  <div class="page-break"></div>
+
+  <h2>10. Déclarations et engagements</h2>
+
+  <div class="ok-box">
+    <p>Je soussignée, <strong>BIKOKO Genevieve Anita</strong>, directrice de la publication et responsable légale de Bikawo, déclare sur l'honneur que :</p>
+    <ul style="margin-top:8px;">
+      <li>Les informations contenues dans ce dossier sont exactes et sincères</li>
+      <li>La plateforme Bikawo est régulièrement déclarée auprès des autorités compétentes</li>
+      <li>Bikawo respecte l'ensemble des obligations légales applicables aux opérateurs de services à la personne</li>
+      <li>Les données personnelles des utilisateurs sont traitées conformément au RGPD</li>
+      <li>Les mesures de sécurité techniques et organisationnelles décrites sont effectivement mises en œuvre</li>
+      <li>Bikawo s'engage à maintenir la conformité de sa plateforme et à signaler tout incident de sécurité dans les délais réglementaires</li>
+    </ul>
+  </div>
+
+  <div class="signature-block">
+    <div class="sign-field">
+      <p><strong>Fait à Paris, le _____ / _____ / 2026</strong></p>
+      <p style="margin-top:8px;">Signature et cachet</p>
+      <br><br><br>
+      <p>BIKOKO Genevieve Anita</p>
+      <p style="color:#64748b; font-size:9pt;">Directrice de la publication — Bikawo</p>
+    </div>
+    <div class="sign-field">
+      <p><strong>Cachet de l'entreprise</strong></p>
+      <br><br><br><br>
+      <p style="color:#94a3b8; font-size:9pt;">(le cas échéant)</p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════════════════════════════ -->
+  <div class="doc-footer">
+    <span>Bikawo — SIRET 880 491 436 — SAP 880491436</span>
+    <span>Dossier Technique URSSAF — Mai 2026</span>
+    <span>contact@bikawo.com</span>
+  </div>
+
+</div>
+</body>
+</html>

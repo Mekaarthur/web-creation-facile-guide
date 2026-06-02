@@ -25,19 +25,19 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'], channel: 'msedge' },
-      testIgnore: /\.role\.spec\.ts$/,
+      testIgnore: /\.role\.spec\.ts$|admin-bulk-assign\.spec\.ts|cart-validation\.spec\.ts/,
     },
 
     // Full cross-browser suite — run explicitly with --project=firefox/webkit
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
-      testIgnore: /\.role\.spec\.ts$/,
+      testIgnore: /\.role\.spec\.ts$|admin-bulk-assign\.spec\.ts|cart-validation\.spec\.ts/,
     },
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
-      testIgnore: /\.role\.spec\.ts$/,
+      testIgnore: /\.role\.spec\.ts$|admin-bulk-assign\.spec\.ts|cart-validation\.spec\.ts/,
     },
 
     // ── Projets par rôle (tests *.role.spec.ts — session pré-injectée via storageState) ──

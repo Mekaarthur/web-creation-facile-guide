@@ -1,0 +1,10 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+allowBuilds:
+  '@swc/core': true
+  esbuild: true
+packageExtensions:
+  'playwright@*':
+    peerDependencies:
+      '@playwright/test': '*'
