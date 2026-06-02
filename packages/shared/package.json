@@ -6,6 +6,9 @@
   "exports": {
     "./types": "./src/types/index.ts",
     "./types/*": "./src/types/*.ts",
-    "./integrations/supabase/types": "./src/integrations/supabase/types.ts"
+    "./integrations/supabase/types": "./src/integrations/supabase/types.ts",
+    "./integrations/supabase/client": "./src/integrations/supabase/client.ts",
+    "./auth/useAuth": "./src/auth/useAuth.tsx",
+    "./auth/*": "./src/auth/*.ts"
   }
 }

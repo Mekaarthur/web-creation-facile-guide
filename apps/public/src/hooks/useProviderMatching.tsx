@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { Provider, Service, MatchingFilters } from '@/types/provider';
+import type { Provider, MatchingFilters } from '@/types/provider';
+import type { Service } from '@/types/service';
 import { sanitizeSearch } from '@/lib/sanitizeSearch';
 
 async function fetchServices(): Promise<Service[]> {

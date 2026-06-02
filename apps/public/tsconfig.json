@@ -25,7 +25,12 @@
       ],
       "@bikawo/shared/*": [
         "../../packages/shared/src/*"
-      ]
+      ],
+      "react": ["./node_modules/@types/react"],
+      "react/jsx-runtime": ["./node_modules/@types/react/jsx-runtime"],
+      "@supabase/supabase-js": ["./node_modules/@supabase/supabase-js"],
+      "react-router-dom": ["./node_modules/react-router-dom"],
+      "sonner": ["./node_modules/sonner"]
     },
     "skipLibCheck": true,
     "strict": false,
