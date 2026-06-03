@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Menu, X, MessageCircle, Phone, LogOut, User, ChevronDown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useAdminRole } from "@/hooks/useAdminRole";
 import { cn } from "@/lib/utils";
 import UserProfileMenu from "@/components/UserProfileMenu";
 import { SecureLogout } from "@/components/SecureLogout";
@@ -37,9 +36,6 @@ const ProviderNavbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Utiliser le hook pour vérifier les droits admin
-  const { isAdmin } = useAdminRole();
-
   const navItems = [
     { name: "Accueil", href: "/" },
     { 
@@ -59,11 +55,6 @@ const ProviderNavbar = () => {
     { name: "À propos", href: "/a-propos-de-nous" },
     { name: "Espace client", href: "/espace-personnel" },
     { name: "Espace prestataire", href: "/espace-prestataire" },
-    ...(isAdmin ? [
-      { name: "Candidatures", href: "/admin/candidatures" },
-      { name: "Demandes clients", href: "/admin/demandes" },
-      { name: "Gestion demandes", href: "/gestion-demandes" }
-    ] : []),
     { name: "Nous recrutons", href: "/nous-recrutons" },
     { name: "Contact", href: "/contact" },
     { name: "Aide", href: "/aide" },

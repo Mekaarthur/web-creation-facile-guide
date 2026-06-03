@@ -129,7 +129,7 @@ serve(async (req) => {
       });
     }
 
-    const origin = req.headers.get("origin") || "https://bikawo.lovable.app";
+    const origin = req.headers.get("origin") || "https://bikawo.fr";
 
     const { data: provider, error: providerError } = await supabaseClient
       .from("providers")

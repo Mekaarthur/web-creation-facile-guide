@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/navigation-menu";
 import { ChevronDown, Sparkles, ArrowRight, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useAdminRole } from "@/hooks/useAdminRole";
 import { cn } from "@/lib/utils";
 import BikawoCart from "@/components/BikawoCart";
 import BikawoCartIndicator from "@/components/BikawoCartIndicator";
@@ -51,9 +50,6 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  // Utiliser le hook pour vérifier les droits admin
-  const { isAdmin } = useAdminRole();
 
   const navItems = [
     { name: t('nav.about'), href: "/a-propos-de-nous", label: "nav.about" },
@@ -272,13 +268,6 @@ const Navbar = () => {
             
             {user ? (
               <div className="flex items-center space-x-3">
-                {isAdmin && (
-                  <Link to="/admin">
-                    <Button size="sm" variant="outline" className="border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground">
-                      Admin
-                    </Button>
-                  </Link>
-                )}
                 <Link to={primaryRole === 'provider' ? '/espace-prestataire' : '/espace-personnel'}>
                   <Button size="sm" variant="outline" className="border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground">
                     <User className="mr-1 h-3 w-3" />

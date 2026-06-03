@@ -311,7 +311,7 @@ serve(async (req) => {
           type: 'recovery',
           email: application.email,
           options: {
-            redirectTo: `${supabaseUrl.replace('.supabase.co', '.lovable.app')}/update-password`,
+            redirectTo: `https://bikawo.fr/update-password`,
           },
         });
 

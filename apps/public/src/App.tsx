@@ -32,8 +32,6 @@ const ProviderAuth = lazy(() => import("./components/ProviderAuth"));
 const AuthComplete = lazy(() => import("./pages/AuthComplete"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const UpdatePassword = lazy(() => import("./pages/UpdatePassword"));
-const AdminLogin = lazy(() => import("./pages/AdminLogin"));
-
 // User pages - lazy loaded
 const EspacePersonnel = lazy(() => import("./pages/EspacePersonnel"));
 const EspacePrestataire = lazy(() => import("./pages/EspacePrestataire"));
@@ -77,50 +75,6 @@ const PolitiqueConfidentialite = lazy(() => import("./pages/PolitiqueConfidentia
 const AvanceImmediate = lazy(() => import("./pages/AvanceImmediate"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// Admin pages - lazy loaded (heavy)
-const Admin = lazy(() => import("./pages/Admin"));
-const GestionDemandes = lazy(() => import("./pages/GestionDemandes").then(m => ({ default: m.GestionDemandes })));
-const AdminClientRequests = lazy(() => import("./pages/AdminClientRequests"));
-const ModernAdminDashboard = lazy(() => import("./pages/admin/ModernAdminDashboard"));
-const ModernAdminLayout = lazy(() => import("./components/admin/ModernAdminLayout"));
-const AdminAnalytics = lazy(() => import("./pages/admin/Analytics"));
-const AdminRealtime = lazy(() => import("./pages/admin/Realtime"));
-const AdminClients = lazy(() => import("./pages/admin/Clients"));
-const AdminProviders = lazy(() => import("./pages/admin/Providers"));
-const AdminApplications = lazy(() => import("./pages/admin/Applications"));
-const AdminMissions = lazy(() => import("./pages/admin/Missions"));
-const AdminReservations = lazy(() => import("./pages/admin/Reservations"));
-const AdminPayments = lazy(() => import("./pages/admin/Payments"));
-const AdminPricing = lazy(() => import("./pages/admin/Pricing"));
-const AdminInvoices = lazy(() => import("./pages/admin/Invoices"));
-const AdminMessages = lazy(() => import("./pages/admin/Messages"));
-const AdminReviews = lazy(() => import("./pages/admin/Reviews"));
-const AdminAlerts = lazy(() => import("./pages/admin/Alerts"));
-const AdminReports = lazy(() => import("./pages/admin/Reports"));
-const AdminQuality = lazy(() => import("./pages/admin/Quality"));
-const AdminSettings = lazy(() => import("./pages/admin/Settings"));
-const AdminReportsData = lazy(() => import("./pages/admin/ReportsData"));
-const AdminOnboarding = lazy(() => import("./pages/admin/Onboarding"));
-const AdminMatching = lazy(() => import("./pages/admin/Matching"));
-const AdminBinomes = lazy(() => import("./pages/admin/Binomes"));
-const AdminZones = lazy(() => import("./pages/admin/Zones"));
-const AdminMarque = lazy(() => import("./pages/admin/Marque"));
-const AdminCooptation = lazy(() => import("./pages/admin/Cooptation"));
-const AdminNotifications = lazy(() => import("./pages/admin/Notifications"));
-const AdminUtilisateurs = lazy(() => import("./pages/admin/Utilisateurs"));
-const TestsCritiques = lazy(() => import("./pages/admin/TestsCritiques"));
-const TestsEmails = lazy(() => import("./pages/admin/TestsEmails"));
-const AdminAnomalies = lazy(() => import("./pages/admin/Anomalies"));
-const Monitoring = lazy(() => import("./pages/admin/Monitoring"));
-const AdminSecurity = lazy(() => import("./pages/admin/Security"));
-const AdminFinance = lazy(() => import("./pages/admin/Finance"));
-const AdminUrgences = lazy(() => import("./pages/admin/Urgences"));
-const AdminAvanceImmediate = lazy(() => import("./pages/admin/AvanceImmediate"));
-const AdminReclamations = lazy(() => import("./pages/admin/Reclamations"));
-const AdminAccessTracking = lazy(() => import("./pages/admin/AdminAccessTracking"));
-const RgpdDeletions = lazy(() => import("./pages/admin/RgpdDeletions"));
-const AdminCustomRequests = lazy(() => import("./components/admin/AdminCustomRequests"));
-const AuditReport = lazy(() => import("./components/AuditReport"));
 const BikawoCartDemo = lazy(() => import("./components/BikawoCartDemo"));
 const AnalyticsSEO = lazy(() => import("./pages/AnalyticsSEO"));
 const ConfigMessages = lazy(() => import("./pages/ConfigMessages"));
@@ -128,7 +82,6 @@ const ConfigMessages = lazy(() => import("./pages/ConfigMessages"));
 // Protected routes
 const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
 const ProtectedProviderRoute = lazy(() => import("./components/ProtectedProviderRoute"));
-const AdminRoute = lazy(() => import("./components/AdminRoute"));
 
 const queryClient = new QueryClient();
 
@@ -175,8 +128,6 @@ const App = () => (
                 <Route path="/email/verify/:token" element={<AuthComplete />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/update-password" element={<UpdatePassword />} />
-                <Route path="/admin/login" element={<AdminLogin />} />
-                
                 {/* User spaces */}
                 <Route path="/espace-personnel" element={<ProtectedRoute><EspacePersonnel /></ProtectedRoute>} />
                 <Route path="/dashboard-client" element={<ProtectedRoute><EspacePersonnel /></ProtectedRoute>} />
@@ -188,8 +139,6 @@ const App = () => (
                 <Route path="/provider/zones" element={<ProtectedProviderRoute requireVerified><MyZones /></ProtectedProviderRoute>} />
                 <Route path="/nous-recrutons" element={<ProviderSignup />} />
                 <Route path="/candidature-prestataire" element={<ProviderSignup />} />
-                <Route path="/gestion-demandes" element={<AdminRoute><GestionDemandes /></AdminRoute>} />
-                
                 {/* Services */}
                 <Route path="/services" element={<ServicesPage />} />
                 <Route path="/services/:category/:slug" element={<SubServicePage />} />
@@ -237,67 +186,7 @@ const App = () => (
                 <Route path="/panier-demo" element={<BikawoCartDemo />} />
                 <Route path="/analytics-seo" element={<AnalyticsSEO />} />
                 <Route path="/config-messages" element={<ConfigMessages />} />
-                <Route path="/audit-qualite" element={<AdminRoute><AuditReport /></AdminRoute>} />
-                
-                {/* Admin redirects */}
-                <Route path="/admin" element={<Navigate to="/modern-admin" replace />} />
-                <Route path="/admin/*" element={<Navigate to="/modern-admin" replace />} />
-                
-                {/* Modern Admin Routes */}
-                <Route path="/modern-admin" element={<AdminRoute><ModernAdminLayout /></AdminRoute>}>
-                  <Route index element={<ModernAdminDashboard />} />
-                  <Route path="dashboard" element={<ModernAdminDashboard />} />
-                  <Route path="analytics" element={<AdminAnalytics />} />
-                  <Route path="realtime" element={<AdminRealtime />} />
-                  <Route path="utilisateurs" element={<AdminUtilisateurs />} />
-                  <Route path="clients" element={<AdminClients />} />
-                  <Route path="providers" element={<AdminProviders />} />
-                  <Route path="prestataires" element={<AdminProviders />} />
-                  <Route path="applications" element={<AdminApplications />} />
-                  <Route path="candidatures" element={<AdminApplications />} />
-                  <Route path="binomes" element={<AdminBinomes />} />
-                  <Route path="onboarding" element={<AdminOnboarding />} />
-                  <Route path="matching" element={<AdminMatching />} />
-                  <Route path="missions" element={<AdminMissions />} />
-                  <Route path="reservations" element={<AdminReservations />} />
-                  <Route path="payments" element={<AdminPayments />} />
-                  <Route path="paiements" element={<AdminPayments />} />
-                  <Route path="invoices" element={<AdminInvoices />} />
-                  <Route path="factures" element={<AdminInvoices />} />
-                  <Route path="messages" element={<AdminMessages />} />
-                  <Route path="notifications" element={<AdminNotifications />} />
-                  <Route path="reviews" element={<AdminReviews />} />
-                  <Route path="alerts" element={<AdminAlerts />} />
-                  <Route path="alertes" element={<AdminAlerts />} />
-                  <Route path="reports" element={<AdminReports />} />
-                  <Route path="rapports" element={<AdminReports />} />
-                  <Route path="reports-data" element={<AdminReportsData />} />
-                  <Route path="quality" element={<AdminQuality />} />
-                  <Route path="zones" element={<AdminZones />} />
-                  <Route path="marque" element={<AdminMarque />} />
-                  <Route path="cooptation" element={<AdminCooptation />} />
-                  <Route path="settings" element={<AdminSettings />} />
-                  <Route path="parametres" element={<AdminSettings />} />
-                  <Route path="monitoring" element={<Monitoring />} />
-                  <Route path="anomalies" element={<AdminAnomalies />} />
-                  <Route path="tests-critiques" element={<TestsCritiques />} />
-                  <Route path="tests-emails" element={<TestsEmails />} />
-                  <Route path="audit" element={<AuditReport />} />
-                  <Route path="security" element={<AdminSecurity />} />
-                  <Route path="securite" element={<AdminSecurity />} />
-                  <Route path="finance" element={<AdminFinance />} />
-                  <Route path="avance-immediate" element={<AdminAvanceImmediate />} />
-                  <Route path="urssaf-declarations" element={<AdminAvanceImmediate />} />
-                  <Route path="urgences" element={<AdminUrgences />} />
-                  {/* /brand redirige vers /marque */}
-                  <Route path="reclamations" element={<AdminReclamations />} />
-                  <Route path="acces" element={<AdminAccessTracking />} />
-                  <Route path="rgpd-deletions" element={<RgpdDeletions />} />
-                  <Route path="pricing" element={<AdminPricing />} />
-                  <Route path="tarifs" element={<AdminPricing />} />
-                  <Route path="demandes" element={<AdminCustomRequests />} />
-                </Route>
-                
+                <Route path="/modern-admin/*" element={<Navigate to="/auth" replace />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
