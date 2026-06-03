@@ -1,4 +1,4 @@
-// Validation schemas avec Zod pour edge functions
+﻿// Validation schemas avec Zod pour edge functions
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 // ============================================
@@ -159,7 +159,7 @@ export function extractClientIp(req: Request): string {
 
 /**
  * Créer une réponse d'erreur standardisée
- * @param customCorsHeaders - Headers CORS dynamiques (ex: getAdminCorsHeaders(origin)) — si absent, défaut bikawo.fr
+ * @param customCorsHeaders - Headers CORS dynamiques (ex: getAdminCorsHeaders(origin)) — si absent, défaut bikawo.com
  */
 export function createErrorResponse(
   message: string,
@@ -168,7 +168,7 @@ export function createErrorResponse(
   customCorsHeaders?: Record<string, string>
 ): Response {
   const corsHeaders = customCorsHeaders ?? {
-    'Access-Control-Allow-Origin': 'https://bikawo.fr',
+    'Access-Control-Allow-Origin': 'https://bikawo.com',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   };
 

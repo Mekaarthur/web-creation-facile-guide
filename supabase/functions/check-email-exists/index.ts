@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+﻿import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.3';
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -6,7 +6,7 @@ const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://bikawo.fr",
+  "Access-Control-Allow-Origin": "https://bikawo.com",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
@@ -76,7 +76,7 @@ serve(async (req) => {
     const { error } = await supabase.auth.admin.generateLink({
       type: 'signup',
       email,
-      options: { redirectTo: 'https://bikawo.fr/auth/complete' }
+      options: { redirectTo: 'https://bikawo.com/auth/complete' }
     });
 
     const exists = (error as any)?.code === 'email_exists';

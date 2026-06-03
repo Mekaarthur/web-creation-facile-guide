@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+﻿import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ServiceBreadcrumb from "@/components/ServiceBreadcrumb";
@@ -71,7 +71,7 @@ const BikaPlus = () => {
     "provider": {
       "@type": "Organization",
       "name": "Bikawo",
-      "url": "https://bikawo.fr"
+      "url": "https://bikawo.com"
     },
     "areaServed": {
       "@type": "Place",
@@ -98,7 +98,7 @@ const BikaPlus = () => {
           name="keywords" 
           content="service premium familial ile de france, chef family officer, conciergerie haut de gamme, ligne prioritaire famille, organisation planning" 
         />
-        <link rel="canonical" href="https://bikawo.fr/bika-plus-ile-de-france" />
+        <link rel="canonical" href="https://bikawo.com/bika-plus-ile-de-france" />
         <script type="application/ld+json">
           {JSON.stringify(structuredData)}
         </script>

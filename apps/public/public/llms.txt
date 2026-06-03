@@ -1,4 +1,4 @@
-# Bikawo
+﻿# Bikawo
 
 > Plateforme de services à domicile en Île-de-France pour réduire la charge mentale familiale.
 > Garde d'enfants, aide seniors, ménage, assistant personnel, animaux, voyage, services aux entreprises.
@@ -6,21 +6,21 @@
 
 ## Pages principales
 
-- [Accueil](https://bikawo.fr): Présentation de la plateforme et de la valeur ajoutée Bikawo.
-- [Tous les services](https://bikawo.fr/services): Catalogue complet des prestations proposées.
-- [Garde d'enfants — BikaKids](https://bikawo.fr/bika-kids): Baby-sitting, aide aux devoirs, activités. Dès 12,50€/h après crédit d'impôt.
-- [Ménage & maison — BikaMaison](https://bikawo.fr/bika-maison): Batch cooking, repassage, entretien maison. Dès 12,50€/h après crédit d'impôt.
-- [Aide seniors — BikaSeniors](https://bikawo.fr/bika-seniors): Accompagnement, courses, compagnie pour personnes âgées. Dès 15€/h après crédit d'impôt.
-- [Assistant personnel — BikaVie](https://bikawo.fr/bika-vie): Gestion agenda, démarches administratives, organisation quotidienne.
-- [Garde d'animaux — BikaAnimals](https://bikawo.fr/bika-animals): Pet-sitting, promenades, soins à domicile.
-- [Services aux entreprises — BikaPro](https://bikawo.fr/bika-pro): Assistance administrative, support aux PME et salariés.
-- [Assistance voyage — BikaTravel](https://bikawo.fr/bika-travel): Organisation, réservations, formalités de voyage.
-- [Bika Plus](https://bikawo.fr/bika-plus): Service premium 7j/7 avec Chef Family Officer dédié.
-- [Avance immédiate crédit d'impôt](https://bikawo.fr/avance-immediate): Dispositif Urssaf — bénéficier du crédit d'impôt 50% dès la facturation.
-- [Blog](https://bikawo.fr/blog): Articles sur la charge mentale, délégation, organisation familiale.
-- [À propos](https://bikawo.fr/a-propos): Histoire, valeurs et engagement de Bikawo.
-- [Contact](https://bikawo.fr/contact): Formulaire de contact et coordonnées.
-- [Aide & FAQ](https://bikawo.fr/aide): Questions fréquentes sur les services, tarifs et fonctionnement.
+- [Accueil](https://bikawo.com): Présentation de la plateforme et de la valeur ajoutée Bikawo.
+- [Tous les services](https://bikawo.com/services): Catalogue complet des prestations proposées.
+- [Garde d'enfants — BikaKids](https://bikawo.com/bika-kids): Baby-sitting, aide aux devoirs, activités. Dès 12,50€/h après crédit d'impôt.
+- [Ménage & maison — BikaMaison](https://bikawo.com/bika-maison): Batch cooking, repassage, entretien maison. Dès 12,50€/h après crédit d'impôt.
+- [Aide seniors — BikaSeniors](https://bikawo.com/bika-seniors): Accompagnement, courses, compagnie pour personnes âgées. Dès 15€/h après crédit d'impôt.
+- [Assistant personnel — BikaVie](https://bikawo.com/bika-vie): Gestion agenda, démarches administratives, organisation quotidienne.
+- [Garde d'animaux — BikaAnimals](https://bikawo.com/bika-animals): Pet-sitting, promenades, soins à domicile.
+- [Services aux entreprises — BikaPro](https://bikawo.com/bika-pro): Assistance administrative, support aux PME et salariés.
+- [Assistance voyage — BikaTravel](https://bikawo.com/bika-travel): Organisation, réservations, formalités de voyage.
+- [Bika Plus](https://bikawo.com/bika-plus): Service premium 7j/7 avec Chef Family Officer dédié.
+- [Avance immédiate crédit d'impôt](https://bikawo.com/avance-immediate): Dispositif Urssaf — bénéficier du crédit d'impôt 50% dès la facturation.
+- [Blog](https://bikawo.com/blog): Articles sur la charge mentale, délégation, organisation familiale.
+- [À propos](https://bikawo.com/a-propos): Histoire, valeurs et engagement de Bikawo.
+- [Contact](https://bikawo.com/contact): Formulaire de contact et coordonnées.
+- [Aide & FAQ](https://bikawo.com/aide): Questions fréquentes sur les services, tarifs et fonctionnement.
 
 ## Informations clés
 

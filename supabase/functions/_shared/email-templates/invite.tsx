@@ -1,4 +1,4 @@
-/// <reference types="npm:@types/react@18.3.1" />
+﻿/// <reference types="npm:@types/react@18.3.1" />
 
 import * as React from 'npm:react@18.3.1'
 
@@ -16,7 +16,7 @@ import {
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
-const LOGO_URL = 'https://bikawo.fr/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png'
+const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png'
 
 interface InviteEmailProps {
   siteName: string

@@ -1,10 +1,10 @@
-{
+﻿{
   "mcpServers": {
     "gsc": {
       "command": "node",
       "args": ["scripts/mcp-gsc/index.mjs"],
       "env": {
-        "GSC_SITE_URL": "sc-domain:bikawo.fr"
+        "GSC_SITE_URL": "sc-domain:bikawo.com"
       }
     }
   }

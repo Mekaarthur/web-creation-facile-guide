@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+﻿import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.3';
 import { Resend } from "npm:resend@2.0.0";
 import React from 'npm:react@18.3.1';
@@ -12,7 +12,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://bikawo.fr",
+  "Access-Control-Allow-Origin": "https://bikawo.com",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
@@ -54,7 +54,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Compute base URL for redirect
     const baseUrl = supabaseUrl.includes("sandbox")
       ? `https://ed681ca2-74aa-4970-8c41-139ffb8c8152.sandbox.lovable.dev`
-      : `https://bikawo.fr`;
+      : `https://bikawo.com`;
 
     // Try to generate magic link instead of signup link (works for existing users)
     let confirmationUrl: string;

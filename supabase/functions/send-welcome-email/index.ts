@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+﻿import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 import React from 'npm:react@18.3.1';
 import { renderAsync } from 'npm:@react-email/components@0.0.22';
@@ -38,7 +38,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const loginUrl = Deno.env.get("SUPABASE_URL")?.includes("sandbox")
       ? `https://ed681ca2-74aa-4970-8c41-139ffb8c8152.sandbox.lovable.dev/auth`
-      : `https://bikawo.fr/auth`;
+      : `https://bikawo.com/auth`;
 
     const emailHtml = await renderAsync(
       React.createElement(WelcomeEmail, {

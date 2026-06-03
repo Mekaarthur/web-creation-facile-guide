@@ -1,4 +1,4 @@
-import {
+﻿import {
   Body,
   Container,
   Head,
@@ -45,7 +45,7 @@ export const ProviderRatingReceivedEmail = ({
       <Body style={main}>
         <Container style={container}>
           <Img
-            src="https://bikawo.fr/logo.png"
+            src="https://bikawo.com/logo.png"
             width="150"
             height="50"
             alt="Bikawo"
@@ -106,7 +106,7 @@ export const ProviderRatingReceivedEmail = ({
           )}
 
           <Section style={buttonContainer}>
-            <Button style={button} href="https://bikawo.fr/espace-prestataire">
+            <Button style={button} href="https://bikawo.com/espace-prestataire">
               Voir tous mes avis
             </Button>
           </Section>
@@ -115,7 +115,7 @@ export const ProviderRatingReceivedEmail = ({
 
           <Text style={footer}>
             Bikawo - Votre assistant personnel au quotidien<br />
-            <Link href="https://bikawo.fr" style={link}>bikawo.com</Link> | 
+            <Link href="https://bikawo.com" style={link}>bikawo.com</Link> | 
             <Link href="tel:+33609085390" style={link}> 06 09 08 53 90</Link>
           </Text>
         </Container>

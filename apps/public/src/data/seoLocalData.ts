@@ -1,4 +1,4 @@
-// Données SEO locales pour l'Île-de-France et Oise
+﻿// Données SEO locales pour l'Île-de-France et Oise
 // Ton: Chaleureux et familial
 
 export interface LocalCity {
@@ -312,7 +312,7 @@ export const generateLocalStructuredData = (service: LocalService, city: LocalCi
         "name": city.name
       },
       "telephone": "+33609085390",
-      "url": `https://bikawo.fr/services/${service.slug}/${city.slug}`
+      "url": `https://bikawo.com/services/${service.slug}/${city.slug}`
     },
     "areaServed": {
       "@type": "City",

@@ -1,4 +1,4 @@
-# Bikawo — Instructions Claude Code
+﻿# Bikawo — Instructions Claude Code
 
 ## Stack
 Vite + React 18 + TypeScript + Supabase + Stripe Connect + Playwright
@@ -18,7 +18,7 @@ Toujours répondre en français.
 ## Règles de sécurité — non négociables
 
 ### Edge Functions admin
-- `Access-Control-Allow-Origin` doit toujours être `'https://bikawo.fr'` dans toutes les fonctions `admin-*`.
+- `Access-Control-Allow-Origin` doit toujours être `'https://bikawo.com'` dans toutes les fonctions `admin-*`.
 - Jamais de `'*'` sur un endpoint admin, même temporairement.
 
 ### Clé service role
@@ -47,18 +47,18 @@ Ne pas conserver : contenu complet des fichiers modifiés (lisibles via `Read`),
 ## Architecture monorepo
 
 C'est un monorepo pnpm :
-- `apps/public` → `bikawo.fr` (clients et prestataires uniquement)
-- `apps/admin` → `admin.bikawo.fr` (admin uniquement)
+- `apps/public` → `bikawo.com` (clients et prestataires uniquement)
+- `apps/admin` → `admin.bikawo.com` (admin uniquement)
 - `packages/shared` → code utilisé par les deux apps
 
 ### Règles inter-apps — non négociables
 - Ne jamais importer depuis `apps/admin` dans `apps/public` — tout partagé passe par `@bikawo/shared`.
-- Ne jamais hardcoder les URLs `bikawo.fr` — utiliser les variables d'environnement.
+- Ne jamais hardcoder les URLs `bikawo.com` — utiliser les variables d'environnement.
 - La allowlist CORS vit dans `packages/shared/cors.ts`.
 
 ### apps/admin — session et déploiement
-- `apps/admin` est déployé sur `admin.bikawo.fr` — domaine séparé de `bikawo.fr`.
-- La session admin est scopée à `admin.bikawo.fr` : un admin doit se connecter sur `/login` de l'app admin, indépendamment de toute session active sur bikawo.fr. **C'est le comportement attendu**, pas un bug.
+- `apps/admin` est déployé sur `admin.bikawo.com` — domaine séparé de `bikawo.com`.
+- La session admin est scopée à `admin.bikawo.com` : un admin doit se connecter sur `/login` de l'app admin, indépendamment de toute session active sur bikawo.com. **C'est le comportement attendu**, pas un bug.
 - Port de dev : 5174 (`apps/public` reste sur 5173).
 
 ## Règles d'architecture — non négociables

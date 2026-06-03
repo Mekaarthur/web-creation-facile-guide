@@ -1,10 +1,10 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+﻿import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sanitizeSearch } from '../_shared/sanitize.ts';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://bikawo.fr',
+  'Access-Control-Allow-Origin': 'https://bikawo.com',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
@@ -356,7 +356,7 @@ Tu es l'assistant virtuel de Bikawo, une plateforme française de services à do
 🎯 MISSION : Aider les clients et prestataires avec leurs questions sur nos services.
 
 📍 ZONE D'INTERVENTION : Paris et Île-de-France (30km)
-📞 CONTACT : 0609085390 | contact@bikawo.fr | www.bikawo.fr
+📞 CONTACT : 0609085390 | contact@bikawo.com | www.bikawo.com
 
 🛍️ NOS SERVICES :
 • BIKA KIDS (25€/h) : Garde d'enfants, baby-sitting, soutien scolaire (30€/h)

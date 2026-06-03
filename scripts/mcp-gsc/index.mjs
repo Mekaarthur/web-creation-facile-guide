@@ -1,4 +1,4 @@
-import { createRequire } from "module";
+﻿import { createRequire } from "module";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { readFileSync, existsSync } from "fs";
@@ -29,7 +29,7 @@ import { google } from "googleapis";
 const GSC_CLIENT_ID     = process.env.GSC_CLIENT_ID;
 const GSC_CLIENT_SECRET = process.env.GSC_CLIENT_SECRET;
 const GSC_REFRESH_TOKEN = process.env.GSC_REFRESH_TOKEN;
-const GSC_SITE_URL      = process.env.GSC_SITE_URL || "sc-domain:bikawo.fr";
+const GSC_SITE_URL      = process.env.GSC_SITE_URL || "sc-domain:bikawo.com";
 
 if (!GSC_CLIENT_ID || !GSC_CLIENT_SECRET || !GSC_REFRESH_TOKEN) {
   process.stderr.write(
@@ -126,7 +126,7 @@ const TOOLS = [
       type: "object",
       required: ["page"],
       properties: {
-        page: { type: "string", description: "URL complète de la page (ex: https://bikawo.fr/bika-kids)." },
+        page: { type: "string", description: "URL complète de la page (ex: https://bikawo.com/bika-kids)." },
         days: { type: "number", description: "Nombre de jours (défaut : 28)." },
         limit: { type: "number", description: "Nombre de résultats (défaut : 20)." },
       },

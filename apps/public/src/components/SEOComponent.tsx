@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+﻿import { Helmet } from "react-helmet-async";
 
 interface SEOProps {
   title?: string;
@@ -18,7 +18,7 @@ const SEOComponent = ({
   description = "Services d'assistance familiale combinés avec un seul prestataire de confiance. Préparation culinaire / batch cooking, garde d'enfants, aide administrative. Réactivité et flexibilité garanties.",
   keywords = "charge mentale, assistance familiale, garde enfants, préparation culinaire, batch cooking, services à domicile, délégation tâches, conciergerie familiale, Paris, France",
   image = "/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png",
-  url = "https://bikawo.fr",
+  url = "https://bikawo.com",
   type = "website",
   publishedTime,
   modifiedTime,
@@ -27,8 +27,8 @@ const SEOComponent = ({
 }: SEOProps) => {
   
   const fullTitle = title.includes("Bikawo") ? title : `${title} | Bikawo`;
-  const fullUrl = url.startsWith("http") ? url : `https://bikawo.fr${url}`;
-  const fullImageUrl = image.startsWith("http") ? image : `https://bikawo.fr${image}`;
+  const fullUrl = url.startsWith("http") ? url : `https://bikawo.com${url}`;
+  const fullImageUrl = image.startsWith("http") ? image : `https://bikawo.com${image}`;
 
   return (
     <Helmet>

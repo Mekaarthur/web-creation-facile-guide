@@ -1,4 +1,4 @@
-// Guide de mise en place des outils de mesure SEO pour Bikawo
+﻿// Guide de mise en place des outils de mesure SEO pour Bikawo
 
 export const seoMeasurementGuide = {
   // 1. GOOGLE ANALYTICS 4 - Configuration
@@ -31,7 +31,7 @@ export const seoMeasurementGuide = {
   searchConsole: {
     setup: [
       "1. Aller sur search.google.com/search-console",
-      "2. Ajouter votre propriété 'https://bikawo.fr'",
+      "2. Ajouter votre propriété 'https://bikawo.com'",
       "3. Choisir 'Préfixe d'URL' comme méthode de validation",
       "4. Télécharger le fichier HTML OU copier la balise meta",
       "5. Si balise meta: remplacer 'VERIFICATION_CODE' dans index.html",
@@ -46,7 +46,7 @@ export const seoMeasurementGuide = {
     ],
     soumission_sitemap: [
       "1. Dans Search Console > Sitemaps",
-      "2. Ajouter 'https://bikawo.fr/sitemap.xml'",
+      "2. Ajouter 'https://bikawo.com/sitemap.xml'",
       "3. Soumettre pour indexation rapide"
     ]
   },

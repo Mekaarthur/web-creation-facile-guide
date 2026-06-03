@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+﻿import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const baseUrl = 'https://bikawo.fr';
+    const baseUrl = 'https://bikawo.com';
     const currentDate = new Date().toISOString();
 
     const staticPages = [

@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async';
+﻿import { Helmet } from 'react-helmet-async';
 
 const GoogleSuggestOptimizer = () => {
   return (
@@ -9,12 +9,12 @@ const GoogleSuggestOptimizer = () => {
           "@context": "https://schema.org",
           "@type": "WebSite",
           "name": "Bikawo",
-          "url": "https://bikawo.fr",
+          "url": "https://bikawo.com",
           "potentialAction": {
             "@type": "SearchAction",
             "target": {
               "@type": "EntryPoint",
-              "urlTemplate": "https://bikawo.fr/services?q={search_term_string}"
+              "urlTemplate": "https://bikawo.com/services?q={search_term_string}"
             },
             "query-input": "required name=search_term_string"
           }

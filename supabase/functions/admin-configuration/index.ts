@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+﻿import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.3';
 import { getAdminCorsHeaders } from '../_shared/cors.ts';
 
@@ -125,7 +125,7 @@ async function getPlatformSettings(supabase: any, {}: any) {
         address: '123 Rue de la Paix, 75001 Paris',
         phone: '+33 1 23 45 67 89',
         email: 'contact@bikawo.com',
-        website: 'https://bikawo.fr',
+        website: 'https://bikawo.com',
         social_media: {
           facebook: 'https://facebook.com/bikawo',
           instagram: 'https://instagram.com/bikawo',
@@ -133,10 +133,10 @@ async function getPlatformSettings(supabase: any, {}: any) {
         }
       },
       legal: {
-        terms_url: 'https://bikawo.fr/terms',
-        privacy_url: 'https://bikawo.fr/privacy',
-        cookies_url: 'https://bikawo.fr/cookies',
-        legal_notices_url: 'https://bikawo.fr/legal',
+        terms_url: 'https://bikawo.com/terms',
+        privacy_url: 'https://bikawo.com/privacy',
+        cookies_url: 'https://bikawo.com/cookies',
+        legal_notices_url: 'https://bikawo.com/legal',
         gdpr_enabled: true,
         cookie_consent_enabled: true
       }

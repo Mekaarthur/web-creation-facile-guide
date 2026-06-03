@@ -1,4 +1,4 @@
-export const seoKeywords = {
+﻿export const seoKeywords = {
   primary: [
     "charge mentale",
     "assistant personnel",
@@ -31,10 +31,10 @@ export const seoStructuredData = {
     "@type": "Organization",
     "name": "Bikawo",
     "description": "La charge mentale en moins, la sérénité en plus. Services d'assistance familiale combinés.",
-    "url": "https://bikawo.fr",
+    "url": "https://bikawo.com",
     "logo": {
       "@type": "ImageObject",
-      "url": "https://bikawo.fr/lovable-uploads/3496ff80-ec42-436d-8734-200bcb42494f.png",
+      "url": "https://bikawo.com/lovable-uploads/3496ff80-ec42-436d-8734-200bcb42494f.png",
       "width": 512,
       "height": 512
     },
@@ -63,16 +63,16 @@ export const seoStructuredData = {
     "@type": "LocalBusiness",
     "name": "Bikawo",
     "description": "Services à domicile en Île-de-France : garde d'enfants, aide seniors, ménage, assistant personnel. Organisme SAP déclaré. Crédit d'impôt 50%.",
-    "url": "https://bikawo.fr",
+    "url": "https://bikawo.com",
     "telephone": "+33609085390",
     "email": "contact@bikawo.com",
     "logo": {
       "@type": "ImageObject",
-      "url": "https://bikawo.fr/lovable-uploads/3496ff80-ec42-436d-8734-200bcb42494f.png",
+      "url": "https://bikawo.com/lovable-uploads/3496ff80-ec42-436d-8734-200bcb42494f.png",
       "width": 512,
       "height": 512
     },
-    "image": "https://bikawo.fr/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png",
+    "image": "https://bikawo.com/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png",
     "address": {
       "@type": "PostalAddress",
       "addressLocality": "Paris",
@@ -139,7 +139,7 @@ export const seoStructuredData = {
     "provider": {
       "@type": "Organization",
       "name": "Bikawo",
-      "url": "https://bikawo.fr"
+      "url": "https://bikawo.com"
     },
     "serviceType": "Assistance familiale",
     "areaServed": [
@@ -224,7 +224,7 @@ export const seoStructuredData = {
         "name": "Comment réserver un service Bikawo ?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Réservez directement en ligne sur bikawo.fr : choisissez votre service, indiquez vos disponibilités et un intervenant vous est assigné. Vous pouvez aussi appeler le +33 6 09 08 53 90 ou envoyer un email à contact@bikawo.com."
+          "text": "Réservez directement en ligne sur bikawo.com : choisissez votre service, indiquez vos disponibilités et un intervenant vous est assigné. Vous pouvez aussi appeler le +33 6 09 08 53 90 ou envoyer un email à contact@bikawo.com."
         }
       },
       {
@@ -261,7 +261,7 @@ export const seoStructuredData = {
       "@type": "ListItem",
       "position": index + 1,
       "name": item.name,
-      "item": `https://bikawo.fr${item.url}`
+      "item": `https://bikawo.com${item.url}`
     }))
   })
 };
@@ -282,21 +282,21 @@ export const generateArticleStructuredData = (article: {
   "description": article.description,
   "image": {
     "@type": "ImageObject",
-    "url": article.image.startsWith("http") ? article.image : `https://bikawo.fr${article.image}`,
+    "url": article.image.startsWith("http") ? article.image : `https://bikawo.com${article.image}`,
     "width": 1200,
     "height": 630
   },
   "author": {
     "@type": "Person",
     "name": article.author,
-    "url": "https://bikawo.fr/blog"
+    "url": "https://bikawo.com/blog"
   },
   "publisher": {
     "@type": "Organization",
     "name": "Bikawo",
     "logo": {
       "@type": "ImageObject",
-      "url": "https://bikawo.fr/lovable-uploads/3496ff80-ec42-436d-8734-200bcb42494f.png",
+      "url": "https://bikawo.com/lovable-uploads/3496ff80-ec42-436d-8734-200bcb42494f.png",
       "width": 512,
       "height": 512
     }
@@ -306,7 +306,7 @@ export const generateArticleStructuredData = (article: {
   ...(article.wordCount ? { "wordCount": article.wordCount } : {}),
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": `https://bikawo.fr/blog/${article.slug}`
+    "@id": `https://bikawo.com/blog/${article.slug}`
   }
 });
 
@@ -321,11 +321,11 @@ export const generateServiceStructuredData = (service: {
   "@type": "Service",
   "name": service.name,
   "description": service.description,
-  "url": `https://bikawo.fr${service.url}`,
+  "url": `https://bikawo.com${service.url}`,
   "provider": {
     "@type": "LocalBusiness",
     "name": "Bikawo",
-    "url": "https://bikawo.fr",
+    "url": "https://bikawo.com",
     "telephone": "+33609085390",
     "address": {
       "@type": "PostalAddress",

@@ -1,9 +1,9 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+﻿import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://bikawo.fr",
+  "Access-Control-Allow-Origin": "https://bikawo.com",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
@@ -98,7 +98,7 @@ const handler = async (req: Request): Promise<Response> => {
             
             <p>En attendant notre réponse, n'hésitez pas à :</p>
             <ul style="color: #64748b;">
-              <li>Consulter notre <a href="https://bikawo.fr/aide" style="color: #2563eb;">centre d'aide</a></li>
+              <li>Consulter notre <a href="https://bikawo.com/aide" style="color: #2563eb;">centre d'aide</a></li>
               <li>Nous appeler au 0609085390</li>
             </ul>
             

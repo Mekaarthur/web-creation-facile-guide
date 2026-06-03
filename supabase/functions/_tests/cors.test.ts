@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Tests unitaires pour la logique CORS admin (getAdminCorsHeaders)
  *
  * Run : deno test supabase/functions/_tests/cors.test.ts --allow-env
@@ -30,13 +30,13 @@ function assertExists(value: unknown, msg?: string): void {
 // Tests ALLOWED_ORIGINS_ADMIN
 // ---------------------------------------------------------------------------
 
-Deno.test("ALLOWED_ORIGINS_ADMIN contient bikawo.fr", () => {
-  assertExists(ALLOWED_ORIGINS_ADMIN.find((o) => o === "https://bikawo.fr"));
+Deno.test("ALLOWED_ORIGINS_ADMIN contient bikawo.com", () => {
+  assertExists(ALLOWED_ORIGINS_ADMIN.find((o) => o === "https://bikawo.com"));
 });
 
-Deno.test("ALLOWED_ORIGINS_ADMIN contient admin.bikawo.fr", () => {
+Deno.test("ALLOWED_ORIGINS_ADMIN contient admin.bikawo.com", () => {
   assertExists(
-    ALLOWED_ORIGINS_ADMIN.find((o) => o === "https://admin.bikawo.fr"),
+    ALLOWED_ORIGINS_ADMIN.find((o) => o === "https://admin.bikawo.com"),
   );
 });
 
@@ -44,36 +44,36 @@ Deno.test("ALLOWED_ORIGINS_ADMIN contient admin.bikawo.fr", () => {
 // Tests getAdminCorsHeaders — origine valide reflétée
 // ---------------------------------------------------------------------------
 
-Deno.test("getAdminCorsHeaders — origin bikawo.fr → reflète bikawo.fr", () => {
-  const headers = getAdminCorsHeaders("https://bikawo.fr");
-  assertEquals(headers["Access-Control-Allow-Origin"], "https://bikawo.fr");
+Deno.test("getAdminCorsHeaders — origin bikawo.com → reflète bikawo.com", () => {
+  const headers = getAdminCorsHeaders("https://bikawo.com");
+  assertEquals(headers["Access-Control-Allow-Origin"], "https://bikawo.com");
 });
 
-Deno.test("getAdminCorsHeaders — origin admin.bikawo.fr → reflète admin.bikawo.fr", () => {
-  const headers = getAdminCorsHeaders("https://admin.bikawo.fr");
+Deno.test("getAdminCorsHeaders — origin admin.bikawo.com → reflète admin.bikawo.com", () => {
+  const headers = getAdminCorsHeaders("https://admin.bikawo.com");
   assertEquals(
     headers["Access-Control-Allow-Origin"],
-    "https://admin.bikawo.fr",
+    "https://admin.bikawo.com",
   );
 });
 
 // ---------------------------------------------------------------------------
-// Tests getAdminCorsHeaders — origines non autorisées → défaut bikawo.fr
+// Tests getAdminCorsHeaders — origines non autorisées → défaut bikawo.com
 // ---------------------------------------------------------------------------
 
-Deno.test("getAdminCorsHeaders — origin inconnue → défaut bikawo.fr", () => {
+Deno.test("getAdminCorsHeaders — origin inconnue → défaut bikawo.com", () => {
   const headers = getAdminCorsHeaders("https://evil.com");
-  assertEquals(headers["Access-Control-Allow-Origin"], "https://bikawo.fr");
+  assertEquals(headers["Access-Control-Allow-Origin"], "https://bikawo.com");
 });
 
-Deno.test("getAdminCorsHeaders — origin null → défaut bikawo.fr", () => {
+Deno.test("getAdminCorsHeaders — origin null → défaut bikawo.com", () => {
   const headers = getAdminCorsHeaders(null);
-  assertEquals(headers["Access-Control-Allow-Origin"], "https://bikawo.fr");
+  assertEquals(headers["Access-Control-Allow-Origin"], "https://bikawo.com");
 });
 
-Deno.test("getAdminCorsHeaders — origin vide → défaut bikawo.fr", () => {
+Deno.test("getAdminCorsHeaders — origin vide → défaut bikawo.com", () => {
   const headers = getAdminCorsHeaders("");
-  assertEquals(headers["Access-Control-Allow-Origin"], "https://bikawo.fr");
+  assertEquals(headers["Access-Control-Allow-Origin"], "https://bikawo.com");
 });
 
 // ---------------------------------------------------------------------------
@@ -81,12 +81,12 @@ Deno.test("getAdminCorsHeaders — origin vide → défaut bikawo.fr", () => {
 // ---------------------------------------------------------------------------
 
 Deno.test("getAdminCorsHeaders — Access-Control-Allow-Headers présent", () => {
-  const headers = getAdminCorsHeaders("https://bikawo.fr");
+  const headers = getAdminCorsHeaders("https://bikawo.com");
   assertExists(headers["Access-Control-Allow-Headers"]);
 });
 
 Deno.test("getAdminCorsHeaders — Access-Control-Allow-Methods présent", () => {
-  const headers = getAdminCorsHeaders("https://bikawo.fr");
+  const headers = getAdminCorsHeaders("https://bikawo.com");
   assertExists(headers["Access-Control-Allow-Methods"]);
 });
 
@@ -122,26 +122,26 @@ const ADMIN_FUNCTIONS = [
 
 for (const funcName of ADMIN_FUNCTIONS) {
   Deno.test(
-    `OPTIONS preflight ${funcName} — origin bikawo.fr → header correct`,
+    `OPTIONS preflight ${funcName} — origin bikawo.com → header correct`,
     () => {
-      const corsHeaders = getAdminCorsHeaders("https://bikawo.fr");
+      const corsHeaders = getAdminCorsHeaders("https://bikawo.com");
       const response = new Response(null, { headers: corsHeaders });
       assertEquals(
         response.headers.get("Access-Control-Allow-Origin"),
-        "https://bikawo.fr",
+        "https://bikawo.com",
         funcName,
       );
     },
   );
 
   Deno.test(
-    `OPTIONS preflight ${funcName} — origin admin.bikawo.fr → header correct`,
+    `OPTIONS preflight ${funcName} — origin admin.bikawo.com → header correct`,
     () => {
-      const corsHeaders = getAdminCorsHeaders("https://admin.bikawo.fr");
+      const corsHeaders = getAdminCorsHeaders("https://admin.bikawo.com");
       const response = new Response(null, { headers: corsHeaders });
       assertEquals(
         response.headers.get("Access-Control-Allow-Origin"),
-        "https://admin.bikawo.fr",
+        "https://admin.bikawo.com",
         funcName,
       );
     },

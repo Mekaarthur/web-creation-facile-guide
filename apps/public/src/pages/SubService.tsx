@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
@@ -58,12 +58,12 @@ const SubServicePage = () => {
       <Helmet>
         <title>{title}</title>
         <meta name="description" content={description} />
-        <link rel="canonical" href={`https://bikawo.fr/services/${currentCategory.key}/${sub.slug}`} />
+        <link rel="canonical" href={`https://bikawo.com/services/${currentCategory.key}/${sub.slug}`} />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Service",
           name: displayTitle,
-          provider: { "@type": "Organization", name: "Bikawo", url: "https://bikawo.fr" },
+          provider: { "@type": "Organization", name: "Bikawo", url: "https://bikawo.com" },
           areaServed: { "@type": "Place", name: "Île-de-France" },
           offers: { "@type": "Offer", price: sub.price, priceCurrency: "EUR", description: displayDescription }
         })}</script>

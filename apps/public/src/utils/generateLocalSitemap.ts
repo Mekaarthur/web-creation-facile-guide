@@ -1,4 +1,4 @@
-// Génère le sitemap local pour le SEO
+﻿// Génère le sitemap local pour le SEO
 import { services, cities } from '@/data/seoLocalData';
 
 export interface SitemapEntry {
@@ -16,7 +16,7 @@ export const generateLocalSitemapEntries = (): SitemapEntry[] => {
   services.forEach(service => {
     cities.forEach(city => {
       entries.push({
-        url: `https://bikawo.fr/services/${service.slug}/${city.slug}`,
+        url: `https://bikawo.com/services/${service.slug}/${city.slug}`,
         lastmod: today,
         changefreq: 'weekly',
         priority: 0.8,

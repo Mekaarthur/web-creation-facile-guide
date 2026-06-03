@@ -1,7 +1,7 @@
-import { blogPosts } from '@/data/blogPosts';
+﻿import { blogPosts } from '@/data/blogPosts';
 
 export const generateSitemap = () => {
-  const baseUrl = 'https://bikawo.fr';
+  const baseUrl = 'https://bikawo.com';
   const currentDate = new Date().toISOString();
   
   const staticPages = [
@@ -41,7 +41,7 @@ ${allPages.map(page => `  <url>
 };
 
 export const generateBlogSitemap = () => {
-  const baseUrl = 'https://bikawo.fr';
+  const baseUrl = 'https://bikawo.com';
   
   // Generate blog posts dynamically from blogPosts data
   const blogPostsWithImages = blogPosts.map(post => ({

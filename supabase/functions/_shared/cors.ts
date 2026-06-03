@@ -1,5 +1,5 @@
-export const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://bikawo.fr",
+﻿export const corsHeaders = {
+  "Access-Control-Allow-Origin": "https://bikawo.com",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
 };
@@ -23,13 +23,13 @@ export const activeCorsHeaders = isDev ? corsHeadersDev : corsHeaders;
 
 // Origines autorisées pour les Edge Functions admin (app publique + backoffice admin)
 export const ALLOWED_ORIGINS_ADMIN = [
-  "https://bikawo.fr",
-  "https://admin.bikawo.fr",
+  "https://bikawo.com",
+  "https://admin.bikawo.com",
 ];
 
 /**
  * Retourne les headers CORS en reflétant l'origine de la requête si elle est dans la liste admin.
- * Utilisé par toutes les fonctions admin-* pour supporter bikawo.fr ET admin.bikawo.fr.
+ * Utilisé par toutes les fonctions admin-* pour supporter bikawo.com ET admin.bikawo.com.
  */
 export function getAdminCorsHeaders(origin: string | null): Record<string, string> {
   const allowedOrigin =

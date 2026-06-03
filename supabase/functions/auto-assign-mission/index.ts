@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+﻿import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -56,7 +56,7 @@ const handler = async (req: Request): Promise<Response> => {
       // Notifier l'admin
       await supabase.functions.invoke('send-notification-email', {
         body: {
-          email: 'admin@bikawo.fr',
+          email: 'admin@bikawo.com',
           name: 'Admin',
           subject: 'Demande non pourvue',
           message: `La demande ${clientRequestId} pour ${serviceType} à ${location} n'a trouvé aucun prestataire disponible.`
@@ -217,7 +217,7 @@ async function checkMissionTimeout(assignmentId: string) {
     // Notifier l'admin
     await supabase.functions.invoke('send-notification-email', {
       body: {
-        email: 'admin@bikawo.fr',
+        email: 'admin@bikawo.com',
         name: 'Admin',
         subject: 'Mission expirée sans réponse',
         message: `La mission ${assignment.client_request_id} a expiré sans qu'aucun prestataire ne réponde.`
