@@ -44,12 +44,18 @@ Lors d'un `/compact`, conserver impérativement :
 
 Ne pas conserver : contenu complet des fichiers modifiés (lisibles via `Read`), historique git détaillé.
 
+## Environnement de développement
+
+Ce projet n'utilise pas Lovable.
+Tout le développement se fait via Claude Code + VS Code.
+**Ne jamais écrire de code en dehors de `apps/` ou `packages/`.**
+
 ## Architecture monorepo
 
 C'est un monorepo pnpm :
-- `apps/public` → `bikawo.com` (clients et prestataires uniquement)
-- `apps/admin` → `admin.bikawo.com` (admin uniquement)
-- `packages/shared` → code utilisé par les deux apps
+- `apps/public/` → `bikawo.com` (site public — clients et prestataires)
+- `apps/admin/`  → `admin.bikawo.com` (backoffice admin)
+- `packages/shared/` → code partagé entre les deux apps
 
 ### Règles inter-apps — non négociables
 - Ne jamais importer depuis `apps/admin` dans `apps/public` — tout partagé passe par `@bikawo/shared`.
