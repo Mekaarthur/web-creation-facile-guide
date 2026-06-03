@@ -1,10 +1,8 @@
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.3'
+import { getAdminCorsHeaders } from '../_shared/cors.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://bikawo.fr',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+
 
 interface ModerationAction {
   action: 'approve' | 'reject' | 'examine' | 'list_reports' | 'list_reviews' | 'get_stats';
@@ -14,6 +12,7 @@ interface ModerationAction {
 }
 
 serve(async (req) => {
+  const corsHeaders = getAdminCorsHeaders(req.headers.get('origin'));
   // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });

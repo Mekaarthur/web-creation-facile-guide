@@ -1,11 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { validateRequest, validateCartActionSchema, extractClientIp, createErrorResponse } from "../_shared/validation.ts";
+import { getAdminCorsHeaders } from '../_shared/cors.ts';
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://bikawo.fr",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+
 
 const supabaseClient = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
@@ -26,6 +24,7 @@ const logAdminAction = async (adminUserId: string, actionType: string, entityTyp
 };
 
 serve(async (req) => {
+  const corsHeaders = getAdminCorsHeaders(req.headers.get('origin'));
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -124,14 +123,15 @@ serve(async (req) => {
         return createErrorResponse(
           'Trop de requêtes. Veuillez réessayer plus tard.',
           429,
-          { retry_after_seconds: rateLimitCheck.retry_after_seconds }
+          { retry_after_seconds: rateLimitCheck.retry_after_seconds },
+          corsHeaders
         );
       }
 
       // Validation avec Zod
       const validation = await validateRequest(req, validateCartActionSchema);
       if (!validation.success) {
-        return createErrorResponse(validation.error, 400, validation.details);
+        return createErrorResponse(validation.error, 400, validation.details, corsHeaders);
       }
 
       const body = validation.data;

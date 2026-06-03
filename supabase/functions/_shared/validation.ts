@@ -159,13 +159,15 @@ export function extractClientIp(req: Request): string {
 
 /**
  * Créer une réponse d'erreur standardisée
+ * @param customCorsHeaders - Headers CORS dynamiques (ex: getAdminCorsHeaders(origin)) — si absent, défaut bikawo.fr
  */
 export function createErrorResponse(
   message: string,
   status: number = 400,
-  details?: any
+  details?: any,
+  customCorsHeaders?: Record<string, string>
 ): Response {
-  const corsHeaders = {
+  const corsHeaders = customCorsHeaders ?? {
     'Access-Control-Allow-Origin': 'https://bikawo.fr',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   };
