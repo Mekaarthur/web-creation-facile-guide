@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "npx -y pnpm@9 --filter @bikawo/public dev",
+    "dev": "npx -y pnpm@9 install --frozen-lockfile=false && npx -y pnpm@9 --filter @bikawo/public dev",
     "build": "npx -y pnpm@9 install --frozen-lockfile=false && npx -y pnpm@9 --filter @bikawo/public build",
     "build:dev": "npx -y pnpm@9 install --frozen-lockfile=false && npx -y pnpm@9 --filter @bikawo/public build:dev",
     "preview": "npx -y pnpm@9 --filter @bikawo/public preview",
