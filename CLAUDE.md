@@ -44,6 +44,14 @@ Lors d'un `/compact`, conserver impérativement :
 
 Ne pas conserver : contenu complet des fichiers modifiés (lisibles via `Read`), historique git détaillé.
 
+## Architecture monorepo
+
+### apps/admin — session et déploiement
+- `apps/admin` est déployé sur `admin.bikawo.fr` — domaine séparé de `bikawo.fr`.
+- La session admin est scopée à `admin.bikawo.fr` : un admin doit se connecter sur `/login` de l'app admin, indépendamment de toute session active sur bikawo.fr. **C'est le comportement attendu**, pas un bug.
+- Port de dev : 5174 (`apps/public` reste sur 5173).
+- Ne jamais importer depuis `apps/public` dans `apps/admin` — tout partagé passe par `@bikawo/shared`.
+
 ## Règles d'architecture — non négociables
 - Ne jamais appeler `supabase.from()` ou `supabase.rpc()` directement depuis un composant React — passer par `src/services/` ou `src/hooks/queries/`.
 - Toute nouvelle Edge Function doit utiliser Stripe `apiVersion: "2025-08-27.basil"`.
