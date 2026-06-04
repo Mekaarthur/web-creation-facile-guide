@@ -2,6 +2,7 @@
   "name": "bikawo",
   "private": true,
   "version": "0.0.0",
+  "packageManager": "pnpm@11.5.0",
   "scripts": {
     "dev": "pnpm --filter @bikawo/public dev",
     "build": "pnpm --filter @bikawo/public build",
