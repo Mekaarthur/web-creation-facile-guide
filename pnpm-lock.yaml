@@ -4,6 +4,8 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+packageExtensionsChecksum: sha256-/WC8ErV1kRpTd9MPrGEvdn70CoUFHT+d4iVkbboeGl4=
+
 importers:
 
   .:
@@ -3767,6 +3769,8 @@ packages:
     resolution: {integrity: sha512-hheHdokM8cdqCb0lcE3s+zT4t4W+vvjpGxsZlDnikarzx8tSzMebh3UiFtgqwFwnTnjYQcsyMF8ei2mCO/tpeA==}
     engines: {node: '>=18'}
     hasBin: true
+    peerDependencies:
+      '@playwright/test': '*'
 
   plist@3.1.1:
     resolution: {integrity: sha512-ZIfcLJC+7E7FBFnDxm9MPmt7D+DidyQ26lewieO75AdhA2ayMtsJSES0iWzqJQbcVRSrTufQoy0DR94xHue0oA==}
@@ -5684,7 +5688,7 @@ snapshots:
 
   '@playwright/test@1.60.0':
     dependencies:
-      playwright: 1.60.0
+      playwright: 1.60.0(@playwright/test@1.60.0)
 
   '@radix-ui/number@1.1.1': {}
 
@@ -7985,8 +7989,9 @@ snapshots:
 
   playwright-core@1.60.0: {}
 
-  playwright@1.60.0:
+  playwright@1.60.0(@playwright/test@1.60.0):
     dependencies:
+      '@playwright/test': 1.60.0
       playwright-core: 1.60.0
     optionalDependencies:
       fsevents: 2.3.2
