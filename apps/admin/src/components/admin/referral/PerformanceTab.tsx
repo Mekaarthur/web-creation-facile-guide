@@ -254,7 +254,7 @@ export function PerformanceTab({
                         rewardId={reward.id}
                         currentNotes={reward.notes}
                         providerName={`${reward.provider?.profiles?.first_name} ${reward.provider?.profiles?.last_name}`}
-                        onSave={savePerformanceRewardNotes}
+                        onSave={(id, notes) => Promise.resolve(savePerformanceRewardNotes(id, notes))}
                       />
                       {reward.status === 'pending' && (
                         <Button

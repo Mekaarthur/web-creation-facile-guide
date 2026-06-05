@@ -240,7 +240,7 @@ export const ReservationDetailsModal = ({ reservation, onClose, onUpdate }: Rese
     try {
       const { error } = await supabase
         .from('bookings')
-        .update({ status: 'in_progress', mission_started_at: new Date().toISOString() })
+        .update({ status: 'in_progress', mission_started_at: new Date().toISOString() } as any)
         .eq('id', reservation.id);
       if (error) throw error;
 

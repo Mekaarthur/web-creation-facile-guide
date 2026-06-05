@@ -55,7 +55,7 @@ const AdminReservations = () => {
   const [universeFilter, setUniverseFilter] = useState("all");
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
 
-  const { data, isLoading: loading } = useQuery({
+  const { data, isLoading: loading, refetch } = useQuery({
     queryKey: ['admin-reservations'],
     queryFn: async () => {
       const { data: bookingsData, error } = await supabase
@@ -463,7 +463,7 @@ const AdminReservations = () => {
         <ReservationDetailsModal
           reservation={selectedReservation}
           onClose={() => setSelectedReservation(null)}
-          onUpdate={loadReservations}
+          onUpdate={refetch}
         />
       )}
     </div>
