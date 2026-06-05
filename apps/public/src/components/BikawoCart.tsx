@@ -191,7 +191,7 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
                             size="sm"
                             variant="ghost"
                             onClick={() => removeFromCart(item.id)}
-                            aria-label={`Supprimer ${item.name} du panier`}
+                            aria-label={`Supprimer ${item.serviceName} du panier`}
                             className="text-destructive hover:text-destructive hover:bg-destructive/10 hover-scale"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -238,7 +238,7 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
                         size="sm"
                         variant="ghost"
                         onClick={() => removeFromCart(item.id)}
-                        aria-label={`Supprimer ${item.name} du panier`}
+                        aria-label={`Supprimer ${item.serviceName} du panier`}
                         className="text-destructive hover:text-destructive hover:bg-destructive/10 hover-scale ml-2"
                       >
                         <Trash2 className="w-5 h-5" />

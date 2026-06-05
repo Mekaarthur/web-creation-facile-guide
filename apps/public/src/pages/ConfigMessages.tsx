@@ -16,13 +16,13 @@ import { EMAIL_TEMPLATES, NOTIFICATION_TEMPLATES, COMPANY_CONFIG, type EmailTemp
 import { sanitizeEmailPreview } from '@/utils/emailPreview';
 
 export default function ConfigMessages() {
-  const [emailTemplates, setEmailTemplates] = useState(() => {
+  const [emailTemplates, setEmailTemplates] = useState<Record<string, EmailTemplateConfig>>(() => {
     try {
       const saved = localStorage.getItem('bikawo_email_templates');
       return saved ? JSON.parse(saved) : EMAIL_TEMPLATES;
     } catch { return EMAIL_TEMPLATES; }
   });
-  const [notificationTemplates, setNotificationTemplates] = useState(() => {
+  const [notificationTemplates, setNotificationTemplates] = useState<Record<string, NotificationConfig>>(() => {
     try {
       const saved = localStorage.getItem('bikawo_notification_templates');
       return saved ? JSON.parse(saved) : NOTIFICATION_TEMPLATES;

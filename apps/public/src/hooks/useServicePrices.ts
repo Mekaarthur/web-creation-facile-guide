@@ -27,7 +27,7 @@ export const useServicePrices = () => {
 
       if (error) throw error;
       const map: Record<string, number> = {};
-      ((data || []) as ServicePricingRow[]).forEach((row) => {
+      ((data || []) as unknown as ServicePricingRow[]).forEach((row) => {
         map[row.service_slug] = row.client_price;
       });
       return map;

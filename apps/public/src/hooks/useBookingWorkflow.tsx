@@ -149,9 +149,9 @@ export const useBookingWorkflow = () => {
           booking_date: newDate,
           start_time: newStartTime,
           duration_hours: newDuration,
-          status: 'pending', // Repasse en attente de confirmation
+          status: 'pending',
           updated_at: new Date().toISOString()
-        })
+        } as any)
         .eq('id', bookingId);
 
       if (error) throw error;

@@ -113,12 +113,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       setNewMessage('');
 
       // Notification best-effort (ne bloque pas si elle échoue)
-      supabase
-        .from('profiles')
-        .select('email, first_name, last_name')
-        .eq('user_id', otherUserId)
-        .maybeSingle()
-        .then(({ data: recipientProfile }) => {
+      void Promise.resolve(
+        supabase
+          .from('profiles')
+          .select('email, first_name, last_name')
+          .eq('user_id', otherUserId)
+          .maybeSingle()
+      ).then(({ data: recipientProfile }) => {
           if (!recipientProfile?.email) return;
           supabase.functions.invoke('send-message-notification', {
             body: {

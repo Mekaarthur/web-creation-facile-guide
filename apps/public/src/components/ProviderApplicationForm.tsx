@@ -40,7 +40,7 @@ export const ProviderApplicationForm = () => {
         availability: `${formData.availability_days.join(', ')} - ${formData.availability_hours}`,
         status: 'pending',
         application_date: new Date().toISOString(),
-      });
+      } as any);
 
       if (error) throw error;
 

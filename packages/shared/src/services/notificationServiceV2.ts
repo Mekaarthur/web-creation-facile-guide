@@ -106,7 +106,7 @@ export const notificationServiceV2 = {
         message: payload.message,
         type: payload.type,
         booking_id: payload.bookingId ?? null,
-      });
+      } as any);
       if (error) throw new ServiceError("Insertion notification impossible", error.code, error);
     }
 

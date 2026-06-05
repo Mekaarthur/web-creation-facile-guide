@@ -175,7 +175,7 @@ export const NotificationCenter = () => {
           <div className="flex items-center justify-between">
             <h3 className="font-semibold">Notifications</h3>
             {unreadCount > 0 && (
-              <Button variant="ghost" size="sm" onClick={markAllAsRead}>
+              <Button variant="ghost" size="sm" onClick={() => markAllAsRead()}>
                 <CheckCheck className="w-4 h-4 mr-1" />
                 Tout lire
               </Button>

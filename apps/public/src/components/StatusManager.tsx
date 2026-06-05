@@ -171,10 +171,10 @@ const StatusManager: React.FC<StatusManagerProps> = ({
       
       const { error } = await supabase
         .from(tableName)
-        .update({ 
+        .update({
           status: selectedStatus,
           ...(comments && { admin_comments: comments })
-        })
+        } as any)
         .eq('id', itemId);
 
       if (error) throw error;
