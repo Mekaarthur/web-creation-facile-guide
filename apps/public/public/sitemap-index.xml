@@ -8,4 +8,8 @@
     <loc>https://bikawo.com/sitemap-blog.xml</loc>
     <lastmod>2025-04-26</lastmod>
   </sitemap>
+  <sitemap>
+    <loc>https://bikawo.com/sitemap-local.xml</loc>
+    <lastmod>2026-06-05</lastmod>
+  </sitemap>
 </sitemapindex>

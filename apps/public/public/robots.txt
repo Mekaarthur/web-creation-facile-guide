@@ -58,3 +58,4 @@ Allow: /
 # Sitemaps
 Sitemap: https://bikawo.com/sitemap-index.xml
 Sitemap: https://bikawo.com/sitemap.xml
+Sitemap: https://bikawo.com/sitemap-local.xml
