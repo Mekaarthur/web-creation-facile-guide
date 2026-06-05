@@ -212,17 +212,17 @@ const getEmailTemplate = (type: string, data: any) => {
             </div>
             
             <p>Si vous avez des questions, n'hésitez pas à nous contacter.</p>
-            <p>Merci de faire confiance à AssistLife !</p>
-            
+            <p>Merci de faire confiance à Bikawo !</p>
+
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${Deno.env.get('SITE_URL') || 'https://assistlife.fr'}" 
+              <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.com'}"
                  style="background: #16a34a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
                 Voir le suivi de ma demande
               </a>
             </div>
-            
+
             <p style="color: #6b7280; font-size: 12px; margin-top: 30px;">
-              Cordialement,<br>L'équipe AssistLife
+              Cordialement,<br>L'équipe Bikawo
             </p>
           </div>
         `

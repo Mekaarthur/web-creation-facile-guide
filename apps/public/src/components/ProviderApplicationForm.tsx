@@ -35,12 +35,19 @@ export const ProviderApplicationForm = () => {
       }
 
       const { error } = await supabase.from('job_applications').insert({
-        ...formData,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        email: formData.email,
+        phone: formData.phone,
         category: formData.service_categories.join(', '),
+        experience_years: formData.experience_years,
         availability: `${formData.availability_days.join(', ')} - ${formData.availability_hours}`,
+        motivation: formData.motivation,
+        has_transport: formData.has_transport,
+        certifications: formData.certifications,
+        cv_file_url: formData.identity_document_url || null,
         status: 'pending',
-        application_date: new Date().toISOString(),
-      } as any);
+      });
 
       if (error) throw error;
 
