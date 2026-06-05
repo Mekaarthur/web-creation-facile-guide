@@ -24,8 +24,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Type check
-        run: pnpm type-check
+      - name: Type check (public)
+        run: pnpm --filter @bikawo/public type-check
 
-      - name: Build
-        run: pnpm build
+      - name: Type check (admin)
+        run: pnpm --filter @bikawo/admin type-check
+
+      - name: Build (public)
+        run: pnpm --filter @bikawo/public build
+
+      - name: Build (admin)
+        run: pnpm --filter @bikawo/admin build
