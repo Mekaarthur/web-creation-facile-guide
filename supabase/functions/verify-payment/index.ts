@@ -368,6 +368,34 @@ serve(async (req) => {
       }
     }
 
+    // Email de confirmation au client — envoyé une seule fois après création de tous les bookings.
+    // L'idempotence est garantie par le early-return ligne ~112 si alreadyProcessed.
+    if (bookingIds.length > 0 && clientInfo?.email) {
+      const firstService = services[0];
+      const firstCustom = firstService?.customBooking || {};
+      try {
+        await supabaseAdmin.functions.invoke('send-transactional-email', {
+          body: {
+            type: 'booking_confirmation',
+            recipientEmail: clientInfo.email,
+            recipientName: `${clientInfo.firstName} ${clientInfo.lastName}`,
+            data: {
+              clientName: clientInfo.firstName,
+              serviceName: firstService?.serviceName || 'Service Bikawo',
+              bookingDate: firstCustom.date || '',
+              startTime: firstCustom.startTime || '09:00',
+              endTime: firstCustom.endTime || '17:00',
+              totalPrice: totalAmount,
+              bookingId: bookingIds[0],
+            },
+          },
+        });
+        logStep('Email de confirmation envoyé au client');
+      } catch (emailErr) {
+        logStep('Erreur envoi email confirmation client (non bloquant)', { error: String(emailErr) });
+      }
+    }
+
     // Mettre à jour les transactions financières
     // Le trigger DB crée la transaction ; on poll jusqu'à 5× avec backoff exponentiel.
     logStep('Attente création transactions financières par trigger...');

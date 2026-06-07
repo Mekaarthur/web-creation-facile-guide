@@ -248,7 +248,7 @@ export const ApplicationDocumentsValidator = ({
   };
 
   const viewDocument = async (url: string) => {
-    const success = await openDocument(url, 'provider-applications');
+    const success = await openDocument(url, 'provider-documents');
     if (!success) toast({ title: "Erreur", description: "Impossible d'ouvrir le document.", variant: "destructive" });
   };
 

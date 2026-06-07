@@ -66,30 +66,93 @@ serve(async (req) => {
       const charge = event.data.object as Stripe.Charge;
       const paymentIntentId = charge.payment_intent as string;
 
-      // Mettre à jour financial_transactions via stripe_payment_intent_id
-      const { error: txError } = await supabaseAdmin
+      // Idempotence : vérifier si ce remboursement a déjà été traité
+      const { data: txRecord } = await supabaseAdmin
         .from('financial_transactions')
-        .update({ payment_status: 'refunded' })
-        .eq('stripe_payment_intent_id', paymentIntentId);
+        .select('id, booking_id, payment_status')
+        .eq('stripe_payment_intent_id', paymentIntentId)
+        .maybeSingle();
 
-      if (txError) {
-        console.error('Erreur mise à jour financial_transactions:', txError);
-      }
+      if (txRecord?.payment_status === 'refunded') {
+        console.log(`charge.refunded déjà traité pour paymentIntent ${paymentIntentId} — skip`);
+      } else {
+        // 1. Mettre à jour financial_transactions
+        const { error: txError } = await supabaseAdmin
+          .from('financial_transactions')
+          .update({ payment_status: 'refunded' })
+          .eq('stripe_payment_intent_id', paymentIntentId);
 
-      // Créer notification admin pour remboursement
-      await supabaseAdmin.functions.invoke('create-admin-notification', {
-        body: {
-          type: 'payment',
-          title: '💸 Remboursement effectué',
-          message: `Remboursement de ${(charge.amount_refunded / 100).toFixed(2)}€ pour paiement ${paymentIntentId}`,
-          data: {
-            charge_id: charge.id,
-            payment_intent_id: paymentIntentId,
-            amount_refunded: charge.amount_refunded / 100
-          },
-          priority: 'high'
+        if (txError) {
+          console.error('Erreur mise à jour financial_transactions:', txError);
         }
-      });
+
+        // 2. Mettre à jour le statut du booking
+        if (txRecord?.booking_id) {
+          const { error: bookingError } = await supabaseAdmin
+            .from('bookings')
+            .update({ status: 'refunded' })
+            .eq('id', txRecord.booking_id);
+
+          if (bookingError) {
+            console.error('Erreur mise à jour booking status:', bookingError);
+          } else {
+            console.log(`Booking ${txRecord.booking_id} marqué refunded`);
+          }
+
+          // 3. Notifier le client par email
+          try {
+            const { data: booking } = await supabaseAdmin
+              .from('bookings')
+              .select('client_id, total_price, service_id')
+              .eq('id', txRecord.booking_id)
+              .maybeSingle();
+
+            if (booking?.client_id) {
+              const { data: profile } = await supabaseAdmin
+                .from('profiles')
+                .select('email, first_name, last_name')
+                .eq('user_id', booking.client_id)
+                .maybeSingle();
+
+              if (profile?.email) {
+                await supabaseAdmin.functions.invoke('send-transactional-email', {
+                  body: {
+                    type: 'refund_processed',
+                    recipientEmail: profile.email,
+                    recipientName: `${profile.first_name || ''} ${profile.last_name || ''}`.trim(),
+                    data: {
+                      clientName: profile.first_name || 'Client',
+                      serviceName: 'votre réservation Bikawo',
+                      refundAmount: charge.amount_refunded / 100,
+                      originalAmount: booking.total_price || charge.amount / 100,
+                      refundReason: 'Remboursement traité par Bikawo',
+                    },
+                  },
+                });
+                console.log(`Email refund_processed envoyé à ${profile.email}`);
+              }
+            }
+          } catch (emailErr) {
+            console.error('Erreur envoi email remboursement client (non bloquant):', emailErr);
+          }
+        }
+
+        // 4. Notification admin
+        await supabaseAdmin.functions.invoke('create-admin-notification', {
+          body: {
+            type: 'payment',
+            title: '💸 Remboursement effectué',
+            message: `Remboursement de ${(charge.amount_refunded / 100).toFixed(2)}€ pour paiement ${paymentIntentId}`,
+            data: {
+              charge_id: charge.id,
+              payment_intent_id: paymentIntentId,
+              amount_refunded: charge.amount_refunded / 100,
+              booking_id: txRecord?.booking_id || null,
+            },
+            priority: 'high',
+          },
+        });
+      }
     }
 
     // Gérer les litiges
