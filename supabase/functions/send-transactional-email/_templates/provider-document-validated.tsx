@@ -54,7 +54,7 @@ export const ProviderDocumentValidatedEmail = ({
           </Text>
 
           <Button
-            href={`${process.env.SUPABASE_URL?.replace('.supabase.co', '.lovable.app')}/espace-prestataire`}
+            href={`${Deno.env.get('SITE_URL') ?? 'https://bikawo.com'}/espace-prestataire`}
             style={button}
           >
             Accéder à mon espace
