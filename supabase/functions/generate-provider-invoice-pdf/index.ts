@@ -88,12 +88,6 @@ serve(async (req) => {
 
     const doc = new jsPDF();
 
-    // Avertissement légal
-    doc.setFontSize(8);
-    doc.setTextColor(180, 0, 0);
-    doc.text("DOCUMENT PROVISOIRE — Non valide pour déclaration fiscale.", 20, 10);
-    doc.setTextColor(0, 0, 0);
-
     // Header
     doc.setFontSize(20);
     doc.setTextColor(41, 128, 185);
