@@ -94,7 +94,7 @@ const ProviderInvoiceManagement = () => {
     try {
       // Simulate PDF download for provider invoices
       const link = document.createElement('a');
-      link.href = `https://cgrosjzmbgxmtvwxictr.supabase.co/functions/v1/generate-provider-invoice-pdf?id=${invoiceId}`;
+      link.href = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-provider-invoice-pdf?id=${invoiceId}`;
       link.download = `fiche-remuneration-${invoiceId}.pdf`;
       link.click();
 

@@ -80,7 +80,7 @@ const InvoiceManagement = () => {
     try {
       // Simuler le téléchargement d'une facture PDF
       const link = document.createElement('a');
-      link.href = `https://cgrosjzmbgxmtvwxictr.supabase.co/functions/v1/generate-invoice?id=${invoiceId}`;
+      link.href = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-invoice?id=${invoiceId}`;
       link.download = `facture-${invoiceId}.pdf`;
       link.click();
 

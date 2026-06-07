@@ -311,7 +311,7 @@ serve(async (req) => {
           type: 'recovery',
           email: application.email,
           options: {
-            redirectTo: `https://bikawo.com/update-password`,
+            redirectTo: `${Deno.env.get('SITE_URL') ?? 'https://bikawo.com'}/update-password`,
           },
         });
 

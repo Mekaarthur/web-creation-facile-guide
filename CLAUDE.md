@@ -60,6 +60,8 @@ C'est un monorepo pnpm :
 ### Règles inter-apps — non négociables
 - Ne jamais importer depuis `apps/admin` dans `apps/public` — tout partagé passe par `@bikawo/shared`.
 - Ne jamais hardcoder les URLs `bikawo.com` — utiliser les variables d'environnement.
+- Ne jamais hardcoder l'URL du projet Supabase — utiliser `import.meta.env.VITE_SUPABASE_URL` côté frontend et `Deno.env.get('SUPABASE_URL')` côté Edge Functions.
+- Ne jamais hardcoder de domaine Lovable (`lovable.dev`, `lovableproject.com`) — le projet n'utilise pas Lovable.
 - La allowlist CORS vit dans `packages/shared/cors.ts`.
 
 ### apps/admin — session et déploiement
