@@ -35,7 +35,7 @@ export const ProviderNewMissionEmail = ({
   endTime = '18:00',
   address = 'Adresse',
   clientNotes = '',
-  missionLink = 'https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/espace-prestataire'
+  missionLink = 'https://bikawo.com/espace-prestataire'
 }: ProviderNewMissionEmailProps) => (
   <Html>
     <Head />

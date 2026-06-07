@@ -32,7 +32,7 @@ export const ProviderPaymentEmail = ({
   grossAmount = 0,
   netAmount = 0,
   paymentDate = new Date().toLocaleDateString('fr-FR'),
-  invoiceLink = 'https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/espace-prestataire'
+  invoiceLink = 'https://bikawo.com/espace-prestataire'
 }: ProviderPaymentEmailProps) => (
   <Html>
     <Head />

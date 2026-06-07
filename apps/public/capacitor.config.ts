@@ -1,7 +1,7 @@
 ﻿import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.ed681ca274aa49708c41139ffb8c8152',
+  appId: 'com.bikawo.app',
   appName: 'bikawo',
   webDir: 'dist',
   server: {

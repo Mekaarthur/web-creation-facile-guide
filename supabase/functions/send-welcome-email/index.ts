@@ -36,9 +36,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Envoi email de bienvenue à:', email);
 
-    const loginUrl = Deno.env.get("SUPABASE_URL")?.includes("sandbox")
-      ? `https://ed681ca2-74aa-4970-8c41-139ffb8c8152.sandbox.lovable.dev/auth`
-      : `https://bikawo.com/auth`;
+    const loginUrl = `${Deno.env.get('SITE_URL') ?? 'https://bikawo.com'}/auth`;
 
     const emailHtml = await renderAsync(
       React.createElement(WelcomeEmail, {

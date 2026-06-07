@@ -175,7 +175,7 @@ serve(async (req) => {
         business_type: "individual",
         business_profile: {
           mcc: "7299",
-          url: "https://bikawo.lovable.app",
+          url: Deno.env.get('SITE_URL') ?? "https://bikawo.com",
         },
       });
 

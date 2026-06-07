@@ -19,7 +19,7 @@ interface PasswordSetupEmailProps {
   setupLink?: string; // link to password creation/reset page
 }
 
-export const PasswordSetupEmail = ({ clientName, setupLink = 'https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/update-password' }: PasswordSetupEmailProps) => (
+export const PasswordSetupEmail = ({ clientName, setupLink = 'https://bikawo.com/update-password' }: PasswordSetupEmailProps) => (
   <Html>
     <Head />
     <Preview>Créez votre mot de passe</Preview>

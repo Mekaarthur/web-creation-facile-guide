@@ -66,65 +66,8 @@ serve(async (req) => {
 
     console.log(`📋 Found ${potentialProviders.length} potential providers`);
 
-    // 2. Scoring avancé avec l'IA Lovable
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    
-    let aiScores: Record<string, number> = {};
-    
-    if (LOVABLE_API_KEY) {
-      try {
-        const aiPrompt = `Analyse ces prestataires pour une mission ${serviceType} à ${location}.
-Urgence: ${urgency}. Budget: ${budget || 'Non spécifié'}€.
-
-Prestataires:
-${potentialProviders.map((p: any, idx: number) => 
-  `${idx + 1}. ${p.business_name} - Rating: ${p.rating}/5, Distance: ${p.match_score}, Missions: ${p.services_offered?.length || 0}`
-).join('\n')}
-
-Retourne un score de 0 à 100 pour chaque prestataire basé sur:
-- Compatibilité avec le service
-- Rating et expérience
-- Disponibilité
-- Distance/localisation
-- Urgence de la demande`;
-
-        const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'google/gemini-2.5-flash',
-            messages: [
-              { 
-                role: 'system', 
-                content: 'Tu es un expert en matching de prestataires. Réponds uniquement avec des scores numériques de 0 à 100 pour chaque prestataire, un par ligne.' 
-              },
-              { role: 'user', content: aiPrompt }
-            ],
-            temperature: 0.3,
-          }),
-        });
-
-        if (aiResponse.ok) {
-          const aiData = await aiResponse.json();
-          const aiText = aiData.choices?.[0]?.message?.content || '';
-          console.log('🤖 AI Response:', aiText);
-          
-          // Parser les scores de l'IA
-          const lines = aiText.split('\n');
-          lines.forEach((line: string, idx: number) => {
-            const scoreMatch = line.match(/(\d+)/);
-            if (scoreMatch && potentialProviders[idx]) {
-              aiScores[potentialProviders[idx].provider_id] = parseInt(scoreMatch[1]);
-            }
-          });
-        }
-      } catch (aiError) {
-        console.warn('⚠️ AI scoring failed, using traditional scoring:', aiError);
-      }
-    }
+    // 2. Scores IA désactivés — scoring classique uniquement
+    const aiScores: Record<string, number> = {};
 
     // 3. Calcul du score final combiné
     const scoredProviders = potentialProviders.map((provider: any) => {

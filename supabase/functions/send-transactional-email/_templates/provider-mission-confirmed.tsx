@@ -31,7 +31,7 @@ export const ProviderMissionConfirmedEmail = ({
   startTime = '14:00',
   clientName = 'Client',
   address = 'Adresse',
-  missionLink = 'https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/espace-prestataire'
+  missionLink = 'https://bikawo.com/espace-prestataire'
 }: ProviderMissionConfirmedEmailProps) => (
   <Html>
     <Head />

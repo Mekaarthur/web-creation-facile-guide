@@ -114,12 +114,12 @@ const EmailTestingDashboard = () => {
       case 'account_created':
         return {
           clientName: 'Test Client',
-          appUrl: 'https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com'
+          appUrl: 'https://bikawo.com'
         };
       case 'password_setup':
         return {
           clientName: 'Test Client',
-          setupLink: 'https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/update-password'
+          setupLink: 'https://bikawo.com/update-password'
         };
       case 'account_deleted':
         return {
@@ -130,7 +130,7 @@ const EmailTestingDashboard = () => {
         return {
           ...baseData,
           providerName: 'Marie Dupont',
-          reviewLink: 'https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/espace-personnel'
+          reviewLink: 'https://bikawo.com/espace-personnel'
         };
       case 'provider_new_mission':
         return {
@@ -141,7 +141,7 @@ const EmailTestingDashboard = () => {
           endTime: '18:00',
           address: '123 Rue de Test, 75001 Paris',
           clientNotes: 'Les enfants aiment les activités créatives',
-          missionLink: 'https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/espace-prestataire'
+          missionLink: 'https://bikawo.com/espace-prestataire'
         };
       case 'provider_mission_confirmed':
         return {
@@ -151,7 +151,7 @@ const EmailTestingDashboard = () => {
           startTime: '14:00',
           clientName: 'Famille Dupont',
           address: '123 Rue de Test, 75001 Paris',
-          missionLink: 'https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/espace-prestataire'
+          missionLink: 'https://bikawo.com/espace-prestataire'
         };
       case 'provider_reminder':
         return {
@@ -162,7 +162,7 @@ const EmailTestingDashboard = () => {
           endTime: '18:00',
           address: '123 Rue de Test, 75001 Paris',
           clientPhone: '+33 6 12 34 56 78',
-          missionLink: 'https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/espace-prestataire'
+          missionLink: 'https://bikawo.com/espace-prestataire'
         };
       case 'provider_payment':
         return {
@@ -173,7 +173,7 @@ const EmailTestingDashboard = () => {
           grossAmount: 72.00,
           netAmount: 60.00,
           paymentDate: new Date().toLocaleDateString('fr-FR'),
-          invoiceLink: 'https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/espace-prestataire'
+          invoiceLink: 'https://bikawo.com/espace-prestataire'
         };
       case 'invoice_available':
         return {
@@ -182,7 +182,7 @@ const EmailTestingDashboard = () => {
           serviceName: 'Garde d\'enfants',
           totalAmount: 75.00,
           invoiceDate: new Date().toLocaleDateString('fr-FR'),
-          invoiceLink: 'https://ed681ca2-74aa-4970-8c41-139ffb8c8152.lovableproject.com/espace-personnel'
+          invoiceLink: 'https://bikawo.com/espace-personnel'
         };
       case 'provider_document_validated':
         return {
