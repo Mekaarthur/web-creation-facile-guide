@@ -83,3 +83,5 @@ C'est un monorepo pnpm :
 - Ne pas commiter `.env` (contient des secrets).
 - Ne pas commiter `supabase/.temp/`, `test-results/`, `tests/auth-states/`.
 - Toujours utiliser `has_role(auth.uid(), 'admin')` pour vérifier les droits admin — jamais une table `admin_users` directement.
+- Les factures PDF ne doivent **jamais** contenir de mention "DOCUMENT PROVISOIRE", disclaimer d'invalité fiscale, ou tout texte invalidant leur valeur légale. Les informations légales obligatoires (SIRET, mentions TVA SAP, pénalités de retard) doivent être présentes sur chaque facture émise.
+- Les secrets `BIKAWO_SIRET`, `BIKAWO_ADDRESS`, `BIKAWO_PHONE` doivent être configurés dans Supabase avant la mise en production pour que les factures soient légalement valides.

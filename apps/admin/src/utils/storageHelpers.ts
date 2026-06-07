@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-const SUPABASE_URL = "https://cgrosjzmbgxmtvwxictr.supabase.co";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 
 // Buckets that are now private and require signed URLs
 const PRIVATE_BUCKETS = ['provider-documents', 'provider-applications', 'attestations'];
