@@ -206,7 +206,16 @@ export const DocumentUploadSection = ({ providerId, onDocumentsUpdated }: Docume
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => window.open(doc.file_url, '_blank')}
+                    onClick={async () => {
+                      const { data, error } = await supabase.storage
+                        .from('provider-documents')
+                        .createSignedUrl(doc.file_url, 60);
+                      if (error || !data?.signedUrl) {
+                        toast.error('Impossible d\'ouvrir le document');
+                        return;
+                      }
+                      window.open(data.signedUrl, '_blank');
+                    }}
                   >
                     <Eye className="h-4 w-4 mr-1" />
                     Voir

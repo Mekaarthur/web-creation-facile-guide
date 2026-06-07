@@ -92,22 +92,27 @@ const ProviderInvoiceManagement = () => {
 
   const downloadInvoice = async (invoiceId: string) => {
     try {
-      // Simulate PDF download for provider invoices
+      const { data: { session } } = await supabase.auth.getSession();
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-provider-invoice-pdf?id=${invoiceId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${session?.access_token ?? ''}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+        }
+      );
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-provider-invoice-pdf?id=${invoiceId}`;
+      link.href = url;
       link.download = `fiche-remuneration-${invoiceId}.pdf`;
       link.click();
-
-      toast({
-        title: "Téléchargement démarré",
-        description: "Votre fiche de rémunération est en cours de téléchargement",
-      });
+      URL.revokeObjectURL(url);
+      toast({ title: "Téléchargement démarré", description: "Votre fiche de rémunération est en cours de téléchargement" });
     } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de télécharger la fiche de rémunération",
-        variant: "destructive",
-      });
+      toast({ title: "Erreur", description: "Impossible de télécharger la fiche de rémunération", variant: "destructive" });
     }
   };
 

@@ -78,22 +78,27 @@ const InvoiceManagement = () => {
 
   const downloadInvoice = async (invoiceId: string) => {
     try {
-      // Simuler le téléchargement d'une facture PDF
+      const { data: { session } } = await supabase.auth.getSession();
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-invoice-pdf?id=${invoiceId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${session?.access_token ?? ''}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+        }
+      );
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-invoice?id=${invoiceId}`;
+      link.href = url;
       link.download = `facture-${invoiceId}.pdf`;
       link.click();
-
-      toast({
-        title: "Téléchargement démarré",
-        description: "Votre facture est en cours de téléchargement",
-      });
+      URL.revokeObjectURL(url);
+      toast({ title: "Téléchargement démarré", description: "Votre facture est en cours de téléchargement" });
     } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de télécharger la facture",
-        variant: "destructive",
-      });
+      toast({ title: "Erreur", description: "Impossible de télécharger la facture", variant: "destructive" });
     }
   };
 

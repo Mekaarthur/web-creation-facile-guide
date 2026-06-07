@@ -284,8 +284,72 @@ serve(async (req) => {
       }
 
       if (!availableProvider) {
-        logStep('Aucun prestataire vérifié disponible');
-        throw new Error('Aucun prestataire disponible pour cette réservation');
+        logStep('Aucun prestataire vérifié disponible — booking pending_provider');
+
+        // Attempt to create booking without provider for manual admin assignment
+        const { data: pendingBooking, error: pendingErr } = await supabaseAdmin
+          .from('bookings')
+          .insert({
+            client_id: userId,
+            provider_id: null,
+            service_id: serviceId,
+            booking_date: bookingDate,
+            start_time: startTime,
+            end_time: endTime,
+            total_price: service.price * service.quantity,
+            status: 'pending_provider',
+            address: clientInfo.address,
+            notes: `stripe_session:${sessionId}\nEmail: ${clientInfo.email}\nTél: ${clientInfo.phone}\nNom: ${clientInfo.firstName} ${clientInfo.lastName}\n⚠️ AUCUN PRESTATAIRE DISPONIBLE — assignation manuelle requise`,
+            custom_duration: hours,
+            hourly_rate: service.price,
+          } as any)
+          .select()
+          .single();
+
+        if (!pendingErr && pendingBooking) {
+          bookingIds.push(pendingBooking.id);
+          logStep('Booking pending_provider créé', { id: pendingBooking.id });
+        } else {
+          // DB rejected insert (e.g. NOT NULL constraint) — refund client immediately
+          logStep('Insert pending_provider refusé — remboursement Stripe', { error: pendingErr?.message });
+          if (stripePaymentIntentId) {
+            try {
+              await stripe.refunds.create({ payment_intent: stripePaymentIntentId });
+              logStep('Remboursement Stripe initié', { paymentIntentId: stripePaymentIntentId });
+            } catch (refundErr) {
+              logStep('Erreur remboursement Stripe (critique)', { error: String(refundErr) });
+            }
+          }
+        }
+
+        // Notify admin — urgent regardless of booking outcome
+        await supabaseAdmin.functions.invoke('create-admin-notification', {
+          body: {
+            type: 'urgent',
+            title: '⚠️ Aucun prestataire disponible',
+            message: `Paiement reçu de ${clientInfo.firstName} ${clientInfo.lastName} (${clientInfo.email}) pour "${service.serviceName}" — aucun prestataire vérifié disponible. Assignation manuelle ou remboursement requis.`,
+            data: { session_id: sessionId, service: service.serviceName, client_email: clientInfo.email },
+            priority: 'urgent',
+          },
+        }).catch(() => {});
+
+        // Email client
+        await supabaseAdmin.functions.invoke('send-notification-email', {
+          body: {
+            to: clientInfo.email,
+            type: 'booking_rejected',
+            data: {
+              clientName: clientInfo.firstName,
+              serviceName: service.serviceName,
+              bookingDate,
+              bookingTime: startTime,
+              location: clientInfo.address,
+              price: service.price * service.quantity,
+            },
+          },
+        }).catch(() => {});
+
+        continue; // Move to next service — never leave client without a record or refund
       }
 
       logStep('Prestataire assigné', { id: availableProvider.id });
