@@ -33,6 +33,9 @@ export const ProviderApplicationForm = () => {
       if (!formData.identity_document_url) {
         throw new Error("La pièce d'identité est obligatoire");
       }
+      if (!formData.motivation?.trim()) {
+        throw new Error('Veuillez indiquer votre motivation pour rejoindre Bikawo');
+      }
 
       const { error } = await supabase.from('job_applications').insert({
         first_name: formData.first_name,

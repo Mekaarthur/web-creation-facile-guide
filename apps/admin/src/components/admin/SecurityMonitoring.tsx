@@ -112,7 +112,7 @@ export const SecurityMonitoring = () => {
             <Button variant="outline" onClick={() => toast.info('Consultation des rôles', { description: 'Voir SECURITY_ROLES_SYSTEM.md pour plus de détails' })}>
               📖 Documentation Système
             </Button>
-            <Button variant="outline" onClick={() => window.open('https://supabase.com/dashboard/project/cgrosjzmbgxmtvwxictr/auth/users', '_blank')}>
+            <Button variant="outline" onClick={() => window.open(`https://supabase.com/dashboard/project/${import.meta.env.VITE_SUPABASE_PROJECT_ID}/auth/users`, '_blank')}>
               🔐 Gestion des Utilisateurs Supabase
             </Button>
             <Button variant="outline" onClick={() => toast.info('Tests de sécurité', { description: 'Voir TESTS_SECURITE.md pour la procédure complète' })}>

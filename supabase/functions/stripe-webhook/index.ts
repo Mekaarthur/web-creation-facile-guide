@@ -50,13 +50,14 @@ serve(async (req) => {
         .ilike('notes', `%stripe_session:${session.id}%`);
 
       if (!existingBookings || existingBookings.length === 0) {
-        console.log(`Aucun booking trouvé pour session ${session.id} — invocation fallback verify-payment`);
-        try {
-          await supabaseAdmin.functions.invoke('verify-payment', {
-            body: { sessionId: session.id },
-          });
+        console.log(`Aucun booking pour session ${session.id} — fallback verify-payment (non-bloquant)`);
+        // Fire-and-forget : ne pas await pour ne pas bloquer la réponse à Stripe (timeout 30s).
+        // verify-payment peut prendre jusqu'à 15s avec URSSAF — on retourne 200 immédiatement.
+        supabaseAdmin.functions.invoke('verify-payment', {
+          body: { sessionId: session.id },
+        }).then(() => {
           console.log(`Fallback verify-payment réussi pour session ${session.id}`);
-        } catch (fallbackErr) {
+        }).catch(async (fallbackErr) => {
           console.error('Erreur fallback verify-payment:', fallbackErr);
           await supabaseAdmin.functions.invoke('create-admin-notification', {
             body: {
@@ -67,7 +68,7 @@ serve(async (req) => {
               priority: 'urgent',
             },
           }).catch(() => {});
-        }
+        });
       }
 
       // Notification admin paiement reçu

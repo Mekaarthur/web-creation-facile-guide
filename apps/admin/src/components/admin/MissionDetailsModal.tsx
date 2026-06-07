@@ -108,6 +108,27 @@ export const MissionDetailsModal = ({ mission, onClose, onUpdate }: MissionDetai
         type: newStatus === 'completed' ? 'mission_completed' : newStatus === 'cancelled' ? 'booking_cancelled' : 'booking_update'
       });
 
+      // Auto-transfer Stripe Connect quand la mission est terminée (fire-and-forget)
+      if (newStatus === 'completed' && mission.provider_id) {
+        void (async () => {
+          try {
+            const { data: tx } = await supabase
+              .from('financial_transactions')
+              .select('id, payment_status')
+              .eq('booking_id', mission.id)
+              .eq('payment_status', 'paid')
+              .maybeSingle();
+            if (tx?.id) {
+              await supabase.functions.invoke('transfer-provider-payment', {
+                body: { action: 'transfer_single', transactionId: tx.id },
+              });
+            }
+          } catch (err) {
+            console.error('Auto-transfer Stripe Connect (non bloquant):', err);
+          }
+        })();
+      }
+
       toast({
         title: "Statut mis à jour",
         description: `La mission est maintenant : ${newStatus}`,
