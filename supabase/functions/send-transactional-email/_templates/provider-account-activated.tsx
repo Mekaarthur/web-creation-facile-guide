@@ -18,11 +18,13 @@ const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9
 interface ProviderAccountActivatedEmailProps {
   providerName: string;
   businessName: string;
+  siteUrl?: string;
 }
 
 export const ProviderAccountActivatedEmail = ({
   providerName = 'Prestataire',
   businessName = 'Votre entreprise',
+  siteUrl = 'https://bikawo.com',
 }: ProviderAccountActivatedEmailProps) => {
   return (
     <Html>
@@ -62,7 +64,7 @@ export const ProviderAccountActivatedEmail = ({
           </ul>
 
           <Button
-            href={`${Deno.env.get('SITE_URL') ?? 'https://bikawo.com'}/espace-prestataire`}
+            href={`${siteUrl}/espace-prestataire`}
             style={button}
           >
             Accéder à mon espace

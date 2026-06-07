@@ -17,6 +17,7 @@ interface ProviderDocumentRejectedEmailProps {
   providerName: string;
   documentType: string;
   rejectionReason: string;
+  siteUrl?: string;
 }
 
 const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
@@ -25,6 +26,7 @@ export const ProviderDocumentRejectedEmail = ({
   providerName = 'Prestataire',
   documentType = 'Document',
   rejectionReason = 'Document illisible',
+  siteUrl = 'https://bikawo.com',
 }: ProviderDocumentRejectedEmailProps) => {
   return (
     <Html>
@@ -53,7 +55,7 @@ export const ProviderDocumentRejectedEmail = ({
           </Text>
 
           <Button
-            href={`${Deno.env.get('SITE_URL') ?? 'https://bikawo.com'}/espace-prestataire`}
+            href={`${siteUrl}/espace-prestataire`}
             style={button}
           >
             Renvoyer mon document

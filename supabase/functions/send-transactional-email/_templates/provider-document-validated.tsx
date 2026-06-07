@@ -17,6 +17,7 @@ interface ProviderDocumentValidatedEmailProps {
   providerName: string;
   documentType: string;
   nextStep: string;
+  siteUrl?: string;
 }
 
 const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
@@ -25,6 +26,7 @@ export const ProviderDocumentValidatedEmail = ({
   providerName = 'Prestataire',
   documentType = 'Document',
   nextStep = 'Formation obligatoire',
+  siteUrl = 'https://bikawo.com',
 }: ProviderDocumentValidatedEmailProps) => {
   return (
     <Html>
@@ -54,7 +56,7 @@ export const ProviderDocumentValidatedEmail = ({
           </Text>
 
           <Button
-            href={`${Deno.env.get('SITE_URL') ?? 'https://bikawo.com'}/espace-prestataire`}
+            href={`${siteUrl}/espace-prestataire`}
             style={button}
           >
             Accéder à mon espace

@@ -41,24 +41,49 @@ serve(async (req) => {
     // Gérer l'événement checkout.session.completed
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
-      
       console.log(`Paiement complété pour session: ${session.id}`);
-      
-      // Créer une notification admin générique pour le paiement
-      // Note: Les bookings et factures sont créés par verify-payment, pas ici
+
+      // FIX 8 — Fallback: créer le booking si le client a fermé l'onglet avant /payment-success
+      const { data: existingBookings } = await supabaseAdmin
+        .from('bookings')
+        .select('id')
+        .ilike('notes', `%stripe_session:${session.id}%`);
+
+      if (!existingBookings || existingBookings.length === 0) {
+        console.log(`Aucun booking trouvé pour session ${session.id} — invocation fallback verify-payment`);
+        try {
+          await supabaseAdmin.functions.invoke('verify-payment', {
+            body: { sessionId: session.id },
+          });
+          console.log(`Fallback verify-payment réussi pour session ${session.id}`);
+        } catch (fallbackErr) {
+          console.error('Erreur fallback verify-payment:', fallbackErr);
+          await supabaseAdmin.functions.invoke('create-admin-notification', {
+            body: {
+              type: 'urgent',
+              title: '⚠️ Booking manquant après paiement',
+              message: `Paiement Stripe confirmé mais aucune réservation créée. Session: ${session.id}. Intervention manuelle requise.`,
+              data: { session_id: session.id, amount: (session.amount_total ?? 0) / 100, customer_email: session.customer_details?.email },
+              priority: 'urgent',
+            },
+          }).catch(() => {});
+        }
+      }
+
+      // Notification admin paiement reçu
       await supabaseAdmin.functions.invoke('create-admin-notification', {
         body: {
           type: 'payment_success',
           title: '💰 Paiement reçu',
-          message: `Nouveau paiement de ${(session.amount_total! / 100).toFixed(2)}€ reçu via Stripe`,
+          message: `Nouveau paiement de ${((session.amount_total ?? 0) / 100).toFixed(2)}€ reçu via Stripe`,
           data: {
             session_id: session.id,
-            amount: session.amount_total! / 100,
-            customer_email: session.customer_details?.email
+            amount: (session.amount_total ?? 0) / 100,
+            customer_email: session.customer_details?.email,
           },
-          priority: 'normal'
-        }
-      });
+          priority: 'normal',
+        },
+      }).catch(() => {});
     }
 
     // Gérer les remboursements
@@ -158,8 +183,37 @@ serve(async (req) => {
     // Gérer les litiges
     if (event.type === "charge.dispute.created") {
       const dispute = event.data.object as Stripe.Dispute;
-      
-      // Notifier l'admin
+      const disputePaymentIntentId = typeof dispute.payment_intent === 'string'
+        ? dispute.payment_intent
+        : (dispute.payment_intent as any)?.id ?? null;
+
+      if (disputePaymentIntentId) {
+        // 1. Trouver la transaction financière et le booking associé
+        const { data: txRecord } = await supabaseAdmin
+          .from('financial_transactions')
+          .select('id, booking_id')
+          .eq('stripe_payment_intent_id', disputePaymentIntentId)
+          .maybeSingle();
+
+        if (txRecord) {
+          // 2. Marquer la transaction comme disputée
+          await supabaseAdmin
+            .from('financial_transactions')
+            .update({ payment_status: 'disputed' })
+            .eq('id', txRecord.id);
+
+          // 3. Marquer le booking comme disputé
+          if (txRecord.booking_id) {
+            await supabaseAdmin
+              .from('bookings')
+              .update({ status: 'disputed' })
+              .eq('id', txRecord.booking_id);
+            console.log(`Booking ${txRecord.booking_id} marqué disputed`);
+          }
+        }
+      }
+
+      // 4. Notifier l'admin
       await notifyAdminDispute(dispute, supabaseAdmin);
     }
 

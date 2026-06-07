@@ -162,8 +162,14 @@ serve(async (req) => {
       throw new Error('RESEND_API_KEY not configured');
     }
 
+    // Injecter siteUrl côté serveur pour les templates qui en ont besoin
+    const enrichedData = {
+      siteUrl: Deno.env.get('SITE_URL') ?? 'https://bikawo.com',
+      ...data,
+    };
+
     // Générer le HTML de l'email
-    const html = await getEmailTemplate(type, data);
+    const html = await getEmailTemplate(type, enrichedData);
     const subject = getEmailSubject(type);
 
     // Envoyer l'email via Resend

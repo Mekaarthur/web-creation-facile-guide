@@ -228,7 +228,7 @@ export const ClientRequestsList = () => {
           data: {
             serviceName: requestData.service_type,
             serviceDescription: requestData.service_description,
-            providerName: providerData.business_name || 'Prestataire AssistLife',
+            providerName: providerData.business_name || 'Prestataire Bikawo',
             location: requestData.location,
             preferredDate: requestData.preferred_date,
             preferredTime: requestData.preferred_time

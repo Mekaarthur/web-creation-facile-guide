@@ -18,11 +18,13 @@ const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9
 interface ProviderTrainingReminderEmailProps {
   providerName: string;
   trainingProgress: number;
+  siteUrl?: string;
 }
 
 export const ProviderTrainingReminderEmail = ({
   providerName = 'Prestataire',
   trainingProgress = 0,
+  siteUrl = 'https://bikawo.com',
 }: ProviderTrainingReminderEmailProps) => {
   return (
     <Html>
@@ -61,7 +63,7 @@ export const ProviderTrainingReminderEmail = ({
           </ul>
 
           <Button
-            href={`${Deno.env.get('SITE_URL') ?? 'https://bikawo.com'}/espace-prestataire`}
+            href={`${siteUrl}/espace-prestataire`}
             style={button}
           >
             Reprendre la formation
