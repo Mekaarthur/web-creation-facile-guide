@@ -158,13 +158,15 @@ function AdminSidebar() {
     <Sidebar className="border-r border-border">
       <SidebarContent className="p-4">
         {/* Logo */}
-        <div className="flex items-center gap-2 px-2 py-4 mb-2 border-b">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-            <Shield className="w-4 h-4 text-primary-foreground" />
-          </div>
+        <div className="flex items-center gap-3 px-2 py-4 mb-2 border-b">
+          <img
+            src="/bikawo-logo.png"
+            alt="Bikawô"
+            className="h-9 w-9 object-contain flex-shrink-0"
+          />
           {!collapsed && (
             <div>
-              <h2 className="font-bold text-lg">Bikawo Admin</h2>
+              <h2 className="font-bold text-lg">Bikawô Admin</h2>
               <p className="text-xs text-muted-foreground">Interface d'administration</p>
             </div>
           )}

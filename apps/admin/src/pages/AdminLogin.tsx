@@ -78,10 +78,10 @@ export default function AdminLogin() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
       <Card className="w-full max-w-md shadow-elegant">
         <CardHeader className="space-y-1 text-center">
-          <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-            <Shield className="w-6 h-6 text-primary" />
+          <div className="mx-auto mb-4">
+            <img src="/bikawo-logo.png" alt="Bikawô" className="h-20 w-auto mx-auto" />
           </div>
-          <CardTitle className="text-2xl font-bold">Administration Bikawo</CardTitle>
+          <CardTitle className="text-2xl font-bold">Administration Bikawô</CardTitle>
           <CardDescription>
             Connectez-vous avec vos identifiants administrateur
           </CardDescription>
