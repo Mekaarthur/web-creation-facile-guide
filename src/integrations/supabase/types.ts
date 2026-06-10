@@ -538,7 +538,7 @@ export type Database = {
           id: string
           no_show_reported_at: string | null
           notes: string | null
-          provider_id: string
+          provider_id: string | null
           provider_notes: string | null
           reminder_sent: string | null
           replacement_search_status: string | null
@@ -572,7 +572,7 @@ export type Database = {
           id?: string
           no_show_reported_at?: string | null
           notes?: string | null
-          provider_id: string
+          provider_id?: string | null
           provider_notes?: string | null
           reminder_sent?: string | null
           replacement_search_status?: string | null
@@ -606,7 +606,7 @@ export type Database = {
           id?: string
           no_show_reported_at?: string | null
           notes?: string | null
-          provider_id?: string
+          provider_id?: string | null
           provider_notes?: string | null
           reminder_sent?: string | null
           replacement_search_status?: string | null
