@@ -1,5 +1,5 @@
 ﻿import { useMemo, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -15,7 +15,6 @@ import { serviceTranslations } from "@/utils/serviceTranslations";
 
 const SubServicePage = () => {
   const { category, slug } = useParams<{ category: ServiceCategoryKey; slug: string }>();
-  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
   const { currentCategory, sub } = useMemo(() => {
@@ -99,7 +98,7 @@ const SubServicePage = () => {
                 </Card>
               )}
               <div className="flex gap-3 pt-2">
-                <Button onClick={() => setOpen(true)} className="flex-1">{t('subService.bookNow')}</Button>
+                <Button onClick={() => setOpen(true)} className="flex-1" data-testid="btn-reserver">{t('subService.bookNow')}</Button>
                 <Button variant="outline" asChild>
                   <Link to={`/services`}>{t('subService.backToServices')}</Link>
                 </Button>
@@ -112,7 +111,7 @@ const SubServicePage = () => {
       {/* Sticky CTA on mobile */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75 p-3">
         <div className="max-w-5xl mx-auto">
-          <Button className="w-full" onClick={() => setOpen(true)}>{t('subService.bookNow')}</Button>
+          <Button className="w-full" onClick={() => setOpen(true)} data-testid="btn-reserver">{t('subService.bookNow')}</Button>
         </div>
       </div>
 

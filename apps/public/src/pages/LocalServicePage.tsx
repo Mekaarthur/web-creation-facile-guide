@@ -1,9 +1,11 @@
-﻿import { useParams, Navigate, Link } from 'react-router-dom';
+﻿import { useState } from 'react';
+import { useParams, Navigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { MapPin, Star, Shield, Clock, ChevronRight, Phone, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Navbar from '@/components/Navbar';
+import BikaServiceBooking from '@/components/BikaServiceBooking';
 import Footer from '@/components/Footer';
 import {
   getServiceBySlug,
@@ -15,12 +17,11 @@ import {
   generateLocalStructuredData,
   services,
   departments,
-  type LocalCity,
-  type LocalService,
 } from '@/data/seoLocalData';
 
 const LocalServicePage = () => {
-  const { serviceSlug, citySlug } = useParams<{ serviceSlug: string; citySlug: string }>();
+  const { category: serviceSlug, slug: citySlug } = useParams<{ category: string; slug: string }>();
+  const [bookingOpen, setBookingOpen] = useState(false);
 
   const service = serviceSlug ? getServiceBySlug(serviceSlug) : undefined;
   const city = citySlug ? getCityBySlug(citySlug) : undefined;
@@ -126,11 +127,9 @@ const LocalServicePage = () => {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button asChild size="lg" className="gap-2">
-                  <Link to="/services">
-                    Réserver maintenant
-                    <ChevronRight className="h-4 w-4" />
-                  </Link>
+                <Button size="lg" className="gap-2" onClick={() => setBookingOpen(true)}>
+                  Réserver maintenant
+                  <ChevronRight className="h-4 w-4" />
                 </Button>
                 <Button asChild variant="outline" size="lg" className="gap-2">
                   <a href="tel:+33609085390">
@@ -258,11 +257,9 @@ const LocalServicePage = () => {
               Réservez votre prestation de {service.shortName.toLowerCase()} en quelques clics. 
               C'est simple, rapide et sans engagement.
             </p>
-            <Button asChild size="lg" variant="secondary" className="gap-2">
-              <Link to="/services">
-                Commencer maintenant
-                <ChevronRight className="h-4 w-4" />
-              </Link>
+            <Button size="lg" variant="secondary" className="gap-2" onClick={() => setBookingOpen(true)}>
+              Commencer maintenant
+              <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </section>
@@ -285,6 +282,18 @@ const LocalServicePage = () => {
       </main>
 
       <Footer />
+
+      <BikaServiceBooking
+        isOpen={bookingOpen}
+        onClose={() => setBookingOpen(false)}
+        service={{
+          name: service.name,
+          description: service.description,
+          price: 25,
+          category: service.id,
+        }}
+        packageTitle={service.shortName}
+      />
     </>
   );
 };
