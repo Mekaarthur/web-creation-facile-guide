@@ -176,22 +176,22 @@ test.describe('N05 — /modern-admin sans rôle admin', () => {
     await expect(page).toHaveURL(/\/auth/, { timeout: 8000 });
   });
 
-  test('N05b: affiche "Accès Refusé" pour utilisateur authentifié sans rôle admin', async ({ page }) => {
+  test('N05b: utilisateur authentifié sans rôle admin → redirige vers /auth', async ({ page }) => {
     await injectSession(page, makeClientSession());
     await stubSupabaseClientSession(page);
     await page.goto('/modern-admin');
 
-    // AdminRoute shows "Accès Refusé" card (not a redirect)
-    await expect(page.getByText(/accès refusé/i)).toBeVisible({ timeout: 8000 });
+    // /modern-admin/* → <Navigate to="/auth" replace /> (App.tsx) — pas d'AdminRoute dans l'app publique
+    await expect(page).toHaveURL(/\/auth/, { timeout: 8000 });
   });
 
-  test('N05c: "Accès Refusé" propose un lien vers l\'espace personnel du client', async ({ page }) => {
+  test('N05c: redirect /modern-admin → /auth affiche la sélection de type utilisateur', async ({ page }) => {
     await injectSession(page, makeClientSession());
     await stubSupabaseClientSession(page);
     await page.goto('/modern-admin');
 
-    await expect(page.getByText(/accès refusé/i)).toBeVisible({ timeout: 8000 });
-    await expect(page.getByRole('button', { name: /espace personnel/i })).toBeVisible();
+    await expect(page).toHaveURL(/\/auth/, { timeout: 8000 });
+    await expect(page.getByRole('heading', { name: 'Bienvenue sur Bikawo' })).toBeVisible({ timeout: 10_000 });
   });
 });
 
@@ -221,18 +221,19 @@ test.describe('N06 — /provider/dashboard retour Stripe Connect', () => {
 
   test('N06c: /provider/dashboard prestataire non vérifié → redirige vers /provider-onboarding', async ({ page }) => {
     await injectSession(page, makeProviderSession());
+    // catch-alls first, specific mocks last (LIFO — last registered = highest priority)
+    await page.route('**/rest/v1/**', stubEmpty);
+    await page.route('**/functions/v1/**', json(200, {}));
     await page.route('**/auth/v1/user**', json(200, {
       id: MOCK_USER_ID, email: MOCK_PROVIDER_EMAIL, role: 'authenticated',
       user_metadata: { user_type: 'prestataire' }, aud: 'authenticated', app_metadata: {},
     }));
     await page.route('**/rest/v1/user_roles*', mockUserRolesProvider);
-    // Provider exists but is NOT verified
-    await page.route('**/rest/v1/providers*', json(200, {
+    // Provider exists but is NOT verified — array format for maybeSingle()
+    await page.route('**/rest/v1/providers*', json(200, [{
       id: MOCK_PROVIDER_ID, user_id: MOCK_USER_ID,
       is_verified: false, status: 'pending',
-    }));
-    await page.route('**/rest/v1/**', stubEmpty);
-    await page.route('**/functions/v1/**', json(200, {}));
+    }]));
 
     await page.goto('/provider/dashboard');
 

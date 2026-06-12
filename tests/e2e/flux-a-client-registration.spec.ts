@@ -184,9 +184,9 @@ test.describe('Flux A — Inscription client', () => {
     test('A03 — bouton Retour depuis login ramène à la sélection', async ({ page }) => {
       await goToAuth(page);
       await selectClientType(page);
-      // Le bouton retour dans l'en-tête nav (ArrowLeft)
-      await page.getByRole('button', { name: /Retour/i }).first().click();
-      await expect(page.getByRole('heading', { name: 'Bienvenue sur Bikawo' })).toBeVisible();
+      // Exact match pour éviter le FloatingBackButton (aria-label "Retour à la page précédente")
+      await page.getByRole('button', { name: 'Retour', exact: true }).click();
+      await expect(page.getByRole('heading', { name: 'Bienvenue sur Bikawo' })).toBeVisible({ timeout: 10_000 });
       await expect(page.locator('button').filter({ hasText: 'Je suis Client' })).toBeVisible();
     });
 

@@ -80,10 +80,10 @@ test.describe('R02 — ProtectedProviderRoute non vérifié', () => {
   });
 });
 
-// ─── R03 — AdminRoute → rôle client → card "Accès Refusé" ───────────────────
+// ─── R03 — /modern-admin → redirect /auth (pas d'AdminRoute dans l'app publique) ─
 
-test.describe('R03 — AdminRoute avec rôle client', () => {
-  test('R03: client sur /modern-admin → card "Accès Refusé", pas de redirect', async ({ page }) => {
+test.describe('R03 — /modern-admin redirige vers /auth', () => {
+  test('R03: client sur /modern-admin → redirige vers /auth', async ({ page }) => {
     await injectSession(page, makeClientSession());
 
     // catch-alls first, specific mocks last (LIFO)
@@ -98,11 +98,8 @@ test.describe('R03 — AdminRoute avec rôle client', () => {
 
     await page.goto('/modern-admin');
 
-    await expect(page.getByText(/Accès Refusé/i)).toBeVisible({ timeout: 8000 });
-    // Client role → button to espace personnel
-    await expect(page.getByRole('button', { name: /mon espace personnel/i })).toBeVisible();
-    // Still at /modern-admin — access denied card shown in-place (no redirect)
-    await expect(page).toHaveURL(/\/modern-admin/);
+    // /modern-admin/* → <Navigate to="/auth" replace /> (App.tsx) — pas d'AdminRoute dans l'app publique
+    await expect(page).toHaveURL(/\/auth/, { timeout: 8000 });
   });
 });
 
@@ -192,31 +189,31 @@ test.describe('R06 — /email/verify/:token invalide', () => {
   });
 });
 
-// ─── R07 — /admin/* → <Navigate replace> vers /modern-admin ──────────────────
+// ─── R07 — /admin → NotFound (aucune route /admin dans l'app publique) ─────────
 
-test.describe('R07 — /admin/* → Navigate replace vers /modern-admin', () => {
-  test('R07: /admin → <Navigate replace> déclenché, URL hors de /admin', async ({ page }) => {
+test.describe('R07 — /admin → NotFound (app publique)', () => {
+  test('R07: /admin → aucune route définie → NotFound, URL reste /admin', async ({ page }) => {
     await page.route('**/auth/v1/**', stubEmpty);
     await page.route('**/rest/v1/**', stubEmpty);
     await page.route('**/functions/v1/**', json(200, {}));
 
     await page.goto('/admin');
 
-    // Navigate replace fires: /admin → /modern-admin, then AdminRoute (no auth) → /admin/login
-    await expect(page).toHaveURL(/\/admin\/login/, { timeout: 5000 });
-    // Confirm we did NOT stay at /admin (Navigate component was effective)
-    expect(page.url()).not.toMatch(/\/admin$/);
+    // Pas de route /admin dans l'app publique → wildcard * → NotFound
+    await expect(page).toHaveURL('/admin', { timeout: 5000 });
+    await expect(page.getByRole('heading', { name: /page introuvable/i })).toBeVisible();
   });
 
-  test('R07b: /admin/sous-page → wildcard <Navigate replace> vers /modern-admin', async ({ page }) => {
+  test('R07b: /admin/users → aucune route définie → NotFound, URL reste /admin/users', async ({ page }) => {
     await page.route('**/auth/v1/**', stubEmpty);
     await page.route('**/rest/v1/**', stubEmpty);
     await page.route('**/functions/v1/**', json(200, {}));
 
     await page.goto('/admin/users');
 
-    // /admin/* wildcard redirects to /modern-admin, then AdminRoute → /admin/login
-    await expect(page).toHaveURL(/\/admin\/login/, { timeout: 5000 });
+    // Pas de route /admin/* dans l'app publique → wildcard * → NotFound
+    await expect(page).toHaveURL('/admin/users', { timeout: 5000 });
+    await expect(page.getByRole('heading', { name: /page introuvable/i })).toBeVisible();
   });
 });
 
