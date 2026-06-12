@@ -568,7 +568,7 @@ serve(async (req) => {
             company_commission:       splitBikawoNet,
             stripe_commission:        splitStripeComm,
             hours:                    splitHours,
-            payment_status:           'paid',
+            payment_status:           'completed',
             client_paid_at:           now,
             stripe_payment_intent_id: stripePaymentIntentId,
           }, { onConflict: 'booking_id' });
@@ -587,7 +587,7 @@ serve(async (req) => {
       await supabaseAdmin
         .from('financial_transactions')
         .update({
-          payment_status:           'paid',
+          payment_status:           'completed',
           client_paid_at:           now,
           stripe_payment_intent_id: stripePaymentIntentId,
         })

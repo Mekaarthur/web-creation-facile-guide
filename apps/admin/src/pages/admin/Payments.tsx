@@ -79,7 +79,7 @@ const AdminPayments = () => {
   const totalClientAmount = transactions?.reduce((sum, t) => sum + (t.client_price || 0), 0) || 0;
   const totalProviderAmount = transactions?.reduce((sum, t) => sum + (t.provider_payment || 0), 0) || 0;
   const totalCommission = transactions?.reduce((sum, t) => sum + (t.company_commission || 0), 0) || 0;
-  const paidTransactions = transactions?.filter(t => t.payment_status === 'paid' || t.payment_status === 'client_paid') || [];
+  const paidTransactions = transactions?.filter(t => t.payment_status === 'completed' || t.payment_status === 'client_paid') || [];
   const pendingTransactions = transactions?.filter(t => t.payment_status === 'pending') || [];
 
   const handleExportCSV = () => {

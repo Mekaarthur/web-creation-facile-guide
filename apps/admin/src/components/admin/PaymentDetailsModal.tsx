@@ -233,7 +233,7 @@ export const PaymentDetailsModal = ({ transaction, onClose, onUpdate }: PaymentD
           </TabsContent>
 
           <TabsContent value="actions" className="space-y-4">
-            {transaction.payment_status === 'paid' && !transaction.provider_paid_at && (
+            {transaction.payment_status === 'completed' && !transaction.provider_paid_at && (
               <Card>
                 <CardHeader><CardTitle>Verser au prestataire</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
@@ -247,7 +247,7 @@ export const PaymentDetailsModal = ({ transaction, onClose, onUpdate }: PaymentD
                 </CardContent>
               </Card>
             )}
-            {(transaction.payment_status === 'paid' || transaction.payment_status === 'pending') && (
+            {(transaction.payment_status === 'completed' || transaction.payment_status === 'pending') && (
               <Card>
                 <CardHeader><CardTitle className="flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-red-600" />Remboursement</CardTitle></CardHeader>
                 <CardContent className="space-y-4">

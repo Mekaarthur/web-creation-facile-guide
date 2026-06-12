@@ -126,7 +126,7 @@ export function ReservationActionsTab({
             </Button>
           )}
 
-          {financialTransaction && financialTransaction.payment_status === 'paid' && (
+          {financialTransaction && financialTransaction.payment_status === 'completed' && (
             <Button
               variant="outline"
               onClick={() => window.open(`https://dashboard.stripe.com/payments/${stripePaymentIntentId || financialTransaction.id}`, '_blank')}

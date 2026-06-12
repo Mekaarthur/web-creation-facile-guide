@@ -116,7 +116,7 @@ export const MissionDetailsModal = ({ mission, onClose, onUpdate }: MissionDetai
               .from('financial_transactions')
               .select('id, payment_status')
               .eq('booking_id', mission.id)
-              .eq('payment_status', 'paid')
+              .eq('payment_status', 'completed')
               .maybeSingle();
             if (tx?.id) {
               await supabase.functions.invoke('transfer-provider-payment', {

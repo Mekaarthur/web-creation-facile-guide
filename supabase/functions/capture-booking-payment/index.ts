@@ -54,7 +54,7 @@ serve(async (req) => {
     const { error: updateError } = await supabaseClient
       .from('financial_transactions')
       .update({
-        payment_status: 'paid',
+        payment_status: 'completed',
         client_paid_at: new Date().toISOString()
       })
       .eq('booking_id', bookingId);

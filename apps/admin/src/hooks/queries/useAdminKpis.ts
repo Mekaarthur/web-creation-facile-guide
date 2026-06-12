@@ -72,7 +72,7 @@ export const useAdminKpis = (period: KpiPeriod = "30d") => {
         .gte("created_at", startISO)
         .lte("created_at", endISO);
 
-      const paidTxs = (txs ?? []).filter((t) => t.payment_status === "paid");
+      const paidTxs = (txs ?? []).filter((t) => t.payment_status === "completed");
       const revenue = {
         total: paidTxs.reduce((s, t) => s + Number(t.client_price ?? 0), 0),
         commission: paidTxs.reduce((s, t) => s + Number(t.company_commission ?? 0), 0),

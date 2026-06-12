@@ -79,10 +79,10 @@ export function ReservationFinanceTab({ financials, financialTransaction }: Prop
                 </p>
               </div>
               <Badge variant={
-                financialTransaction?.payment_status === 'paid' ? 'default' :
+                financialTransaction?.payment_status === 'completed' ? 'default' :
                 financialTransaction?.payment_status === 'pending' ? 'secondary' : 'outline'
               }>
-                {financialTransaction?.payment_status === 'paid' ? 'Payé' :
+                {financialTransaction?.payment_status === 'completed' ? 'Payé' :
                  financialTransaction?.payment_status === 'pending' ? 'En attente' : 'Non payé'}
               </Badge>
             </div>
