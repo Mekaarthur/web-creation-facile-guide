@@ -96,9 +96,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
     if (!validateForm()) return;
     setIsProcessing(true);
 
-    let checkoutWindow: Window | null = null;
     try {
-      checkoutWindow = window.open('', '_blank');
       const services = cartItems.map(item => ({
         serviceName: item.serviceName, packageTitle: item.packageTitle, category: item.serviceCategory,
         price: item.price, quantity: item.quantity,
@@ -135,15 +133,8 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
 
       localStorage.setItem('bikawo-pending-booking', JSON.stringify({ clientInfo, services, totalAmount, notes: cartItems.map(item => item.notes).filter(Boolean).join('; ') }));
 
-      const go = (u: string) => {
-        try { if (checkoutWindow && !checkoutWindow.closed) { checkoutWindow.location.href = u; return; } } catch {}
-        try { window.location.assign(u); return; } catch {}
-        try { if (window.top) { window.top.location.href = u; return; } } catch {}
-        const a = document.createElement('a'); a.href = u; a.target = '_blank'; a.rel = 'noopener noreferrer'; document.body.appendChild(a); a.click(); a.remove();
-      };
-      go(paymentData.url);
+      window.location.assign(paymentData.url);
     } catch (error: any) {
-      try { if (checkoutWindow && !checkoutWindow.closed) checkoutWindow.close(); } catch {}
       toast({ title: 'Erreur', description: error.message || 'Une erreur est survenue lors de la création du paiement', variant: 'destructive' });
       setIsProcessing(false);
     }

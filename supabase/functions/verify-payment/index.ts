@@ -236,8 +236,22 @@ serve(async (req) => {
               logStep('Erreur envoi email de bienvenue', { error: String(emailError) });
             }
           }
-        } catch (error) {
+        } catch (error: any) {
           logStep('Erreur lors de la création du compte', { error: String(error) });
+          // Si l'email est déjà dans auth (mais pas dans profiles), chercher l'user existant
+          const errMsg = String(error).toLowerCase();
+          if (errMsg.includes('already registered') || errMsg.includes('already exists') || errMsg.includes('already been registered')) {
+            try {
+              const { data: listData } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+              const found = (listData?.users ?? []).find((u: any) => u.email === clientInfo.email);
+              if (found) {
+                userId = found.id;
+                logStep('User auth récupéré après échec createUser', { userId });
+              }
+            } catch (lookupErr) {
+              logStep('Lookup user par email échoué', { error: String(lookupErr) });
+            }
+          }
         }
       }
     }
@@ -522,9 +536,9 @@ serve(async (req) => {
             provider_id:              null,
             service_category:         splitServiceType || 'bika_maison',
             client_price:             totalAmount,
-            provider_payment:         splitProviderAmt / 100,     // centimes → euros
-            company_commission:       splitBikawoNet  / 100,
-            stripe_commission:        splitStripeComm  / 100,
+            provider_payment:         splitProviderAmt,
+            company_commission:       splitBikawoNet,
+            stripe_commission:        splitStripeComm,
             hours:                    splitHours,
             payment_status:           'paid',
             client_paid_at:           now,

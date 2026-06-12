@@ -173,8 +173,8 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url:  `${req.headers.get("origin")}/payment-canceled`,
+      success_url: `${req.headers.get("origin") ?? "https://bikawo.com"}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url:  `${req.headers.get("origin") ?? "https://bikawo.com"}/payment-canceled`,
       metadata: sessionMetadata,
       payment_intent_data: { metadata: sessionMetadata },
     };
