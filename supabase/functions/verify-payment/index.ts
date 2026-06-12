@@ -273,17 +273,43 @@ serve(async (req) => {
       const endTime = customBooking.endTime || '17:00';
       const hours = customBooking.hours || 1;
 
-      const { data: serviceData } = await supabaseAdmin
-        .from('services')
-        .select('id')
-        .eq('name', service.serviceName)
-        .single();
+      // Lookup multi-stratégies : exact → ilike → mots-clés → null (service_id est nullable)
+      let serviceId: string | null = null;
+      let serviceUnmapped = false;
 
-      const serviceId = serviceData?.id;
+      const { data: exactSvc } = await supabaseAdmin
+        .from('services').select('id').eq('name', service.serviceName).maybeSingle();
+      if (exactSvc) {
+        serviceId = exactSvc.id;
+      } else {
+        const { data: ilikeSvc } = await supabaseAdmin
+          .from('services').select('id').ilike('name', service.serviceName).maybeSingle();
+        if (ilikeSvc) {
+          serviceId = ilikeSvc.id;
+        } else {
+          // Partial match : 2 mots-clés (%m1%m2%) puis 1 mot-clé seul (ordre alphabétique)
+          const words = service.serviceName
+            .split(/[\s&,\-–—!?']+/).filter((w: string) => w.length > 3);
+          if (words.length >= 2) {
+            const { data: twoWordSvc } = await supabaseAdmin
+              .from('services').select('id')
+              .ilike('name', `%${words[0]}%${words[1]}%`)
+              .limit(1).maybeSingle();
+            if (twoWordSvc) serviceId = twoWordSvc.id;
+          }
+          if (!serviceId && words.length >= 1) {
+            const { data: oneWordSvc } = await supabaseAdmin
+              .from('services').select('id')
+              .ilike('name', `%${words[0]}%`)
+              .order('name', { ascending: true }).limit(1).maybeSingle();
+            if (oneWordSvc) serviceId = oneWordSvc.id;
+          }
+        }
+      }
 
       if (!serviceId) {
-        logStep('Service non trouvé', { name: service.serviceName });
-        continue;
+        logStep('Service introuvable en base — booking créé sans service_id (assignation admin requise)', { name: service.serviceName });
+        serviceUnmapped = true;
       }
 
       // Priorité 1 : prestataire favori actif du client
@@ -341,7 +367,7 @@ serve(async (req) => {
             total_price: service.price * service.quantity,
             status: 'pending_provider',
             address: clientInfo.address,
-            notes: `stripe_session:${sessionId}\nEmail: ${clientInfo.email}\nTél: ${clientInfo.phone}\nNom: ${clientInfo.firstName} ${clientInfo.lastName}\n⚠️ AUCUN PRESTATAIRE DISPONIBLE — assignation manuelle requise`,
+            notes: `stripe_session:${sessionId}\nEmail: ${clientInfo.email}\nTél: ${clientInfo.phone}\nNom: ${clientInfo.firstName} ${clientInfo.lastName}\n⚠️ AUCUN PRESTATAIRE DISPONIBLE — assignation manuelle requise${serviceUnmapped ? `\n⚠️ SERVICE NON IDENTIFIÉ: "${service.serviceName}" — assignation service requise` : ''}`,
             custom_duration: hours,
             hourly_rate: service.price,
           } as any)
@@ -396,8 +422,9 @@ serve(async (req) => {
 
       logStep('Prestataire assigné', { id: availableProvider.id });
 
-      // Statut initial : si URSSAF activé, la mission est en attente de déclaration
-      const initialStatus = urssafEnabled ? 'pending_urssaf' : 'confirmed';
+      // Statut initial : unmapped service ou URSSAF → review admin
+      const initialStatus = serviceUnmapped ? 'pending_provider' : (urssafEnabled ? 'pending_urssaf' : 'confirmed');
+      const unmappedNote = serviceUnmapped ? `\n⚠️ SERVICE NON IDENTIFIÉ: "${service.serviceName}" — assignation service requise` : '';
 
       const { data: booking, error: bookingError } = await supabaseAdmin
         .from('bookings')
@@ -410,9 +437,9 @@ serve(async (req) => {
           end_time: endTime,
           total_price: service.price * service.quantity,
           status: initialStatus,
-          confirmed_at: urssafEnabled ? null : new Date().toISOString(),
+          confirmed_at: (!urssafEnabled && !serviceUnmapped) ? new Date().toISOString() : null,
           address: clientInfo.address,
-          notes: `stripe_session:${sessionId}\nEmail: ${clientInfo.email}\nTél: ${clientInfo.phone}\nNom: ${clientInfo.firstName} ${clientInfo.lastName}${urssafEnabled ? '\nURSSAF: en attente de déclaration' : ''}${customBooking.notes ? '\n' + customBooking.notes : ''}`,
+          notes: `stripe_session:${sessionId}\nEmail: ${clientInfo.email}\nTél: ${clientInfo.phone}\nNom: ${clientInfo.firstName} ${clientInfo.lastName}${unmappedNote}${urssafEnabled ? '\nURSSAF: en attente de déclaration' : ''}${customBooking.notes ? '\n' + customBooking.notes : ''}`,
           custom_duration: hours,
           hourly_rate: service.price,
         })
