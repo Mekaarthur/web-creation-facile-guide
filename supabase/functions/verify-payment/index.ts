@@ -422,8 +422,9 @@ serve(async (req) => {
 
       logStep('Prestataire assigné', { id: availableProvider.id });
 
-      // Statut initial : unmapped service ou URSSAF → review admin
-      const initialStatus = serviceUnmapped ? 'pending_provider' : (urssafEnabled ? 'pending_urssaf' : 'confirmed');
+      // Statut initial : URSSAF → review admin, sinon confirmé directement
+      // serviceUnmapped n'affecte pas le statut : la contrainte DB impose pending_provider ↔ provider_id IS NULL
+      const initialStatus = urssafEnabled ? 'pending_urssaf' : 'confirmed';
       const unmappedNote = serviceUnmapped ? `\n⚠️ SERVICE NON IDENTIFIÉ: "${service.serviceName}" — assignation service requise` : '';
 
       const { data: booking, error: bookingError } = await supabaseAdmin
@@ -437,7 +438,7 @@ serve(async (req) => {
           end_time: endTime,
           total_price: service.price * service.quantity,
           status: initialStatus,
-          confirmed_at: (!urssafEnabled && !serviceUnmapped) ? new Date().toISOString() : null,
+          confirmed_at: urssafEnabled ? null : new Date().toISOString(),
           address: clientInfo.address,
           notes: `stripe_session:${sessionId}\nEmail: ${clientInfo.email}\nTél: ${clientInfo.phone}\nNom: ${clientInfo.firstName} ${clientInfo.lastName}${unmappedNote}${urssafEnabled ? '\nURSSAF: en attente de déclaration' : ''}${customBooking.notes ? '\n' + customBooking.notes : ''}`,
           custom_duration: hours,
