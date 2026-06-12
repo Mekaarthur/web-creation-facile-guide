@@ -157,7 +157,7 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
                       >
                         <td className="p-3">
                           <div>
-                            <p className="font-semibold text-sm">{item.serviceName}</p>
+                            <p className="font-semibold text-sm" data-testid="cart-item-name">{item.serviceName}</p>
                             <p className="text-xs text-muted-foreground">{item.packageTitle}</p>
                             {item.address && (
                               <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
@@ -182,7 +182,7 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
                           {item.price}€/h
                         </td>
                         <td className="p-3 text-right">
-                          <span className="text-lg font-bold text-primary">
+                          <span className="text-lg font-bold text-primary" data-testid="cart-item-price">
                             {item.price * item.quantity}€
                           </span>
                         </td>
@@ -256,7 +256,7 @@ const BikawoCart = ({ isOpen = false, onClose }: BikawoCartProps) => {
                           {item.price}€/h
                         </span>
                       </div>
-                      <span className="text-xl font-bold text-primary">
+                      <span className="text-xl font-bold text-primary" data-testid="cart-item-price">
                         {item.price * item.quantity}€
                       </span>
                     </div>

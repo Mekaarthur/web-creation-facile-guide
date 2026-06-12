@@ -45,7 +45,7 @@ export function CartSummaryItems({ cartItems, hasIncompatibleServices, separated
       <div className={`space-y-2 sm:space-y-3 ${maxHeight} overflow-y-auto`}>
         {cartItems.map((item) => (
           <div key={item.id} className="p-2.5 sm:p-3 bg-muted/30 rounded-lg text-xs sm:text-sm">
-            <div className="font-medium text-sm sm:text-base">{item.serviceName}</div>
+            <div className="font-medium text-sm sm:text-base" data-testid="checkout-recap-service">{item.serviceName}</div>
             <div className="text-xs text-muted-foreground">{item.packageTitle}</div>
             <div className="text-xs text-muted-foreground mt-1.5 sm:mt-2 flex items-center gap-1">
               <Clock className="w-3 h-3 flex-shrink-0" />
@@ -59,7 +59,7 @@ export function CartSummaryItems({ cartItems, hasIncompatibleServices, separated
             )}
             <div className="mt-2 flex justify-between items-center gap-2">
               <Badge variant="secondary" className="text-xs">{item.price}€ × {item.quantity}h</Badge>
-              <span className="font-medium text-sm sm:text-base whitespace-nowrap">{item.price * item.quantity}€</span>
+              <span className="font-medium text-sm sm:text-base whitespace-nowrap" data-testid="checkout-recap-item-total">{item.price * item.quantity}€</span>
             </div>
           </div>
         ))}

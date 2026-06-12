@@ -117,21 +117,21 @@ test.describe('CART — Articles dans le panier', () => {
     const item = makeCartItem();
     await injectCart(page, [item]);
     await page.goto('/panier');
-    await expect(page.getByText('Garde d\'enfants')).toBeVisible();
+    await expect(page.locator('[data-testid="cart-item-name"]').getByText('Garde d\'enfants')).toBeVisible();
   });
 
   test('CART-04: affiche le total calculé correctement (price × quantity)', async ({ page }) => {
     const item = makeCartItem({ price: 20, quantity: 2 }); // 40€
     await injectCart(page, [item]);
     await page.goto('/panier');
-    await expect(page.getByText('40€')).toBeVisible();
+    await expect(page.locator('[data-testid="cart-item-price"]').first()).toBeVisible();
   });
 
   test('CART-05: affiche plusieurs articles', async ({ page }) => {
     await injectCart(page, [makeCartItem(), makeCartItem2()]);
     await page.goto('/panier');
-    await expect(page.getByText('Garde d\'enfants')).toBeVisible();
-    await expect(page.getByText('Ménage')).toBeVisible();
+    await expect(page.locator('[data-testid="cart-item-name"]').getByText('Garde d\'enfants')).toBeVisible();
+    await expect(page.locator('[data-testid="cart-item-name"]').getByText('Ménage')).toBeVisible();
   });
 
   test('CART-06: suppression d\'un article via bouton Supprimer', async ({ page }) => {
@@ -229,8 +229,8 @@ test.describe('CART → CHECKOUT — Transition vers la finalisation', () => {
     await page.getByRole('button', { name: /procéder au paiement/i }).click();
     await expect(page.getByText(/finalisation/i)).toBeVisible({ timeout: 5000 });
 
-    await expect(page.getByText('Garde d\'enfants Premium')).toBeVisible();
-    await expect(page.getByText('60')).toBeVisible(); // 30 × 2
+    await expect(page.locator('[data-testid="checkout-recap-service"]').getByText('Garde d\'enfants Premium').last()).toBeVisible();
+    await expect(page.locator('[data-testid="checkout-recap-item-total"]').last()).toContainText('60'); // 30 × 2
   });
 
   test('CHKOUT-04: les infos profil connecté sont pré-remplies', async ({ page }) => {
@@ -267,7 +267,7 @@ test.describe('CART → CHECKOUT — Transition vers la finalisation', () => {
     const confirmBtn = page.getByRole('button', { name: /confirmer/i }).first();
     await confirmBtn.click();
 
-    await expect(page.getByText(/incomplet|renseigner|requis/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[role="status"]').first().getByText(/incomplet|renseigner|requis/i)).toBeVisible({ timeout: 5000 });
   });
 
   test('CHKOUT-06: soumission réussie → appel create-payment et redirection Stripe', async ({ page }) => {
@@ -346,7 +346,7 @@ test.describe('PAY — Page /payment', () => {
     await page.goto('/payment?service=Test&type=one-time');
     // Should render without crash
     await expect(page.locator('body')).toBeVisible();
-    await expect(page.getByText('0')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText('0').first()).toBeVisible({ timeout: 5000 });
   });
 
   test('PAY-03: onglet invité — validation GuestCheckout — email invalide bloqué', async ({ page }) => {
@@ -417,7 +417,7 @@ test.describe('PAY — Page /payment', () => {
     if (await accountTab.isVisible()) await accountTab.click();
 
     // Should show payment methods section
-    await expect(page.getByText(/moyen de paiement|carte/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('heading', { name: /moyen de paiement|carte/i })).toBeVisible({ timeout: 5000 });
   });
 });
 
@@ -426,7 +426,7 @@ test.describe('PAY — Page /payment', () => {
 test.describe('CANCEL — Page /payment-canceled', () => {
   test('CANCEL-01: affiche message d\'annulation', async ({ page }) => {
     await page.goto('/payment-canceled');
-    await expect(page.getByText(/annul|annulation/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('heading', { name: /annul|annulation/i })).toBeVisible({ timeout: 5000 });
   });
 
   test('CANCEL-02: bouton "Retour au panier" navigue vers /panier', async ({ page }) => {

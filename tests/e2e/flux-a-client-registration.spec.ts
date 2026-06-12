@@ -226,7 +226,7 @@ test.describe('Flux A — Inscription client', () => {
     test('F01 — soumission à vide affiche les erreurs de validation', async ({ page }) => {
       await page.getByRole('button', { name: /Créer mon compte client/i }).click();
       // react-hook-form valide tout au submit → erreur minimum prénom
-      await expect(page.getByText(/au moins 2 caractères/)).toBeVisible();
+      await expect(page.getByText(/au moins 2 caractères/).first()).toBeVisible();
     });
 
     test('F02 — email invalide affiche l\'erreur de format', async ({ page }) => {
@@ -309,7 +309,7 @@ test.describe('Flux A — Inscription client', () => {
     test('A05 — /auth/complete sans token affiche "vérifiez email"', async ({ page }) => {
       await page.goto('/auth/complete');
       // Pas de ?token → status = 'success' avec message "Inscription réussie ! Un email de confirmation..."
-      await expect(page.getByText(/email de confirmation/i)).toBeVisible({ timeout: 8_000 });
+      await expect(page.getByText(/email de confirmation/i).first()).toBeVisible({ timeout: 8_000 });
     });
 
     test('A05b — /auth/complete avec ?error= affiche l\'état d\'erreur', async ({ page }) => {

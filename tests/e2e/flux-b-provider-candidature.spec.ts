@@ -51,15 +51,15 @@ async function fillCandidatureForm(page: Page) {
   await page.locator('input[type="email"]').fill(`e2e-${Date.now()}@test.bikawo.fr`);
   await page.locator('input[type="tel"]').fill('0612345678');
   await page.getByPlaceholder('Numéro, rue').fill('10 avenue de la Paix');
-  await page.getByPlaceholder('Paris').fill('Paris');
+  await page.locator('[data-testid="input-city"]').fill('Paris');
   await page.getByPlaceholder('75001').fill('75001');
   // Zone géographique
   await page.getByPlaceholder(/Paris et proche banlieue/i).fill('Paris 75');
   // Sélectionner au moins un service
   await page.locator('#bika_kids').click();           // Checkbox Bika Kids
-  // Disponibilités — Select Radix
+  // Disponibilités — Select Radix (scoped to avoid matching hidden <option> element)
   await page.getByRole('combobox').click();
-  await page.getByText('Flexible selon les besoins').click();
+  await page.getByRole('option', { name: 'Flexible selon les besoins' }).click();
 }
 
 /**
@@ -120,7 +120,7 @@ test.describe('Flux B — Formulaire candidature prestataire', () => {
     await expect(page.getByText(/Informations personnelles/i)).toBeVisible();
     await expect(page.getByText(/Services proposés/i)).toBeVisible();
     await expect(page.getByText(/Zone géographique et disponibilités/i)).toBeVisible();
-    await expect(page.getByText(/Documents obligatoires/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Documents obligatoires/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /Envoyer ma candidature/i })).toBeVisible();
   });
 
@@ -155,7 +155,7 @@ test.describe('Flux B — Formulaire candidature prestataire', () => {
 
     test('B05 — code postal non numérique affiche l\'erreur', async ({ page }) => {
       await page.getByPlaceholder('75001').fill('ABCDE');
-      await page.getByPlaceholder('Paris').click();
+      await page.locator('[data-testid="input-city"]').click();
       await expect(page.getByText(/Code postal invalide/i)).toBeVisible();
     });
 
@@ -166,11 +166,11 @@ test.describe('Flux B — Formulaire candidature prestataire', () => {
       await page.locator('input[type="email"]').fill('test@test.fr');
       await page.locator('input[type="tel"]').fill('0612345678');
       await page.getByPlaceholder('Numéro, rue').fill('10 rue de la Paix');
-      await page.getByPlaceholder('Paris').fill('Paris');
+      await page.locator('[data-testid="input-city"]').fill('Paris');
       await page.getByPlaceholder('75001').fill('75001');
       await page.getByPlaceholder(/Paris et proche banlieue/i).fill('Paris 75');
       await page.getByRole('combobox').click();
-      await page.getByText('Flexible selon les besoins').click();
+      await page.getByRole('option', { name: 'Flexible selon les besoins' }).click();
       await page.getByRole('button', { name: /Envoyer ma candidature/i }).click();
       await expect(page.getByText(/au moins un service/i)).toBeVisible({ timeout: 6_000 });
     });
@@ -196,12 +196,12 @@ test.describe('Flux B — Formulaire candidature prestataire', () => {
     await page.locator('input[type="email"]').fill(email);
     await page.locator('input[type="tel"]').fill('0612345678');
     await page.getByPlaceholder('Numéro, rue').fill('10 avenue de la Paix');
-    await page.getByPlaceholder('Paris').fill('Paris');
+    await page.locator('[data-testid="input-city"]').fill('Paris');
     await page.getByPlaceholder('75001').fill('75001');
     await page.getByPlaceholder(/Paris et proche banlieue/i).fill('Paris 75');
     await page.locator('#bika_kids').click();
     await page.getByRole('combobox').click();
-    await page.getByText('Flexible selon les besoins').click();
+    await page.getByRole('option', { name: 'Flexible selon les besoins' }).click();
     await page.getByRole('button', { name: /Envoyer ma candidature/i }).click();
     await expect(page.getByText(email)).toBeVisible({ timeout: 15_000 });
   });
@@ -213,7 +213,7 @@ test.describe('Flux B — Formulaire candidature prestataire', () => {
     await goToNousRecrutons(page);
     await fillCandidatureForm(page);
     await page.getByRole('button', { name: /Envoyer ma candidature/i }).click();
-    await expect(page.getByText(/Erreur/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('Erreur', { exact: true })).toBeVisible({ timeout: 10_000 });
     // La page de succès NE doit PAS apparaître
     await expect(page.getByText(/Candidature envoyée avec succès/i)).not.toBeVisible();
   });
@@ -267,7 +267,7 @@ test.describe('Flux B — Auth prestataire (/auth/provider)', () => {
     await page.locator('input[type="password"]').fill('TestPass1!');
     await page.getByRole('button', { name: /Se connecter/i }).click();
     await expect(
-      page.getByText(/pas un compte prestataire|soumettre votre candidature/i)
+      page.locator('[role="status"]').getByText(/pas un compte prestataire|soumettre votre candidature/i)
     ).toBeVisible({ timeout: 10_000 });
   });
 

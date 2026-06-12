@@ -257,7 +257,7 @@ test.describe('D-ERR — Erreurs de vérification', () => {
     await page.goto(`/payment-success?session_id=${SESSION_ID}`);
 
     await expect(page.getByText(/erreur de vérification/i)).toBeVisible({ timeout: 8000 });
-    await expect(page.getByText(/paiement non autorisé/i)).toBeVisible();
+    await expect(page.locator('[role="status"]').first().getByText(/paiement non autorisé/i)).toBeVisible();
   });
 
   test('D-ERR-03: verify-payment renvoie HTTP 500 → affiche l\'écran d\'erreur', async ({ page }) => {
@@ -312,7 +312,7 @@ test.describe('D-ERR — Erreurs de vérification', () => {
     await page.goto(`/payment-success?session_id=${SESSION_ID}`);
 
     // After abort, the component catches the error and shows error state
-    await expect(page.getByText(/erreur de vérification|impossible|erreur/i)).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: /erreur de vérification|erreur/i })).toBeVisible({ timeout: 10000 });
   });
 });
 
