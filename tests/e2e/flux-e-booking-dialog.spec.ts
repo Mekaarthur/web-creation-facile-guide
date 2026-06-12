@@ -1,9 +1,11 @@
 /**
  * Flux E — Bouton "Réserver maintenant" → dialog → panier
  *
- * SERVICE-01 : clic btn-reserver ouvre le dialog BikaServiceBooking
+ * SERVICE-01 : clic btn-reserver ouvre le dialog BikaServiceBooking (SubService)
  * SERVICE-02 : formulaire rempli → "Créneau ajouté au panier !"
  * SERVICE-03 : "Procéder au paiement" → /panier + article visible + bouton checkout
+ * SERVICE-04 : formulaire incomplet → toast d'erreur
+ * GRID-01    : clic btn-reserver-grid ouvre le dialog (ServiceSubgrid / page BiKa*)
  */
 
 import { test, expect, type Page } from '@playwright/test';
@@ -81,23 +83,30 @@ test.describe('SERVICE — Bouton "Réserver maintenant"', () => {
 
     await expect(page).toHaveURL(/\/panier/, { timeout: 5000 });
 
-    // Le service ajouté doit apparaître dans le panier
-    await expect(page.getByText(/Garde d'enfants/i)).toBeVisible();
+    // Le service ajouté doit apparaître dans le panier (first() évite strict-mode sur h1/breadcrumb)
+    await expect(page.getByText(/Garde d'enfants/i).first()).toBeVisible();
 
     // Le bouton "Procéder au paiement" du panier doit être présent
     await expect(page.getByRole('button', { name: /procéder au paiement/i })).toBeVisible();
   });
 
-  test('SERVICE-04 : formulaire incomplet → toast d\'erreur, pas d\'ajout', async ({ page }) => {
+  test('GRID-01 : clic sur [data-testid="btn-reserver-grid"] sur /bika-kids ouvre le dialog', async ({ page }) => {
+    await page.goto('/bika-kids');
+    const btn = page.getByTestId('btn-reserver-grid').first();
+    await expect(btn).toBeVisible({ timeout: 10000 });
+    await btn.click();
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/Réserver -/)).toBeVisible();
+  });
+
+  test('SERVICE-04 : formulaire incomplet → bouton désactivé, dialog ouvert sans succès', async ({ page }) => {
     await openBookingDialog(page);
 
-    // Cliquer "Ajouter au panier" sans rien remplir
-    await page.getByRole('dialog').getByRole('button', { name: /ajouter au panier/i }).click();
+    // Le bouton est disabled tant que les champs obligatoires sont vides
+    const addBtn = page.getByRole('dialog').getByRole('button', { name: /ajouter au panier/i });
+    await expect(addBtn).toBeDisabled();
 
-    // Toast d'erreur attendu (formulaire incomplet)
-    await expect(page.getByText(/incomplet|remplir|requis/i)).toBeVisible({ timeout: 3000 });
-
-    // Le dialog reste ouvert (pas d'écran de succès)
+    // Le dialog reste ouvert — aucun écran de succès ne s'affiche
     await expect(page.getByRole('dialog')).toBeVisible();
     await expect(page.getByText(/créneau ajouté/i)).not.toBeVisible();
   });

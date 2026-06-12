@@ -58,7 +58,7 @@ const ServiceSubgrid = ({ categoryKey }: ServiceSubgridProps) => {
                       <Button asChild variant="outline" size="sm" className="flex-1">
                         <Link to={`/services/${category.key}/${s.slug}`}>{t('serviceSubgrid.details')}</Link>
                       </Button>
-                      <Button size="sm" className="flex-1" onClick={() => onReserve(s)}>
+                      <Button size="sm" className="flex-1" onClick={() => onReserve(s)} data-testid="btn-reserver-grid">
                         {t('serviceSubgrid.reserve')}
                       </Button>
                     </div>
