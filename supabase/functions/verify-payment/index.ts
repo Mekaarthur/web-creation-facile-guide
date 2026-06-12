@@ -64,8 +64,39 @@ serve(async (req) => {
 
     // Extraire les métadonnées
     const metadata = session.metadata || {};
-    const clientInfo = metadata.clientInfo ? JSON.parse(metadata.clientInfo) : null;
-    const services = metadata.services ? JSON.parse(metadata.services) : [];
+
+    // clientInfo : objet JSON direct (legacy) ou reconstruction depuis les champs plats
+    let clientInfo: { firstName: string; lastName: string; email: string; phone: string; address: string } | null = null;
+    if (metadata.clientInfo) {
+      clientInfo = JSON.parse(metadata.clientInfo);
+    } else if (metadata.client_email) {
+      const nameParts = (metadata.client_name || '').trim().split(/\s+/);
+      clientInfo = {
+        firstName: nameParts[0] || '',
+        lastName:  nameParts.slice(1).join(' ') || '',
+        email:     metadata.client_email,
+        phone:     metadata.client_phone || '',
+        address:   metadata.address || '',
+      };
+    }
+
+    // services : normalise les clés abrégées (n/c/p/q/d/t) vers noms complets
+    const normalizeService = (s: any) => ({
+      serviceName:   s.serviceName   ?? s.n ?? '',
+      category:      s.category      ?? s.c ?? '',
+      price:         s.price         ?? s.p ?? 0,
+      quantity:      s.quantity      ?? s.q ?? 1,
+      customBooking: s.customBooking ?? {
+        date:      s.d ?? '',
+        startTime: s.t ?? '09:00',
+        endTime:   '17:00',
+        hours:     s.q ?? 1,
+        notes:     '',
+      },
+    });
+    const services = metadata.services
+      ? (JSON.parse(metadata.services) as any[]).map(normalizeService)
+      : [];
     const urssafEnabled = metadata.urssafEnabled === 'true';
     const totalAmount = parseFloat(metadata.totalAmount || '0');
     const clientAmount = parseFloat(metadata.clientAmount || '0');
