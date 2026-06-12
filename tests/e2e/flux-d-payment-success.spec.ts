@@ -336,7 +336,8 @@ test.describe('D-NAV — Navigation', () => {
 
     await page.getByRole('button', { name: /accueil/i }).click();
 
-    await expect(page).toHaveURL(/^\//);
+    // toHaveURL avec string '/' est résolu par Playwright contre l'URL de base
+    await expect(page).toHaveURL('/');
     await expect(page).not.toHaveURL(/payment/);
   });
 
@@ -347,7 +348,7 @@ test.describe('D-NAV — Navigation', () => {
 
     await page.getByRole('button', { name: /retour à l.accueil/i }).click();
 
-    await expect(page).toHaveURL(/^\//);
+    await expect(page).toHaveURL('/');
     await expect(page).not.toHaveURL(/payment/);
   });
 });

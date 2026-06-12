@@ -3,6 +3,14 @@
 ## Stack
 Vite + React 18 + TypeScript + Supabase + Stripe Connect + Playwright
 
+## Prérequis Playwright
+WebKit et Firefox requièrent une installation séparée avant de lancer la suite complète :
+```
+npx playwright install --with-deps
+```
+Sans cette commande, tous les tests WebKit/Firefox échouent avec "Executable doesn't exist".
+Les tests Chromium seuls (`--project=chromium`) fonctionnent sans dépendances supplémentaires.
+
 ## Langue de travail
 Toujours répondre en français.
 

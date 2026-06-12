@@ -5,7 +5,7 @@
  * N02  Route inconnue → composant NotFound ("404", "Page introuvable")
  * N03  /payment sans session → redirect /auth  (ProtectedRoute)
  * N04  /espace-prestataire sans session → redirect /auth/provider  (ProtectedProviderRoute)
- * N05a /modern-admin sans session → redirect /admin/login  (AdminRoute)
+ * N05a /modern-admin sans session → redirect /auth  (public app redirige /modern-admin/* → /auth)
  * N05b /modern-admin avec session non-admin → "Accès Refusé"
  * N06  /provider/dashboard avec session provider vérifié → EspacePrestataire rendu
  * N07  /bika-kids (lazy) → spinner disparu, contenu visible
@@ -167,12 +167,13 @@ test.describe('N04 — /espace-prestataire sans session', () => {
 // ─── N05 — /modern-admin sans rôle admin ─────────────────────────────────────
 
 test.describe('N05 — /modern-admin sans rôle admin', () => {
-  test('N05a: redirige vers /admin/login quand non authentifié', async ({ page }) => {
+  test('N05a: redirige vers /auth quand non authentifié', async ({ page }) => {
     await stubSupabaseNoSession(page);
     await page.goto('/modern-admin');
 
-    // AdminRoute default redirectTo = '/admin/login'
-    await expect(page).toHaveURL(/\/admin\/login/, { timeout: 8000 });
+    // Dans l'app publique, /modern-admin/* → <Navigate to="/auth" replace />
+    // L'app admin (admin.bikawo.com) gère /admin/login mais tourne sur le port 5174
+    await expect(page).toHaveURL(/\/auth/, { timeout: 8000 });
   });
 
   test('N05b: affiche "Accès Refusé" pour utilisateur authentifié sans rôle admin', async ({ page }) => {
