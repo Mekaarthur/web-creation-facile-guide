@@ -1,9 +1,6 @@
 ﻿import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.3';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://bikawo.com',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { corsHeaders } from "../_shared/cors.ts";
 
 interface VerifyRoleRequest {
   role: 'admin' | 'provider' | 'client' | 'moderator' | 'user';

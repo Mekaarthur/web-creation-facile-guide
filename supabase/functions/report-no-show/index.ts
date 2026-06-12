@@ -1,10 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.3";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { getAdminCorsHeaders } from "../_shared/cors.ts";
 
 interface ReportNoShowRequest {
   bookingId: string;
@@ -23,6 +20,7 @@ interface ReportNoShowRequest {
  * 5. Si aucun remplaçant en 30 min => bon de réduction 20% au client
  */
 serve(async (req) => {
+  const corsHeaders = getAdminCorsHeaders(req.headers.get("origin"));
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }

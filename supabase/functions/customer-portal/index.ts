@@ -2,16 +2,14 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { getAdminCorsHeaders } from "../_shared/cors.ts";
 
 function logStep(step: string, data?: any) {
   console.log(`[Customer Portal] ${step}`, data ? JSON.stringify(data, null, 2) : '');
 }
 
 serve(async (req) => {
+  const corsHeaders = getAdminCorsHeaders(req.headers.get("origin"));
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
