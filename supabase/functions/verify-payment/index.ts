@@ -131,8 +131,8 @@ serve(async (req) => {
       totalAmount,
     });
 
-    // Vérifier si une réservation existe déjà pour cette session
-    const { data: existingBookings } = await supabaseClient
+    // Vérifier si une réservation existe déjà pour cette session (admin key — RLS bloque les lectures anon)
+    const { data: existingBookings } = await supabaseAdmin
       .from('bookings')
       .select('id')
       .ilike('notes', `%stripe_session:${sessionId}%`);
@@ -165,7 +165,7 @@ serve(async (req) => {
     if (!userId && clientInfo.email) {
       logStep('Guest checkout détecté, vérification compte existant...');
       
-      const { data: existingUser } = await supabaseClient
+      const { data: existingUser } = await supabaseAdmin
         .from('profiles')
         .select('user_id')
         .eq('email', clientInfo.email)
@@ -259,7 +259,7 @@ serve(async (req) => {
       const endTime = customBooking.endTime || '17:00';
       const hours = customBooking.hours || 1;
 
-      const { data: serviceData } = await supabaseClient
+      const { data: serviceData } = await supabaseAdmin
         .from('services')
         .select('id')
         .eq('name', service.serviceName)
@@ -288,7 +288,7 @@ serve(async (req) => {
 
       // Priorité 2 : matching géographique par code postal
       if (!availableProvider && clientPostalCode) {
-        const { data: zoneProviders } = await supabaseClient.rpc('find_providers_in_zone', {
+        const { data: zoneProviders } = await supabaseAdmin.rpc('find_providers_in_zone', {
           p_code_postal: clientPostalCode,
           p_service_type: service.category || null,
         });
@@ -302,7 +302,7 @@ serve(async (req) => {
 
       // Fallback : n'importe quel prestataire vérifié
       if (!availableProvider) {
-        const { data: fallbackProvider } = await supabaseClient
+        const { data: fallbackProvider } = await supabaseAdmin
           .from('providers')
           .select('id')
           .eq('is_verified', true)
@@ -385,7 +385,7 @@ serve(async (req) => {
       // Statut initial : si URSSAF activé, la mission est en attente de déclaration
       const initialStatus = urssafEnabled ? 'pending_urssaf' : 'confirmed';
 
-      const { data: booking, error: bookingError } = await supabaseClient
+      const { data: booking, error: bookingError } = await supabaseAdmin
         .from('bookings')
         .insert({
           client_id: userId,
