@@ -8,11 +8,7 @@ import {
   loadDynamicPricing,
   type ServiceType,
 } from "../_shared/pricing.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://bikawo.com",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders } from "../_shared/cors.ts";
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
