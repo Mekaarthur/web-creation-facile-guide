@@ -232,27 +232,26 @@ serve(async (req) => {
         .eq('stripe_payment_intent_id', paymentIntentId)
         .maybeSingle();
 
+      // payment_intent.payment_failed fires before checkout.session.completed,
+      // so no booking or financial_transaction exists yet in normal Stripe Checkout flow.
+      // bookings.status = 'payment_failed' is not in bookings_status_check constraint
+      // and would violate it — do NOT update booking status here.
+      // Only update financial_transactions if one somehow already exists (rare edge case),
+      // then notify client and admin.
+
       if (txRecord?.payment_status === 'payment_failed') {
         console.log(`payment_failed déjà traité pour ${paymentIntentId} — skip`);
       } else {
+        // 1. Mettre à jour financial_transactions si elle existe (edge case)
         if (txRecord) {
-          // 1. Mettre à jour financial_transactions
           await supabaseAdmin
             .from('financial_transactions')
             .update({ payment_status: 'payment_failed' })
             .eq('stripe_payment_intent_id', paymentIntentId);
-
-          // 2. Mettre à jour le booking
-          if (txRecord.booking_id) {
-            await supabaseAdmin
-              .from('bookings')
-              .update({ status: 'payment_failed' })
-              .eq('id', txRecord.booking_id);
-            console.log(`Booking ${txRecord.booking_id} marqué payment_failed`);
-          }
+          console.log(`financial_transaction ${txRecord.id} marquée payment_failed`);
         }
 
-        // 3. Email client si disponible dans les métadonnées
+        // 2. Email client si disponible dans les métadonnées
         const clientEmail = paymentIntent.receipt_email || paymentIntent.metadata?.client_email;
         if (clientEmail) {
           try {
@@ -274,7 +273,7 @@ serve(async (req) => {
           }
         }
 
-        // 4. Notification admin
+        // 3. Notification admin
         await supabaseAdmin.functions.invoke('create-admin-notification', {
           body: {
             type: 'payment',
@@ -284,7 +283,6 @@ serve(async (req) => {
               payment_intent_id: paymentIntentId,
               amount: paymentIntent.amount / 100,
               failure_reason: failureMessage,
-              booking_id: txRecord?.booking_id || null,
             },
             priority: 'high',
           },
