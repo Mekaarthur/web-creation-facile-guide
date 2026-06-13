@@ -9,6 +9,10 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import jsPDF from "https://esm.sh/jspdf@2.5.1";
 
+const BIKAWO_SIRET   = Deno.env.get("BIKAWO_SIRET")   ?? "À compléter";
+const BIKAWO_ADDRESS = Deno.env.get("BIKAWO_ADDRESS")  ?? "Paris, France";
+const BIKAWO_PHONE   = Deno.env.get("BIKAWO_PHONE")    ?? "À compléter";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "https://bikawo.com",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -95,7 +99,9 @@ serve(async (req) => {
     doc.setFontSize(10);
     doc.setTextColor(0, 0, 0);
     doc.text("Services à domicile", 20, 36);
-    doc.text("contact@bikawo.com — www.bikawo.com", 20, 44);
+    doc.text(BIKAWO_ADDRESS, 20, 44);
+    doc.text(`SIRET : ${BIKAWO_SIRET}  |  ${BIKAWO_PHONE}`, 20, 52);
+    doc.text("contact@bikawo.com — www.bikawo.com", 20, 58);
 
     // Title
     doc.setFontSize(16);
@@ -168,8 +174,7 @@ serve(async (req) => {
     // Footer
     doc.setFontSize(8);
     doc.setTextColor(120, 120, 120);
-    doc.text("Bikawo — Services à domicile — contact@bikawo.com", 20, 260);
-    doc.text("Ce document est provisoire. Les fiches officielles seront émises par NeedMe.", 20, 266);
+    doc.text(`Bikawo — ${BIKAWO_ADDRESS} — SIRET : ${BIKAWO_SIRET} — contact@bikawo.com`, 20, 260);
 
     const pdfBuffer = doc.output("arraybuffer");
 
