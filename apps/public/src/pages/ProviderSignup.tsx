@@ -173,7 +173,7 @@ const ProviderSignup = () => {
                   )} />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={form.control} name="city" render={({ field }) => (
-                      <FormItem><FormLabel>Ville *</FormLabel><FormControl><Input {...field} placeholder="Paris" /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel>Ville *</FormLabel><FormControl><Input {...field} placeholder="Paris" data-testid="input-city" /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="postal_code" render={({ field }) => (
                       <FormItem><FormLabel>Code postal *</FormLabel><FormControl><Input {...field} placeholder="75001" /></FormControl><FormMessage /></FormItem>

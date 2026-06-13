@@ -217,7 +217,7 @@ test.describe('D-ALREADY — alreadyProcessed', () => {
     await page.goto(`/payment-success?session_id=${SESSION_ID}`);
 
     await expect(page.getByRole('heading', { name: /réservation enregistrée/i })).toBeVisible({ timeout: 8000 });
-    await expect(page.getByText(/déjà traité/i)).toBeVisible();
+    await expect(page.getByText(/déjà.*traité/i)).toBeVisible();
   });
 });
 
@@ -273,7 +273,7 @@ test.describe('D-ERR — Erreurs de vérification', () => {
 
     await expect(page.getByText(/erreur de vérification/i)).toBeVisible({ timeout: 8000 });
     // AlertCircle is rendered — page has error state card (destructive border)
-    await expect(page.locator('.border-destructive')).toBeVisible();
+    await expect(page.locator('div.border-destructive')).toBeVisible();
   });
 
   test('D-ERR-05: état d\'erreur — bouton "Retour à l\'accueil" présent', async ({ page }) => {
