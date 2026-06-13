@@ -125,6 +125,12 @@ Ces vulnérabilités sont présentes dans `pnpm audit` mais n'affectent pas le r
 - **vite MODERATE** GHSA-4w7w-66w2-5vf9 : path traversal dev server uniquement
 - **uuid MODERATE** GHSA-w5hq-g745-h8pq : dépendance transitive de exceljs — non exploitable via le code applicatif
 
+## Risques connus acceptés (runtime)
+
+- **W4 — Guest checkout race condition** : Si l'email du guest existe déjà dans `auth.users`, le lien `password_setup` peut ne pas être envoyé. Monitoring : chercher dans les logs `verify-payment` "already registered" sans email envoyé. Fix prévu : sprint v2.
+- **W5 — URSSAF async non-atomique** : Le booking est confirmé avant l'envoi de la déclaration URSSAF. Si `urssaf-register-service` échoue, le booking existe sans déclaration. Monitoring manuel requis : vérifier la table `urssaf_declarations` chaque semaine pour les entrées `status='error'`.
+- **W6 — `service_id` null sur certains bookings** : Si le nom de service dans les métadonnées Stripe ne correspond pas à la base, le booking est créé avec `service_id=null`. Une notification admin est créée. Vérifier les notifications admin quotidiennement pour les alertes "SERVICE NON IDENTIFIÉ".
+
 ## Règle critique — CORS et ENVIRONMENT
 
 `ENVIRONMENT=production` doit être configuré dans les secrets Supabase.
