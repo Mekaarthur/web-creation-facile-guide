@@ -22,7 +22,7 @@ export const ExcelExportButton = ({
 }: ExcelExportButtonProps) => {
   const { toast } = useToast();
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!data || data.length === 0) {
       toast({
         title: "Aucune donnée",
@@ -33,22 +33,14 @@ export const ExcelExportButton = ({
     }
 
     try {
-      // Déterminer les colonnes automatiquement à partir du premier élément
       const columns = Object.keys(data[0]).map(key => ({
         header: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
         key,
         width: 20,
-        format: getFormatter(key)
+        format: getFormatter(key),
       }));
 
-      exportToExcel({
-        filename,
-        sheetName,
-        columns,
-        data,
-        title,
-        subtitle
-      });
+      await exportToExcel({ filename, sheetName, columns, data, title, subtitle });
 
       toast({
         title: "Export réussi",

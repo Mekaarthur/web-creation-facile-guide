@@ -297,9 +297,9 @@ const AdminReferralManagement = () => {
         (perfYearFilter   === 'all' || reward.year.toString() === perfYearFilter);
     });
 
-  const exportPerformanceRewards = () => {
+  const exportPerformanceRewards = async () => {
     const filtered = getFilteredPerformanceRewards();
-    exportPerformanceRewardsToExcel(filtered);
+    await exportPerformanceRewardsToExcel(filtered);
     const n = filtered.length;
     toast({ title: 'Export réussi', description: `${n} récompense${n > 1 ? 's' : ''} exportée${n > 1 ? 's' : ''}` });
   };

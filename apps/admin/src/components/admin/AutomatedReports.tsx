@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FileDown, FileSpreadsheet, Calendar, TrendingUp, Users, Euro, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 interface ReportData {
   bookings: any[];
@@ -62,10 +62,13 @@ export const AutomatedReports = () => {
     setLoading(true);
     try {
       const data = await fetchReportData();
-      const wb = XLSX.utils.book_new();
-      
-      // Summary sheet
-      const summaryData = [
+      const workbook = new ExcelJS.Workbook();
+
+      // Feuille Résumé
+      const summarySheet = workbook.addWorksheet('Résumé');
+      summarySheet.getColumn(1).width = 30;
+      summarySheet.getColumn(2).width = 20;
+      [
         ['RAPPORT BIKAWO', ''],
         ['Période', `${new Date(data.period.start).toLocaleDateString('fr-FR')} - ${new Date(data.period.end).toLocaleDateString('fr-FR')}`],
         ['', ''],
@@ -74,49 +77,78 @@ export const AutomatedReports = () => {
         ['Réservations complétées', data.bookings.filter(b => b.status === 'completed').length],
         ['Taux de complétion', `${data.bookings.length ? Math.round((data.bookings.filter(b => b.status === 'completed').length / data.bookings.length) * 100) : 0}%`],
         ['', ''],
-        ['Chiffre d\'affaires', `${data.payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + (p.amount || 0), 0)} €`],
+        ["Chiffre d'affaires", `${data.payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + (p.amount || 0), 0)} €`],
         ['Paiements en attente', `${data.payments.filter(p => p.status === 'pending').reduce((sum, p) => sum + (p.amount || 0), 0)} €`],
         ['', ''],
         ['Nouveaux prestataires', data.providers.length],
         ['Nouveaux clients', data.clients.length],
-      ];
-      
-      const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
-      XLSX.utils.book_append_sheet(wb, summarySheet, 'Résumé');
-      
-      // Bookings sheet
-      const bookingsData = data.bookings.map(b => ({
-        'ID': b.id.slice(0, 8),
-        'Date': new Date(b.booking_date).toLocaleDateString('fr-FR'),
-        'Service': b.services?.name || 'N/A',
-        'Statut': b.status,
-        'Prix': `${b.total_price} €`,
-        'Créé le': new Date(b.created_at).toLocaleDateString('fr-FR')
-      }));
-      
-      if (bookingsData.length > 0) {
-        const bookingsSheet = XLSX.utils.json_to_sheet(bookingsData);
-        XLSX.utils.book_append_sheet(wb, bookingsSheet, 'Réservations');
+      ].forEach(row => summarySheet.addRow(row));
+
+      // Feuille Réservations
+      if (data.bookings.length > 0) {
+        const bookingsSheet = workbook.addWorksheet('Réservations');
+        bookingsSheet.columns = [
+          { header: 'ID',      key: 'id',      width: 10 },
+          { header: 'Date',    key: 'date',    width: 12 },
+          { header: 'Service', key: 'service', width: 20 },
+          { header: 'Statut',  key: 'statut',  width: 12 },
+          { header: 'Prix',    key: 'prix',    width: 10 },
+          { header: 'Créé le', key: 'created', width: 12 },
+        ];
+        bookingsSheet.getRow(1).eachCell(cell => {
+          cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E40AF' } };
+        });
+        data.bookings.forEach(b => {
+          bookingsSheet.addRow({
+            id:      b.id.slice(0, 8),
+            date:    new Date(b.booking_date).toLocaleDateString('fr-FR'),
+            service: b.services?.name || 'N/A',
+            statut:  b.status,
+            prix:    `${b.total_price} €`,
+            created: new Date(b.created_at).toLocaleDateString('fr-FR'),
+          });
+        });
       }
-      
-      // Payments sheet
-      const paymentsData = data.payments.map(p => ({
-        'ID': p.id.slice(0, 8),
-        'Montant': `${p.amount} €`,
-        'Statut': p.status,
-        'Méthode': p.payment_method,
-        'Date': new Date(p.created_at).toLocaleDateString('fr-FR')
-      }));
-      
-      if (paymentsData.length > 0) {
-        const paymentsSheet = XLSX.utils.json_to_sheet(paymentsData);
-        XLSX.utils.book_append_sheet(wb, paymentsSheet, 'Paiements');
+
+      // Feuille Paiements
+      if (data.payments.length > 0) {
+        const paymentsSheet = workbook.addWorksheet('Paiements');
+        paymentsSheet.columns = [
+          { header: 'ID',      key: 'id',      width: 10 },
+          { header: 'Montant', key: 'montant', width: 12 },
+          { header: 'Statut',  key: 'statut',  width: 12 },
+          { header: 'Méthode', key: 'methode', width: 15 },
+          { header: 'Date',    key: 'date',    width: 12 },
+        ];
+        paymentsSheet.getRow(1).eachCell(cell => {
+          cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E40AF' } };
+        });
+        data.payments.forEach(p => {
+          paymentsSheet.addRow({
+            id:      p.id.slice(0, 8),
+            montant: `${p.amount} €`,
+            statut:  p.status,
+            methode: p.payment_method,
+            date:    new Date(p.created_at).toLocaleDateString('fr-FR'),
+          });
+        });
       }
-      
-      // Download
+
+      // Téléchargement
       const fileName = `rapport-bikawo-${period}-${new Date().toISOString().split('T')[0]}.xlsx`;
-      XLSX.writeFile(wb, fileName);
-      
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+
       toast.success('Rapport Excel généré avec succès');
     } catch (error) {
       console.error('Erreur génération rapport:', error);

@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -24,82 +24,99 @@ interface PerformanceReward {
   };
 }
 
-export const exportPerformanceRewardsToExcel = (rewards: PerformanceReward[], fileName: string = 'recompenses_performance') => {
-  // Prepare data for export
-  const data = rewards.map(reward => ({
-    'Prestataire': reward.provider?.business_name || 'N/A',
-    'Nom': `${reward.provider?.profiles?.first_name || ''} ${reward.provider?.profiles?.last_name || ''}`.trim() || 'N/A',
-    'Palier': getTierLabel(reward.reward_tier),
-    'Montant (€)': reward.amount.toFixed(2),
-    'Année': reward.year,
-    'Statut': reward.status === 'paid' ? 'Payé' : 'En attente',
-    'Missions': reward.missions_count,
-    'Heures': reward.hours_worked.toFixed(1),
-    'Note moyenne': reward.average_rating.toFixed(2),
-    'Date attribution': format(new Date(reward.earned_date), 'dd/MM/yyyy', { locale: fr }),
-    'Date paiement': reward.paid_date ? format(new Date(reward.paid_date), 'dd/MM/yyyy', { locale: fr }) : '-',
-    'Notes': reward.notes || '-'
-  }));
+export const exportPerformanceRewardsToExcel = async (
+  rewards: PerformanceReward[],
+  fileName: string = 'recompenses_performance'
+): Promise<void> => {
+  const workbook = new ExcelJS.Workbook();
 
-  // Create worksheet
-  const ws = XLSX.utils.json_to_sheet(data);
-
-  // Set column widths
-  const colWidths = [
-    { wch: 25 }, // Prestataire
-    { wch: 20 }, // Nom
-    { wch: 10 }, // Palier
-    { wch: 12 }, // Montant
-    { wch: 8 },  // Année
-    { wch: 12 }, // Statut
-    { wch: 10 }, // Missions
-    { wch: 10 }, // Heures
-    { wch: 12 }, // Note moyenne
-    { wch: 15 }, // Date attribution
-    { wch: 15 }, // Date paiement
-    { wch: 30 }  // Notes
+  // Feuille 1 — Récompenses
+  const sheet = workbook.addWorksheet('Récompenses');
+  sheet.columns = [
+    { header: 'Prestataire',      key: 'prestataire', width: 25 },
+    { header: 'Nom',              key: 'nom',         width: 20 },
+    { header: 'Palier',           key: 'palier',      width: 10 },
+    { header: 'Montant (€)',      key: 'montant',     width: 12 },
+    { header: 'Année',            key: 'annee',       width:  8 },
+    { header: 'Statut',           key: 'statut',      width: 12 },
+    { header: 'Missions',         key: 'missions',    width: 10 },
+    { header: 'Heures',           key: 'heures',      width: 10 },
+    { header: 'Note moyenne',     key: 'note',        width: 12 },
+    { header: 'Date attribution', key: 'date_attr',   width: 15 },
+    { header: 'Date paiement',    key: 'date_paie',   width: 15 },
+    { header: 'Notes',            key: 'notes',       width: 30 },
   ];
-  ws['!cols'] = colWidths;
 
-  // Create workbook
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Récompenses');
+  sheet.getRow(1).eachCell(cell => {
+    cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E40AF' } };
+    cell.alignment = { horizontal: 'center' };
+  });
 
-  // Add summary sheet
-  const summary = {
-    'Total récompenses': rewards.length,
-    'En attente': rewards.filter(r => r.status === 'pending').length,
-    'Payées': rewards.filter(r => r.status === 'paid').length,
-    'Montant total': rewards.reduce((sum, r) => sum + r.amount, 0).toFixed(2) + '€',
-    'Montant en attente': rewards.filter(r => r.status === 'pending').reduce((sum, r) => sum + r.amount, 0).toFixed(2) + '€',
-    'Montant payé': rewards.filter(r => r.status === 'paid').reduce((sum, r) => sum + r.amount, 0).toFixed(2) + '€',
-    'Bronze': rewards.filter(r => r.reward_tier === 'bronze').length,
-    'Argent': rewards.filter(r => r.reward_tier === 'silver').length,
-    'Or': rewards.filter(r => r.reward_tier === 'gold').length,
-  };
+  rewards.forEach(reward => {
+    sheet.addRow({
+      prestataire: reward.provider?.business_name ?? 'N/A',
+      nom: `${reward.provider?.profiles?.first_name ?? ''} ${reward.provider?.profiles?.last_name ?? ''}`.trim() || 'N/A',
+      palier:     getTierLabel(reward.reward_tier),
+      montant:    reward.amount.toFixed(2),
+      annee:      reward.year,
+      statut:     reward.status === 'paid' ? 'Payé' : 'En attente',
+      missions:   reward.missions_count,
+      heures:     reward.hours_worked.toFixed(1),
+      note:       reward.average_rating.toFixed(2),
+      date_attr:  format(new Date(reward.earned_date), 'dd/MM/yyyy', { locale: fr }),
+      date_paie:  reward.paid_date ? format(new Date(reward.paid_date), 'dd/MM/yyyy', { locale: fr }) : '-',
+      notes:      reward.notes ?? '-',
+    });
+  });
 
-  const summaryData = Object.entries(summary).map(([key, value]) => ({
-    'Indicateur': key,
-    'Valeur': value
-  }));
+  // Feuille 2 — Résumé
+  const summary = workbook.addWorksheet('Résumé');
+  summary.columns = [
+    { header: 'Indicateur', key: 'indicateur', width: 25 },
+    { header: 'Valeur',     key: 'valeur',     width: 20 },
+  ];
+  summary.getRow(1).eachCell(cell => {
+    cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E40AF' } };
+  });
 
-  const wsSummary = XLSX.utils.json_to_sheet(summaryData);
-  wsSummary['!cols'] = [{ wch: 25 }, { wch: 20 }];
-  XLSX.utils.book_append_sheet(wb, wsSummary, 'Résumé');
+  const paid    = rewards.filter(r => r.status === 'paid');
+  const pending = rewards.filter(r => r.status === 'pending');
+  const total   = (arr: PerformanceReward[]) =>
+    arr.reduce((s, r) => s + r.amount, 0).toFixed(2) + '€';
 
-  // Generate file name with date
+  [
+    ['Total récompenses',  rewards.length],
+    ['En attente',         pending.length],
+    ['Payées',             paid.length],
+    ['Montant total',      total(rewards)],
+    ['Montant en attente', total(pending)],
+    ['Montant payé',       total(paid)],
+    ['Bronze', rewards.filter(r => r.reward_tier === 'bronze').length],
+    ['Argent', rewards.filter(r => r.reward_tier === 'silver').length],
+    ['Or',     rewards.filter(r => r.reward_tier === 'gold').length],
+  ].forEach(([indicateur, valeur]) => summary.addRow({ indicateur, valeur }));
+
+  // Téléchargement
   const timestamp = format(new Date(), 'yyyy-MM-dd_HHmm');
-  const finalFileName = `${fileName}_${timestamp}.xlsx`;
-
-  // Save file
-  XLSX.writeFile(wb, finalFileName);
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${fileName}_${timestamp}.xlsx`;
+  a.click();
+  URL.revokeObjectURL(url);
 };
 
 const getTierLabel = (tier: string): string => {
   switch (tier) {
     case 'bronze': return 'Bronze';
     case 'silver': return 'Argent';
-    case 'gold': return 'Or';
-    default: return tier;
+    case 'gold':   return 'Or';
+    default:       return tier;
   }
 };
