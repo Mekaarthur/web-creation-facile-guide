@@ -93,3 +93,18 @@ C'est un monorepo pnpm :
 - Toujours utiliser `has_role(auth.uid(), 'admin')` pour vérifier les droits admin — jamais une table `admin_users` directement.
 - Les factures PDF ne doivent **jamais** contenir de mention "DOCUMENT PROVISOIRE", disclaimer d'invalité fiscale, ou tout texte invalidant leur valeur légale. Les informations légales obligatoires (SIRET, mentions TVA SAP, pénalités de retard) doivent être présentes sur chaque facture émise.
 - Les secrets `BIKAWO_SIRET`, `BIKAWO_ADDRESS`, `BIKAWO_PHONE` doivent être configurés dans Supabase avant la mise en production pour que les factures soient légalement valides.
+
+## Dépendances Excel
+
+`exceljs` est la bibliothèque d'export Excel du monorepo. Elle est lazy-loaded dans `apps/admin` uniquement.
+- Bundle : 938 kB raw / 270 kB gzip — acceptable pour l'usage admin.
+- **Ne jamais importer `exceljs` dans `apps/public`.**
+- `xlsx` (SheetJS) est banni — 2 CVE HIGH non corrigées (GHSA-4r6h-8v6p-xvw6, GHSA-4w7w-66w2-5vf9).
+
+## Vulnérabilités connues acceptées (dev-only)
+
+Ces vulnérabilités sont présentes dans `pnpm audit` mais n'affectent pas le runtime de production :
+- **esbuild HIGH** GHSA-67mh-4wv8-2f99 : vérification d'intégrité binaire (contexte Deno uniquement)
+- **esbuild MODERATE** GHSA-gv7w-rqvm-qjhr : dev server uniquement
+- **vite MODERATE** GHSA-4w7w-66w2-5vf9 : path traversal dev server uniquement
+- **uuid MODERATE** GHSA-w5hq-g745-h8pq : dépendance transitive de exceljs — non exploitable via le code applicatif
