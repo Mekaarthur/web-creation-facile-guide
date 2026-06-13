@@ -375,7 +375,7 @@ export const GestionDemandes = () => {
                     Configurez cette URL dans votre Google Form pour recevoir les données :
                   </p>
                   <code className="block p-2 bg-white border rounded text-sm">
-                    https://cgrosjzmbgxmtvwxictr.supabase.co/functions/v1/google-forms-webhook
+                    {`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/google-forms-webhook`}
                   </code>
                 </div>
 

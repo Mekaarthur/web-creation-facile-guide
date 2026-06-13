@@ -1,4 +1,4 @@
-﻿import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.2';
 import { sanitizeSearch } from '../_shared/sanitize.ts';
 import { getAdminCorsHeaders } from '../_shared/cors.ts';
@@ -6,13 +6,213 @@ import { getAdminCorsHeaders } from '../_shared/cors.ts';
 
 
 interface ApplicationRequest {
-  action: 'list' | 'get' | 'update_status' | 'approve' | 'reject' | 'get_stats';
+  action: 'list' | 'get' | 'update_status' | 'approve' | 'reject' | 'get_stats' | 'convert_to_provider';
   applicationId?: string;
   status?: string;
   searchTerm?: string;
   limit?: number;
   newStatus?: string;
   adminComments?: string;
+}
+
+// Extracted so both 'approve' and 'convert_to_provider' share identical logic.
+async function approveApplication(
+  applicationId: string,
+  adminComments: string | undefined,
+  supabase: ReturnType<typeof createClient>,
+  adminUserId: string,
+  corsHeaders: Record<string, string>,
+  supabaseUrl: string,
+  supabaseKey: string,
+): Promise<Response> {
+  const { data: application, error: fetchError } = await supabase
+    .from('job_applications')
+    .select('*')
+    .eq('id', applicationId)
+    .single();
+
+  if (fetchError) throw fetchError;
+
+  const { data: existingProfile } = await supabase
+    .from('profiles')
+    .select('user_id')
+    .eq('email', application.email)
+    .single();
+
+  let userId = existingProfile?.user_id;
+
+  if (!userId) {
+    const tempPassword = crypto.randomUUID().slice(0, 16) + 'A1!';
+    const { data: newUser, error: createUserError } = await supabase.auth.admin.createUser({
+      email: application.email,
+      password: tempPassword,
+      email_confirm: true,
+      user_metadata: {
+        first_name: application.first_name,
+        last_name: application.last_name,
+      },
+    });
+
+    if (createUserError) throw createUserError;
+    userId = newUser.user.id;
+
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({
+        first_name: application.first_name,
+        last_name: application.last_name,
+        email: application.email,
+        phone: application.phone,
+      })
+      .eq('user_id', userId);
+
+    if (profileError) {
+      console.error('Profile update error (non-blocking):', profileError);
+    }
+  }
+
+  const { data: provider, error: providerError } = await supabase
+    .from('providers')
+    .insert({
+      user_id: userId,
+      business_name: `${application.first_name} ${application.last_name}`,
+      description: application.motivation || '',
+      location: application.city || 'À définir',
+      status: 'pending_onboarding',
+      is_verified: false,
+      mandat_facturation_accepte: false,
+      formation_completed: false,
+      identity_verified: false,
+      documents_submitted: application.documents_complete || false,
+    })
+    .select()
+    .single();
+
+  if (providerError) throw providerError;
+
+  const serviceCategories = application.service_categories || [application.category];
+  if (serviceCategories.length > 0) {
+    const { data: matchingServices } = await supabase
+      .from('services')
+      .select('id, category, name')
+      .eq('is_active', true);
+
+    if (matchingServices && matchingServices.length > 0) {
+      const serviceInserts = [];
+      for (const cat of serviceCategories) {
+        const matched = matchingServices.filter(s =>
+          s.category.toLowerCase().includes(cat.toLowerCase()) ||
+          cat.toLowerCase().includes(s.category.toLowerCase()) ||
+          s.name.toLowerCase().includes(cat.toLowerCase())
+        );
+        for (const svc of matched) {
+          serviceInserts.push({
+            provider_id: provider.id,
+            service_id: svc.id,
+            is_active: true,
+          });
+        }
+      }
+
+      if (serviceInserts.length > 0) {
+        const unique = serviceInserts.filter((v, i, a) =>
+          a.findIndex(t => t.service_id === v.service_id) === i
+        );
+        const { error: svcError } = await supabase
+          .from('provider_services')
+          .upsert(unique, { onConflict: 'provider_id,service_id', ignoreDuplicates: true });
+
+        if (svcError) {
+          console.error('Error syncing services:', svcError);
+        } else {
+          console.log(`Synced ${unique.length} services for provider ${provider.id}`);
+        }
+      }
+    }
+  }
+
+  const { error: roleError } = await supabase
+    .from('user_roles')
+    .upsert({ user_id: userId, role: 'provider' }, { onConflict: 'user_id,role', ignoreDuplicates: true });
+
+  if (roleError) {
+    console.error('Error assigning provider role:', roleError);
+  }
+
+  await supabase
+    .from('job_applications')
+    .update({
+      status: 'approved',
+      admin_comments: adminComments || 'Candidature approuvée - Compte prestataire créé',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', applicationId);
+
+  await supabase
+    .from('admin_actions_log')
+    .insert({
+      admin_user_id: adminUserId,
+      entity_type: 'job_application',
+      entity_id: applicationId,
+      action_type: 'approved_and_converted',
+      new_data: {
+        status: 'approved',
+        provider_id: provider.id,
+        user_id: userId,
+        synced_services: serviceCategories,
+      },
+      description: `Candidature approuvée et prestataire créé: ${application.first_name} ${application.last_name}`,
+    });
+
+  console.log('Application approved, provider created:', provider.id);
+
+  try {
+    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+      type: 'recovery',
+      email: application.email,
+      options: {
+        redirectTo: `${Deno.env.get('SITE_URL') ?? 'https://bikawo.com'}/update-password`,
+      },
+    });
+
+    if (linkError) {
+      console.error('Error generating recovery link:', linkError);
+    } else {
+      const setupLink = linkData?.properties?.action_link;
+      const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseKey}`,
+        },
+        body: JSON.stringify({
+          type: 'password_setup',
+          recipientEmail: application.email,
+          recipientName: `${application.first_name} ${application.last_name}`,
+          data: {
+            clientName: application.first_name,
+            setupLink: setupLink,
+          },
+        }),
+      });
+
+      if (!emailResponse.ok) {
+        console.error('Error sending invitation email:', await emailResponse.text());
+      } else {
+        console.log('Invitation email sent to:', application.email);
+      }
+    }
+  } catch (emailErr) {
+    console.error('Non-blocking email error:', emailErr);
+  }
+
+  return new Response(JSON.stringify({
+    success: true,
+    providerId: provider.id,
+    userId: userId,
+  }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
 }
 
 serve(async (req) => {
@@ -26,7 +226,6 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Vérifier authentification admin
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       throw new Error('Missing authorization header');
@@ -34,17 +233,16 @@ serve(async (req) => {
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
+
     if (authError || !user) {
       throw new Error('Unauthorized');
     }
 
-    // Vérifier rôle admin
     const { data: roles } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id);
-    
+
     const isAdmin = roles?.some(r => r.role === 'admin');
     if (!isAdmin) {
       throw new Error('Admin access required');
@@ -53,7 +251,7 @@ serve(async (req) => {
     const body: ApplicationRequest = await req.json();
     console.log('Admin applications action:', body.action);
 
-    // **ACTION: list** - Liste des candidatures avec filtres
+    // **ACTION: list**
     if (body.action === 'list') {
       let query = supabase
         .from('job_applications')
@@ -73,7 +271,6 @@ serve(async (req) => {
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
 
       return new Response(JSON.stringify({ applications: data }), {
@@ -81,11 +278,9 @@ serve(async (req) => {
       });
     }
 
-    // **ACTION: get** - Détails d'une candidature
+    // **ACTION: get**
     if (body.action === 'get') {
-      if (!body.applicationId) {
-        throw new Error('applicationId required');
-      }
+      if (!body.applicationId) throw new Error('applicationId required');
 
       const { data, error } = await supabase
         .from('job_applications')
@@ -100,7 +295,7 @@ serve(async (req) => {
       });
     }
 
-    // **ACTION: get_stats** - Statistiques candidatures
+    // **ACTION: get_stats**
     if (body.action === 'get_stats') {
       const { data: applications } = await supabase
         .from('job_applications')
@@ -119,7 +314,7 @@ serve(async (req) => {
       });
     }
 
-    // **ACTION: update_status** - Mettre à jour statut
+    // **ACTION: update_status**
     if (body.action === 'update_status') {
       if (!body.applicationId || !body.newStatus) {
         throw new Error('applicationId and newStatus required');
@@ -146,224 +341,61 @@ serve(async (req) => {
       });
     }
 
-    // **ACTION: approve** - Approuver candidature et créer prestataire
+    // **ACTION: approve** — approuver candidature et créer prestataire
     if (body.action === 'approve') {
-      if (!body.applicationId) {
-        throw new Error('applicationId required');
-      }
+      if (!body.applicationId) throw new Error('applicationId required');
+      return await approveApplication(
+        body.applicationId, body.adminComments,
+        supabase, user.id, corsHeaders, supabaseUrl, supabaseKey,
+      );
+    }
 
-      // Récupérer la candidature
-      const { data: application, error: fetchError } = await supabase
+    // **ACTION: convert_to_provider** — idempotent alias de approve
+    // Appelé depuis ProvidersManagement quand la candidature est déjà approuvée
+    // mais le compte prestataire n'a pas encore été créé.
+    if (body.action === 'convert_to_provider') {
+      if (!body.applicationId) throw new Error('applicationId required');
+
+      // Idempotence : si un provider existe déjà pour cet email, retourner succès
+      const { data: app } = await supabase
         .from('job_applications')
-        .select('*')
+        .select('email')
         .eq('id', body.applicationId)
         .single();
 
-      if (fetchError) throw fetchError;
-
-      // Vérifier si un compte existe déjà
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .eq('email', application.email)
-        .single();
-
-      let userId = existingProfile?.user_id;
-
-      // Si pas de compte, créer un vrai compte auth + profil
-      if (!userId) {
-        // Créer un utilisateur auth avec un mot de passe temporaire
-        const tempPassword = crypto.randomUUID().slice(0, 16) + 'A1!';
-        const { data: newUser, error: createUserError } = await supabase.auth.admin.createUser({
-          email: application.email,
-          password: tempPassword,
-          email_confirm: true,
-          user_metadata: {
-            first_name: application.first_name,
-            last_name: application.last_name,
-          },
-        });
-
-        if (createUserError) throw createUserError;
-        userId = newUser.user.id;
-
-        // Mettre à jour le profil créé automatiquement par le trigger
-        const { error: profileError } = await supabase
+      if (app?.email) {
+        const { data: prof } = await supabase
           .from('profiles')
-          .update({
-            first_name: application.first_name,
-            last_name: application.last_name,
-            email: application.email,
-            phone: application.phone,
-          })
-          .eq('user_id', userId);
+          .select('user_id')
+          .eq('email', app.email)
+          .single();
 
-        if (profileError) {
-          console.error('Profile update error (non-blocking):', profileError);
-        }
-      }
+        if (prof?.user_id) {
+          const { data: existingProvider } = await supabase
+            .from('providers')
+            .select('id')
+            .eq('user_id', prof.user_id)
+            .maybeSingle();
 
-      // Créer le prestataire avec statut pending_onboarding
-      const { data: provider, error: providerError } = await supabase
-        .from('providers')
-        .insert({
-          user_id: userId,
-          business_name: `${application.first_name} ${application.last_name}`,
-          description: application.motivation || '',
-          location: application.city || 'À définir',
-          status: 'pending_onboarding',
-          is_verified: false,
-          mandat_facturation_accepte: false,
-          formation_completed: false,
-          identity_verified: false,
-          documents_submitted: application.documents_complete || false,
-        })
-        .select()
-        .single();
-
-      if (providerError) throw providerError;
-
-      // *** SYNC SERVICES: Copy service_categories from application to provider_services ***
-      const serviceCategories = application.service_categories || [application.category];
-      if (serviceCategories.length > 0) {
-        // Find matching services by category name
-        const { data: matchingServices } = await supabase
-          .from('services')
-          .select('id, category, name')
-          .eq('is_active', true);
-
-        if (matchingServices && matchingServices.length > 0) {
-          const serviceInserts = [];
-          for (const cat of serviceCategories) {
-            const matched = matchingServices.filter(s => 
-              s.category.toLowerCase().includes(cat.toLowerCase()) ||
-              cat.toLowerCase().includes(s.category.toLowerCase()) ||
-              s.name.toLowerCase().includes(cat.toLowerCase())
+          if (existingProvider) {
+            console.log('convert_to_provider: provider already exists', existingProvider.id);
+            return new Response(
+              JSON.stringify({ success: true, providerId: existingProvider.id, alreadyConverted: true }),
+              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
             );
-            for (const svc of matched) {
-              serviceInserts.push({
-                provider_id: provider.id,
-                service_id: svc.id,
-                is_active: true,
-              });
-            }
-          }
-
-          if (serviceInserts.length > 0) {
-            // Deduplicate by service_id
-            const unique = serviceInserts.filter((v, i, a) => 
-              a.findIndex(t => t.service_id === v.service_id) === i
-            );
-            const { error: svcError } = await supabase
-              .from('provider_services')
-              .upsert(unique, { onConflict: 'provider_id,service_id', ignoreDuplicates: true });
-
-            if (svcError) {
-              console.error('Error syncing services:', svcError);
-            } else {
-              console.log(`Synced ${unique.length} services for provider ${provider.id}`);
-            }
           }
         }
       }
 
-      // Assigner rôle provider (direct insert with service role - bypasses RLS)
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .upsert({ user_id: userId, role: 'provider' }, { onConflict: 'user_id,role', ignoreDuplicates: true });
-      
-      if (roleError) {
-        console.error('Error assigning provider role:', roleError);
-      }
-
-      // Mettre à jour la candidature
-      await supabase
-        .from('job_applications')
-        .update({
-          status: 'approved',
-          admin_comments: body.adminComments || 'Candidature approuvée - Compte prestataire créé',
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', body.applicationId);
-
-      // Logger l'action
-      await supabase
-        .from('admin_actions_log')
-        .insert({
-          admin_user_id: user.id,
-          entity_type: 'job_application',
-          entity_id: body.applicationId,
-          action_type: 'approved_and_converted',
-          new_data: {
-            status: 'approved',
-            provider_id: provider.id,
-            user_id: userId,
-            synced_services: serviceCategories,
-          },
-          description: `Candidature approuvée et prestataire créé: ${application.first_name} ${application.last_name}`,
-        });
-
-      console.log('Application approved, provider created:', provider.id);
-
-      // Envoyer email d'invitation avec lien de création de mot de passe
-      try {
-        const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-          type: 'recovery',
-          email: application.email,
-          options: {
-            redirectTo: `${Deno.env.get('SITE_URL') ?? 'https://bikawo.com'}/update-password`,
-          },
-        });
-
-        if (linkError) {
-          console.error('Error generating recovery link:', linkError);
-        } else {
-          const setupLink = linkData?.properties?.action_link;
-          console.log('Recovery link generated for:', application.email);
-
-          // Envoyer l'email via send-transactional-email
-          const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${supabaseKey}`,
-            },
-            body: JSON.stringify({
-              type: 'password_setup',
-              recipientEmail: application.email,
-              recipientName: `${application.first_name} ${application.last_name}`,
-              data: {
-                clientName: application.first_name,
-                setupLink: setupLink,
-              },
-            }),
-          });
-
-          if (!emailResponse.ok) {
-            const errText = await emailResponse.text();
-            console.error('Error sending invitation email:', errText);
-          } else {
-            console.log('Invitation email sent to:', application.email);
-          }
-        }
-      } catch (emailErr) {
-        console.error('Non-blocking email error:', emailErr);
-      }
-
-      return new Response(JSON.stringify({ 
-        success: true, 
-        providerId: provider.id,
-        userId: userId 
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return await approveApplication(
+        body.applicationId, body.adminComments,
+        supabase, user.id, corsHeaders, supabaseUrl, supabaseKey,
+      );
     }
 
-    // **ACTION: reject** - Rejeter candidature
+    // **ACTION: reject**
     if (body.action === 'reject') {
-      if (!body.applicationId) {
-        throw new Error('applicationId required');
-      }
+      if (!body.applicationId) throw new Error('applicationId required');
 
       const { error } = await supabase
         .from('job_applications')
@@ -376,7 +408,6 @@ serve(async (req) => {
 
       if (error) throw error;
 
-      // Logger l'action
       await supabase
         .from('admin_actions_log')
         .insert({
@@ -397,7 +428,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in admin-applications:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

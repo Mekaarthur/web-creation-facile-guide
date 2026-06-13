@@ -218,6 +218,80 @@ serve(async (req) => {
       await notifyAdminDispute(dispute, supabaseAdmin);
     }
 
+    // Gérer les échecs de paiement
+    if (event.type === "payment_intent.payment_failed") {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent;
+      const paymentIntentId = paymentIntent.id;
+      const failureMessage = paymentIntent.last_payment_error?.message || 'Paiement échoué';
+
+      console.log(`payment_intent.payment_failed: ${paymentIntentId} — ${failureMessage}`);
+
+      const { data: txRecord } = await supabaseAdmin
+        .from('financial_transactions')
+        .select('id, booking_id, payment_status')
+        .eq('stripe_payment_intent_id', paymentIntentId)
+        .maybeSingle();
+
+      if (txRecord?.payment_status === 'payment_failed') {
+        console.log(`payment_failed déjà traité pour ${paymentIntentId} — skip`);
+      } else {
+        if (txRecord) {
+          // 1. Mettre à jour financial_transactions
+          await supabaseAdmin
+            .from('financial_transactions')
+            .update({ payment_status: 'payment_failed' })
+            .eq('stripe_payment_intent_id', paymentIntentId);
+
+          // 2. Mettre à jour le booking
+          if (txRecord.booking_id) {
+            await supabaseAdmin
+              .from('bookings')
+              .update({ status: 'payment_failed' })
+              .eq('id', txRecord.booking_id);
+            console.log(`Booking ${txRecord.booking_id} marqué payment_failed`);
+          }
+        }
+
+        // 3. Email client si disponible dans les métadonnées
+        const clientEmail = paymentIntent.receipt_email || paymentIntent.metadata?.client_email;
+        if (clientEmail) {
+          try {
+            await supabaseAdmin.functions.invoke('send-transactional-email', {
+              body: {
+                type: 'payment_failed',
+                recipientEmail: clientEmail,
+                recipientName: paymentIntent.metadata?.client_name || 'Client',
+                data: {
+                  clientName: (paymentIntent.metadata?.client_name || 'Client').split(' ')[0],
+                  amount: paymentIntent.amount / 100,
+                  failureReason: failureMessage,
+                },
+              },
+            });
+            console.log(`Email payment_failed envoyé à ${clientEmail}`);
+          } catch (emailErr) {
+            console.error('Erreur email payment_failed (non bloquant):', emailErr);
+          }
+        }
+
+        // 4. Notification admin
+        await supabaseAdmin.functions.invoke('create-admin-notification', {
+          body: {
+            type: 'payment',
+            title: '❌ Paiement échoué',
+            message: `Échec paiement ${paymentIntentId} — ${failureMessage}`,
+            data: {
+              payment_intent_id: paymentIntentId,
+              amount: paymentIntent.amount / 100,
+              failure_reason: failureMessage,
+              booking_id: txRecord?.booking_id || null,
+            },
+            priority: 'high',
+          },
+        }).catch(() => {});
+      }
+    }
+
     return new Response(JSON.stringify({ received: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

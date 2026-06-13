@@ -94,6 +94,22 @@ C'est un monorepo pnpm :
 - Les factures PDF ne doivent **jamais** contenir de mention "DOCUMENT PROVISOIRE", disclaimer d'invalité fiscale, ou tout texte invalidant leur valeur légale. Les informations légales obligatoires (SIRET, mentions TVA SAP, pénalités de retard) doivent être présentes sur chaque facture émise.
 - Les secrets `BIKAWO_SIRET`, `BIKAWO_ADDRESS`, `BIKAWO_PHONE` doivent être configurés dans Supabase avant la mise en production pour que les factures soient légalement valides.
 
+## Règle critique — synchronisation trigger / fonction DB
+
+`calculate_financial_breakdown` et le trigger `create_financial_transaction` doivent **toujours** avoir des signatures d'arguments identiques.
+
+Ne jamais modifier l'un sans mettre à jour l'autre. Après tout changement, vérifier avec :
+```sql
+SELECT proname, pg_get_function_arguments(oid)
+FROM pg_proc
+WHERE proname IN (
+  'calculate_financial_breakdown',
+  'create_financial_transaction'
+)
+AND pronamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public');
+```
+Les deux signatures doivent correspondre avant tout déploiement.
+
 ## Dépendances Excel
 
 `exceljs` est la bibliothèque d'export Excel du monorepo. Elle est lazy-loaded dans `apps/admin` uniquement.
