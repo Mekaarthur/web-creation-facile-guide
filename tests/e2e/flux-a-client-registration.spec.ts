@@ -92,8 +92,15 @@ const mockEdgeFn200: Handler         = json(200, { success: true });
  * Must be called BEFORE navigation so Playwright registers handlers first.
  */
 async function setupSignupMocks(page: Page) {
-  await page.route('**/auth/v1/signup',           mockSignupSuccess);
-  await page.route('**/functions/v1/**',           mockEdgeFn200);
+  // Catch-alls first (LIFO: lower priority — checked last)
+  // auth/v1/user returns 401 so Supabase fires SIGNED_OUT after SIGNED_IN,
+  // preventing the /auth guard from redirecting the page away from /auth/complete.
+  await page.route('**/auth/v1/**',     json(401, { error: 'no session' }));
+  await page.route('**/rest/v1/**',     json(200, []));
+  // Specific mocks last (higher priority — checked first)
+  // Use regex: emailRedirectTo adds ?redirect_to=... which breaks glob '**/auth/v1/signup'
+  await page.route(/\/auth\/v1\/signup/, mockSignupSuccess);
+  await page.route('**/functions/v1/**', mockEdgeFn200);
 }
 
 /**
@@ -335,7 +342,11 @@ test.describe('Flux A — Inscription client', () => {
     });
 
     test('A06 — email déjà utilisé (ghost user) affiche le toast d\'erreur', async ({ page }) => {
-      await page.route('**/auth/v1/signup',  mockSignupGhostUser);
+      // auth/v1/** catch-all returns 401 → SIGNED_OUT after ghost user SIGNED_IN
+      // → /auth guard stays neutral, toast remains visible
+      await page.route('**/auth/v1/**',     json(401, { error: 'no session' }));
+      await page.route('**/rest/v1/**',     json(200, []));
+      await page.route(/\/auth\/v1\/signup/, mockSignupGhostUser);
       await page.route('**/functions/v1/**', mockEdgeFn200);
       await fillSignupFields(page);
       await tickConsents(page);
@@ -360,7 +371,7 @@ test.describe('Flux A — Inscription client', () => {
       await submitBtn.click();
       // Pendant l'envoi, le texte change et le bouton est désactivé
       await expect(page.getByText(/Création de votre compte/i)).toBeVisible();
-      await expect(submitBtn).toBeDisabled();
+      await expect(page.getByRole('button', { name: /Création de votre compte/i })).toBeDisabled();
     });
   });
 
@@ -459,9 +470,17 @@ test.describe('Flux A — Inscription client', () => {
     });
 
     test('RP02 — /update-password charge le formulaire de nouveau mot de passe', async ({ page }) => {
+      await page.addInitScript(({ sessionBody, storageKey }) => {
+        localStorage.setItem(storageKey, JSON.stringify(sessionBody));
+      }, {
+        storageKey: `sb-${process.env.VITE_SUPABASE_PROJECT_ID ?? 'cgrosjzmbgxmtvwxictr'}-auth-token`,
+        sessionBody: mockSessionBody(),
+      });
+      await page.route('**/auth/v1/**',     json(401, { error: 'no session' }));
+      await page.route('**/rest/v1/**',     json(200, []));
+      await page.route('**/auth/v1/user**', json(200, mockSessionBody().user));
       await page.goto('/update-password');
-      // La page doit proposer un champ password (nouveau mot de passe)
-      await expect(page.locator('input[type="password"]')).toBeVisible();
+      await expect(page.locator('input[type="password"]').first()).toBeVisible({ timeout: 3_000 });
     });
   });
 });

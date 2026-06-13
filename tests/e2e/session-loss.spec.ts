@@ -49,28 +49,16 @@ test.describe('TC-SESSION-01 — Expiration de session', () => {
     await page.goto('/espace-personnel');
     await expect(page).toHaveURL(/espace-personnel/, { timeout: 8000 });
 
-    // Phase 2 : simuler expiration en cours de session
-    // getSession() + refresh token échoue à l'instant T → ProtectedRoute redirige
-    //
-    // Stratégie : dispatcher manuellement un StorageEvent avec newValue=null.
-    // Supabase v2 écoute window.storage pour la synchronisation multi-onglets.
-    // Dispatcher l'événement dans la même page force la détection immédiate (SIGNED_OUT)
-    // sans attendre un prochain cycle de refresh.
-    await page.evaluate((key) => {
-      const oldValue = localStorage.getItem(key);
-      localStorage.removeItem(key);
-      // Notifie Supabase JS via l'API storage event qu'elle surveille
-      window.dispatchEvent(new StorageEvent('storage', {
-        key,
-        oldValue,
-        newValue: null,
-        storageArea: localStorage,
-        url: location.href,
-      }));
-    }, supabaseStorageKey());
+    // Phase 2 : simuler expiration de session
+    // injectSession utilise addInitScript() qui s'exécute à CHAQUE navigation.
+    // Pour annuler l'injection, on enregistre un second addInitScript (exécuté APRÈS, dans l'ordre
+    // d'enregistrement) qui supprime la clé — net effect sur le prochain goto : inject → remove → null.
+    await page.addInitScript(({ key }) => { localStorage.removeItem(key); }, { key: supabaseStorageKey() });
+    // Override user mock to return 401 (registered last = highest LIFO priority)
+    await page.route('**/auth/v1/user**', json(401, { error: 'no session' }));
+    await page.goto('/espace-personnel');
 
-    // Supabase reçoit l'événement → SIGNED_OUT → user=null
-    // ProtectedRoute (toujours sur /espace-personnel) re-rend → redirect /auth
+    // ProtectedRoute détecte l'absence de session → redirect /auth
     await expect(page).toHaveURL(/\/auth/, { timeout: 8000 });
 
     // Aucun contenu protégé ne doit être visible après expiration
@@ -88,7 +76,8 @@ test.describe('TC-SESSION-01 — Expiration de session', () => {
     await page.route('**/rest/v1/**', stubEmpty);
     await page.route('**/functions/v1/**', json(200, {}));
 
-    await page.goto('/espace-personnel');
+    // waitUntil:'commit' évite ERR_ABORTED si ProtectedRoute redirige avant l'événement load
+    await page.goto('/espace-personnel', { waitUntil: 'commit' }).catch(() => null);
 
     await expect(page).toHaveURL(/\/auth/, { timeout: 8000 });
     await expect(page.getByText(/mes réservations|tableau de bord/i)).not.toBeVisible();

@@ -104,10 +104,16 @@ async function setupLoginVerifiedMocks(page: Page) {
 
 /** Mocks for a successful ProviderAuth signup. */
 async function setupProviderSignupMocks(page: Page) {
+  // Catch-alls first (LIFO: lower priority — checked last)
+  // auth/v1 returns 401 → SIGNED_OUT after SIGNED_IN prevents auth guard redirect
+  await page.route('**/auth/v1/**',     json(401, { error: 'no session' }));
+  await page.route('**/rest/v1/**',     json(200, []));
+  // Specific mocks last (higher priority — checked first)
   // checkEmailExists queries user_roles + providers
   await page.route('**/rest/v1/user_roles*',          stubEmpty);
   await page.route('**/rest/v1/providers*',           stubEmpty);
-  await page.route('**/auth/v1/signup',               mockSignupSuccess({ email: MOCK_PROVIDER_EMAIL }));
+  // Use regex: emailRedirectTo adds ?redirect_to=... which breaks glob '**/auth/v1/signup'
+  await page.route(/\/auth\/v1\/signup/, mockSignupSuccess({ email: MOCK_PROVIDER_EMAIL }));
   await page.route('**/functions/v1/**',               stub200);
 }
 
@@ -306,13 +312,19 @@ test.describe('Flux B — Auth prestataire (/auth/provider)', () => {
     await page.locator('input[type="password"]').first().fill('TestPass1!');
     // Téléphone (optionnel dans providerSignupSchema)
     // Submit
-    await page.locator('form').getByRole('button', { name: /Créer|S'inscrire|Inscription/i }).last().click();
-    await expect(page.getByText(/Inscription réussie/i)).toBeVisible({ timeout: 10_000 });
+    await page.getByRole('button', { name: 'Créer mon compte prestataire' }).click();
+    await expect(page.getByText(/Inscription réussie/i).first()).toBeVisible({ timeout: 10_000 });
   });
 
   test('P07 — email déjà utilisé affiche toast avec bouton "Se connecter"', async ({ page }) => {
+    await page.route('**/auth/v1/**',     json(401, { error: 'no session' }));
+    await page.route('**/rest/v1/**',     json(200, []));
+    await page.route('**/auth/v1/user**', json(200, {
+      id: MOCK_USER_ID, email: MOCK_PROVIDER_EMAIL, role: 'authenticated',
+      user_metadata: { user_type: 'prestataire' }, aud: 'authenticated', app_metadata: {},
+    }));
     await page.route('**/rest/v1/user_roles*',  json(200, [{ user_id: MOCK_USER_ID }])); // checkEmailExists trouvera quelque chose
-    await page.route('**/auth/v1/signup',        mockSignupGhostUser);
+    await page.route(/\/auth\/v1\/signup/, mockSignupGhostUser);
     await page.route('**/functions/v1/**',        stub200);
     await goToProviderAuth(page);
     await page.getByRole('button', { name: /Devenir prestataire/i }).click();
@@ -321,7 +333,7 @@ test.describe('Flux B — Auth prestataire (/auth/provider)', () => {
     await page.locator('input[type="password"]').first().fill('TestPass1!');
     await page.locator('form').getByRole('button', { name: /Créer|S'inscrire|Inscription/i }).last().click();
     await expect(
-      page.getByText(/déjà utilisé|identifiant déjà utilisé/i)
+      page.getByText(/déjà utilisé|identifiant déjà utilisé/i).first()
     ).toBeVisible({ timeout: 10_000 });
   });
 
@@ -337,10 +349,10 @@ test.describe('Flux B — Auth prestataire (/auth/provider)', () => {
     await page.route('**/auth/v1/token*', mockLoginInvalid);
     await goToProviderAuth(page);
     await page.locator('input[type="email"]').fill(MOCK_PROVIDER_EMAIL);
-    await page.locator('input[type="password"]').fill('wrongpassword');
+    await page.locator('input[type="password"]').fill('Wrongpassword1!');
     await page.getByRole('button', { name: /Se connecter/i }).click();
     await expect(
-      page.getByText(/Erreur de connexion|identifiants|invalide/i)
+      page.getByText('Erreur de connexion', { exact: true })
     ).toBeVisible({ timeout: 10_000 });
   });
 
@@ -362,6 +374,12 @@ test.describe('Flux B — Onboarding prestataire (/provider-onboarding)', () => 
 
   test('O02 — avec session mais sans record provider → redirige vers /auth/provider', async ({ page }) => {
     await injectSession(page, makeProviderSession());
+    await page.route('**/auth/v1/**',     json(401, { error: 'no session' }));
+    await page.route('**/rest/v1/**',     json(200, []));
+    await page.route('**/auth/v1/user**', json(200, {
+      id: MOCK_USER_ID, email: MOCK_PROVIDER_EMAIL, role: 'authenticated',
+      user_metadata: { user_type: 'prestataire' }, aud: 'authenticated', app_metadata: {},
+    }));
     // providers query renvoie null → fetchOnboardingData retourne null → navigate('/auth/provider')
     await page.route('**/rest/v1/providers*',          mockProviderNullSingle);
     await page.route('**/rest/v1/user_roles*',         mockUserRolesProvider);
@@ -371,6 +389,12 @@ test.describe('Flux B — Onboarding prestataire (/provider-onboarding)', () => 
 
   test('O03 — provider actif (status=active) redirige vers /espace-prestataire', async ({ page }) => {
     await injectSession(page, makeProviderSession());
+    await page.route('**/auth/v1/**',     json(401, { error: 'no session' }));
+    await page.route('**/rest/v1/**',     json(200, []));
+    await page.route('**/auth/v1/user**', json(200, {
+      id: MOCK_USER_ID, email: MOCK_PROVIDER_EMAIL, role: 'authenticated',
+      user_metadata: { user_type: 'prestataire' }, aud: 'authenticated', app_metadata: {},
+    }));
     await page.route('**/rest/v1/providers*',         mockProviderVerifiedSingle);
     await page.route('**/rest/v1/user_roles*',        mockUserRolesProvider);
     await page.route('**/rest/v1/provider_documents*', mockProviderDocsEmpty);
@@ -380,6 +404,12 @@ test.describe('Flux B — Onboarding prestataire (/provider-onboarding)', () => 
 
   test('O04 — provider en step 1 affiche la section Documents', async ({ page }) => {
     await injectSession(page, makeProviderSession());
+    await page.route('**/auth/v1/**',     json(401, { error: 'no session' }));
+    await page.route('**/rest/v1/**',     json(200, []));
+    await page.route('**/auth/v1/user**', json(200, {
+      id: MOCK_USER_ID, email: MOCK_PROVIDER_EMAIL, role: 'authenticated',
+      user_metadata: { user_type: 'prestataire' }, aud: 'authenticated', app_metadata: {},
+    }));
     await page.route('**/rest/v1/providers*',          mockProviderUnverifiedSingle);
     await page.route('**/rest/v1/user_roles*',         mockUserRolesProvider);
     await page.route('**/rest/v1/provider_documents*', mockProviderDocsEmpty);
@@ -391,6 +421,12 @@ test.describe('Flux B — Onboarding prestataire (/provider-onboarding)', () => 
 
   test('O05 — la barre de progression est visible', async ({ page }) => {
     await injectSession(page, makeProviderSession());
+    await page.route('**/auth/v1/**',     json(401, { error: 'no session' }));
+    await page.route('**/rest/v1/**',     json(200, []));
+    await page.route('**/auth/v1/user**', json(200, {
+      id: MOCK_USER_ID, email: MOCK_PROVIDER_EMAIL, role: 'authenticated',
+      user_metadata: { user_type: 'prestataire' }, aud: 'authenticated', app_metadata: {},
+    }));
     await page.route('**/rest/v1/providers*',          mockProviderUnverifiedSingle);
     await page.route('**/rest/v1/user_roles*',         mockUserRolesProvider);
     await page.route('**/rest/v1/provider_documents*', mockProviderDocsEmpty);

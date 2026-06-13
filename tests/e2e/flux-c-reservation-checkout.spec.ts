@@ -273,11 +273,11 @@ test.describe('CART → CHECKOUT — Transition vers la finalisation', () => {
   test('CHKOUT-06: soumission réussie → appel create-payment et redirection Stripe', async ({ page }) => {
     await injectSession(page, makeClientSession());
     await setupAuthMocks(page);
-    await page.route('**/rest/v1/profiles*', json(200, [{
+    await page.route('**/rest/v1/profiles*', json(200, {
       user_id: MOCK_USER_ID,
       first_name: 'Marie', last_name: 'Dupont',
       email: MOCK_CLIENT_EMAIL, phone: '0612345678', address: '12 rue de Paris, 75001 Paris',
-    }]));
+    }));
     await injectCart(page, [makeCartItem()]);
 
     let paymentCallBody: unknown = null;
@@ -286,9 +286,9 @@ test.describe('CART → CHECKOUT — Transition vers la finalisation', () => {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ url: 'https://checkout.stripe.com/pay/test123' }) });
     });
 
-    // Intercept navigation to Stripe (opens in new tab or redirects)
+    // Intercept navigation to Stripe (opens in new tab or redirects current page)
     const [newPage] = await Promise.all([
-      page.context().waitForEvent('page').catch(() => null),
+      page.context().waitForEvent('page', { timeout: 1000 }).catch(() => null),
       (async () => {
         await page.goto('/panier');
         await page.getByRole('button', { name: /procéder au paiement/i }).click();
@@ -307,11 +307,11 @@ test.describe('CART → CHECKOUT — Transition vers la finalisation', () => {
   test('CHKOUT-07: erreur create-payment → toast d\'erreur, pas de redirect', async ({ page }) => {
     await injectSession(page, makeClientSession());
     await setupAuthMocks(page);
-    await page.route('**/rest/v1/profiles*', json(200, [{
+    await page.route('**/rest/v1/profiles*', json(200, {
       user_id: MOCK_USER_ID,
       first_name: 'Marie', last_name: 'Dupont',
       email: MOCK_CLIENT_EMAIL, phone: '0612345678', address: '12 rue de Paris, 75001 Paris',
-    }]));
+    }));
     await injectCart(page, [makeCartItem()]);
     await page.route('**/functions/v1/create-payment**', json(500, { error: 'Internal server error' }));
 
@@ -321,7 +321,7 @@ test.describe('CART → CHECKOUT — Transition vers la finalisation', () => {
 
     await page.getByRole('button', { name: /confirmer/i }).first().click();
 
-    await expect(page.getByText(/erreur/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText('Erreur', { exact: true })).toBeVisible({ timeout: 5000 });
     // Still on checkout page (not navigated away)
     await expect(page.getByText(/finalisation/i)).toBeVisible();
   });
@@ -331,15 +331,24 @@ test.describe('CART → CHECKOUT — Transition vers la finalisation', () => {
 
 test.describe('PAY — Page /payment', () => {
   test('PAY-01: /payment affiche les onglets invité et compte', async ({ page }) => {
+    await injectSession(page, makeClientSession());
+    await page.route('**/auth/v1/**', json(401, { error: 'no session' }));
+    await page.route('**/rest/v1/**', stubEmpty);
+    await setupAuthMocks(page);
     await page.goto('/payment?service=Ménage&price=75&type=one-time&duration=3');
-    // Two tabs should be visible
-    await expect(page.getByRole('tab', { name: /invité|sans compte/i })).toBeVisible({ timeout: 5000 });
-    await expect(page.getByRole('tab', { name: /compte|connecté/i })).toBeVisible({ timeout: 5000 });
+    // Two tabs should be visible — labels: "Paiement rapide" and "Avec compte"
+    await expect(page.getByRole('tab', { name: /paiement rapide/i })).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('tab', { name: /avec compte/i })).toBeVisible({ timeout: 5000 });
   });
 
   test('PAY-02: /payment affiche le prix du service depuis les URL params', async ({ page }) => {
+    await injectSession(page, makeClientSession());
+    await page.route('**/auth/v1/**', json(401, { error: 'no session' }));
+    await page.route('**/rest/v1/**', stubEmpty);
+    await setupAuthMocks(page);
     await page.goto('/payment?service=Ménage&price=75&type=one-time&duration=3');
-    await expect(page.getByText('75')).toBeVisible({ timeout: 5000 });
+    // strict mode: multiple elements contain '75' — use first() to avoid violation
+    await expect(page.getByText('75').first()).toBeVisible({ timeout: 5000 });
   });
 
   test('EDGE-03: /payment sans ?price= affiche 0€ et ne plante pas', async ({ page }) => {
@@ -350,23 +359,44 @@ test.describe('PAY — Page /payment', () => {
   });
 
   test('PAY-03: onglet invité — validation GuestCheckout — email invalide bloqué', async ({ page }) => {
+    await injectSession(page, makeClientSession());
+    await page.route('**/auth/v1/**', json(401, { error: 'no session' }));
+    await page.route('**/rest/v1/**', stubEmpty);
+    await page.route('**/functions/v1/**', json(200, { paymentMethods: [] }));
+    await setupAuthMocks(page);
     await page.goto('/payment?service=Ménage&price=75&type=one-time&duration=3');
 
-    // Make sure "invité" tab is active (it should be by default)
-    const guestTab = page.getByRole('tab', { name: /invité|sans compte/i });
-    if (await guestTab.isVisible()) await guestTab.click();
+    // Wait for tabs to render (page may default to "Avec compte" when user is authenticated)
+    await page.getByRole('tab', { name: /paiement rapide/i }).waitFor({ state: 'visible', timeout: 5000 });
+    await page.getByRole('tab', { name: /paiement rapide/i }).click();
 
-    await page.fill('input[name="email"], input[placeholder*="mail"]', 'not-an-email');
-    await page.fill('input[name="firstName"], input[placeholder*="rénom"]', 'Marie');
-    await page.fill('input[name="lastName"], input[placeholder*="om"]', 'Dupont');
+    // Wait for GuestCheckout form to render
+    await page.getByPlaceholder('votre@email.com').waitFor({ state: 'visible', timeout: 5000 });
 
-    await page.getByRole('button', { name: /payer|paiement/i }).click();
+    await page.getByPlaceholder('votre@email.com').fill('not-an-email');
+    await page.getByPlaceholder('Votre prénom').fill('Marie');
+    await page.getByPlaceholder('Votre nom').fill('Dupont');
+    // phone, address, postalCode, city are optional — skip for this validation test
 
-    await expect(page.getByText(/email|invalide/i)).toBeVisible({ timeout: 3000 });
+    await page.getByRole('button', { name: /payer|paiement/i }).first().click();
+
+    // Validation empêche la soumission — une erreur zod apparaît dans un <p> du formulaire
+    // emailSchema: "Email invalide" si valeur fournie, "L'email est requis" si vide
+    await expect(
+      page.locator('form p').filter({ hasText: /requis|invalide/i }).first()
+    ).toBeVisible({ timeout: 3000 });
   });
 
   test('PAY-04: onglet invité — soumission valide → appel create-payment', async ({ page }) => {
+    await injectSession(page, makeClientSession());
+    await page.route('**/auth/v1/**', json(401, { error: 'no session' }));
+    await page.route('**/rest/v1/**', stubEmpty);
+    await page.route('**/functions/v1/**', json(200, { paymentMethods: [] }));
+    await setupAuthMocks(page);
+    // Abort Stripe navigation so the page context stays open after create-payment fires
+    await page.route(/checkout\.stripe\.com/, route => route.abort());
     let called = false;
+    // Override the functions catch-all for create-payment (registered last = highest LIFO priority)
     await page.route('**/functions/v1/create-payment**', async (route) => {
       called = true;
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ url: 'https://checkout.stripe.com/test' }) });
@@ -374,31 +404,21 @@ test.describe('PAY — Page /payment', () => {
 
     await page.goto('/payment?service=Ménage&price=75&type=one-time&duration=3');
 
-    const guestTab = page.getByRole('tab', { name: /invité|sans compte/i });
-    if (await guestTab.isVisible()) await guestTab.click();
+    // Wait for tabs, then switch to guest tab
+    await page.getByRole('tab', { name: /paiement rapide/i }).waitFor({ state: 'visible', timeout: 5000 });
+    await page.getByRole('tab', { name: /paiement rapide/i }).click();
 
-    // Fill valid guest form
-    await page.fill('input[name="email"]',      MOCK_CLIENT_EMAIL).catch(() =>
-      page.fill('input[placeholder*="mail"]',   MOCK_CLIENT_EMAIL)
-    );
-    await page.fill('input[name="firstName"]',  'Marie').catch(() =>
-      page.fill('input[placeholder*="rénom"]',  'Marie')
-    );
-    await page.fill('input[name="lastName"]',   'Dupont').catch(() =>
-      page.fill('input[placeholder*="om"]',     'Dupont')
-    );
-    await page.fill('input[name="phone"]',      '0612345678').catch(() =>
-      page.fill('input[placeholder*="léphone"]', '0612345678')
-    );
-    await page.fill('input[name="address"]',    '12 rue de Paris').catch(() =>
-      page.fill('input[placeholder*="dresse"]', '12 rue de Paris')
-    );
-    await page.fill('input[name="postalCode"]', '75001').catch(() =>
-      page.fill('input[placeholder*="ostal"]',  '75001')
-    );
-    await page.fill('input[name="city"]',       'Paris').catch(() =>
-      page.fill('input[placeholder*="ille"]',   'Paris')
-    );
+    // Wait for GuestCheckout form to render
+    await page.getByPlaceholder('votre@email.com').waitFor({ state: 'visible', timeout: 5000 });
+
+    // Fill valid guest form using exact placeholders from GuestCheckout.tsx
+    await page.getByPlaceholder('votre@email.com').fill(MOCK_CLIENT_EMAIL);
+    await page.getByPlaceholder('Votre prénom').fill('Marie');
+    await page.getByPlaceholder('Votre nom').fill('Dupont');
+    await page.getByPlaceholder('06 12 34 56 78').fill('0612345678');
+    await page.getByPlaceholder('123 rue de la République').fill('12 rue de Paris');
+    await page.getByPlaceholder('75001').fill('75001');
+    await page.getByPlaceholder('Paris').fill('Paris');
 
     await page.getByRole('button', { name: /payer|paiement/i }).click();
 
@@ -438,7 +458,7 @@ test.describe('CANCEL — Page /payment-canceled', () => {
   test('CANCEL-03: bouton "Retour à l\'accueil" navigue vers /', async ({ page }) => {
     await page.goto('/payment-canceled');
     await page.getByRole('button', { name: /retour à l.accueil/i }).click();
-    await expect(page).toHaveURL(/^\//);
+    await expect(page).toHaveURL('/');
     // Should be home page (not /panier, not /payment)
     await expect(page).not.toHaveURL(/panier|payment/);
   });

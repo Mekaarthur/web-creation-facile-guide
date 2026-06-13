@@ -45,7 +45,8 @@ export const providerSignupSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
   name: nameSchema,
-  phone: phoneSchema.optional(),
+  // z.preprocess converts '' → undefined so optional phone passes when left blank
+  phone: z.preprocess(val => (val === '' ? undefined : val), phoneSchema.optional()),
 });
 
 export const profileSchema = z.object({

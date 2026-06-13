@@ -534,7 +534,20 @@ const ProviderAuth = () => {
                               Email
                             </FormLabel>
                             <FormControl>
-                              <Input type="email" placeholder="votre@email.com" {...field} />
+                              <Input
+                                type="email"
+                                placeholder="votre@email.com"
+                                autoComplete="email"
+                                value={field.value ?? ''}
+                                onChange={(e) => {
+                                  signupForm.setValue('email', e.target.value, { shouldDirty: true, shouldTouch: true });
+                                  field.onChange(e.target.value);
+                                }}
+                                onInput={(e) => field.onChange((e.target as HTMLInputElement).value)}
+                                onBlur={field.onBlur}
+                                name={field.name}
+                                ref={field.ref}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
