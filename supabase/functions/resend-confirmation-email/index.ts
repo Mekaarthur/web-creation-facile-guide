@@ -64,7 +64,7 @@ serve(async (req) => {
       type: 'signup',
       email: email,
       options: {
-        emailRedirectTo: 'https://bikawo.com/auth/complete'
+        emailRedirectTo: `${Deno.env.get('SITE_URL') ?? 'https://bikawo.com'}/auth/complete`
       }
     });
 

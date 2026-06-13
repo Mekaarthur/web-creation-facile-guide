@@ -73,7 +73,7 @@ serve(async (req) => {
     const { error } = await supabase.auth.admin.generateLink({
       type: 'signup',
       email,
-      options: { redirectTo: 'https://bikawo.com/auth/complete' }
+      options: { redirectTo: `${Deno.env.get('SITE_URL') ?? 'https://bikawo.com'}/auth/complete` }
     });
 
     const exists = (error as any)?.code === 'email_exists';
