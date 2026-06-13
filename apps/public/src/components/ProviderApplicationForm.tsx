@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import { providerService } from '@/services/providerService';
 import { useToast } from '@/hooks/use-toast';
 import { ApplicationPersonalInfoCard } from './provider/application/ApplicationPersonalInfoCard';
 import { ApplicationServicesCard } from './provider/application/ApplicationServicesCard';
@@ -37,7 +38,7 @@ export const ProviderApplicationForm = () => {
         throw new Error('Veuillez indiquer votre motivation pour rejoindre Bikawo');
       }
 
-      const { error } = await supabase.from('job_applications').insert({
+      await providerService.submitApplication({
         first_name: formData.first_name,
         last_name: formData.last_name,
         email: formData.email,
@@ -49,10 +50,7 @@ export const ProviderApplicationForm = () => {
         has_transport: formData.has_transport,
         certifications: formData.certifications,
         cv_file_url: formData.identity_document_url || null,
-        status: 'pending',
       });
-
-      if (error) throw error;
 
       await supabase.functions.invoke('create-admin-notification', {
         body: {

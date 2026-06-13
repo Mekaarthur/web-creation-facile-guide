@@ -141,6 +141,22 @@ export const bookingService = {
       cancelled_by: cancelledBy,
     });
   },
+
+  async createCustomRequest(payload: {
+    id: string;
+    client_name: string;
+    client_email: string;
+    service_description: string;
+    location: string;
+    preferred_date: string;
+    preferred_time: string;
+    additional_notes?: string | null;
+    urgency_level: string;
+    status: string;
+  }): Promise<void> {
+    const { error } = await supabase.from("custom_requests").insert([payload]);
+    if (error) throw new ServiceError("Erreur lors de la création de la demande", error.code, error);
+  },
 };
 
 export { ServiceError as BookingServiceError };

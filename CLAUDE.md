@@ -124,3 +124,8 @@ Ces vulnérabilités sont présentes dans `pnpm audit` mais n'affectent pas le r
 - **esbuild MODERATE** GHSA-gv7w-rqvm-qjhr : dev server uniquement
 - **vite MODERATE** GHSA-4w7w-66w2-5vf9 : path traversal dev server uniquement
 - **uuid MODERATE** GHSA-w5hq-g745-h8pq : dépendance transitive de exceljs — non exploitable via le code applicatif
+
+## Règle critique — CORS et ENVIRONMENT
+
+`ENVIRONMENT=production` doit être configuré dans les secrets Supabase.
+Ne jamais importer `activeCorsHeaders` depuis `_shared/cors.ts` dans une nouvelle Edge Function — utiliser `corsHeaders` directement ou `getAdminCorsHeaders()` pour les fonctions admin.

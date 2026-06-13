@@ -13,6 +13,7 @@ import { CalendarIcon, Filter, Zap, Navigation } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
+import { bookingService } from '@/services/bookingService';
 import { useToast } from '@/hooks/use-toast';
 
 interface TimeSlot {
@@ -102,7 +103,7 @@ export function BookingFormDialog({ open, selectedService, minRating, maxPrice, 
       ).join('\n');
 
       const createdId = crypto.randomUUID();
-      const { error } = await supabase.from('custom_requests').insert([{
+      await bookingService.createCustomRequest({
         id: createdId,
         client_name: user.email?.split('@')[0] || 'Client',
         client_email: user.email || '',
@@ -113,8 +114,7 @@ export function BookingFormDialog({ open, selectedService, minRating, maxPrice, 
         additional_notes: notes || null,
         urgency_level: 'normal',
         status: 'new',
-      }]);
-      if (error) throw error;
+      });
 
       try {
         await supabase.functions.invoke('send-modern-notification', {

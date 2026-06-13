@@ -316,6 +316,26 @@ export const providerService = {
     });
     if (error) throw new ServiceError("Candidature impossible", error.code, error);
   },
+
+  async submitApplication(payload: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+    category: string;
+    experience_years: number;
+    availability: string;
+    motivation: string;
+    has_transport: boolean;
+    certifications: string;
+    cv_file_url: string | null;
+  }): Promise<void> {
+    const { error } = await supabase.from("job_applications").insert({
+      ...payload,
+      status: "pending",
+    });
+    if (error) throw new ServiceError("Erreur lors de la soumission de la candidature", error.code, error);
+  },
 };
 
 export { ServiceError as ProviderServiceError };

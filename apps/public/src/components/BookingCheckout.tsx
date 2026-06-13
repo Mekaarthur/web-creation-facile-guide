@@ -5,6 +5,7 @@ import { CreditCard, ArrowLeft, Loader2 } from "lucide-react";
 import { useBikawoCart } from "@/hooks/useBikawoCart";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { profileService } from "@/services/profileService";
 import { cn } from "@/lib/utils";
 import { CheckoutClientInfoCard, type ClientInfo } from "@/components/checkout/CheckoutClientInfoCard";
 import { UrssafSection } from "@/components/checkout/UrssafSection";
@@ -34,7 +35,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          const { data: profile } = await supabase.from('profiles').select('*').eq('user_id', user.id).single();
+          const profile = await profileService.getProfile(user.id);
           setClientInfo({
             email: user.email || '',
             firstName: profile?.first_name || user.user_metadata?.first_name || '',
