@@ -134,15 +134,16 @@ serve(async (req) => {
     // Vérifier si une réservation existe déjà pour cette session (admin key — RLS bloque les lectures anon)
     const { data: existingBookings } = await supabaseAdmin
       .from('bookings')
-      .select('id')
+      .select('id, order_number')
       .ilike('notes', `%stripe_session:${sessionId}%`);
 
     if (existingBookings && existingBookings.length > 0) {
-      logStep('Réservations déjà existantes', { ids: existingBookings.map(b => b.id) });
+      logStep('Réservations déjà existantes', { ids: existingBookings.map((b: any) => b.id) });
       return new Response(
         JSON.stringify({
           success: true,
-          bookingIds: existingBookings.map(b => b.id),
+          bookingIds: existingBookings.map((b: any) => b.id),
+          orderNumbers: existingBookings.map((b: any) => b.order_number ?? null),
           alreadyProcessed: true,
         }),
         {
@@ -721,10 +722,19 @@ serve(async (req) => {
 
     logStep('Nettoyage du localStorage pour le panier');
 
+    const { data: orderData } = await supabaseAdmin
+      .from('bookings')
+      .select('id, order_number')
+      .in('id', bookingIds);
+    const orderNumbers = bookingIds.map(id =>
+      orderData?.find((b: any) => b.id === id)?.order_number ?? null
+    );
+
     return new Response(
       JSON.stringify({
         success: true,
         bookingIds,
+        orderNumbers,
         clientInfo,
         services,
         totalAmount,

@@ -146,6 +146,7 @@ const PaymentSuccess = () => {
     clientAmount,
     urssafEnabled,
     bookingIds,
+    orderNumbers,
     alreadyProcessed,
   } = verificationData as Record<string, any>;
 
@@ -263,8 +264,8 @@ const PaymentSuccess = () => {
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {bookingIds.map((id: string, index: number) => (
-                    <Badge key={index} variant="outline" className="font-mono">
-                      {id.slice(0, 8)}
+                    <Badge key={index} variant="outline" className="font-mono text-sm px-3 py-1">
+                      {orderNumbers?.[index] || id.slice(0, 8)}
                     </Badge>
                   ))}
                 </div>

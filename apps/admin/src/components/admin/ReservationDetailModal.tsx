@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface Booking {
   id: string;
+  order_number?: string | null;
   booking_date: string;
   start_time: string;
   end_time: string;
@@ -91,7 +92,10 @@ export function ReservationDetailModal({ booking, open, onClose, providers, onSt
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg sm:text-xl">
-              Détails de la réservation #{booking.id.substring(0, 8)}
+              Détails — {booking.order_number || `#${booking.id.substring(0, 8)}`}
+              {booking.order_number && (
+                <span className="text-xs font-normal text-muted-foreground ml-2">#{booking.id.substring(0, 8)}</span>
+              )}
             </DialogTitle>
           </DialogHeader>
 

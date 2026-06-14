@@ -43,7 +43,7 @@ export const AutomatedReports = () => {
     const { start, end } = getDateRange(period);
     
     const [bookingsRes, paymentsRes, providersRes, clientsRes] = await Promise.all([
-      supabase.from('bookings').select('id, status, total_price, created_at, services(name)').gte('created_at', start).lte('created_at', end).limit(5000),
+      supabase.from('bookings').select('id, order_number, status, total_price, created_at, booking_date, services(name)').gte('created_at', start).lte('created_at', end).limit(5000),
       supabase.from('payments').select('id, status, amount, created_at').gte('created_at', start).lte('created_at', end).limit(5000),
       supabase.from('providers').select('id, first_name, last_name, email, city, created_at').gte('created_at', start).lte('created_at', end).limit(5000),
       supabase.from('profiles').select('id, first_name, last_name, email, created_at').gte('created_at', start).lte('created_at', end).limit(5000),
@@ -88,12 +88,12 @@ export const AutomatedReports = () => {
       if (data.bookings.length > 0) {
         const bookingsSheet = workbook.addWorksheet('Réservations');
         bookingsSheet.columns = [
-          { header: 'ID',      key: 'id',      width: 10 },
-          { header: 'Date',    key: 'date',    width: 12 },
-          { header: 'Service', key: 'service', width: 20 },
-          { header: 'Statut',  key: 'statut',  width: 12 },
-          { header: 'Prix',    key: 'prix',    width: 10 },
-          { header: 'Créé le', key: 'created', width: 12 },
+          { header: 'N° commande', key: 'id',      width: 16 },
+          { header: 'Date',        key: 'date',    width: 12 },
+          { header: 'Service',     key: 'service', width: 20 },
+          { header: 'Statut',      key: 'statut',  width: 12 },
+          { header: 'Prix',        key: 'prix',    width: 10 },
+          { header: 'Créé le',     key: 'created', width: 12 },
         ];
         bookingsSheet.getRow(1).eachCell(cell => {
           cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
@@ -101,7 +101,7 @@ export const AutomatedReports = () => {
         });
         data.bookings.forEach(b => {
           bookingsSheet.addRow({
-            id:      b.id.slice(0, 8),
+            id:      (b as any).order_number || b.id.slice(0, 8),
             date:    new Date(b.booking_date).toLocaleDateString('fr-FR'),
             service: b.services?.name || 'N/A',
             statut:  b.status,
@@ -167,7 +167,7 @@ export const AutomatedReports = () => {
       let csv = 'Type,ID,Date,Montant,Statut\n';
       
       data.bookings.forEach(b => {
-        csv += `Réservation,${b.id.slice(0, 8)},${new Date(b.booking_date).toLocaleDateString('fr-FR')},${b.total_price}€,${b.status}\n`;
+        csv += `Réservation,${(b as any).order_number || b.id.slice(0, 8)},${new Date(b.booking_date).toLocaleDateString('fr-FR')},${b.total_price}€,${b.status}\n`;
       });
       
       data.payments.forEach(p => {

@@ -41,6 +41,7 @@ serve(async (req) => {
           end_time,
           address,
           custom_duration,
+          order_number,
           services:service_id (name)
         )
       `)
@@ -89,6 +90,9 @@ serve(async (req) => {
     doc.text(`N° : ${invoice.invoice_number}`, pageW - margin - 50, 36);
     doc.text(`Date d'émission : ${issuedDate}`, pageW - margin - 50, 42);
     doc.text(`Date d'échéance : ${dueDate}`, pageW - margin - 50, 48);
+    if (invoice.bookings?.order_number) {
+      doc.text(`Réservation N° ${invoice.bookings.order_number}`, pageW - margin - 50, 54);
+    }
 
     // ── LIGNE SÉPARATRICE ──────────────────────────────────────────
     doc.setDrawColor(200, 200, 200);

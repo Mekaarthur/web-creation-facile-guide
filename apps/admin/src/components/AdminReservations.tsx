@@ -13,6 +13,7 @@ import { ReservationDetailModal } from "@/components/admin/ReservationDetailModa
 
 interface Booking {
   id: string;
+  order_number?: string | null;
   booking_date: string;
   start_time: string;
   end_time: string;
@@ -121,6 +122,7 @@ const AdminReservations = () => {
     if (searchTerm) {
       filtered = filtered.filter(b =>
         b.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (b.order_number?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
         b.client_profile?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         b.client_profile?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         b.client_profile?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -244,7 +246,8 @@ const AdminReservations = () => {
                   <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                     <div className="space-y-2 flex-1 w-full">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs sm:text-sm font-mono text-muted-foreground">#{booking.id.substring(0, 8)}</span>
+                        <span className="text-xs sm:text-sm font-mono font-semibold text-foreground">{booking.order_number || `#${booking.id.substring(0, 8)}`}</span>
+                        <span className="text-xs font-mono text-muted-foreground hidden sm:inline">#{booking.id.substring(0, 8)}</span>
                         <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
                         <span className="text-xs sm:text-sm text-muted-foreground">{new Date(booking.created_at).toLocaleDateString('fr-FR')}</span>
                       </div>

@@ -28,6 +28,7 @@ type SortBy = 'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc';
 
 export interface Booking {
   id: string;
+  order_number: string | null;
   booking_date: string;
   start_time: string;
   end_time: string;
@@ -51,7 +52,7 @@ async function fetchBookings(userId: string): Promise<Booking[]> {
   const { data, error } = await supabase
     .from('bookings')
     .select(`
-      id, booking_date, start_time, end_time, status, total_price, address,
+      id, order_number, booking_date, start_time, end_time, status, total_price, address,
       service_id, provider_id, completed_at, cancelled_at,
       services:service_id ( name, category ),
       providers:provider_id ( business_name, user_id ),
@@ -308,6 +309,9 @@ export const ClientPrestationsHistory = () => {
                                 {b.services?.name || 'Service'}
                               </h4>
                               <Badge variant={status.variant}>{status.label}</Badge>
+                              <span className="text-xs text-muted-foreground font-mono">
+                                {b.order_number || b.id.slice(0, 8)}
+                              </span>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-sm text-muted-foreground">
                               <div className="flex items-center gap-1.5">
