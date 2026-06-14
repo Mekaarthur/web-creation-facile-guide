@@ -84,7 +84,7 @@ serve(async (req) => {
     console.log('Admin access confirmed');
 
     if (req.method === 'GET') {
-      return await getSettings(supabase)
+      return await getSettings(supabase, corsHeaders)
     } else if (req.method === 'POST') {
       const body = await req.json()
       const { action, settings, category } = body
@@ -93,11 +93,11 @@ serve(async (req) => {
       
       switch (action) {
         case 'get':
-          return await getSettings(supabase)
+          return await getSettings(supabase, corsHeaders)
         case 'update':
-          return await saveSettings(supabase, settings, user.id)
+          return await saveSettings(supabase, settings, user.id, corsHeaders)
         case 'reset':
-          return await resetSettings(supabase, category, user.id)
+          return await resetSettings(supabase, category, user.id, corsHeaders)
         default:
           console.error('Invalid action:', action);
           return new Response(
@@ -130,7 +130,7 @@ serve(async (req) => {
   }
 })
 
-async function getSettings(supabase: any) {
+async function getSettings(supabase: any, corsHeaders: Record<string, string>) {
   try {
     const { data: settingsData, error } = await supabase
       .from('platform_settings')
@@ -185,7 +185,7 @@ async function getSettings(supabase: any) {
   }
 }
 
-async function saveSettings(supabase: any, settings: any, adminUserId: string) {
+async function saveSettings(supabase: any, settings: any, adminUserId: string, corsHeaders: Record<string, string>) {
   try {
     const updates = []
 
@@ -247,7 +247,7 @@ async function saveSettings(supabase: any, settings: any, adminUserId: string) {
   }
 }
 
-async function resetSettings(supabase: any, category: string, adminUserId: string) {
+async function resetSettings(supabase: any, category: string, adminUserId: string, corsHeaders: Record<string, string>) {
   try {
     // Default values for reset
     const defaultSettings: Record<string, any> = {

@@ -256,8 +256,8 @@ export default function AdminNotifications() {
     if (notification.data) {
       const { conversation_id, booking_id, user_id, payment_id } = notification.data;
       if (conversation_id) navigate(`/modern-admin/messages?conversation=${conversation_id}`);
-      else if (booking_id) navigate(`/modern-admin/bookings?booking=${booking_id}`);
-      else if (user_id) navigate(`/modern-admin/users?user=${user_id}`);
+      else if (booking_id) navigate(`/modern-admin/reservations?booking=${booking_id}`);
+      else if (user_id) navigate(`/modern-admin/utilisateurs?user=${user_id}`);
       else if (payment_id) navigate(`/modern-admin/payments?payment=${payment_id}`);
     }
   };

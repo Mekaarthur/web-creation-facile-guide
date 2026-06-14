@@ -135,13 +135,13 @@ async function getDashboardStats(supabase: any, { timeRange = '7d' }: any) {
 
     // Chiffre d'affaires
     const { data: revenues } = await supabase
-      .from('payments')
-      .select('amount, payment_date')
-      .eq('status', 'payé')
-      .gte('payment_date', startDate.toISOString())
-      .order('payment_date', { ascending: true });
+      .from('financial_transactions')
+      .select('client_price, created_at')
+      .eq('payment_status', 'completed')
+      .gte('created_at', startDate.toISOString())
+      .order('created_at', { ascending: true });
 
-    const totalRevenue = revenues?.reduce((sum, r) => sum + (r.amount || 0), 0) || 0;
+    const totalRevenue = revenues?.reduce((sum, r) => sum + (r.client_price || 0), 0) || 0;
 
     // Utilisateurs actifs (clients + prestataires)
     const { data: activeClients } = await supabase

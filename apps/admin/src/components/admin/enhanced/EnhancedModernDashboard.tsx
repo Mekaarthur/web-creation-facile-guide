@@ -211,12 +211,12 @@ export default function EnhancedModernDashboard() {
         supabase.from('reviews').select('id', { count: 'exact', head: true }).eq('is_approved', false),
         supabase.from('providers').select('id', { count: 'exact', head: true }).in('status', ['pending', 'pending_validation']),
         supabase.from('internal_messages').select('id', { count: 'exact', head: true }).eq('is_read', false),
-        supabase.from('bookings').select('total_price').eq('status', 'completed'),
+        supabase.from('financial_transactions').select('client_price').eq('payment_status', 'completed'),
         supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
       ]);
 
       const unapprovedCount = reviewsData.count || 0;
-      const totalRevenue    = completedBookings.data?.reduce((s, b) => s + (b.total_price || 0), 0) || 0;
+      const totalRevenue    = completedBookings.data?.reduce((s, b) => s + (b.client_price || 0), 0) || 0;
       const alertsCount     = (pendingProvidersCount.count || 0) + (pendingBookingsCount.count || 0) + unapprovedCount;
 
       return {
