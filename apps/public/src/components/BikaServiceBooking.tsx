@@ -34,6 +34,8 @@ interface BikaServiceBookingProps {
     price: number;
     category: string;
     options?: string[];
+    financialCategory: string;
+    urssaf_eligible: boolean;
   };
   packageTitle: string;
 }
@@ -149,7 +151,9 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
       },
       address: validatedData.address,
       description: description,
-      notes: validatedData.notes
+      notes: validatedData.notes,
+      financialCategory: service.financialCategory,
+      urssaf_eligible: service.urssaf_eligible,
     });
 
     // Utiliser setTimeout pour éviter les updates pendant le render

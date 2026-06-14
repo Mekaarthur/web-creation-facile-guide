@@ -118,12 +118,14 @@ const SubServicePage = () => {
       <BikaServiceBooking
         isOpen={open}
         onClose={() => setOpen(false)}
-        service={{ 
-          name: displayTitle, 
-          description: displayDescription, 
-          price: sub.price, 
+        service={{
+          name: displayTitle,
+          description: displayDescription,
+          price: sub.price,
           category: currentCategory.key,
-          options: displayOptions 
+          options: displayOptions,
+          financialCategory: sub.financialCategory,
+          urssaf_eligible: sub.urssaf_eligible,
         }}
         packageTitle={currentCategory.packageTitle}
       />

@@ -82,10 +82,12 @@ serve(async (req) => {
 
     // services : normalise les clés abrégées (n/c/p/q/d/t) vers noms complets
     const normalizeService = (s: any) => ({
-      serviceName:   s.serviceName   ?? s.n ?? '',
-      category:      s.category      ?? s.c ?? '',
-      price:         s.price         ?? s.p ?? 0,
-      quantity:      s.quantity      ?? s.q ?? 1,
+      serviceName:       s.serviceName       ?? s.n  ?? '',
+      category:          s.category          ?? s.c  ?? '',
+      price:             s.price             ?? s.p  ?? 0,
+      quantity:          s.quantity          ?? s.q  ?? 1,
+      financialCategory: s.financialCategory ?? s.fc ?? 'bika_maison',
+      urssaf_eligible:   s.ue !== undefined ? (s.ue !== 0 && s.ue !== false) : (s.urssaf_eligible ?? true),
       customBooking: s.customBooking ?? {
         date:      s.d ?? '',
         startTime: s.t ?? '09:00',
@@ -397,6 +399,13 @@ serve(async (req) => {
         if (!pendingErr && pendingBooking) {
           bookingIds.push(pendingBooking.id);
           logStep('Booking pending_provider créé', { id: pendingBooking.id });
+          if (serviceUnmapped) {
+            await supabaseAdmin
+              .from('financial_transactions')
+              .update({ service_category: service.financialCategory })
+              .eq('booking_id', pendingBooking.id);
+            logStep('service_category corrigé (pending_provider)', { bookingId: pendingBooking.id, financialCategory: service.financialCategory });
+          }
         } else {
           // DB rejected insert (e.g. NOT NULL constraint) — refund client immediately
           logStep('Insert pending_provider refusé — remboursement Stripe', { error: pendingErr?.message });
@@ -474,6 +483,14 @@ serve(async (req) => {
 
       logStep('Réservation créée', { id: booking.id, status: initialStatus });
       bookingIds.push(booking.id);
+
+      if (serviceUnmapped) {
+        await supabaseAdmin
+          .from('financial_transactions')
+          .update({ service_category: service.financialCategory })
+          .eq('booking_id', booking.id);
+        logStep('service_category corrigé', { bookingId: booking.id, financialCategory: service.financialCategory });
+      }
 
       // Notifier le prestataire assigné (notification DB + email)
       const providerNotifText =

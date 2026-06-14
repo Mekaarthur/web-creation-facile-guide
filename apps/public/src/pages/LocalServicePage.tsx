@@ -291,6 +291,8 @@ const LocalServicePage = () => {
           description: service.description,
           price: 25,
           category: service.id,
+          financialCategory: 'bika_maison',
+          urssaf_eligible: true,
         }}
         packageTitle={service.shortName}
       />

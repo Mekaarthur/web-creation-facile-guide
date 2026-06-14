@@ -16,6 +16,8 @@ export interface BikawoCartItem {
   address: string;
   description?: string;
   notes?: string;
+  financialCategory: string;
+  urssaf_eligible: boolean;
 }
 
 export interface CartCompatibilityRule {

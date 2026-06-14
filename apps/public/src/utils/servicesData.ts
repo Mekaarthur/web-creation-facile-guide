@@ -44,6 +44,8 @@ export type SubService = {
   image: string;
   description: string;
   options?: string[];
+  financialCategory: string;
+  urssaf_eligible: boolean;
 };
 
 export type ServiceCategoryKey =
@@ -86,6 +88,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Sorties culturelles (musées, cinéma, parcs)",
           "Aide aux devoirs"
         ],
+        financialCategory: "bika_kids",
+        urssaf_eligible: true,
       },
       {
         slug: "gardes-de-nuit-urgence",
@@ -100,6 +104,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Accompagnement enfants malades",
           "Accompagnement aux rendez-vous médicaux"
         ],
+        financialCategory: "bika_kids",
+        urssaf_eligible: true,
       },
       {
         slug: "anniversaires-evenements",
@@ -114,6 +120,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Gestion des invitations et logistique",
           "Photographe et souvenirs"
         ],
+        financialCategory: "bika_kids",
+        urssaf_eligible: true,
       },
       {
         slug: "soutien-scolaire",
@@ -126,6 +134,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Cours particuliers à domicile",
           "Préparation aux examens"
         ],
+        financialCategory: "bika_kids",
+        urssaf_eligible: true,
       },
     ],
   },
@@ -147,6 +157,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Achats spécialisés (produits bio, sans gluten, etc.)",
           "Gestion des stocks et inventaire frigo/placards"
         ],
+        financialCategory: "bika_maison",
+        urssaf_eligible: true,
       },
       {
         slug: "courses-urgentes-nuit",
@@ -159,6 +171,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Courses urgentes et de dernière minute",
           "Courses de nuit et livraison"
         ],
+        financialCategory: "bika_maison",
+        urssaf_eligible: true,
       },
       {
         slug: "logistique-organisation",
@@ -173,6 +187,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Batch cooking",
           "Dépôts et retraits de vêtements au pressing"
         ],
+        financialCategory: "bika_maison",
+        urssaf_eligible: true,
       },
       {
         slug: "rangement-armoire",
@@ -186,6 +202,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Optimisation de l'espace",
           "Conseils de rangement et accompagnement au rangement"
         ],
+        financialCategory: "bika_maison",
+        urssaf_eligible: true,
       },
       {
         slug: "produits-menage",
@@ -197,6 +215,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         options: [
           "Produits de nettoyage fournis"
         ],
+        financialCategory: "bika_maison",
+        urssaf_eligible: true,
       },
       {
         slug: "repassage-vetements",
@@ -211,6 +231,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Pliage et rangement des vêtements",
           "Vaisselle"
         ],
+        financialCategory: "bika_maison",
+        urssaf_eligible: true,
       },
       {
         slug: "batch-cooking",
@@ -225,6 +247,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Préparation et conditionnement des repas",
           "Adaptations aux régimes spécifiques"
         ],
+        financialCategory: "bika_maison",
+        urssaf_eligible: true,
       },
       {
         slug: "aide-demenagement-amenagement",
@@ -238,6 +262,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "aide au transport des cartons et meubles de la maison vers le rez de chaussée et inversement",
           "Rangement et organisation d'espaces"
         ],
+        financialCategory: "bika_maison",
+        urssaf_eligible: true,
       },
       {
         slug: "entretien-jardins-espaces-verts",
@@ -255,6 +281,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Ramassage des feuilles mortes",
           "Traitement des maladies et parasites (dans le respect de la réglementation)"
         ],
+        financialCategory: "entretien_espaces_verts",
+        urssaf_eligible: true,
       },
       {
         slug: "maintenance",
@@ -268,6 +296,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Aide à la plomberie de base",
           "Aide à l'installation des luminaires"
         ],
+        financialCategory: "maintenance",
+        urssaf_eligible: true,
       },
     ],
   },
@@ -290,6 +320,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Accompagnement aux rendez-vous",
           "Archivage et classement documents personnels"
         ],
+        financialCategory: "bika_vie",
+        urssaf_eligible: true,
       },
       {
         slug: "services-personnels",
@@ -304,6 +336,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Réservations restaurants et spectacles",
           "Recherche et réservation de prestataires"
         ],
+        financialCategory: "bika_vie",
+        urssaf_eligible: true,
       },
       {
         slug: "assistance-quotidienne",
@@ -317,6 +351,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Interface avec administrations et services",
           "Résolution de problèmes du quotidien"
         ],
+        financialCategory: "bika_vie",
+        urssaf_eligible: true,
       },
     ],
   },
@@ -339,6 +375,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Vérification documents de voyage",
           "Organisation itinéraires personnalisés"
         ],
+        financialCategory: "bika_travel",
+        urssaf_eligible: false,
       },
       {
         slug: "formalites-documents",
@@ -354,6 +392,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Recherche et souscription assurances voyage et rapatriement",
           "Aide au Change de devises"
         ],
+        financialCategory: "bika_travel",
+        urssaf_eligible: false,
       },
       {
         slug: "assistance-24-7",
@@ -367,6 +407,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Aide à la Gestion des imprévus et retards",
           "Support multilingue à destination"
         ],
+        financialCategory: "bika_travel",
+        urssaf_eligible: false,
       },
     ],
   },
@@ -389,6 +431,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Brossage et soins d'hygiène",
           "Compagnie pour animaux seuls"
         ],
+        financialCategory: "bika_animals",
+        urssaf_eligible: true,
       },
       {
         slug: "services-veterinaires",
@@ -404,6 +448,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Suivi traitements et convalescence",
           "Coordination avec professionnels animaliers"
         ],
+        financialCategory: "bika_animals",
+        urssaf_eligible: true,
       },
       {
         slug: "garde-pension",
@@ -419,6 +465,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Sorties et exercice adaptés",
           "Envoi de nouvelles et photos quotidiennes"
         ],
+        financialCategory: "bika_animals",
+        urssaf_eligible: true,
       },
     ],
   },
@@ -442,6 +490,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Compagnie et conversation",
           "Gestion administrative et courrier"
         ],
+        financialCategory: "bika_seniors",
+        urssaf_eligible: true,
       },
       {
         slug: "support-medical",
@@ -457,6 +507,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Surveillance état de santé",
           "Liaison avec famille et médecins"
         ],
+        financialCategory: "bika_seniors",
+        urssaf_eligible: true,
       },
       {
         slug: "urgences-24-7",
@@ -472,6 +524,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Accompagnement famille en cas d'urgence",
           "Suivi médical renforcé"
         ],
+        financialCategory: "bika_seniors",
+        urssaf_eligible: true,
       },
     ],
   },
@@ -494,6 +548,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Gestion des déplacements professionnels",
           "Interface avec partenaires et clients"
         ],
+        financialCategory: "bika_pro",
+        urssaf_eligible: false,
       },
       {
         slug: "assistance-dirigeants",
@@ -509,6 +565,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Gestion réservations et logistique",
           "Interface avec partenaires externes"
         ],
+        financialCategory: "bika_pro",
+        urssaf_eligible: false,
       },
       {
         slug: "conciergerie-entreprise",
@@ -524,6 +582,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Organisation cadeaux clients/partenaires",
           "Gestion des urgences personnelles salariés"
         ],
+        financialCategory: "bika_pro",
+        urssaf_eligible: false,
       },
     ],
   },
@@ -541,11 +601,13 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         description: "Étude besoins spécifiques clients, conception solutions sur mesure, coordination équipes multidisciplinaires, suivi projet de A à Z, adaptation en temps réel.",
         options: [
           "Étude besoins spécifiques clients",
-          "Conception solutions sur mesure", 
+          "Conception solutions sur mesure",
           "Coordination équipes multidisciplinaires",
           "Suivi projet de A à Z",
           "Adaptation en temps réel"
         ],
+        financialCategory: "bika_plus",
+        urssaf_eligible: false,
       },
       {
         slug: "services-exclusifs",
@@ -561,6 +623,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Coordinateur de résidences multiples",
           "Assistant personnel haute qualité"
         ],
+        financialCategory: "bika_plus",
+        urssaf_eligible: false,
       },
       {
         slug: "formules-premium",
@@ -576,6 +640,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
           "Accès services partenaires exclusifs",
           "Reporting détaillé et personnalisé"
         ],
+        financialCategory: "bika_plus",
+        urssaf_eligible: false,
       },
     ],
   },

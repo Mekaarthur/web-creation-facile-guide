@@ -101,6 +101,8 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       const services = cartItems.map(item => ({
         serviceName: item.serviceName, packageTitle: item.packageTitle, category: item.serviceCategory,
         price: item.price, quantity: item.quantity,
+        financialCategory: item.financialCategory,
+        urssaf_eligible: item.urssaf_eligible,
         customBooking: { date: new Date(item.timeSlot.date).toISOString().split('T')[0], startTime: item.timeSlot.startTime, endTime: item.timeSlot.endTime, hours: item.quantity, notes: item.notes },
       }));
 
@@ -116,7 +118,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
           serviceName: cap(services.map(s => s.serviceName).join(', ')),
           guestEmail: clientInfo.email,
           metadata: {
-            services: cap(JSON.stringify(services.map(s => ({ n: s.serviceName, c: s.category, p: s.price, q: s.quantity, d: s.customBooking?.date, t: s.customBooking?.startTime })))),
+            services: cap(JSON.stringify(services.map(s => ({ n: s.serviceName, c: s.category, p: s.price, q: s.quantity, d: s.customBooking?.date, t: s.customBooking?.startTime, fc: s.financialCategory, ue: s.urssaf_eligible ? 1 : 0 })))),
             client_name: cap(`${clientInfo.firstName} ${clientInfo.lastName}`),
             client_email: cap(clientInfo.email), client_phone: cap(clientInfo.phone || ''),
             address: cap(clientInfo.address || ''),

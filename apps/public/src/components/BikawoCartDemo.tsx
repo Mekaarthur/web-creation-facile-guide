@@ -27,12 +27,14 @@ const BikawoCartDemo = () => {
       packageTitle: "Bika Kids - Garde Premium",
       price: 25,
       timeSlot: {
-        date: new Date(2024, 0, 15, 14, 0), // 15 janvier 2024, 14h
+        date: new Date(2024, 0, 15, 14, 0),
         startTime: "14:00",
         endTime: "18:00"
       },
       address: "123 Rue de la Paix, 75001 Paris",
-      description: "Garde d'enfants avec activités éducatives"
+      description: "Garde d'enfants avec activités éducatives",
+      financialCategory: 'bika_kids',
+      urssaf_eligible: true,
     },
     {
       serviceName: "Préparation culinaire à domicile",
@@ -40,12 +42,14 @@ const BikawoCartDemo = () => {
       packageTitle: "Bika Maison - Nettoyage",
       price: 20,
       timeSlot: {
-        date: new Date(2024, 0, 15, 14, 30), // Même jour, créneau qui chevauche
+        date: new Date(2024, 0, 15, 14, 30),
         startTime: "14:30",
         endTime: "17:30"
       },
-      address: "123 Rue de la Paix, 75001 Paris", // Même adresse
-      description: "Nettoyage complet de l'appartement"
+      address: "123 Rue de la Paix, 75001 Paris",
+      description: "Nettoyage complet de l'appartement",
+      financialCategory: 'bika_maison',
+      urssaf_eligible: true,
     },
     {
       serviceName: "Aide aux seniors",
@@ -53,12 +57,14 @@ const BikawoCartDemo = () => {
       packageTitle: "Bika Seniors - Accompagnement",
       price: 22,
       timeSlot: {
-        date: new Date(2024, 0, 16, 10, 0), // Jour différent
+        date: new Date(2024, 0, 16, 10, 0),
         startTime: "10:00",
         endTime: "12:00"
       },
       address: "456 Avenue des Champs, 75008 Paris",
-      description: "Accompagnement et aide aux courses"
+      description: "Accompagnement et aide aux courses",
+      financialCategory: 'bika_seniors',
+      urssaf_eligible: true,
     },
     {
       serviceName: "Services de voyage",
@@ -71,7 +77,9 @@ const BikawoCartDemo = () => {
         endTime: "10:00"
       },
       address: "Aéroport Charles de Gaulle",
-      description: "Accompagnement à l'aéroport"
+      description: "Accompagnement à l'aéroport",
+      financialCategory: 'bika_travel',
+      urssaf_eligible: false,
     }
   ];
 

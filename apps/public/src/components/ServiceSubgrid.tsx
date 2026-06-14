@@ -80,6 +80,8 @@ const ServiceSubgrid = ({ categoryKey }: ServiceSubgridProps) => {
             price: selectedEffectivePrice,
             category: category.key,
             options: selected.options,
+            financialCategory: selected.financialCategory,
+            urssaf_eligible: selected.urssaf_eligible,
           }}
           packageTitle={category.packageTitle}
         />
