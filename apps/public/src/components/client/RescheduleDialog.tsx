@@ -44,11 +44,10 @@ export function RescheduleDialog({ booking, onClose }: Props) {
         client_id: user.id,
         booking_id: booking.id,
         provider_id: booking.provider_id,
-        complaint_type: 'demande_report',
+        complaint_type: 'other',
         title: `Demande de report - ${booking.services?.name || 'Prestation'}`,
         description: `Nouvelle date souhaitée : ${newDate}${notes ? `\n\nNotes : ${notes}` : ''}`,
         priority: 'medium',
-        status: 'open',
       });
       if (error) throw error;
 

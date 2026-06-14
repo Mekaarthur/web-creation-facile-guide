@@ -23,6 +23,14 @@ const DISPUTE_PRIORITY: Record<string, string> = {
   autre: 'low',
 };
 
+const DISPUTE_TYPE_MAP: Record<string, string> = {
+  qualite: 'quality',
+  paiement: 'payment',
+  no_show: 'absence',
+  retard: 'delay',
+  autre: 'other',
+};
+
 interface Props {
   booking: Booking | null;
   onClose: () => void;
@@ -60,11 +68,10 @@ export function DisputeDialog({ booking, onClose }: Props) {
         client_id: user.id,
         booking_id: booking.id,
         provider_id: booking.provider_id,
-        complaint_type: `litige_${disputeType}`,
+        complaint_type: DISPUTE_TYPE_MAP[disputeType] || 'other',
         title: `Litige ${disputeType} - ${booking.services?.name || 'Prestation'}`,
         description: `[Résolution souhaitée : ${disputeResolution}${amountNum ? ` (${amountNum}€)` : ''}]\n\n${disputeDesc.trim()}`,
         priority,
-        status: 'open',
       });
       if (error) throw error;
 

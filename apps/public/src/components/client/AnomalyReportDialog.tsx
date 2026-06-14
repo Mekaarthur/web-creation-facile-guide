@@ -38,11 +38,10 @@ export function AnomalyReportDialog({ booking, onClose }: Props) {
         client_id: user.id,
         booking_id: booking.id,
         provider_id: booking.provider_id,
-        complaint_type: 'historique_anomalie',
-        title: `Anomalie historique - ${booking.services?.name || 'Prestation'}`,
+        complaint_type: 'quality',
+        title: `Anomalie - ${booking.services?.name || 'Prestation'}`,
         description: reportText.trim(),
         priority: 'medium',
-        status: 'open',
       });
       if (error) throw error;
 
