@@ -1,4 +1,4 @@
-﻿import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
@@ -478,26 +478,24 @@ serve(async (req) => {
         .from('providers')
         .select('user_id, business_name')
         .eq('id', availableProvider.id)
-        .single()
-        .catch(() => ({ data: null }));
+        .maybeSingle();
 
       if (providerProfile?.user_id) {
         const { data: provProfile } = await supabaseAdmin
           .from('profiles')
           .select('email, first_name, last_name')
           .eq('user_id', providerProfile.user_id)
-          .maybeSingle()
-          .catch(() => ({ data: null }));
+          .maybeSingle();
 
         if (provProfile?.email) {
-          await supabaseAdmin.functions.invoke('send-notification-email', {
+          supabaseAdmin.functions.invoke('send-notification-email', {
             body: {
               email:   provProfile.email,
               name:    providerProfile.business_name || `${provProfile.first_name || ''} ${provProfile.last_name || ''}`.trim(),
               subject: '✅ Nouvelle mission confirmée — Bikawo',
               message: providerNotifText,
             },
-          }).catch(() => {});
+          }).then(null, () => {});
         }
       }
     }
@@ -583,8 +581,7 @@ serve(async (req) => {
         company_commission: existingTransaction.company_commission,
       });
 
-      // Utiliser supabaseAdmin pour contourner les politiques RLS restrictives
-      await supabaseAdmin
+      const { error: updateError } = await supabaseAdmin
         .from('financial_transactions')
         .update({
           payment_status:           'completed',
@@ -592,6 +589,12 @@ serve(async (req) => {
           stripe_payment_intent_id: stripePaymentIntentId,
         })
         .eq('booking_id', bookingId);
+
+      if (updateError) {
+        logStep('Erreur UPDATE transaction (non bloquant)', { error: updateError.message, code: updateError.code });
+      } else {
+        logStep('Transaction marquée completed', { bookingId });
+      }
     }
 
     // === DÉCLARATION URSSAF ASYNCHRONE ===
