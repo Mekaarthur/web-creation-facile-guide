@@ -22,6 +22,7 @@ import {
   UserCog,
   Building2,
   Tag,
+  Crown,
 } from "lucide-react"
 
 import {
@@ -239,11 +240,17 @@ export function AdminSidebar() {
           icon: Settings,
           description: "Configuration système"
         },
-        { 
-          title: "Rapports", 
-          url: "/modern-admin/reports-data", 
+        {
+          title: "Rapports",
+          url: "/modern-admin/reports-data",
           icon: PieChart,
           description: "Rapports et analyses"
+        },
+        {
+          title: "Super Admin",
+          url: "/modern-admin/super-admin",
+          icon: Crown,
+          description: "Rôle souverain — gouvernance plateforme"
         },
       ]
     },

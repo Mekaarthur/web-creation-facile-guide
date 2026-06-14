@@ -53,6 +53,7 @@ const AdminPricing = lazy(() => import("@/pages/admin/Pricing"));
 const AdminCustomRequests = lazy(() => import("@/pages/admin/Paniers"));
 const AdminProviderManagement = lazy(() => import("@/pages/admin/ProviderManagement"));
 const AdminRoles = lazy(() => import("@/pages/admin/AdminRoles"));
+const AdminSuperAdmin = lazy(() => import("@/pages/admin/SuperAdmin"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -138,6 +139,7 @@ export default function App() {
                   <Route path="demandes" element={<AdminCustomRequests />} />
                   <Route path="provider-management" element={<AdminProviderManagement />} />
                   <Route path="roles" element={<AdminRoles />} />
+                  <Route path="super-admin" element={<AdminSuperAdmin />} />
                 </Route>
 
                 {/* Default: redirect to dashboard (or login if unauthenticated — AdminRoute handles that) */}
