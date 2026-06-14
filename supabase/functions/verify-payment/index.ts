@@ -334,10 +334,22 @@ serve(async (req) => {
           p_service_type: service.category || null,
         });
         if (zoneProviders && zoneProviders.length > 0) {
-          const freeZoneProviders = zoneProviders.filter((p: any) => !busyProviderIds.has(p.provider_id));
-          if (freeZoneProviders.length > 0) {
-            availableProvider = { id: freeZoneProviders[0].provider_id };
-            logStep('Prestataire libre trouvé dans la zone', { postalCode: clientPostalCode, providerId: availableProvider.id });
+          // P2+P3 — Scoring : rating DESC, missions_completed DESC (champs retournés par la nouvelle RPC)
+          const scoredProviders = (zoneProviders as any[])
+            .filter((p) => !busyProviderIds.has(p.provider_id))
+            .sort((a, b) => {
+              const ratingDiff = (b.rating || 0) - (a.rating || 0);
+              if (Math.abs(ratingDiff) > 0.1) return ratingDiff;
+              return (b.missions_completed || 0) - (a.missions_completed || 0);
+            });
+
+          if (scoredProviders.length > 0) {
+            availableProvider = { id: scoredProviders[0].provider_id };
+            logStep('Best provider selected', {
+              providerId: availableProvider.id,
+              rating: scoredProviders[0].rating,
+              missions: scoredProviders[0].missions_completed,
+            });
           } else {
             logStep('Prestataires zone tous occupés, fallback global', { postalCode: clientPostalCode });
           }
