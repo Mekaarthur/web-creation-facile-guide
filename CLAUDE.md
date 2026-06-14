@@ -176,6 +176,22 @@ Obligation : chaque envoi est dans un `try/catch` — l'échec email ne bloque j
 - **R18** : Les factures sont immuables après création.
 - **R19** : `financial_transaction` auto-créée par trigger DB sur INSERT/UPDATE du booking.
 
+## Règles d'implémentation enforced — non négociables
+
+### R7 ENFORCED — Double-booking (verify-payment)
+`verify-payment` calcule `busyProviderIds` avant toute assignation : requête sur `bookings` avec `booking_date` + overlap `start_time < endTime AND end_time > startTime` + statuts `confirmed/pending_urssaf/in_progress`. Ne jamais supprimer ce check.
+
+### R9 ENFORCED — Politique annulation client (handle-cancellation)
+`handle-cancellation` recalcule server-side `refundAmount` et `refundPercentage` pour `cancelledBy === 'client'` :
+- `> 24h` avant la prestation → 100 %
+- `2h–24h` → 50 %
+- `≤ 2h` → 0 %
+
+Seul `refundReason === 'admin_manual_override'` peut passer outre. Ne jamais faire confiance au `refundAmount` du caller pour les annulations client.
+
+### Storage — Buckets provider
+`provider-applications` et `provider-documents` sont restreints à **10 MB** + **PDF/JPEG/PNG/WebP** uniquement (migration `20260614000003`). Ne pas élargir sans migration et approbation explicite.
+
 ## Règle critique — CORS et ENVIRONMENT
 
 `ENVIRONMENT=production` doit être configuré dans les secrets Supabase.
