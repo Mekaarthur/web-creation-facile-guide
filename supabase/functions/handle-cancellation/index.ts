@@ -35,15 +35,10 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const {
-      bookingId,
-      reason,
-      cancelledBy,
-      refundAmount,
-      refundPercentage,
-      refundReason,
-      skipReplacementSearch
-    }: CancellationRequest = await req.json();
+    const parsed: CancellationRequest = await req.json();
+    const { bookingId, reason, cancelledBy, refundReason, skipReplacementSearch } = parsed;
+    let refundAmount = parsed.refundAmount;
+    let refundPercentage = parsed.refundPercentage;
 
     console.log('Processing cancellation:', { bookingId, cancelledBy, refundAmount, refundReason });
 
@@ -58,6 +53,21 @@ serve(async (req) => {
       .single();
 
     if (bookingError) throw bookingError;
+
+    // R9 — Politique annulation client : calcul serveur obligatoire
+    if (cancelledBy === 'client' && refundReason !== 'admin_manual_override') {
+      const bookingDateTime = new Date(`${booking.booking_date}T${booking.start_time}`);
+      const hoursUntil = (bookingDateTime.getTime() - Date.now()) / (1000 * 60 * 60);
+
+      let enforcedPct: number;
+      if (hoursUntil > 24)      enforcedPct = 100;
+      else if (hoursUntil > 2)  enforcedPct = 50;
+      else                       enforcedPct = 0;
+
+      refundPercentage = enforcedPct;
+      refundAmount = Math.round(booking.total_price * enforcedPct) / 100;
+      console.log('R9 refund enforced server-side', { hoursUntil: hoursUntil.toFixed(1), enforcedPct, refundAmount });
+    }
 
     // 2. Pour annulation prestataire : tenter recherche remplaçant AVANT remboursement
     let replacementFound = false;

@@ -154,7 +154,7 @@ async function processTransfer(stripe: any, supabase: any, transactionId: string
   // Get transaction with provider info
   const { data: transaction, error } = await supabase
     .from("financial_transactions")
-    .select("*, provider:providers(id, stripe_account_id, stripe_onboarding_complete, business_name)")
+    .select("*, provider:providers(id, stripe_account_id, stripe_onboarding_complete, business_name, user_id)")
     .eq("id", transactionId)
     .single();
 
@@ -225,6 +225,55 @@ async function processTransfer(stripe: any, supabase: any, transactionId: string
       paid_via: "stripe_connect",
     })
     .eq("id", transactionId);
+
+  // Email prestataire — best-effort, non-bloquant (R15)
+  try {
+    if (provider.user_id) {
+      const { data: provProfile } = await supabase
+        .from('profiles')
+        .select('email, first_name, last_name')
+        .eq('user_id', provider.user_id)
+        .maybeSingle();
+
+      if (provProfile?.email) {
+        let bookingDetails: any = null;
+        if (transaction.booking_id) {
+          const { data: bk } = await supabase
+            .from('bookings')
+            .select('booking_date, custom_duration, start_time, end_time, services:service_id(name)')
+            .eq('id', transaction.booking_id)
+            .maybeSingle();
+          bookingDetails = bk;
+        }
+
+        await supabase.functions.invoke('send-transactional-email', {
+          body: {
+            type: 'provider_payment',
+            recipientEmail: provProfile.email,
+            recipientName: provider.business_name || `${provProfile.first_name || ''} ${provProfile.last_name || ''}`.trim(),
+            data: {
+              providerName: provider.business_name || provProfile.first_name || 'Prestataire',
+              serviceName:  (bookingDetails?.services as any)?.name || 'Service à domicile',
+              missionDate:  bookingDetails?.booking_date
+                ? new Date(bookingDetails.booking_date).toLocaleDateString('fr-FR')
+                : new Date().toLocaleDateString('fr-FR'),
+              hoursWorked:  bookingDetails?.custom_duration
+                ?? (bookingDetails?.start_time && bookingDetails?.end_time
+                    ? `${bookingDetails.start_time}–${bookingDetails.end_time}`
+                    : 'N/A'),
+              grossAmount:  (transaction as any).total_amount ?? transaction.provider_payment,
+              netAmount:    transaction.provider_payment,
+              paymentDate:  new Date().toLocaleDateString('fr-FR'),
+              invoiceLink:  null,
+            },
+          },
+        });
+        console.log('Email provider_payment envoyé à', provProfile.email);
+      }
+    }
+  } catch (emailErr) {
+    console.warn('Email provider_payment non-bloquant:', emailErr);
+  }
 
   return {
     success: true,

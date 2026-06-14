@@ -313,6 +313,18 @@ serve(async (req) => {
         serviceUnmapped = true;
       }
 
+      // R7 — Double-booking prevention : prestataires déjà occupés sur ce créneau
+      const { data: busyData } = await supabaseAdmin
+        .from('bookings')
+        .select('provider_id')
+        .eq('booking_date', bookingDate)
+        .in('status', ['confirmed', 'pending_urssaf', 'in_progress'])
+        .not('provider_id', 'is', null)
+        .lt('start_time', endTime)
+        .gt('end_time', startTime);
+      const busyProviderIds = new Set((busyData ?? []).map((b: any) => b.provider_id as string));
+      logStep('Prestataires occupés sur ce créneau', { count: busyProviderIds.size });
+
       let availableProvider: { id: string } | null = null;
 
       // Priorité 1 : matching géographique par code postal
@@ -322,21 +334,28 @@ serve(async (req) => {
           p_service_type: service.category || null,
         });
         if (zoneProviders && zoneProviders.length > 0) {
-          availableProvider = { id: zoneProviders[0].provider_id };
-          logStep('Prestataire trouvé dans la zone', { postalCode: clientPostalCode, providerId: availableProvider.id });
+          const freeZoneProviders = zoneProviders.filter((p: any) => !busyProviderIds.has(p.provider_id));
+          if (freeZoneProviders.length > 0) {
+            availableProvider = { id: freeZoneProviders[0].provider_id };
+            logStep('Prestataire libre trouvé dans la zone', { postalCode: clientPostalCode, providerId: availableProvider.id });
+          } else {
+            logStep('Prestataires zone tous occupés, fallback global', { postalCode: clientPostalCode });
+          }
         } else {
           logStep('Aucun prestataire dans la zone, fallback global', { postalCode: clientPostalCode });
         }
       }
 
-      // Fallback : n'importe quel prestataire vérifié
+      // Fallback : n'importe quel prestataire vérifié et libre
       if (!availableProvider) {
-        const { data: fallbackProvider } = await supabaseAdmin
+        let fallbackQuery = supabaseAdmin
           .from('providers')
           .select('id')
-          .eq('is_verified', true)
-          .limit(1)
-          .single();
+          .eq('is_verified', true);
+        if (busyProviderIds.size > 0) {
+          fallbackQuery = fallbackQuery.not('id', 'in', `(${[...busyProviderIds].join(',')})`);
+        }
+        const { data: fallbackProvider } = await fallbackQuery.limit(1).single();
         availableProvider = fallbackProvider;
       }
 
