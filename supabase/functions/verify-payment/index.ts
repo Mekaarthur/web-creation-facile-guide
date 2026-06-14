@@ -312,21 +312,9 @@ serve(async (req) => {
         serviceUnmapped = true;
       }
 
-      // Priorité 1 : prestataire favori actif du client
       let availableProvider: { id: string } | null = null;
 
-      if (userId) {
-        const { data: favoriteProviders } = await supabaseAdmin.rpc('get_client_active_favorites', {
-          p_client_id: userId,
-          p_service_type: service.category || null,
-        });
-        if (favoriteProviders && favoriteProviders.length > 0) {
-          availableProvider = { id: favoriteProviders[0].provider_id };
-          logStep('Prestataire favori utilisé', { providerId: availableProvider.id });
-        }
-      }
-
-      // Priorité 2 : matching géographique par code postal
+      // Priorité 1 : matching géographique par code postal
       if (!availableProvider && clientPostalCode) {
         const { data: zoneProviders } = await supabaseAdmin.rpc('find_providers_in_zone', {
           p_code_postal: clientPostalCode,
@@ -525,6 +513,15 @@ serve(async (req) => {
         logStep('Email de confirmation envoyé au client');
       } catch (emailErr) {
         logStep('Erreur envoi email confirmation client (non bloquant)', { error: String(emailErr) });
+        supabaseAdmin.functions.invoke('create-admin-notification', {
+          body: {
+            type: 'email_failure',
+            title: '⚠️ Email confirmation client non envoyé',
+            message: `Échec envoi email booking_confirmation pour ${clientInfo.email} (booking: ${bookingIds[0]}). Erreur: ${String(emailErr)}`,
+            data: { booking_ids: bookingIds, client_email: clientInfo.email },
+            priority: 'medium',
+          },
+        }).then(null, () => {});
       }
     }
 

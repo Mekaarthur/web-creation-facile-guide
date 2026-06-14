@@ -131,6 +131,51 @@ Ces vulnérabilités sont présentes dans `pnpm audit` mais n'affectent pas le r
 - **W5 — URSSAF async non-atomique** : Le booking est confirmé avant l'envoi de la déclaration URSSAF. Si `urssaf-register-service` échoue, le booking existe sans déclaration. Monitoring manuel requis : vérifier la table `urssaf_declarations` chaque semaine pour les entrées `status='error'`.
 - **W6 — `service_id` null sur certains bookings** : Si le nom de service dans les métadonnées Stripe ne correspond pas à la base, le booking est créé avec `service_id=null`. Une notification admin est créée. Vérifier les notifications admin quotidiennement pour les alertes "SERVICE NON IDENTIFIÉ".
 
+## Règles métier Bikawo — non négociables
+
+### Paiements (R1–R5)
+- **R1** : Tout paiement Stripe confirmé doit avoir un booking en DB. Si le booking échoue après paiement → déclencher un remboursement automatique via `stripe.refunds.create()`.
+- **R2** : Le statut `booking_confirmed` requiert un paiement validé (`payment_status = 'completed'`).
+- **R3** : Échec paiement → booking `payment_failed` + email client + notification admin.
+- **R4** : Remboursement → booking `refunded` + email client + `financial_transactions.payment_status = 'refunded'`.
+- **R5** : Idempotence sur `stripe_session_id` — ne jamais traiter deux fois la même session. Vérifier dans `bookings.notes` via `ilike('%stripe_session:${id}%')`.
+
+### Machine d'états booking (R6)
+Statuts valides et transitions autorisées :
+```
+pending_payment → paid → booking_confirmed
+booking_confirmed → in_progress → completed
+* → cancelled | refunded | payment_failed | disputed
+pending_provider → booking_confirmed
+```
+- Ne jamais écrire un statut hors de cette liste.
+- La contrainte CHECK `bookings_status_check` l'enforce en DB (migration `20260614000001`).
+- `confirmed` est le statut legacy actif dans `verify-payment` — équivalent de `booking_confirmed`.
+
+### Champs obligatoires booking (R8)
+Chaque booking doit avoir :
+- `client_id` OU `guest_email` (pas les deux null)
+- `booking_date`, `start_time`, `end_time`
+- `address`
+- `total_price > 0`
+
+### Visibilité (R10)
+Tout changement de statut booking doit se refléter immédiatement dans :
+`bookings` + `financial_transactions` + notification client + notification admin.
+
+### Prestataires (R13–R14)
+- **R13** : Le paiement prestataire est déclenché uniquement quand `booking.status = 'completed'`.
+- **R14** : Double-booking interdit. Vérifier la disponibilité avant assignation.
+
+### Emails client (R15)
+Le client reçoit un email pour : `booking_confirmed`, `cancelled`, `refunded`, `payment_failed`, `completed`.
+Obligation : chaque envoi est dans un `try/catch` — l'échec email ne bloque jamais le flux principal. En cas d'échec, créer une notification admin `type: 'email_failure'`.
+
+### Facturation (R17–R19)
+- **R17** : Tout booking payé génère une facture.
+- **R18** : Les factures sont immuables après création.
+- **R19** : `financial_transaction` auto-créée par trigger DB sur INSERT/UPDATE du booking.
+
 ## Règle critique — CORS et ENVIRONMENT
 
 `ENVIRONMENT=production` doit être configuré dans les secrets Supabase.
