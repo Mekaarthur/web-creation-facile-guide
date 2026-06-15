@@ -51,8 +51,9 @@ function ok(data: unknown, h: Record<string, string>) {
 async function listCP(supabase: any, h: Record<string, string>) {
   const { data: roles } = await supabase
     .from('user_roles')
-    .select('user_id, created_at')
+    .select('user_id, created_at, expires_at, charter_signed_at')
     .eq('role', 'comptable_partenaire')
+    .eq('is_active', true)
     .order('created_at', { ascending: false });
 
   if (!roles?.length) return ok({ comptables: [] }, h);
@@ -67,11 +68,13 @@ async function listCP(supabase: any, h: Record<string, string>) {
 
   return ok({
     comptables: roles.map((r: any) => ({
-      userId:     r.user_id,
-      assignedAt: r.created_at,
-      email:      map[r.user_id]?.email,
-      firstName:  map[r.user_id]?.first_name,
-      lastName:   map[r.user_id]?.last_name,
+      userId:          r.user_id,
+      assignedAt:      r.created_at,
+      expiresAt:       r.expires_at,
+      charterSignedAt: r.charter_signed_at,
+      email:           map[r.user_id]?.email,
+      firstName:       map[r.user_id]?.first_name,
+      lastName:        map[r.user_id]?.last_name,
     })),
   }, h);
 }
@@ -86,25 +89,39 @@ async function assign(supabase: any, caller: any, body: any, h: Record<string, s
   if (!targetId) return err(400, 'targetUserId ou targetEmail requis.', h);
 
   const { data: existing } = await supabase
-    .from('user_roles').select('role').eq('user_id', targetId).eq('role', 'comptable_partenaire').maybeSingle();
+    .from('user_roles').select('role')
+    .eq('user_id', targetId).eq('role', 'comptable_partenaire').eq('is_active', true).maybeSingle();
   if (existing) return err(409, 'Cet utilisateur est déjà Comptable/Partenaire.', h);
 
-  const { error: insertErr } = await supabase.from('user_roles').insert({ user_id: targetId, role: 'comptable_partenaire' });
+  // R-GLOBAL-03: CP expire dans 1 an
+  const expiresAt = new Date();
+  expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+
+  const { error: insertErr } = await supabase.from('user_roles').insert({
+    user_id:           targetId,
+    role:              'comptable_partenaire',
+    is_active:         true,
+    expires_at:        expiresAt.toISOString(),
+    charter_signed_at: body.charterAcknowledged ? new Date().toISOString() : null,
+  });
   if (insertErr) return err(500, insertErr.message, h);
 
-  await log(supabase, caller, targetId, 'assign_cp', { role: 'comptable_partenaire' }, req);
+  await log(supabase, caller, targetId, 'assign_cp', { role: 'comptable_partenaire', expiresAt }, req);
   return ok({}, h);
 }
 
+// R-GLOBAL-04: soft delete
 async function revoke(supabase: any, caller: any, body: any, h: Record<string, string>, req: Request) {
   const targetId: string = body.targetUserId;
   if (!targetId) return err(400, 'targetUserId requis.', h);
 
-  const { error: deleteErr } = await supabase
-    .from('user_roles').delete().eq('user_id', targetId).eq('role', 'comptable_partenaire');
-  if (deleteErr) return err(500, deleteErr.message, h);
+  const { error: updateErr } = await supabase
+    .from('user_roles')
+    .update({ is_active: false, revocation_reason: body.reason ?? 'Révoqué par admin' })
+    .eq('user_id', targetId).eq('role', 'comptable_partenaire').eq('is_active', true);
+  if (updateErr) return err(500, updateErr.message, h);
 
-  await log(supabase, caller, targetId, 'revoke_cp', {}, req);
+  await log(supabase, caller, targetId, 'revoke_cp', { reason: body.reason }, req);
   return ok({}, h);
 }
 

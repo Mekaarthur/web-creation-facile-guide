@@ -61,6 +61,7 @@ const AdminAgentsOperationnels = lazy(() => import("@/pages/admin/AgentsOperatio
 const AdminComptablesPartenaires = lazy(() => import("@/pages/admin/ComptablesPartenaires"));
 const AdminSupportClients = lazy(() => import("@/pages/admin/SupportClients"));
 const AdminModerateurs = lazy(() => import("@/pages/admin/Moderateurs"));
+const AdminGovernanceOverview = lazy(() => import("@/pages/admin/GovernanceOverview"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -151,6 +152,7 @@ export default function App() {
                   <Route path="comptables-partenaires" element={<AOBlockedRoute alsoBlockCP alsoBlockSC alsoBlockMO><AdminComptablesPartenaires /></AOBlockedRoute>} />
                   <Route path="support-clients" element={<AOBlockedRoute alsoBlockCP alsoBlockSC alsoBlockMO><AdminSupportClients /></AOBlockedRoute>} />
                   <Route path="moderateurs" element={<AOBlockedRoute alsoBlockCP alsoBlockSC alsoBlockMO><AdminModerateurs /></AOBlockedRoute>} />
+                  <Route path="governance-overview" element={<AOBlockedRoute alsoBlockCP alsoBlockSC alsoBlockMO><AdminGovernanceOverview /></AOBlockedRoute>} />
                 </Route>
 
                 {/* Default: redirect to dashboard (or login if unauthenticated — AdminRoute handles that) */}

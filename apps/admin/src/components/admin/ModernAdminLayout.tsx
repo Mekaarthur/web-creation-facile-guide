@@ -51,6 +51,7 @@ import {
   Home,
   Tag,
   Calculator,
+  Eye,
 } from "lucide-react";
 import { NotificationBell } from './NotificationBell';
 import { SecureLogout } from '@/components/SecureLogout';
@@ -143,6 +144,7 @@ const navigationGroups = [
   {
     label: "Gouvernance",
     items: [
+      { title: "Vue d'ensemble",          href: "/modern-admin/governance-overview",    icon: Eye,           aoBlocked: true, cpBlocked: true, scBlocked: true, moBlocked: true },
       { title: "Agents Opérationnels",   href: "/modern-admin/agents-operationnels",   icon: UserCog,      aoBlocked: true, cpBlocked: true, scBlocked: true, moBlocked: true },
       { title: "Comptables/Partenaires", href: "/modern-admin/comptables-partenaires", icon: Calculator,   aoBlocked: true, cpBlocked: true, scBlocked: true, moBlocked: true },
       { title: "Support Clients",        href: "/modern-admin/support-clients",        icon: Shield,       aoBlocked: true, cpBlocked: true, scBlocked: true, moBlocked: true },

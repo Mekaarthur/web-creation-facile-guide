@@ -29,8 +29,8 @@ serve(async (req) => {
 
     switch (action) {
       case "list_agents":          return await listAgents(supabase, corsHeaders);
-      case "assign":               return await assignSC(supabase, user, body, corsHeaders);
-      case "revoke":               return await revokeSC(supabase, user, body, corsHeaders);
+      case "assign":               return await assignSC(supabase, user, body, corsHeaders, req);
+      case "revoke":               return await revokeSC(supabase, user, body, corsHeaders, req);
       case "list_escalations":     return await listEscalations(supabase, corsHeaders);
       case "approve_escalation":   return await approveEscalation(supabase, user, body, corsHeaders);
       case "reject_escalation":    return await rejectEscalation(supabase, user, body, corsHeaders);
@@ -54,17 +54,25 @@ function fail(status: number, message: string, cors: Record<string, string>) {
   });
 }
 
-async function log(supabase: any, adminId: string, action: string, targetId: string, details: unknown) {
+async function log(supabase: any, adminId: string, actionType: string, entityId: string, newData: unknown, req?: Request) {
   await supabase.from("admin_actions_log").insert({
-    admin_id: adminId, action, target_id: targetId, details,
+    admin_user_id: adminId,
+    action_type:   actionType,
+    entity_type:   "user_roles",
+    entity_id:     entityId,
+    new_data:      newData,
+    description:   `${actionType} par ${adminId}`,
+    ip_address:    req?.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+    user_agent:    req?.headers.get("user-agent") ?? null,
   });
 }
 
 async function listAgents(supabase: any, cors: Record<string, string>) {
   const { data, error } = await supabase
     .from("user_roles")
-    .select("user_id, created_at")
-    .eq("role", "support_client");
+    .select("user_id, created_at, expires_at, charter_signed_at")
+    .eq("role", "support_client")
+    .eq("is_active", true);
   if (error) throw error;
 
   if (!data?.length) return ok({ agents: [] }, cors);
@@ -72,47 +80,63 @@ async function listAgents(supabase: any, cors: Record<string, string>) {
   const ids = data.map((r: any) => r.user_id);
   const { data: profiles } = await supabase
     .from("profiles")
-    .select("id, first_name, last_name, email")
-    .in("id", ids);
+    .select("user_id, first_name, last_name, email")
+    .in("user_id", ids);
 
-  const byId = Object.fromEntries((profiles || []).map((p: any) => [p.id, p]));
-  const agents = data.map((r: any) => ({ userId: r.user_id, assignedAt: r.created_at, ...byId[r.user_id] }));
+  const byId = Object.fromEntries((profiles || []).map((p: any) => [p.user_id, p]));
+  const agents = data.map((r: any) => ({
+    userId:          r.user_id,
+    assignedAt:      r.created_at,
+    expiresAt:       r.expires_at,
+    charterSignedAt: r.charter_signed_at,
+    email:           byId[r.user_id]?.email,
+    firstName:       byId[r.user_id]?.first_name,
+    lastName:        byId[r.user_id]?.last_name,
+  }));
   return ok({ agents }, cors);
 }
 
-async function assignSC(supabase: any, caller: any, body: any, cors: Record<string, string>) {
+async function assignSC(supabase: any, caller: any, body: any, cors: Record<string, string>, req: Request) {
   const { userId } = body;
   if (!userId) return fail(400, "userId requis", cors);
 
   const { data: profile } = await supabase
-    .from("profiles").select("id, first_name, last_name, email").eq("id", userId).single();
+    .from("profiles").select("user_id, first_name, last_name, email").eq("user_id", userId).maybeSingle();
   if (!profile) return fail(404, "Utilisateur introuvable", cors);
 
   const { data: existing } = await supabase
-    .from("user_roles").select("id").eq("user_id", userId).eq("role", "support_client").single();
+    .from("user_roles").select("id").eq("user_id", userId).eq("role", "support_client").eq("is_active", true).maybeSingle();
   if (existing) return fail(409, "Cet utilisateur est deja Support Client", cors);
 
-  const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: "support_client" });
+  // R-GLOBAL-03: SC expire dans 6 mois
+  const expiresAt = new Date();
+  expiresAt.setMonth(expiresAt.getMonth() + 6);
+
+  const { error } = await supabase.from("user_roles").insert({
+    user_id:           userId,
+    role:              "support_client",
+    is_active:         true,
+    expires_at:        expiresAt.toISOString(),
+    charter_signed_at: body.charterAcknowledged ? new Date().toISOString() : null,
+  });
   if (error) throw error;
 
-  await log(supabase, caller.id, "assign_support_client", userId, {
-    firstName: profile.first_name, lastName: profile.last_name, email: profile.email,
-  });
+  await log(supabase, caller.id, "assign_support_client", userId,
+    { email: profile.email, expiresAt }, req);
   return ok({ success: true, profile }, cors);
 }
 
-async function revokeSC(supabase: any, caller: any, body: any, cors: Record<string, string>) {
+async function revokeSC(supabase: any, caller: any, body: any, cors: Record<string, string>, req: Request) {
   const { userId } = body;
   if (!userId) return fail(400, "userId requis", cors);
 
-  const { data: profile } = await supabase
-    .from("profiles").select("email").eq("id", userId).single();
-
   const { error } = await supabase
-    .from("user_roles").delete().eq("user_id", userId).eq("role", "support_client");
+    .from("user_roles")
+    .update({ is_active: false, revocation_reason: body.reason ?? "Révoqué par admin" })
+    .eq("user_id", userId).eq("role", "support_client").eq("is_active", true);
   if (error) throw error;
 
-  await log(supabase, caller.id, "revoke_support_client", userId, { email: profile?.email });
+  await log(supabase, caller.id, "revoke_support_client", userId, { reason: body.reason }, req);
   return ok({ success: true }, cors);
 }
 

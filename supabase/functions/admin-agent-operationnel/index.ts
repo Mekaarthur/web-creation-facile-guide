@@ -60,8 +60,9 @@ function isWithinOperatingHours(): boolean {
 async function listAO(supabase: any, corsHeaders: Record<string, string>) {
   const { data: roles } = await supabase
     .from('user_roles')
-    .select('user_id, created_at')
+    .select('user_id, created_at, expires_at, charter_signed_at')
     .eq('role', 'agent_operationnel')
+    .eq('is_active', true)
     .order('created_at', { ascending: false });
 
   if (!roles?.length) return ok({ agents: [] }, corsHeaders);
@@ -75,11 +76,13 @@ async function listAO(supabase: any, corsHeaders: Record<string, string>) {
   const profileMap = Object.fromEntries((profiles || []).map((p: any) => [p.user_id, p]));
 
   const agents = roles.map((r: any) => ({
-    userId:     r.user_id,
-    assignedAt: r.created_at,
-    email:      profileMap[r.user_id]?.email,
-    firstName:  profileMap[r.user_id]?.first_name,
-    lastName:   profileMap[r.user_id]?.last_name,
+    userId:          r.user_id,
+    assignedAt:      r.created_at,
+    expiresAt:       r.expires_at,
+    charterSignedAt: r.charter_signed_at,
+    email:           profileMap[r.user_id]?.email,
+    firstName:       profileMap[r.user_id]?.first_name,
+    lastName:        profileMap[r.user_id]?.last_name,
   }));
 
   return ok({ agents }, corsHeaders);
@@ -96,30 +99,44 @@ async function assign(supabase: any, caller: any, body: any, corsHeaders: Record
   }
   if (!targetId) return err(400, 'targetUserId ou targetEmail requis.', corsHeaders);
 
+  // R-GLOBAL-04: vérifier uniquement les rôles actifs (is_active = true)
   const { data: existing } = await supabase
-    .from('user_roles').select('role').eq('user_id', targetId).eq('role', 'agent_operationnel').maybeSingle();
+    .from('user_roles').select('role')
+    .eq('user_id', targetId).eq('role', 'agent_operationnel').eq('is_active', true).maybeSingle();
   if (existing) return err(409, 'Cet utilisateur est déjà Agent Opérationnel.', corsHeaders);
 
+  // R-GLOBAL-03: AO expire dans 1 an
+  const expiresAt = new Date();
+  expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+
   const { error: insertErr } = await supabase
-    .from('user_roles').insert({ user_id: targetId, role: 'agent_operationnel' });
+    .from('user_roles').insert({
+      user_id:           targetId,
+      role:              'agent_operationnel',
+      is_active:         true,
+      expires_at:        expiresAt.toISOString(),
+      charter_signed_at: body.charterAcknowledged ? new Date().toISOString() : null,
+    });
   if (insertErr) return err(500, insertErr.message, corsHeaders);
 
-  await logAction(supabase, caller, targetId, 'assign_ao', { role: 'agent_operationnel' }, req);
+  await logAction(supabase, caller, targetId, 'assign_ao', { role: 'agent_operationnel', expiresAt }, req);
   return ok({}, corsHeaders);
 }
 
+// R-GLOBAL-04: soft delete (is_active = false) — la révocation avec email passe par admin-governance
 async function revoke(supabase: any, caller: any, body: any, corsHeaders: Record<string, string>, req: Request) {
   const targetId: string = body.targetUserId;
   if (!targetId) return err(400, 'targetUserId requis.', corsHeaders);
 
-  const { error: deleteErr } = await supabase
+  const { error: updateErr } = await supabase
     .from('user_roles')
-    .delete()
+    .update({ is_active: false, revocation_reason: body.reason ?? 'Révoqué par admin' })
     .eq('user_id', targetId)
-    .eq('role', 'agent_operationnel');
-  if (deleteErr) return err(500, deleteErr.message, corsHeaders);
+    .eq('role', 'agent_operationnel')
+    .eq('is_active', true);
+  if (updateErr) return err(500, updateErr.message, corsHeaders);
 
-  await logAction(supabase, caller, targetId, 'revoke_ao', {}, req);
+  await logAction(supabase, caller, targetId, 'revoke_ao', { reason: body.reason }, req);
   return ok({}, corsHeaders);
 }
 
