@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { addDays, startOfDay } from "date-fns";
 
 export interface BikawoCartItem {
   id: string;
@@ -236,15 +237,24 @@ export const useBikawoCart = () => {
 
   // Ajouter un item au panier avec validation
   const addToCart = useCallback((item: Omit<BikawoCartItem, 'id'> | Omit<BikawoCartItem, 'id' | 'quantity'>) => {
-    // Validation : date future
+    // R-SEL-08: maximum 5 services par panier
+    if (cartItems.length >= 5) {
+      toast({
+        title: "❌ Panier plein",
+        description: "Maximum 5 services différents par panier. Finalisez votre commande avant d'en ajouter d'autres.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // R-SEL-06: date minimum J+1 (pas de réservation le jour même)
     const itemDate = new Date(item.timeSlot.date);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    if (itemDate < today) {
+    const minDate = addDays(startOfDay(new Date()), 1);
+
+    if (itemDate < minDate) {
       toast({
         title: "❌ Date invalide",
-        description: "La date de réservation doit être dans le futur",
+        description: "La réservation doit être effectuée au minimum pour le lendemain (J+1)",
         variant: "destructive",
       });
       return;

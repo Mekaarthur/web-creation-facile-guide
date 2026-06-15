@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { CalendarIcon, Clock, MapPin, ShoppingCart, ArrowRight, Shield, Plus, AlertCircle, CheckCircle, Info } from "lucide-react";
-import { format } from "date-fns";
+import { format, addDays, startOfDay } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useBikawoCart } from "@/hooks/useBikawoCart";
 import { useToast } from "@/hooks/use-toast";
@@ -47,7 +47,11 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
   const [showSuccessOptions, setShowSuccessOptions] = useState(false);
 
   const zoneCheck = useProviderZoneCheck(postalCode);
-  
+
+  // R-SEL-06: J+1 minimum, J+90 maximum
+  const minBookingDate = addDays(startOfDay(new Date()), 1);
+  const maxBookingDate = addDays(new Date(), 90);
+
   const { addToCart } = useBikawoCart();
   const { toast } = useToast();
 
@@ -76,8 +80,14 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
     return (endHour + endMinutes/60) - (startHour + startMinutes/60);
   };
 
+  // R-SEL-07: durée facturable (−30 min de pause si > 4h)
+  const getBillableHours = () => {
+    const dur = calculateDuration();
+    return dur > 4 ? dur - 0.5 : dur;
+  };
+
   const getTotalPrice = () => {
-    return calculateDuration() * service.price;
+    return getBillableHours() * service.price;
   };
 
   const handleAddToCart = () => {
@@ -128,6 +138,25 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
       return;
     }
 
+    // R-SEL-07: durée maximum 8h
+    if (duration > 8) {
+      toast({
+        title: "Durée excessive",
+        description: "Durée maximum : 8 heures par prestation",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // R-SEL-06: pas de réservation le dimanche (avertissement)
+    if (date.getDay() === 0) {
+      toast({
+        title: "Disponibilité limitée le dimanche",
+        description: "La disponibilité des prestataires le dimanche n'est pas garantie. Votre réservation sera confirmée sous réserve de disponibilité.",
+        duration: 6000,
+      });
+    }
+
     // Validate with secure form
     secureSubmit({
       date: date.toISOString(),
@@ -151,7 +180,7 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
       serviceCategory: service.category as any,
       packageTitle: packageTitle,
       price: service.price,
-      quantity: duration, // Durée en heures
+      quantity: getBillableHours(), // R-SEL-07: heures facturables (−0.5h si > 4h)
       timeSlot: {
         date: date!,
         startTime: startTime,
@@ -168,7 +197,7 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
     setTimeout(() => {
       toast({
         title: "✅ Service ajouté au panier",
-        description: `${service.name} - ${duration}h pour ${getTotalPrice()}€`,
+        description: `${service.name} - ${getBillableHours()}h pour ${getTotalPrice().toFixed(2)}€`,
         duration: 5000,
       });
 
@@ -233,7 +262,7 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
               </div>
               <h3 className="text-lg font-semibold">Créneau ajouté au panier !</h3>
               <p className="text-muted-foreground">
-                {service.name} - {calculateDuration()}h pour {getTotalPrice()}€
+                {service.name} - {getBillableHours()}h pour {getTotalPrice().toFixed(2)}€
               </p>
               
               <div className="flex flex-col gap-3 pt-4">
@@ -335,7 +364,9 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
                           mode="single"
                           selected={date}
                           onSelect={setDate}
-                          disabled={(date) => date < new Date()}
+                          disabled={(date) => date < minBookingDate || date > maxBookingDate}
+                          fromDate={minBookingDate}
+                          toDate={maxBookingDate}
                           initialFocus
                         />
                       </PopoverContent>
@@ -379,12 +410,23 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
                         <Clock className="w-4 h-4 text-primary" />
                         <span className="text-sm font-medium">
                           Durée : {calculateDuration()}h
+                          {calculateDuration() > 4 && (
+                            <span className="text-xs text-muted-foreground ml-1">(pause 30min incluse)</span>
+                          )}
                         </span>
                       </div>
                       <span className="text-lg font-bold text-primary">
-                        {getTotalPrice()}€
+                        {getTotalPrice().toFixed(2)}€
                       </span>
                     </div>
+                    {/* R-SEL-07: notice pause si > 4h */}
+                    {calculateDuration() > 4 && (
+                      <p className="text-xs text-amber-700 flex items-center gap-1">
+                        <Info className="w-3 h-3 shrink-0" />
+                        Pause obligatoire de 30 min incluse — {getBillableHours()}h facturables ({calculateDuration()}h réservées)
+                      </p>
+                    )}
+                    {/* R-SEL-03: décomposition crédit d'impôt */}
                     {service.urssaf_eligible && (
                       <div className="border-t border-primary/10 pt-2 text-xs space-y-1 text-muted-foreground">
                         <div className="flex justify-between">
