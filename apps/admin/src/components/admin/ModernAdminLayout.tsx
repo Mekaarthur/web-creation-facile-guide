@@ -69,10 +69,10 @@ const navigationGroups = [
     label: "Sécurité & Finance",
     items: [
       { title: "Sécurité",            href: "/modern-admin/security",         icon: Lock },
-      { title: "Finance",             href: "/modern-admin/finance",           icon: Euro,             aoBlocked: true, scBlocked: true },
+      { title: "Finance",             href: "/modern-admin/finance",           icon: Euro,             aoBlocked: true, scBlocked: true, moBlocked: true },
       { title: "Urgences",            href: "/modern-admin/urgences",          icon: AlertTriangle },
       { title: "Réclamations",        href: "/modern-admin/reclamations",      icon: MessageSquareWarning },
-      { title: "RGPD / Suppressions", href: "/modern-admin/rgpd-deletions",    icon: ShieldCheck,      aoBlocked: true, cpBlocked: true, scBlocked: true },
+      { title: "RGPD / Suppressions", href: "/modern-admin/rgpd-deletions",    icon: ShieldCheck,      aoBlocked: true, cpBlocked: true, scBlocked: true, moBlocked: true },
     ]
   },
   {
@@ -99,8 +99,8 @@ const navigationGroups = [
       { title: "Missions",          href: "/modern-admin/missions",            icon: Target,       countKey: "missionsPending" as const },
       { title: "Réservations",      href: "/modern-admin/reservations",        icon: Calendar,     countKey: null },
       { title: "Demandes",          href: "/modern-admin/demandes",            icon: MessageSquare, countKey: "demandesPersonnalisees" as const },
-      { title: "Paiements",         href: "/modern-admin/payments",            icon: CreditCard,   countKey: null },
-      { title: "Factures",          href: "/modern-admin/invoices",            icon: FileText,     countKey: null },
+      { title: "Paiements",         href: "/modern-admin/payments",            icon: CreditCard,   countKey: null,                                  moBlocked: true },
+      { title: "Factures",          href: "/modern-admin/invoices",            icon: FileText,     countKey: null,                                  moBlocked: true },
       { title: "Avance Immédiate",  href: "/modern-admin/urssaf-declarations", icon: Landmark,     countKey: null },
     ]
   },
@@ -126,7 +126,7 @@ const navigationGroups = [
       { title: "Tarifs",       href: "/modern-admin/tarifs",         icon: Tag,        scBlocked: true },
       { title: "Zones",        href: "/modern-admin/zones",          icon: MapPin },
       { title: "Marque",       href: "/modern-admin/marque",         icon: Palette },
-      { title: "Paramètres",   href: "/modern-admin/settings",       icon: Settings,   aoBlocked: true, cpBlocked: true, scBlocked: true },
+      { title: "Paramètres",   href: "/modern-admin/settings",       icon: Settings,   aoBlocked: true, cpBlocked: true, scBlocked: true, moBlocked: true },
       { title: "Rapports",     href: "/modern-admin/reports-data",   icon: TrendingUp },
     ]
   },
@@ -137,15 +137,16 @@ const navigationGroups = [
       { title: "Monitoring",       href: "/modern-admin/monitoring",        icon: Activity },
       { title: "Tests Critiques",  href: "/modern-admin/tests-critiques",  icon: FlaskConical },
       { title: "Tests Emails",     href: "/modern-admin/tests-emails",     icon: Mail },
-      { title: "Accès Admin",      href: "/modern-admin/acces",            icon: Clock,          aoBlocked: true, cpBlocked: true, scBlocked: true },
+      { title: "Accès Admin",      href: "/modern-admin/acces",            icon: Clock,          aoBlocked: true, cpBlocked: true, scBlocked: true, moBlocked: true },
     ]
   },
   {
     label: "Gouvernance",
     items: [
-      { title: "Agents Opérationnels",   href: "/modern-admin/agents-operationnels",   icon: UserCog,      aoBlocked: true, cpBlocked: true, scBlocked: true },
-      { title: "Comptables/Partenaires", href: "/modern-admin/comptables-partenaires", icon: Calculator,   aoBlocked: true, cpBlocked: true, scBlocked: true },
-      { title: "Support Clients",        href: "/modern-admin/support-clients",        icon: Shield,       aoBlocked: true, cpBlocked: true, scBlocked: true },
+      { title: "Agents Opérationnels",   href: "/modern-admin/agents-operationnels",   icon: UserCog,      aoBlocked: true, cpBlocked: true, scBlocked: true, moBlocked: true },
+      { title: "Comptables/Partenaires", href: "/modern-admin/comptables-partenaires", icon: Calculator,   aoBlocked: true, cpBlocked: true, scBlocked: true, moBlocked: true },
+      { title: "Support Clients",        href: "/modern-admin/support-clients",        icon: Shield,       aoBlocked: true, cpBlocked: true, scBlocked: true, moBlocked: true },
+      { title: "Modérateurs",            href: "/modern-admin/moderateurs",            icon: AlertTriangle, aoBlocked: true, cpBlocked: true, scBlocked: true, moBlocked: true },
     ]
   }
 ];
@@ -161,6 +162,7 @@ function AdminSidebar() {
   const isAOOnly = hasRole('agent_operationnel') && !hasRole('admin');
   const isCPOnly = hasRole('comptable_partenaire') && !hasRole('admin');
   const isSCOnly = hasRole('support_client') && !hasRole('admin');
+  const isMOOnly = hasRole('moderator') && !hasRole('admin');
 
   const isActive = (href: string) => {
     if (href === '/modern-admin') {
@@ -205,6 +207,7 @@ function AdminSidebar() {
             if (isAOOnly && (item as any).aoBlocked) return false;
             if (isCPOnly && (item as any).cpBlocked) return false;
             if (isSCOnly && (item as any).scBlocked) return false;
+            if (isMOOnly && (item as any).moBlocked) return false;
             return true;
           });
           if (visibleItems.length === 0) return null;
@@ -263,7 +266,6 @@ function AdminSidebar() {
 export default function ModernAdminLayout() {
   const { hasRole } = useAuth();
   const isAOOnly = hasRole('agent_operationnel') && !hasRole('admin');
-  const isCPOnly = hasRole('comptable_partenaire') && !hasRole('admin');
   const isSCOnly = hasRole('support_client') && !hasRole('admin');
   // R-AO-06: 8h pour AO, R-SC-06: 4h pour SC
   const inactivityMs = isAOOnly ? 8 * 60 * 60 * 1000 : isSCOnly ? 4 * 60 * 60 * 1000 : 0;

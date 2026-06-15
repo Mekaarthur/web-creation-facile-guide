@@ -9,16 +9,22 @@ interface Props {
   alsoBlockCP?: boolean;
   /** Si true, bloque également les agents Support Client (sections admin-only) */
   alsoBlockSC?: boolean;
+  /** Si true, bloque également les Modérateurs (sections admin-only) */
+  alsoBlockMO?: boolean;
 }
 
-export function AOBlockedRoute({ children, alsoBlockCP = false, alsoBlockSC = false }: Props) {
+export function AOBlockedRoute({ children, alsoBlockCP = false, alsoBlockSC = false, alsoBlockMO = false }: Props) {
   const { hasRole } = useAuth();
   const isAOOnly = hasRole('agent_operationnel') && !hasRole('admin');
   const isCPOnly = alsoBlockCP && hasRole('comptable_partenaire') && !hasRole('admin');
   const isSCOnly = alsoBlockSC && hasRole('support_client') && !hasRole('admin');
+  const isMOOnly = alsoBlockMO && hasRole('moderator') && !hasRole('admin');
 
-  if (isAOOnly || isCPOnly || isSCOnly) {
-    const label = isAOOnly ? 'aux Agents Opérationnels' : isCPOnly ? 'aux Comptables/Partenaires' : 'aux agents Support Client';
+  if (isAOOnly || isCPOnly || isSCOnly || isMOOnly) {
+    const label = isAOOnly ? 'aux Agents Opérationnels'
+      : isCPOnly ? 'aux Comptables/Partenaires'
+      : isSCOnly ? 'aux agents Support Client'
+      : 'aux Modérateurs';
     return (
       <div className="flex items-center justify-center min-h-[400px] p-6">
         <Card className="w-full max-w-md border-destructive/50">

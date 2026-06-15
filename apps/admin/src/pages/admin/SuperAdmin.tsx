@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useSuperAdmin, SuperAdminCompliance } from '@/hooks/admin/useSuperAdmin';
 import { EscalationPanel } from '@/components/EscalationPanel';
+import { SignalementEscalationPanel } from '@/components/SignalementEscalationPanel';
 
 const ACCESS_ITEMS = [
   'Tout sans exception',
@@ -230,6 +231,7 @@ export default function SuperAdmin() {
       )}
 
       <EscalationPanel />
+      <SignalementEscalationPanel />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Access list */}
