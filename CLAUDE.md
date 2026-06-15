@@ -196,3 +196,13 @@ Seul `refundReason === 'admin_manual_override'` peut passer outre. Ne jamais fai
 
 `ENVIRONMENT=production` doit être configuré dans les secrets Supabase.
 Ne jamais importer `activeCorsHeaders` depuis `_shared/cors.ts` dans une nouvelle Edge Function — utiliser `corsHeaders` directement ou `getAdminCorsHeaders()` pour les fonctions admin.
+
+## PROVIDER SPACE RULES
+
+- **R-PROV-01** : Ne jamais afficher `total_price` (prix client) au prestataire. Afficher uniquement `provider_payment` depuis `financial_transactions`. Pour les opportunités (bookings non assignés), aucun prix n'est affiché (pas de `financial_transaction` encore).
+- **R-PROV-02** : Le badge "Missions actives" ne compte que les missions avec `status IN ('confirmed', 'in_progress')` ET `booking_date >= CURRENT_DATE`.
+- **R-PROV-03** : Transitions de statut prestataire : `confirmed → in_progress` (Commencer), `in_progress → completed` (Terminer). Chaque transition `completed` doit invoquer `transfer-provider-payment` avec `action:'transfer_single'` et le `transactionId` de `financial_transactions`. En cas d'échec, créer une notification `type:'payment_transfer_failed'`.
+- **R-PROV-04** : Le numéro de téléphone du client n'est affiché que pour les missions `confirmed` ou `in_progress`, et uniquement si `profiles.phone` est non-null.
+- **R-PROV-05** : Toute communication passe par la messagerie interne. Naviguer vers `/espace-prestataire` avec query param `?tab=messages&booking={id}`. Route dédiée `/messages` prévue en v2.
+- **R-PROV-06** : L'itinéraire ouvre `https://maps.google.com/?q={booking.address}` dans un nouvel onglet. Affiché uniquement si `booking.address` est renseigné.
+- **R-PROV-07** : Les photos sont uploadées dans le bucket `provider-documents`, chemin `missions/{booking_id}/{timestamp}_{filename}`. Contraintes : max 10 MB, formats PDF/JPEG/PNG/WebP uniquement (enforced par migration `20260614000003`).

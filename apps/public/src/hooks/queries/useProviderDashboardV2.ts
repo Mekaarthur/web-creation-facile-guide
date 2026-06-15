@@ -141,7 +141,12 @@ export const useDashboardStats = (input: {
     const e = earnings ?? { monthlyEarnings: 0, previousMonthEarnings: 0, totalEarnings: 0, earningsGrowth: 0 };
 
     const completedMissions = m.filter((x: any) => x.status === "completed");
-    const activeMissions = m.filter((x: any) => ["pending", "confirmed", "in_progress"].includes(x.status));
+    // R-PROV-02: badge = confirmed + in_progress + future date only
+    const today = new Date().toISOString().split("T")[0];
+    const activeMissions = m.filter((x: any) =>
+      ["confirmed", "in_progress"].includes(x.status) &&
+      x.booking_date >= today
+    );
     const confirmedMissions = m.filter((x: any) => x.status === "confirmed" || x.status === "completed");
 
     const averageRating = r.length > 0
@@ -228,10 +233,11 @@ export const useUpdateMissionStatus = () => {
       if (params.status === "completed") extra.completed_at = new Date().toISOString();
       const result = await bookingService.updateStatus(params.missionId, params.status, extra);
 
+      const { supabase } = await import("@/integrations/supabase/client");
+
       // Notification email best-effort (in_progress / completed)
       if (params.status === "in_progress" || params.status === "completed") {
         try {
-          const { supabase } = await import("@/integrations/supabase/client");
           await supabase.functions.invoke("send-modern-notification", {
             body: {
               type: params.status === "completed" ? "mission_completed" : "mission_started",
@@ -240,6 +246,35 @@ export const useUpdateMissionStatus = () => {
           });
         } catch (e) {
           console.warn("Notification statut mission non envoyée (non-bloquant)", e);
+        }
+      }
+
+      // R-PROV-03 / R13: trigger provider payment transfer on completion
+      if (params.status === "completed") {
+        try {
+          // transfer-provider-payment takes action:'transfer_single' + transactionId
+          const { data: ft } = await supabase
+            .from("financial_transactions")
+            .select("id")
+            .eq("booking_id", params.missionId)
+            .maybeSingle();
+          if (ft?.id) {
+            await supabase.functions.invoke("transfer-provider-payment", {
+              body: { action: "transfer_single", transactionId: ft.id },
+            });
+          }
+        } catch (e) {
+          console.warn("transfer-provider-payment non déclenché (non-bloquant)", e);
+          // Notify admin of failed transfer
+          try {
+            await supabase.from("notifications").insert({
+              type: "payment_transfer_failed",
+              title: "Virement prestataire échoué",
+              message: `Virement auto échoué pour le booking ${params.missionId}`,
+              user_id: params.providerId,
+              is_read: false,
+            });
+          } catch (_) { /* silent */ }
         }
       }
 

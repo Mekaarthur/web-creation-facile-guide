@@ -131,32 +131,44 @@ export const providerService = {
         .from("bookings")
         .select(`
           id, booking_date, start_time, end_time, status, address,
-          total_price, notes, provider_notes, client_id,
+          notes, provider_notes, client_id,
           services(name, category)
         `)
         .eq("provider_id", providerId)
-        .gte("booking_date", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0])
+        .gte("booking_date", new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0])
         .order("booking_date", { ascending: false })
-        .limit(50);
+        .limit(100);
 
       if (error) throw new ServiceError("Erreur chargement missions", error.code, error);
 
-      const clientIds = [...new Set((missionsData || []).map((m: any) => m.client_id).filter(Boolean))];
-      if (clientIds.length === 0) return missionsData || [];
+      const missions = missionsData || [];
+      if (missions.length === 0) return [];
 
-      const { data: clientProfiles } = await supabase
-        .from("profiles")
-        .select("user_id, first_name, last_name, avatar_url")
-        .in("user_id", clientIds);
+      // Fetch client profiles (first_name, last_name, avatar_url, phone)
+      const clientIds = [...new Set(missions.map((m: any) => m.client_id).filter(Boolean))];
+      const profilesMap: Record<string, any> = {};
+      if (clientIds.length > 0) {
+        const { data: clientProfiles } = await supabase
+          .from("profiles")
+          .select("user_id, first_name, last_name, avatar_url, phone")
+          .in("user_id", clientIds);
+        (clientProfiles || []).forEach((p: any) => { profilesMap[p.user_id] = p; });
+      }
 
-      const profilesMap = (clientProfiles || []).reduce((acc: any, p: any) => {
-        acc[p.user_id] = p;
-        return acc;
-      }, {});
+      // Fetch provider_payment from financial_transactions (R-PROV-01)
+      const bookingIds = missions.map((m: any) => m.id);
+      const { data: ftData } = await supabase
+        .from("financial_transactions")
+        .select("booking_id, id, provider_payment")
+        .in("booking_id", bookingIds);
+      const ftMap: Record<string, { id: string; provider_payment: number }> = {};
+      (ftData || []).forEach((ft: any) => { ftMap[ft.booking_id] = { id: ft.id, provider_payment: ft.provider_payment }; });
 
-      return (missionsData || []).map((m: any) => ({
+      return missions.map((m: any) => ({
         ...m,
         profiles: profilesMap[m.client_id] || null,
+        provider_payment: ftMap[m.id]?.provider_payment ?? null,
+        financial_transaction_id: ftMap[m.id]?.id ?? null,
       }));
     });
   },

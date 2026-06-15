@@ -1,9 +1,8 @@
-import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  DollarSign, Activity, Star, Award, CheckCircle, TrendingUp, TrendingDown, Clock, Zap, ArrowRight
+  DollarSign, Activity, Star, Award, CheckCircle, TrendingUp, TrendingDown, Clock, Zap
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -170,7 +169,8 @@ const ProviderDashboardTab = ({ stats, opportunities, missions, applyToMission }
                         <p className="text-xs sm:text-sm text-muted-foreground truncate">{opportunity.address}</p>
                       </div>
                       <div className="flex sm:flex-col items-center sm:items-end gap-2 flex-shrink-0">
-                        <p className="font-bold text-primary text-sm sm:text-base">{formatCurrency(opportunity.total_price)}</p>
+                        {/* R-PROV-01: no financial_transaction yet for unassigned bookings */}
+                        <Badge variant="outline" className="text-[10px] text-muted-foreground">Tarif à définir</Badge>
                         <Badge variant="outline" className={`text-[10px] sm:text-xs ${opportunity.source === 'matching' ? 'text-secondary border-secondary/30' : 'text-blue-600'}`}>
                           {opportunity.source === 'matching' ? '⚡ Recommandé' : 'Normal'}
                         </Badge>
@@ -210,7 +210,10 @@ const ProviderDashboardTab = ({ stats, opportunities, missions, applyToMission }
                         <p className="text-xs sm:text-sm text-muted-foreground truncate">{mission.address}</p>
                       </div>
                       <div className="flex sm:flex-col items-center sm:items-end gap-2 flex-shrink-0">
-                        <p className="font-bold text-primary text-sm sm:text-base">{formatCurrency(mission.total_price)}</p>
+                        {/* R-PROV-01: show provider_payment, never total_price */}
+                        <p className="font-bold text-primary text-sm sm:text-base">
+                          {mission.provider_payment != null ? formatCurrency(mission.provider_payment) : '—'}
+                        </p>
                         <Badge className={`${getStatusColor(mission.status)} text-[10px] sm:text-xs`}>{getStatusLabel(mission.status)}</Badge>
                       </div>
                     </div>
