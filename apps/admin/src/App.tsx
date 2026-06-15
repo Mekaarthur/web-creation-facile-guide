@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { AOBlockedRoute } from "@/components/AOBlockedRoute";
 import { CPBlockedRoute } from "@/components/CPBlockedRoute";
+import { RoleGatedRoute } from "@/components/RoleGatedRoute";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -93,34 +94,34 @@ export default function App() {
 
                 {/* Modern Admin — nested routes */}
                 <Route path="/modern-admin" element={<AdminRoute><ModernAdminLayout /></AdminRoute>}>
-                  <Route index element={<ModernAdminDashboard />} />
-                  <Route path="dashboard" element={<ModernAdminDashboard />} />
-                  <Route path="analytics" element={<AdminAnalytics />} />
-                  <Route path="realtime" element={<AdminRealtime />} />
+                  <Route index element={<RoleGatedRoute deny={['support_client', 'moderator']}><ModernAdminDashboard /></RoleGatedRoute>} />
+                  <Route path="dashboard" element={<RoleGatedRoute deny={['support_client', 'moderator']}><ModernAdminDashboard /></RoleGatedRoute>} />
+                  <Route path="analytics" element={<RoleGatedRoute deny={['support_client', 'moderator']}><AdminAnalytics /></RoleGatedRoute>} />
+                  <Route path="realtime" element={<RoleGatedRoute deny={['support_client', 'moderator']}><AdminRealtime /></RoleGatedRoute>} />
                   <Route path="utilisateurs" element={<CPBlockedRoute alsoBlockSC><AdminUtilisateurs /></CPBlockedRoute>} />
                   <Route path="clients" element={<CPBlockedRoute><AdminClients /></CPBlockedRoute>} />
-                  <Route path="providers" element={<AOBlockedRoute alsoBlockSC><AdminProviders /></AOBlockedRoute>} />
-                  <Route path="prestataires" element={<AOBlockedRoute alsoBlockSC><AdminProviders /></AOBlockedRoute>} />
-                  <Route path="applications" element={<AdminApplications />} />
-                  <Route path="candidatures" element={<AdminApplications />} />
+                  <Route path="providers" element={<RoleGatedRoute deny={['support_client']}><AdminProviders /></RoleGatedRoute>} />
+                  <Route path="prestataires" element={<RoleGatedRoute deny={['support_client']}><AdminProviders /></RoleGatedRoute>} />
+                  <Route path="applications" element={<RoleGatedRoute deny={['comptable_partenaire', 'support_client']}><AdminApplications /></RoleGatedRoute>} />
+                  <Route path="candidatures" element={<RoleGatedRoute deny={['comptable_partenaire', 'support_client']}><AdminApplications /></RoleGatedRoute>} />
                   <Route path="binomes" element={<AdminBinomes />} />
                   <Route path="onboarding" element={<AdminOnboarding />} />
                   <Route path="matching" element={<AdminMatching />} />
                   <Route path="missions" element={<AdminMissions />} />
                   <Route path="reservations" element={<AdminReservations />} />
-                  <Route path="payments" element={<AOBlockedRoute alsoBlockMO><AdminPayments /></AOBlockedRoute>} />
-                  <Route path="paiements" element={<AOBlockedRoute alsoBlockMO><AdminPayments /></AOBlockedRoute>} />
-                  <Route path="invoices" element={<AOBlockedRoute alsoBlockMO><AdminInvoices /></AOBlockedRoute>} />
-                  <Route path="factures" element={<AOBlockedRoute alsoBlockMO><AdminInvoices /></AOBlockedRoute>} />
-                  <Route path="messages" element={<AdminMessages />} />
+                  <Route path="payments" element={<AOBlockedRoute alsoBlockSC alsoBlockMO><AdminPayments /></AOBlockedRoute>} />
+                  <Route path="paiements" element={<AOBlockedRoute alsoBlockSC alsoBlockMO><AdminPayments /></AOBlockedRoute>} />
+                  <Route path="invoices" element={<AOBlockedRoute alsoBlockSC alsoBlockMO><AdminInvoices /></AOBlockedRoute>} />
+                  <Route path="factures" element={<AOBlockedRoute alsoBlockSC alsoBlockMO><AdminInvoices /></AOBlockedRoute>} />
+                  <Route path="messages" element={<RoleGatedRoute deny={['comptable_partenaire', 'moderator']}><AdminMessages /></RoleGatedRoute>} />
                   <Route path="notifications" element={<AdminNotifications />} />
                   <Route path="reviews" element={<AdminReviews />} />
-                  <Route path="alerts" element={<AdminAlerts />} />
-                  <Route path="alertes" element={<AdminAlerts />} />
-                  <Route path="reports" element={<AdminReports />} />
-                  <Route path="rapports" element={<AdminReports />} />
-                  <Route path="reports-data" element={<AdminReportsData />} />
-                  <Route path="quality" element={<AdminQuality />} />
+                  <Route path="alerts" element={<RoleGatedRoute deny={['comptable_partenaire', 'support_client']}><AdminAlerts /></RoleGatedRoute>} />
+                  <Route path="alertes" element={<RoleGatedRoute deny={['comptable_partenaire', 'support_client']}><AdminAlerts /></RoleGatedRoute>} />
+                  <Route path="reports" element={<RoleGatedRoute deny={['comptable_partenaire', 'support_client']}><AdminReports /></RoleGatedRoute>} />
+                  <Route path="rapports" element={<RoleGatedRoute deny={['comptable_partenaire', 'support_client']}><AdminReports /></RoleGatedRoute>} />
+                  <Route path="reports-data" element={<RoleGatedRoute deny={['support_client', 'moderator']}><AdminReportsData /></RoleGatedRoute>} />
+                  <Route path="quality" element={<RoleGatedRoute deny={['comptable_partenaire', 'support_client']}><AdminQuality /></RoleGatedRoute>} />
                   <Route path="zones" element={<AdminZones />} />
                   <Route path="marque" element={<AdminMarque />} />
                   <Route path="cooptation" element={<AdminCooptation />} />
@@ -137,7 +138,7 @@ export default function App() {
                   <Route path="avance-immediate" element={<AdminAvanceImmediate />} />
                   <Route path="urssaf-declarations" element={<AdminAvanceImmediate />} />
                   <Route path="urgences" element={<AdminUrgences />} />
-                  <Route path="reclamations" element={<AdminReclamations />} />
+                  <Route path="reclamations" element={<RoleGatedRoute deny={['comptable_partenaire']}><AdminReclamations /></RoleGatedRoute>} />
                   <Route path="acces" element={<AdminAccessTracking />} />
                   <Route path="rgpd-deletions" element={<AOBlockedRoute alsoBlockCP alsoBlockSC alsoBlockMO><RgpdDeletions /></AOBlockedRoute>} />
                   <Route path="pricing" element={<AOBlockedRoute alsoBlockSC><AdminPricing /></AOBlockedRoute>} />

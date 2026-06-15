@@ -60,9 +60,9 @@ const navigationGroups = [
   {
     label: "Vue d'ensemble",
     items: [
-      { title: "Dashboard",    href: "/modern-admin",            icon: BarChart3 },
-      { title: "Analytics",    href: "/modern-admin/analytics",  icon: PieChart },
-      { title: "Temps Réel",   href: "/modern-admin/realtime",   icon: Activity },
+      { title: "Dashboard",    href: "/modern-admin",            icon: BarChart3, scBlocked: true, moBlocked: true },
+      { title: "Analytics",    href: "/modern-admin/analytics",  icon: PieChart,  scBlocked: true, moBlocked: true },
+      { title: "Temps Réel",   href: "/modern-admin/realtime",   icon: Activity,  scBlocked: true, moBlocked: true },
     ]
   },
   {
@@ -71,7 +71,7 @@ const navigationGroups = [
       { title: "Sécurité",            href: "/modern-admin/security",         icon: Lock },
       { title: "Finance",             href: "/modern-admin/finance",           icon: Euro,             aoBlocked: true, scBlocked: true, moBlocked: true },
       { title: "Urgences",            href: "/modern-admin/urgences",          icon: AlertTriangle },
-      { title: "Réclamations",        href: "/modern-admin/reclamations",      icon: MessageSquareWarning },
+      { title: "Réclamations",        href: "/modern-admin/reclamations",      icon: MessageSquareWarning, cpBlocked: true },
       { title: "RGPD / Suppressions", href: "/modern-admin/rgpd-deletions",    icon: ShieldCheck,      aoBlocked: true, cpBlocked: true, scBlocked: true, moBlocked: true },
     ]
   },
@@ -81,7 +81,7 @@ const navigationGroups = [
       { title: "Utilisateurs",  href: "/modern-admin/utilisateurs",  icon: UserCog,   countKey: null, cpBlocked: true, scBlocked: true },
       { title: "Clients",       href: "/modern-admin/clients",       icon: Users,     countKey: null, cpBlocked: true },
       { title: "Prestataires",  href: "/modern-admin/providers",     icon: UserCheck, countKey: "prestatairesPending" as const, scBlocked: true },
-      { title: "Candidatures",  href: "/modern-admin/applications",  icon: FileText,  countKey: "candidatures" as const },
+      { title: "Candidatures",  href: "/modern-admin/applications",  icon: FileText,  countKey: "candidatures" as const, cpBlocked: true, scBlocked: true },
       { title: "Binômes",       href: "/modern-admin/binomes",       icon: Star,      countKey: null },
       { title: "Cooptation",    href: "/modern-admin/cooptation",    icon: Gift,      countKey: null },
     ]
@@ -99,15 +99,15 @@ const navigationGroups = [
       { title: "Missions",          href: "/modern-admin/missions",            icon: Target,       countKey: "missionsPending" as const },
       { title: "Réservations",      href: "/modern-admin/reservations",        icon: Calendar,     countKey: null },
       { title: "Demandes",          href: "/modern-admin/demandes",            icon: MessageSquare, countKey: "demandesPersonnalisees" as const },
-      { title: "Paiements",         href: "/modern-admin/payments",            icon: CreditCard,   countKey: null,                                  moBlocked: true },
-      { title: "Factures",          href: "/modern-admin/invoices",            icon: FileText,     countKey: null,                                  moBlocked: true },
+      { title: "Paiements",         href: "/modern-admin/payments",            icon: CreditCard,   countKey: null,               scBlocked: true, moBlocked: true },
+      { title: "Factures",          href: "/modern-admin/invoices",            icon: FileText,     countKey: null,               scBlocked: true, moBlocked: true },
       { title: "Avance Immédiate",  href: "/modern-admin/urssaf-declarations", icon: Landmark,     countKey: null },
     ]
   },
   {
     label: "Communication",
     items: [
-      { title: "Messages",       href: "/modern-admin/messages",       icon: MessageSquare, countKey: "messages" as const },
+      { title: "Messages",       href: "/modern-admin/messages",       icon: MessageSquare, countKey: "messages" as const, cpBlocked: true, moBlocked: true },
       { title: "Notifications",  href: "/modern-admin/notifications",  icon: Bell,          countKey: null },
       { title: "Avis & Notes",   href: "/modern-admin/reviews",        icon: Star,          countKey: "moderation" as const },
     ]
@@ -115,9 +115,9 @@ const navigationGroups = [
   {
     label: "Modération",
     items: [
-      { title: "Alertes",       href: "/modern-admin/alerts",   icon: AlertTriangle, countKey: "alerts" as const },
-      { title: "Signalements",  href: "/modern-admin/reports",  icon: Flag,          countKey: null },
-      { title: "Qualité",       href: "/modern-admin/quality",  icon: CheckSquare,   countKey: null },
+      { title: "Alertes",       href: "/modern-admin/alerts",   icon: AlertTriangle, countKey: "alerts" as const, cpBlocked: true, scBlocked: true },
+      { title: "Signalements",  href: "/modern-admin/reports",  icon: Flag,          countKey: null,              cpBlocked: true, scBlocked: true },
+      { title: "Qualité",       href: "/modern-admin/quality",  icon: CheckSquare,   countKey: null,              cpBlocked: true, scBlocked: true },
     ]
   },
   {
@@ -127,7 +127,7 @@ const navigationGroups = [
       { title: "Zones",        href: "/modern-admin/zones",          icon: MapPin },
       { title: "Marque",       href: "/modern-admin/marque",         icon: Palette },
       { title: "Paramètres",   href: "/modern-admin/settings",       icon: Settings,   aoBlocked: true, cpBlocked: true, scBlocked: true, moBlocked: true },
-      { title: "Rapports",     href: "/modern-admin/reports-data",   icon: TrendingUp },
+      { title: "Rapports",     href: "/modern-admin/reports-data",   icon: TrendingUp, scBlocked: true, moBlocked: true },
     ]
   },
   {
