@@ -37,7 +37,7 @@ const AdminRoute = ({ children, redirectTo = '/admin/login' }: AdminRouteProps) 
     return <Navigate to={redirectTo} replace />;
   }
 
-  const isAuthorized = hasRole('admin') || hasRole('moderator') || hasRole('agent_operationnel') || hasRole('comptable_partenaire');
+  const isAuthorized = hasRole('admin') || hasRole('moderator') || hasRole('agent_operationnel') || hasRole('comptable_partenaire') || hasRole('support_client');
 
   if (!isAuthorized) {
     return (

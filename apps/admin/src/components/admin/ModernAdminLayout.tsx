@@ -69,18 +69,18 @@ const navigationGroups = [
     label: "Sécurité & Finance",
     items: [
       { title: "Sécurité",            href: "/modern-admin/security",         icon: Lock },
-      { title: "Finance",             href: "/modern-admin/finance",           icon: Euro,             aoBlocked: true },
+      { title: "Finance",             href: "/modern-admin/finance",           icon: Euro,             aoBlocked: true, scBlocked: true },
       { title: "Urgences",            href: "/modern-admin/urgences",          icon: AlertTriangle },
       { title: "Réclamations",        href: "/modern-admin/reclamations",      icon: MessageSquareWarning },
-      { title: "RGPD / Suppressions", href: "/modern-admin/rgpd-deletions",    icon: ShieldCheck,      aoBlocked: true, cpBlocked: true },
+      { title: "RGPD / Suppressions", href: "/modern-admin/rgpd-deletions",    icon: ShieldCheck,      aoBlocked: true, cpBlocked: true, scBlocked: true },
     ]
   },
   {
     label: "Gestion Business",
     items: [
-      { title: "Utilisateurs",  href: "/modern-admin/utilisateurs",  icon: UserCog,   countKey: null, cpBlocked: true },
+      { title: "Utilisateurs",  href: "/modern-admin/utilisateurs",  icon: UserCog,   countKey: null, cpBlocked: true, scBlocked: true },
       { title: "Clients",       href: "/modern-admin/clients",       icon: Users,     countKey: null, cpBlocked: true },
-      { title: "Prestataires",  href: "/modern-admin/providers",     icon: UserCheck, countKey: "prestatairesPending" as const },
+      { title: "Prestataires",  href: "/modern-admin/providers",     icon: UserCheck, countKey: "prestatairesPending" as const, scBlocked: true },
       { title: "Candidatures",  href: "/modern-admin/applications",  icon: FileText,  countKey: "candidatures" as const },
       { title: "Binômes",       href: "/modern-admin/binomes",       icon: Star,      countKey: null },
       { title: "Cooptation",    href: "/modern-admin/cooptation",    icon: Gift,      countKey: null },
@@ -123,10 +123,10 @@ const navigationGroups = [
   {
     label: "Configuration",
     items: [
-      { title: "Tarifs",       href: "/modern-admin/tarifs",         icon: Tag },
+      { title: "Tarifs",       href: "/modern-admin/tarifs",         icon: Tag,        scBlocked: true },
       { title: "Zones",        href: "/modern-admin/zones",          icon: MapPin },
       { title: "Marque",       href: "/modern-admin/marque",         icon: Palette },
-      { title: "Paramètres",   href: "/modern-admin/settings",       icon: Settings,   aoBlocked: true, cpBlocked: true },
+      { title: "Paramètres",   href: "/modern-admin/settings",       icon: Settings,   aoBlocked: true, cpBlocked: true, scBlocked: true },
       { title: "Rapports",     href: "/modern-admin/reports-data",   icon: TrendingUp },
     ]
   },
@@ -137,14 +137,15 @@ const navigationGroups = [
       { title: "Monitoring",       href: "/modern-admin/monitoring",        icon: Activity },
       { title: "Tests Critiques",  href: "/modern-admin/tests-critiques",  icon: FlaskConical },
       { title: "Tests Emails",     href: "/modern-admin/tests-emails",     icon: Mail },
-      { title: "Accès Admin",      href: "/modern-admin/acces",            icon: Clock,          aoBlocked: true, cpBlocked: true },
+      { title: "Accès Admin",      href: "/modern-admin/acces",            icon: Clock,          aoBlocked: true, cpBlocked: true, scBlocked: true },
     ]
   },
   {
     label: "Gouvernance",
     items: [
-      { title: "Agents Opérationnels",   href: "/modern-admin/agents-operationnels",   icon: UserCog,      aoBlocked: true, cpBlocked: true },
-      { title: "Comptables/Partenaires", href: "/modern-admin/comptables-partenaires", icon: Calculator,   aoBlocked: true, cpBlocked: true },
+      { title: "Agents Opérationnels",   href: "/modern-admin/agents-operationnels",   icon: UserCog,      aoBlocked: true, cpBlocked: true, scBlocked: true },
+      { title: "Comptables/Partenaires", href: "/modern-admin/comptables-partenaires", icon: Calculator,   aoBlocked: true, cpBlocked: true, scBlocked: true },
+      { title: "Support Clients",        href: "/modern-admin/support-clients",        icon: Shield,       aoBlocked: true, cpBlocked: true, scBlocked: true },
     ]
   }
 ];
@@ -159,6 +160,7 @@ function AdminSidebar() {
   const { hasRole } = useAuth();
   const isAOOnly = hasRole('agent_operationnel') && !hasRole('admin');
   const isCPOnly = hasRole('comptable_partenaire') && !hasRole('admin');
+  const isSCOnly = hasRole('support_client') && !hasRole('admin');
 
   const isActive = (href: string) => {
     if (href === '/modern-admin') {
@@ -202,6 +204,7 @@ function AdminSidebar() {
           const visibleItems = group.items.filter(item => {
             if (isAOOnly && (item as any).aoBlocked) return false;
             if (isCPOnly && (item as any).cpBlocked) return false;
+            if (isSCOnly && (item as any).scBlocked) return false;
             return true;
           });
           if (visibleItems.length === 0) return null;
@@ -261,7 +264,10 @@ export default function ModernAdminLayout() {
   const { hasRole } = useAuth();
   const isAOOnly = hasRole('agent_operationnel') && !hasRole('admin');
   const isCPOnly = hasRole('comptable_partenaire') && !hasRole('admin');
-  useInactivityTimeout(isAOOnly); // R-AO-06: timeout 8h pour les AO uniquement
+  const isSCOnly = hasRole('support_client') && !hasRole('admin');
+  // R-AO-06: 8h pour AO, R-SC-06: 4h pour SC
+  const inactivityMs = isAOOnly ? 8 * 60 * 60 * 1000 : isSCOnly ? 4 * 60 * 60 * 1000 : 0;
+  useInactivityTimeout(isAOOnly || isSCOnly, inactivityMs);
 
   return (
     <SidebarProvider>

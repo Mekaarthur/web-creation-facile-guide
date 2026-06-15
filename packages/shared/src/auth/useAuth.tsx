@@ -2,7 +2,7 @@ import { useState, useEffect, createContext, useContext } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "../integrations/supabase/client";
 
-export type UserRole = 'client' | 'provider' | 'admin' | 'moderator' | 'user' | 'super_admin' | 'agent_operationnel' | 'comptable_partenaire';
+export type UserRole = 'client' | 'provider' | 'admin' | 'moderator' | 'user' | 'super_admin' | 'agent_operationnel' | 'comptable_partenaire' | 'support_client';
 
 interface AuthContextType {
   user: User | null;
@@ -61,10 +61,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         admin: 1,
         agent_operationnel: 2,
         comptable_partenaire: 3,
-        provider: 4,
-        client: 5,
-        moderator: 6,
-        user: 7,
+        support_client: 4,
+        provider: 5,
+        client: 6,
+        moderator: 7,
+        user: 8,
       };
 
       const sortedRoles = [...userRoles].sort((a, b) =>

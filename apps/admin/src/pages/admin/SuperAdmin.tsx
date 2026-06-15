@@ -7,6 +7,7 @@ import { Crown, CheckCircle2, XCircle, AlertTriangle, Shield, Key, Calendar } fr
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useSuperAdmin, SuperAdminCompliance } from '@/hooks/admin/useSuperAdmin';
+import { EscalationPanel } from '@/components/EscalationPanel';
 
 const ACCESS_ITEMS = [
   'Tout sans exception',
@@ -227,6 +228,8 @@ export default function SuperAdmin() {
           </CardContent>
         </Card>
       )}
+
+      <EscalationPanel />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Access list */}

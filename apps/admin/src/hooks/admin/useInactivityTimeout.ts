@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 
-const TIMEOUT_MS = 8 * 60 * 60 * 1000; // R-AO-06: 8h
 const LS_KEY = 'bikawo_last_activity';
 
-export function useInactivityTimeout(enabled: boolean) {
+// R-AO-06: 8h pour AO, R-SC-06: 4h pour SC (passé en paramètre)
+export function useInactivityTimeout(enabled: boolean, timeoutMs = 8 * 60 * 60 * 1000) {
   const { signOut } = useAuth();
 
   useEffect(() => {
@@ -13,7 +13,7 @@ export function useInactivityTimeout(enabled: boolean) {
     const touch = () => localStorage.setItem(LS_KEY, Date.now().toString());
     const check = () => {
       const last = parseInt(localStorage.getItem(LS_KEY) || '0', 10);
-      if (Date.now() - last > TIMEOUT_MS) {
+      if (Date.now() - last > timeoutMs) {
         localStorage.removeItem(LS_KEY);
         signOut();
       }
@@ -30,5 +30,5 @@ export function useInactivityTimeout(enabled: boolean) {
       events.forEach(e => document.removeEventListener(e, touch));
       clearInterval(timer);
     };
-  }, [enabled, signOut]);
+  }, [enabled, signOut, timeoutMs]);
 }

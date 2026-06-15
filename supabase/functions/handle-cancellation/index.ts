@@ -40,23 +40,56 @@ serve(async (req) => {
     let refundAmount = parsed.refundAmount;
     let refundPercentage = parsed.refundPercentage;
 
-    // R-AO-01: si l'appelant est Agent Opérationnel, le motif est obligatoire (≥10 chars)
+    // R-AO-01 & R-SC-04: vérifications des rôles staff
     const authHeader = req.headers.get('Authorization');
     if (authHeader && cancelledBy === 'admin') {
       const { data: { user: caller } } = await supabase.auth.getUser(
         authHeader.replace('Bearer ', '')
       );
       if (caller) {
-        const { data: isAO } = await supabase.rpc('has_role', {
-          _user_id: caller.id, _role: 'agent_operationnel'
-        });
-        const { data: isAdmin } = await supabase.rpc('has_role', {
-          _user_id: caller.id, _role: 'admin'
-        });
+        const [{ data: isAO }, { data: isAdmin }, { data: isSC }] = await Promise.all([
+          supabase.rpc('has_role', { _user_id: caller.id, _role: 'agent_operationnel' }),
+          supabase.rpc('has_role', { _user_id: caller.id, _role: 'admin' }),
+          supabase.rpc('has_role', { _user_id: caller.id, _role: 'support_client' }),
+        ]);
+
+        // R-AO-01: motif obligatoire pour AO
         if (isAO && !isAdmin && (!reason || reason.trim().length < 10)) {
           return new Response(
             JSON.stringify({ error: 'R-AO-01 : un motif documenté (min 10 caractères) est obligatoire pour annuler une réservation.' }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
+          );
+        }
+
+        // R-SC-04: les agents Support Client ne peuvent pas traiter un remboursement directement
+        if (isSC && !isAdmin && refundAmount > 0) {
+          const { data: escalation } = await supabase
+            .from('refund_escalations')
+            .insert({
+              booking_id: bookingId,
+              requested_by: caller.id,
+              reason: reason || 'Aucun motif fourni',
+              requested_amount: refundAmount,
+              status: 'pending',
+            })
+            .select('id')
+            .single();
+
+          await supabase.from('bookings').update({
+            status: 'cancelled',
+            cancelled_at: new Date().toISOString(),
+            cancellation_reason: `${reason} [ESCALADE R-SC-04 en attente approbation Super Admin]`,
+            cancelled_by: 'admin',
+          }).eq('id', bookingId);
+
+          return new Response(
+            JSON.stringify({
+              success: true,
+              escalationCreated: true,
+              escalationId: escalation?.id,
+              message: "Réservation annulée. Le remboursement est en attente d'approbation Super Admin (R-SC-04).",
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
           );
         }
       }

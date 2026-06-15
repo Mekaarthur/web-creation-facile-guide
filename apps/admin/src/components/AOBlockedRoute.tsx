@@ -7,15 +7,18 @@ interface Props {
   children: ReactNode;
   /** Si true, bloque également les Comptables/Partenaires (sections admin-only) */
   alsoBlockCP?: boolean;
+  /** Si true, bloque également les agents Support Client (sections admin-only) */
+  alsoBlockSC?: boolean;
 }
 
-export function AOBlockedRoute({ children, alsoBlockCP = false }: Props) {
+export function AOBlockedRoute({ children, alsoBlockCP = false, alsoBlockSC = false }: Props) {
   const { hasRole } = useAuth();
   const isAOOnly = hasRole('agent_operationnel') && !hasRole('admin');
   const isCPOnly = alsoBlockCP && hasRole('comptable_partenaire') && !hasRole('admin');
+  const isSCOnly = alsoBlockSC && hasRole('support_client') && !hasRole('admin');
 
-  if (isAOOnly || isCPOnly) {
-    const label = isAOOnly ? 'aux Agents Opérationnels' : 'aux Comptables/Partenaires';
+  if (isAOOnly || isCPOnly || isSCOnly) {
+    const label = isAOOnly ? 'aux Agents Opérationnels' : isCPOnly ? 'aux Comptables/Partenaires' : 'aux agents Support Client';
     return (
       <div className="flex items-center justify-center min-h-[400px] p-6">
         <Card className="w-full max-w-md border-destructive/50">
