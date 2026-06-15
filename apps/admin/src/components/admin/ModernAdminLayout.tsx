@@ -50,6 +50,7 @@ import {
   ShieldCheck,
   Home,
   Tag,
+  Calculator,
 } from "lucide-react";
 import { NotificationBell } from './NotificationBell';
 import { SecureLogout } from '@/components/SecureLogout';
@@ -71,14 +72,14 @@ const navigationGroups = [
       { title: "Finance",             href: "/modern-admin/finance",           icon: Euro,             aoBlocked: true },
       { title: "Urgences",            href: "/modern-admin/urgences",          icon: AlertTriangle },
       { title: "Réclamations",        href: "/modern-admin/reclamations",      icon: MessageSquareWarning },
-      { title: "RGPD / Suppressions", href: "/modern-admin/rgpd-deletions",    icon: ShieldCheck,      aoBlocked: true },
+      { title: "RGPD / Suppressions", href: "/modern-admin/rgpd-deletions",    icon: ShieldCheck,      aoBlocked: true, cpBlocked: true },
     ]
   },
   {
     label: "Gestion Business",
     items: [
-      { title: "Utilisateurs",  href: "/modern-admin/utilisateurs",  icon: UserCog,   countKey: null },
-      { title: "Clients",       href: "/modern-admin/clients",       icon: Users,     countKey: null },
+      { title: "Utilisateurs",  href: "/modern-admin/utilisateurs",  icon: UserCog,   countKey: null, cpBlocked: true },
+      { title: "Clients",       href: "/modern-admin/clients",       icon: Users,     countKey: null, cpBlocked: true },
       { title: "Prestataires",  href: "/modern-admin/providers",     icon: UserCheck, countKey: "prestatairesPending" as const },
       { title: "Candidatures",  href: "/modern-admin/applications",  icon: FileText,  countKey: "candidatures" as const },
       { title: "Binômes",       href: "/modern-admin/binomes",       icon: Star,      countKey: null },
@@ -125,7 +126,7 @@ const navigationGroups = [
       { title: "Tarifs",       href: "/modern-admin/tarifs",         icon: Tag },
       { title: "Zones",        href: "/modern-admin/zones",          icon: MapPin },
       { title: "Marque",       href: "/modern-admin/marque",         icon: Palette },
-      { title: "Paramètres",   href: "/modern-admin/settings",       icon: Settings,   aoBlocked: true },
+      { title: "Paramètres",   href: "/modern-admin/settings",       icon: Settings,   aoBlocked: true, cpBlocked: true },
       { title: "Rapports",     href: "/modern-admin/reports-data",   icon: TrendingUp },
     ]
   },
@@ -136,13 +137,14 @@ const navigationGroups = [
       { title: "Monitoring",       href: "/modern-admin/monitoring",        icon: Activity },
       { title: "Tests Critiques",  href: "/modern-admin/tests-critiques",  icon: FlaskConical },
       { title: "Tests Emails",     href: "/modern-admin/tests-emails",     icon: Mail },
-      { title: "Accès Admin",      href: "/modern-admin/acces",            icon: Clock,          aoBlocked: true },
+      { title: "Accès Admin",      href: "/modern-admin/acces",            icon: Clock,          aoBlocked: true, cpBlocked: true },
     ]
   },
   {
     label: "Gouvernance",
     items: [
-      { title: "Agents Opérationnels", href: "/modern-admin/agents-operationnels", icon: UserCog, aoBlocked: true },
+      { title: "Agents Opérationnels",   href: "/modern-admin/agents-operationnels",   icon: UserCog,      aoBlocked: true, cpBlocked: true },
+      { title: "Comptables/Partenaires", href: "/modern-admin/comptables-partenaires", icon: Calculator,   aoBlocked: true, cpBlocked: true },
     ]
   }
 ];
@@ -156,6 +158,7 @@ function AdminSidebar() {
   const { data: counts } = useAdminCounts();
   const { hasRole } = useAuth();
   const isAOOnly = hasRole('agent_operationnel') && !hasRole('admin');
+  const isCPOnly = hasRole('comptable_partenaire') && !hasRole('admin');
 
   const isActive = (href: string) => {
     if (href === '/modern-admin') {
@@ -196,9 +199,11 @@ function AdminSidebar() {
 
         {/* Navigation */}
         {navigationGroups.map((group, groupIndex) => {
-          const visibleItems = isAOOnly
-            ? group.items.filter(item => !(item as any).aoBlocked)
-            : group.items;
+          const visibleItems = group.items.filter(item => {
+            if (isAOOnly && (item as any).aoBlocked) return false;
+            if (isCPOnly && (item as any).cpBlocked) return false;
+            return true;
+          });
           if (visibleItems.length === 0) return null;
           return (
           <SidebarGroup key={groupIndex}>
@@ -255,6 +260,7 @@ function AdminSidebar() {
 export default function ModernAdminLayout() {
   const { hasRole } = useAuth();
   const isAOOnly = hasRole('agent_operationnel') && !hasRole('admin');
+  const isCPOnly = hasRole('comptable_partenaire') && !hasRole('admin');
   useInactivityTimeout(isAOOnly); // R-AO-06: timeout 8h pour les AO uniquement
 
   return (

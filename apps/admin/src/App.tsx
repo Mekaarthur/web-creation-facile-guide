@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { AOBlockedRoute } from "@/components/AOBlockedRoute";
+import { CPBlockedRoute } from "@/components/CPBlockedRoute";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -56,6 +57,7 @@ const AdminProviderManagement = lazy(() => import("@/pages/admin/ProviderManagem
 const AdminRoles = lazy(() => import("@/pages/admin/AdminRoles"));
 const AdminSuperAdmin = lazy(() => import("@/pages/admin/SuperAdmin"));
 const AdminAgentsOperationnels = lazy(() => import("@/pages/admin/AgentsOperationnels"));
+const AdminComptablesPartenaires = lazy(() => import("@/pages/admin/ComptablesPartenaires"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -93,8 +95,8 @@ export default function App() {
                   <Route path="dashboard" element={<ModernAdminDashboard />} />
                   <Route path="analytics" element={<AdminAnalytics />} />
                   <Route path="realtime" element={<AdminRealtime />} />
-                  <Route path="utilisateurs" element={<AdminUtilisateurs />} />
-                  <Route path="clients" element={<AdminClients />} />
+                  <Route path="utilisateurs" element={<CPBlockedRoute><AdminUtilisateurs /></CPBlockedRoute>} />
+                  <Route path="clients" element={<CPBlockedRoute><AdminClients /></CPBlockedRoute>} />
                   <Route path="providers" element={<AdminProviders />} />
                   <Route path="prestataires" element={<AdminProviders />} />
                   <Route path="applications" element={<AdminApplications />} />
@@ -120,8 +122,8 @@ export default function App() {
                   <Route path="zones" element={<AdminZones />} />
                   <Route path="marque" element={<AdminMarque />} />
                   <Route path="cooptation" element={<AdminCooptation />} />
-                  <Route path="settings" element={<AOBlockedRoute><AdminSettings /></AOBlockedRoute>} />
-                  <Route path="parametres" element={<AOBlockedRoute><AdminSettings /></AOBlockedRoute>} />
+                  <Route path="settings" element={<AOBlockedRoute alsoBlockCP><AdminSettings /></AOBlockedRoute>} />
+                  <Route path="parametres" element={<AOBlockedRoute alsoBlockCP><AdminSettings /></AOBlockedRoute>} />
                   <Route path="monitoring" element={<Monitoring />} />
                   <Route path="anomalies" element={<AdminAnomalies />} />
                   <Route path="tests-critiques" element={<TestsCritiques />} />
@@ -135,14 +137,15 @@ export default function App() {
                   <Route path="urgences" element={<AdminUrgences />} />
                   <Route path="reclamations" element={<AdminReclamations />} />
                   <Route path="acces" element={<AdminAccessTracking />} />
-                  <Route path="rgpd-deletions" element={<AOBlockedRoute><RgpdDeletions /></AOBlockedRoute>} />
+                  <Route path="rgpd-deletions" element={<AOBlockedRoute alsoBlockCP><RgpdDeletions /></AOBlockedRoute>} />
                   <Route path="pricing" element={<AdminPricing />} />
                   <Route path="tarifs" element={<AdminPricing />} />
                   <Route path="demandes" element={<AdminCustomRequests />} />
                   <Route path="provider-management" element={<AdminProviderManagement />} />
-                  <Route path="roles" element={<AOBlockedRoute><AdminRoles /></AOBlockedRoute>} />
-                  <Route path="super-admin" element={<AOBlockedRoute><AdminSuperAdmin /></AOBlockedRoute>} />
-                  <Route path="agents-operationnels" element={<AdminAgentsOperationnels />} />
+                  <Route path="roles" element={<AOBlockedRoute alsoBlockCP><AdminRoles /></AOBlockedRoute>} />
+                  <Route path="super-admin" element={<AOBlockedRoute alsoBlockCP><AdminSuperAdmin /></AOBlockedRoute>} />
+                  <Route path="agents-operationnels" element={<AOBlockedRoute alsoBlockCP><AdminAgentsOperationnels /></AOBlockedRoute>} />
+                  <Route path="comptables-partenaires" element={<AOBlockedRoute alsoBlockCP><AdminComptablesPartenaires /></AOBlockedRoute>} />
                 </Route>
 
                 {/* Default: redirect to dashboard (or login if unauthenticated — AdminRoute handles that) */}

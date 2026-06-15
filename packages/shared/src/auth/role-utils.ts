@@ -1,23 +1,25 @@
 import { UserRole } from './useAuth';
 
 export const ROLE_ROUTES: Record<UserRole, string[]> = {
-  super_admin: ['/modern-admin', '/admin', '/audit-qualite'],
-  admin: ['/modern-admin', '/admin', '/audit-qualite'],
-  agent_operationnel: ['/modern-admin'],
-  provider: ['/espace-prestataire', '/dashboard-prestataire', '/provider-onboarding'],
-  client: ['/espace-personnel', '/dashboard-client', '/payment', '/reservation', '/reservation-confirmee'],
-  moderator: ['/modern-admin'],
-  user: ['/espace-personnel'],
+  super_admin:         ['/modern-admin', '/admin', '/audit-qualite'],
+  admin:               ['/modern-admin', '/admin', '/audit-qualite'],
+  agent_operationnel:  ['/modern-admin'],
+  comptable_partenaire:['/modern-admin'],
+  provider:            ['/espace-prestataire', '/dashboard-prestataire', '/provider-onboarding'],
+  client:              ['/espace-personnel', '/dashboard-client', '/payment', '/reservation', '/reservation-confirmee'],
+  moderator:           ['/modern-admin'],
+  user:                ['/espace-personnel'],
 };
 
 export const DEFAULT_ROUTE_BY_ROLE: Record<UserRole, string> = {
-  super_admin: '/modern-admin',
-  admin: '/modern-admin',
-  agent_operationnel: '/modern-admin',
-  provider: '/espace-prestataire',
-  client: '/espace-personnel',
-  moderator: '/modern-admin',
-  user: '/espace-personnel',
+  super_admin:          '/modern-admin',
+  admin:                '/modern-admin',
+  agent_operationnel:   '/modern-admin',
+  comptable_partenaire: '/modern-admin',
+  provider:             '/espace-prestataire',
+  client:               '/espace-personnel',
+  moderator:            '/modern-admin',
+  user:                 '/espace-personnel',
 };
 
 export const canAccessRoute = (userRoles: UserRole[], targetRoute: string): boolean => {
