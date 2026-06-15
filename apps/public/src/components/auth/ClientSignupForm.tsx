@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Mail, Lock, User, Shield } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Shield, Gift } from 'lucide-react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -61,8 +61,15 @@ type ClientSignupFormData = z.infer<typeof clientSignupSchema>;
 export const ClientSignupForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [referralCode, setReferralCode] = useState('');
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // R-CLI-06: capture ?ref= depuis l'URL (ex: partagé via shareReferralCode)
+  useEffect(() => {
+    const ref = new URLSearchParams(window.location.search).get('ref');
+    if (ref) setReferralCode(ref.toUpperCase());
+  }, []);
 
   const form = useForm<ClientSignupFormData>({
     resolver: zodResolver(clientSignupSchema),
@@ -120,6 +127,19 @@ export const ClientSignupForm = () => {
       // Vérifier si l'utilisateur existe déjà (identities vide)
       if (authData.user && Array.isArray((authData.user as any).identities) && (authData.user as any).identities.length === 0) {
         throw new Error('Cet email est déjà utilisé. Veuillez vous connecter.');
+      }
+
+      // R-CLI-06: appliquer le code parrain si renseigné
+      if (authData.user && referralCode.trim()) {
+        try {
+          await supabase.rpc('create_referral_from_code', {
+            p_referral_code: referralCode.trim().toUpperCase(),
+            p_referred_email: normalizedEmail,
+            p_referred_type: 'client',
+          });
+        } catch (refError) {
+          console.warn('Code parrain non appliqué (non-bloquant):', refError);
+        }
       }
 
       // Envoyer l'email de confirmation personnalisé
@@ -265,6 +285,22 @@ export const ClientSignupForm = () => {
             </FormItem>
           )}
         />
+
+        {/* Code parrain (optionnel) */}
+        <div className="space-y-1">
+          <label className="text-sm font-medium">Code parrain (optionnel)</label>
+          <div className="relative">
+            <Gift className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+            <Input
+              placeholder="BIKA-XXXXX"
+              value={referralCode}
+              onChange={e => setReferralCode(e.target.value.toUpperCase())}
+              className="pl-10 font-mono"
+              disabled={isSubmitting}
+              maxLength={10}
+            />
+          </div>
+        </div>
 
         {/* Téléphone (optionnel) */}
         <FormField

@@ -206,3 +206,14 @@ Ne jamais importer `activeCorsHeaders` depuis `_shared/cors.ts` dans une nouvell
 - **R-PROV-05** : Toute communication passe par la messagerie interne. Naviguer vers `/espace-prestataire` avec query param `?tab=messages&booking={id}`. Route dédiée `/messages` prévue en v2.
 - **R-PROV-06** : L'itinéraire ouvre `https://maps.google.com/?q={booking.address}` dans un nouvel onglet. Affiché uniquement si `booking.address` est renseigné.
 - **R-PROV-07** : Les photos sont uploadées dans le bucket `provider-documents`, chemin `missions/{booking_id}/{timestamp}_{filename}`. Contraintes : max 10 MB, formats PDF/JPEG/PNG/WebP uniquement (enforced par migration `20260614000003`).
+
+## CLIENT SPACE RULES
+
+- **R-CLI-01** : Attestation fiscale disponible uniquement pour les bookings `status = 'completed'` ET `services.urssaf_eligible = true`. Document distinct de la facture — généré via EF `generate-attestation-pdf`. Ne jamais rediriger vers l'onglet attestations globales à la place.
+- **R-CLI-02** : Bouton "Mon avis" disponible uniquement pour les bookings `status = 'completed'`. Ouvre `DetailedRatingForm` en dialog directement sur ce booking. Ne jamais utiliser `navigate()` qui perd le contexte.
+- **R-CLI-03** : Bouton "Litige" disponible uniquement pour les bookings `status = 'completed'` ET dans les 30 jours suivant `completed_at`. Jamais pour les bookings annulés ni à venir. Vérifier via `canDispute()` dans `ClientPrestationsHistory`.
+- **R-CLI-04** : Signalement d'anomalie requiert un sélecteur de type obligatoire : `retard | absence | qualite | attitude | autre`. Le type est mappé vers `complaint_type` et `priority` dans la table `complaints`. Ne jamais hardcoder `'quality'` pour tous les signalements.
+- **R-CLI-05** : Le calcul du crédit d'impôt utilise `services.urssaf_eligible` depuis la DB (jamais une blacklist de noms hardcodée). Progress bar = `eligibleAmount / 12000`. Crédit estimé = `eligibleAmount × 0.5` avec affichage "X€ / 6 000€ max".
+- **R-CLI-06** : Format des codes parrainage : `BIKA-XXXXX` (5 chars alphanum). Généré par `generate_referral_code()`. Le formulaire d'inscription capture `?ref=` depuis l'URL et propose un champ code parrain. Appliquer via RPC `create_referral_from_code(p_referral_code, p_referred_email, 'client')`. Parrain client = 20€, prestataire = 30€.
+- **R-CLI-07** : Historique complet dans `ClientPrestationsHistory` : 4 onglets (À venir / En cours / Passées / Annulées), filtres période + tri, pagination 10/page.
+- **R-CLI-08** : Les factures sont immuables après création (R-18). Téléchargement via EF `generate-invoice-pdf` avec `invoiceId`. Disponibles dans `ClientPrestationsHistory` (tab Passées) ET dans l'onglet Factures de l'espace personnel.

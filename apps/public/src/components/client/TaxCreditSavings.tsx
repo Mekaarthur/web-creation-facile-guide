@@ -29,12 +29,11 @@ interface SavingsData {
   yearToDate: number;
 }
 
-const NON_ELIGIBLE_SERVICES = ['bika travel', 'bika pro', 'bika plus'];
-
 async function fetchSavingsData(userId: string, year: number): Promise<SavingsData> {
   const startOfYear = `${year}-01-01`;
   const endOfYear = `${year}-12-31`;
 
+  // R-CLI-05: urssaf_eligible depuis la DB, jamais une blacklist hardcodée
   const { data: bookings, error } = await supabase
     .from('bookings')
     .select(`
@@ -44,7 +43,8 @@ async function fetchSavingsData(userId: string, year: number): Promise<SavingsDa
       status,
       services (
         name,
-        category
+        category,
+        urssaf_eligible
       )
     `)
     .eq('client_id', userId)
@@ -63,12 +63,12 @@ async function fetchSavingsData(userId: string, year: number): Promise<SavingsDa
   (bookings || []).forEach((booking) => {
     const amount = booking.total_price || 0;
     const category = (booking.services as any)?.category || 'Autre';
-    const serviceName = (booking.services as any)?.name?.toLowerCase() || '';
     const month = format(new Date(booking.booking_date), 'MMMM', { locale: fr });
 
     totalSpent += amount;
 
-    const isEligible = !NON_ELIGIBLE_SERVICES.some(s => serviceName.includes(s));
+    // R-CLI-05: utiliser urssaf_eligible du service (défaut: true si null)
+    const isEligible = (booking.services as any)?.urssaf_eligible !== false;
 
     if (isEligible) {
       eligibleAmount += amount;
@@ -108,7 +108,8 @@ async function fetchSavingsData(userId: string, year: number): Promise<SavingsDa
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount);
 
-const annualCap = 12000;
+const SPEND_CAP = 12000;   // plafond dépenses éligibles (CGI art. 199 sexdecies)
+const CREDIT_CAP = 6000;   // crédit max = 50% × 12 000€
 
 export const TaxCreditSavings = () => {
   const { user } = useAuth();
@@ -120,8 +121,14 @@ export const TaxCreditSavings = () => {
     enabled: !!user,
   });
 
-  const progressPercentage = useMemo(
-    () => savingsData ? Math.min((savingsData.taxCreditAmount / annualCap) * 100, 100) : 0,
+  // R-CLI-05: progress sur les dépenses éligibles (plafond 12 000€), pas sur le crédit
+  const spendProgressPct = useMemo(
+    () => savingsData ? Math.min((savingsData.eligibleAmount / SPEND_CAP) * 100, 100) : 0,
+    [savingsData]
+  );
+
+  const creditProgressPct = useMemo(
+    () => savingsData ? Math.min((savingsData.taxCreditAmount / CREDIT_CAP) * 100, 100) : 0,
     [savingsData]
   );
 
@@ -196,9 +203,15 @@ export const TaxCreditSavings = () => {
                 <TrendingUp className="h-5 w-5 text-muted-foreground" />
                 <span className="text-sm font-medium text-muted-foreground">Plafond annuel</span>
               </div>
-              <Progress value={progressPercentage} className="h-3 mb-2" />
-              <p className="text-sm text-muted-foreground">
-                {formatCurrency(data.taxCreditAmount)} / {formatCurrency(annualCap)}
+              <p className="text-xs text-muted-foreground mb-1">Dépenses éligibles</p>
+              <Progress value={spendProgressPct} className="h-2 mb-1" />
+              <p className="text-xs text-muted-foreground mb-3">
+                {formatCurrency(data.eligibleAmount)} / {formatCurrency(SPEND_CAP)}
+              </p>
+              <p className="text-xs text-muted-foreground mb-1">Crédit estimé</p>
+              <Progress value={creditProgressPct} className="h-2 mb-1" />
+              <p className="text-xs text-muted-foreground">
+                {formatCurrency(data.taxCreditAmount)} / {formatCurrency(CREDIT_CAP)} max
               </p>
             </div>
           </div>

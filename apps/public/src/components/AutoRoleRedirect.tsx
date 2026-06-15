@@ -16,9 +16,13 @@ const AutoRoleRedirect = () => {
     if (!loading && user && primaryRole) {
       const redirectMap: Record<UserRole, string> = {
         admin: '/modern-admin',
+        super_admin: '/modern-admin',
+        agent_operationnel: '/modern-admin',
+        comptable_partenaire: '/modern-admin',
+        support_client: '/modern-admin',
+        moderator: '/modern-admin',
         provider: '/espace-prestataire',
         client: '/espace-personnel',
-        moderator: '/modern-admin',
         user: '/espace-personnel',
       };
 

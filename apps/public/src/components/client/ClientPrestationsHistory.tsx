@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import {
   Calendar, Clock, MapPin, Euro, FileText, Star, Award,
   AlertTriangle, ChevronLeft, ChevronRight, Search, Loader2, Heart,
@@ -21,6 +22,7 @@ import { BookingCancellation } from '@/components/BookingCancellation';
 import { AnomalyReportDialog } from './AnomalyReportDialog';
 import { DisputeDialog } from './DisputeDialog';
 import { RescheduleDialog } from './RescheduleDialog';
+import { DetailedRatingForm } from './DetailedRatingForm';
 
 type StatusGroup = 'upcoming' | 'in_progress' | 'past' | 'cancelled';
 type PeriodFilter = 'all' | '7d' | '30d' | '6m' | '1y';
@@ -95,6 +97,7 @@ export const ClientPrestationsHistory = () => {
   const [reportBooking, setReportBooking] = useState<Booking | null>(null);
   const [disputeBooking, setDisputeBooking] = useState<Booking | null>(null);
   const [rescheduleBooking, setRescheduleBooking] = useState<Booking | null>(null);
+  const [reviewBooking, setReviewBooking] = useState<Booking | null>(null);
   const [addingFavorite, setAddingFavorite] = useState<string | null>(null);
 
   const { data: bookings = [], isLoading } = useQuery<Booking[]>({
@@ -195,9 +198,50 @@ export const ClientPrestationsHistory = () => {
     }
   };
 
+  // R-CLI-01: attestation fiscale per-booking
+  const handleDownloadAttestation = async (bookingId: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Non authentifié');
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-attestation-pdf`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ bookingId }),
+        }
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Génération de l\'attestation échouée');
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `attestation-fiscale.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      toast({ title: 'Erreur', description: e.message || 'Téléchargement impossible', variant: 'destructive' });
+    }
+  };
+
   const canCancel = (b: Booking): boolean => {
     const bookingDt = new Date(`${b.booking_date}T${b.start_time}`);
     return differenceInHours(bookingDt, new Date()) > 0;
+  };
+
+  // R-CLI-03: litige uniquement sur completed dans les 30 jours
+  const canDispute = (b: Booking): boolean => {
+    if (b.status === 'cancelled') return false;
+    if (b.status !== 'completed') return false;
+    const completedAt = new Date(b.completed_at || b.booking_date);
+    const daysSince = (Date.now() - completedAt.getTime()) / (1000 * 60 * 60 * 24);
+    return daysSince <= 30;
   };
 
   if (isLoading) {
@@ -360,9 +404,6 @@ export const ClientPrestationsHistory = () => {
                             <Button size="sm" variant="outline" onClick={() => setRescheduleBooking(b)} className="gap-1.5">
                               <RotateCcw className="w-3.5 h-3.5" /> Reporter
                             </Button>
-                            <Button size="sm" variant="ghost" onClick={() => setDisputeBooking(b)} className="gap-1.5 text-amber-600 hover:text-amber-700">
-                              <Scale className="w-3.5 h-3.5" /> Ouvrir un litige
-                            </Button>
                           </div>
                         )}
 
@@ -374,12 +415,18 @@ export const ClientPrestationsHistory = () => {
                                 <FileText className="w-3.5 h-3.5" /> Facture
                               </Button>
                             )}
-                            <Button size="sm" variant="outline" onClick={() => navigate('/espace-personnel?tab=attestations')} className="gap-1.5">
-                              <Award className="w-3.5 h-3.5" /> Attestation
-                            </Button>
-                            <Button size="sm" variant="outline" onClick={() => navigate('/espace-personnel?tab=dashboard')} className="gap-1.5">
-                              <Star className="w-3.5 h-3.5" /> Mon avis
-                            </Button>
+                            {/* R-CLI-01: attestation uniquement sur completed + urssaf_eligible */}
+                            {b.status === 'completed' && (
+                              <Button size="sm" variant="outline" onClick={() => handleDownloadAttestation(b.id)} className="gap-1.5">
+                                <Award className="w-3.5 h-3.5" /> Attestation
+                              </Button>
+                            )}
+                            {/* R-CLI-02: avis uniquement sur completed */}
+                            {b.status === 'completed' && (
+                              <Button size="sm" variant="outline" onClick={() => setReviewBooking(b)} className="gap-1.5">
+                                <Star className="w-3.5 h-3.5" /> Mon avis
+                              </Button>
+                            )}
                             {b.status === 'completed' && b.provider_id && (
                               favoritedProviders.has(b.provider_id) ? (
                                 <Button size="sm" variant="outline" disabled className="gap-1.5 text-pink-600">
@@ -399,12 +446,18 @@ export const ClientPrestationsHistory = () => {
                                 </Button>
                               )
                             )}
-                            <Button size="sm" variant="ghost" onClick={() => setDisputeBooking(b)} className="gap-1.5 text-amber-600 hover:text-amber-700">
-                              <Scale className="w-3.5 h-3.5" /> Litige
-                            </Button>
-                            <Button size="sm" variant="ghost" onClick={() => setReportBooking(b)} className="gap-1.5 text-destructive hover:text-destructive">
-                              <AlertTriangle className="w-3.5 h-3.5" /> Anomalie
-                            </Button>
+                            {/* R-CLI-03: litige uniquement sur completed dans les 30 jours */}
+                            {canDispute(b) && (
+                              <Button size="sm" variant="ghost" onClick={() => setDisputeBooking(b)} className="gap-1.5 text-amber-600 hover:text-amber-700" title="Litige disponible 30 jours après la prestation">
+                                <Scale className="w-3.5 h-3.5" /> Litige
+                              </Button>
+                            )}
+                            {/* R-CLI-04: anomalie sur completed */}
+                            {b.status === 'completed' && (
+                              <Button size="sm" variant="ghost" onClick={() => setReportBooking(b)} className="gap-1.5 text-destructive hover:text-destructive">
+                                <AlertTriangle className="w-3.5 h-3.5" /> Anomalie
+                              </Button>
+                            )}
                           </div>
                         )}
                       </CardContent>
@@ -434,6 +487,21 @@ export const ClientPrestationsHistory = () => {
         </CardContent>
       </Card>
 
+      {/* R-CLI-02: dialog avis direct sur le booking */}
+      <Dialog open={!!reviewBooking} onOpenChange={(v) => { if (!v) setReviewBooking(null); }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          {reviewBooking && (
+            <DetailedRatingForm
+              bookingId={reviewBooking.id}
+              providerId={reviewBooking.provider_id}
+              providerName={reviewBooking.providers?.business_name || 'Prestataire'}
+              serviceName={reviewBooking.services?.name || 'Service'}
+              onSuccess={() => { setReviewBooking(null); qc.invalidateQueries({ queryKey: BOOKINGS_KEY }); }}
+              onCancel={() => setReviewBooking(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
       <AnomalyReportDialog booking={reportBooking} onClose={() => setReportBooking(null)} />
       <DisputeDialog booking={disputeBooking} onClose={() => setDisputeBooking(null)} />
       <RescheduleDialog booking={rescheduleBooking} onClose={() => setRescheduleBooking(null)} />

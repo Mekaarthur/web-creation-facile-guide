@@ -28,7 +28,7 @@ interface Mission {
   start_time: string;
   end_time: string;
   address: string;
-  provider_payment: number | null; // R-PROV-01: never total_price
+  provider_payment?: number | null; // R-PROV-01: never total_price (joined from financial_transactions when available)
   status: string;
   notes?: string;
   assigned_at?: string;
