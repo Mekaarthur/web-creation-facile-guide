@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, Clock, MapPin, ShoppingCart, ArrowRight, Shield, Plus } from "lucide-react";
+import { CalendarIcon, Clock, MapPin, ShoppingCart, ArrowRight, Shield, Plus, AlertCircle, CheckCircle, Info } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useBikawoCart } from "@/hooks/useBikawoCart";
@@ -18,12 +18,7 @@ import { cn } from "@/lib/utils";
 import { useSecureForm } from "@/hooks/useSecureForm";
 import { bookingSchema } from "@/lib/security-validation";
 import { z } from "zod";
-
-interface TimeSlot {
-  date: Date;
-  startTime: string;
-  endTime: string;
-}
+import { useProviderZoneCheck } from "@/hooks/useProviderZoneCheck";
 
 interface BikaServiceBookingProps {
   isOpen: boolean;
@@ -46,9 +41,12 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [address, setAddress] = useState("");
+  const [postalCode, setPostalCode] = useState("");
   const [notes, setNotes] = useState("");
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [showSuccessOptions, setShowSuccessOptions] = useState(false);
+
+  const zoneCheck = useProviderZoneCheck(postalCode);
   
   const { addToCart } = useBikawoCart();
   const { toast } = useToast();
@@ -83,10 +81,20 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
   };
 
   const handleAddToCart = () => {
-    if (!date || !startTime || !endTime || !address) {
+    if (!date || !startTime || !endTime || !address || !postalCode) {
       toast({
         title: "Formulaire incomplet",
-        description: "Veuillez remplir tous les champs requis",
+        description: "Veuillez remplir tous les champs requis, y compris le code postal",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // R-SEL-02 / R-SEL-04 : bloquer si aucun prestataire dans la zone
+    if (zoneCheck.data && !zoneCheck.data.available) {
+      toast({
+        title: "Zone non couverte",
+        description: "Aucun prestataire disponible dans votre secteur pour le moment.",
         variant: "destructive",
       });
       return;
@@ -125,7 +133,7 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
       date: date.toISOString(),
       startTime: startTime,
       address: address,
-      postalCode: "75000",
+      postalCode: postalCode || "00000",
       notes: notes || undefined
     });
   };
@@ -182,6 +190,7 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
     setStartTime("");
     setEndTime("");
     setAddress("");
+    setPostalCode("");
     setNotes("");
     setSelectedOption("");
     setShowSuccessOptions(false);
@@ -240,17 +249,30 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
             </div>
           ) : (
             <>
-              {/* Service Info */}
-              <div className="p-4 bg-muted/50 rounded-lg">
+              {/* Service Info — R-SEL-01: mention crédit d'impôt */}
+              <div className="p-4 bg-muted/50 rounded-lg space-y-2">
                 <div className="flex items-center justify-between">
                   <div>
                     <h4 className="font-semibold">{service.name}</h4>
                     <p className="text-sm text-muted-foreground">{service.description}</p>
                   </div>
-                  <Badge variant="outline" className="text-primary border-primary">
-                    {service.price}€/h
-                  </Badge>
+                  <div className="text-right">
+                    <Badge variant="outline" className="text-primary border-primary">
+                      {service.price}€/h
+                    </Badge>
+                    {service.urssaf_eligible && (
+                      <p className="text-xs text-green-600 mt-1 font-medium">
+                        → {(service.price * 0.5).toFixed(2)}€/h réel*
+                      </p>
+                    )}
+                  </div>
                 </div>
+                {service.urssaf_eligible && (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Info className="w-3 h-3 text-green-600 shrink-0" />
+                    *Prix après crédit d'impôt de 50% (art. 199 sexdecies CGI)
+                  </p>
+                )}
               </div>
 
               {/* Sélection de la prestation (si options disponibles) */}
@@ -349,27 +371,80 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
                   </div>
                 </div>
 
-                {/* Aperçu durée et prix */}
+                {/* Aperçu durée et prix — R-SEL-03 décomposition tarifaire */}
                 {date && startTime && endTime && calculateDuration() > 0 && (
-                  <div className="p-3 bg-primary/5 rounded-lg flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-primary" />
-                      <span className="text-sm font-medium">
-                        Durée : {calculateDuration()}h
+                  <div className="p-3 bg-primary/5 rounded-lg space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium">
+                          Durée : {calculateDuration()}h
+                        </span>
+                      </div>
+                      <span className="text-lg font-bold text-primary">
+                        {getTotalPrice()}€
                       </span>
                     </div>
-                    <span className="text-lg font-bold text-primary">
-                      {getTotalPrice()}€
-                    </span>
+                    {service.urssaf_eligible && (
+                      <div className="border-t border-primary/10 pt-2 text-xs space-y-1 text-muted-foreground">
+                        <div className="flex justify-between">
+                          <span>Prix total</span>
+                          <span className="font-medium text-foreground">{getTotalPrice().toFixed(2)}€</span>
+                        </div>
+                        <div className="flex justify-between text-green-700">
+                          <span className="flex items-center gap-1">
+                            <Info className="w-3 h-3" />
+                            Crédit d'impôt (50%)
+                          </span>
+                          <span className="font-medium">−{(getTotalPrice() * 0.5).toFixed(2)}€</span>
+                        </div>
+                        <div className="flex justify-between font-semibold text-green-800 text-sm">
+                          <span>Votre coût réel</span>
+                          <span>{(getTotalPrice() * 0.5).toFixed(2)}€</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
+              </div>
+
+              {/* Code postal + zone check */}
+              <div className="space-y-2">
+                <Label htmlFor="postalCode" className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  Code postal d'intervention *
+                </Label>
+                <div className="flex gap-2 items-center">
+                  <Input
+                    id="postalCode"
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value.replace(/\D/g, '').slice(0, 5))}
+                    placeholder="Ex: 75001"
+                    maxLength={5}
+                    className="w-36"
+                  />
+                  {zoneCheck.isLoading && (
+                    <span className="text-xs text-muted-foreground">Vérification...</span>
+                  )}
+                  {zoneCheck.data?.available && (
+                    <span className="flex items-center gap-1 text-xs text-green-600 font-medium">
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      {zoneCheck.data.count} prestataire{zoneCheck.data.count > 1 ? 's' : ''} disponible{zoneCheck.data.count > 1 ? 's' : ''}
+                    </span>
+                  )}
+                  {zoneCheck.data && !zoneCheck.data.available && (
+                    <span className="flex items-center gap-1 text-xs text-amber-600 font-medium">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      Service disponible prochainement dans votre secteur
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Address */}
               <div className="space-y-2">
                 <Label htmlFor="address" className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  Adresse d'intervention *
+                  Adresse complète *
                 </Label>
                 <Input
                   id="address"
@@ -405,22 +480,34 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
         </div>
 
         {!showSuccessOptions && (
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={onClose} className="flex-1">
-              Annuler
-            </Button>
-            <Button 
-              onClick={handleAddToCart} 
-              className="flex-1 bg-gradient-primary" 
-              disabled={!date || !startTime || !endTime || !address || isSubmitting}
-            >
-              {isSubmitting ? "Ajout en cours..." : (
-                <>
-                  <ShoppingCart className="w-4 h-4 mr-2" />
-                  Ajouter au panier
-                </>
-              )}
-            </Button>
+          <div className="space-y-3">
+            {/* R-SEL-04: message zone non couverte */}
+            {zoneCheck.data && !zoneCheck.data.available && (
+              <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+                <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-medium">Service disponible prochainement dans votre secteur</p>
+                  <p className="text-xs mt-0.5">Nous étendons notre réseau de prestataires. Revenez prochainement ou contactez-nous au 06 09 08 53 90.</p>
+                </div>
+              </div>
+            )}
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={onClose} className="flex-1">
+                Annuler
+              </Button>
+              <Button
+                onClick={handleAddToCart}
+                className="flex-1 bg-gradient-primary"
+                disabled={!date || !startTime || !endTime || !address || !postalCode || isSubmitting}
+              >
+                {isSubmitting ? "Ajout en cours..." : (
+                  <>
+                    <ShoppingCart className="w-4 h-4 mr-2" />
+                    Ajouter au panier
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         )}
       </DialogContent>

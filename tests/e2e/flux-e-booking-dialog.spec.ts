@@ -41,6 +41,9 @@ async function fillBookingForm(page: Page) {
   await comboboxes.nth(1).click();
   await page.getByRole('option', { name: '13:00' }).click();
 
+  // Code postal — requis par R-SEL-02
+  await dialog.locator('#postalCode').fill('75001');
+
   // Adresse d'intervention
   await dialog.locator('#address').fill('15 rue de la Paix, 75001 Paris');
 }

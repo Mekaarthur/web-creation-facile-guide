@@ -35,7 +35,8 @@ const Payment = () => {
     name: '',
     price: 0,
     description: '',
-    duration: ''
+    duration: '',
+    urssafEligible: false,
   });
 
   useEffect(() => {
@@ -45,12 +46,14 @@ const Payment = () => {
     const description = searchParams.get('description') || serviceName;
     const type = searchParams.get('type') as 'one-time' | 'subscription' || 'one-time';
     const duration = searchParams.get('duration') || '1h';
+    const urssafEligible = searchParams.get('urssaf_eligible') === 'true';
 
     setServiceData({
       name: serviceName,
       price,
       description,
-      duration
+      duration,
+      urssafEligible,
     });
     setPaymentType(type);
 
@@ -141,7 +144,7 @@ const Payment = () => {
                   </div>
                 </div>
                 
-                <div className="border-t pt-4">
+                <div className="border-t pt-4 space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="font-semibold">Total:</span>
                     <span className="text-2xl font-bold text-primary">
@@ -149,6 +152,23 @@ const Payment = () => {
                       {paymentType === 'subscription' && <span className="text-sm">/mois</span>}
                     </span>
                   </div>
+                  {/* R-SEL-03: décomposition tarifaire */}
+                  {serviceData.urssafEligible && paymentType === 'one-time' && (
+                    <div className="text-xs space-y-1 text-muted-foreground bg-green-50 rounded p-2 border border-green-100">
+                      <div className="flex justify-between">
+                        <span>Prix total</span>
+                        <span>{serviceData.price.toFixed(2)}€</span>
+                      </div>
+                      <div className="flex justify-between text-green-700">
+                        <span>Crédit d'impôt (50%)</span>
+                        <span>−{(serviceData.price * 0.5).toFixed(2)}€</span>
+                      </div>
+                      <div className="flex justify-between font-semibold text-green-800">
+                        <span>Votre coût réel</span>
+                        <span>{(serviceData.price * 0.5).toFixed(2)}€</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </AnimatedCard>
