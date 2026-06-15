@@ -1,10 +1,13 @@
 import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, Shield } from 'lucide-react';
+import { Loader2, Shield, Clock } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+
+const AO_HOUR_START = 7;
+const AO_HOUR_END = 22;
 
 interface AdminRouteProps {
   children: ReactNode;
@@ -34,8 +37,7 @@ const AdminRoute = ({ children, redirectTo = '/admin/login' }: AdminRouteProps) 
     return <Navigate to={redirectTo} replace />;
   }
 
-  // Vérifier si l'utilisateur est admin ou moderator
-  const isAuthorized = hasRole('admin') || hasRole('moderator');
+  const isAuthorized = hasRole('admin') || hasRole('moderator') || hasRole('agent_operationnel');
 
   if (!isAuthorized) {
     return (
@@ -86,6 +88,32 @@ const AdminRoute = ({ children, redirectTo = '/admin/login' }: AdminRouteProps) 
         </Card>
       </div>
     );
+  }
+
+  // R-AO-07: heures ouvrées uniquement pour les AO (7h-22h)
+  const isAOOnly = hasRole('agent_operationnel') && !hasRole('admin');
+  if (isAOOnly) {
+    const hour = new Date().getHours();
+    if (hour < AO_HOUR_START || hour >= AO_HOUR_END) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+          <Card className="w-full max-w-md border-orange-300">
+            <CardHeader>
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-orange-100 mx-auto mb-4">
+                <Clock className="h-8 w-8 text-orange-500" />
+              </div>
+              <CardTitle className="text-center text-orange-700">Accès hors horaires</CardTitle>
+              <CardDescription className="text-center">
+                L'accès Agent Opérationnel est limité aux heures ouvrées : <strong>{AO_HOUR_START}h – {AO_HOUR_END}h</strong>.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center text-sm text-muted-foreground">
+              <p>Revenez entre {AO_HOUR_START}h00 et {AO_HOUR_END}h00 (R-AO-07).</p>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
   }
 
   return <>{children}</>;

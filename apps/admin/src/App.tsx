@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import { AOBlockedRoute } from "@/components/AOBlockedRoute";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -54,6 +55,7 @@ const AdminCustomRequests = lazy(() => import("@/pages/admin/Paniers"));
 const AdminProviderManagement = lazy(() => import("@/pages/admin/ProviderManagement"));
 const AdminRoles = lazy(() => import("@/pages/admin/AdminRoles"));
 const AdminSuperAdmin = lazy(() => import("@/pages/admin/SuperAdmin"));
+const AdminAgentsOperationnels = lazy(() => import("@/pages/admin/AgentsOperationnels"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -118,8 +120,8 @@ export default function App() {
                   <Route path="zones" element={<AdminZones />} />
                   <Route path="marque" element={<AdminMarque />} />
                   <Route path="cooptation" element={<AdminCooptation />} />
-                  <Route path="settings" element={<AdminSettings />} />
-                  <Route path="parametres" element={<AdminSettings />} />
+                  <Route path="settings" element={<AOBlockedRoute><AdminSettings /></AOBlockedRoute>} />
+                  <Route path="parametres" element={<AOBlockedRoute><AdminSettings /></AOBlockedRoute>} />
                   <Route path="monitoring" element={<Monitoring />} />
                   <Route path="anomalies" element={<AdminAnomalies />} />
                   <Route path="tests-critiques" element={<TestsCritiques />} />
@@ -127,19 +129,20 @@ export default function App() {
                   <Route path="audit" element={<AuditReport />} />
                   <Route path="security" element={<AdminSecurity />} />
                   <Route path="securite" element={<AdminSecurity />} />
-                  <Route path="finance" element={<AdminFinance />} />
+                  <Route path="finance" element={<AOBlockedRoute><AdminFinance /></AOBlockedRoute>} />
                   <Route path="avance-immediate" element={<AdminAvanceImmediate />} />
                   <Route path="urssaf-declarations" element={<AdminAvanceImmediate />} />
                   <Route path="urgences" element={<AdminUrgences />} />
                   <Route path="reclamations" element={<AdminReclamations />} />
                   <Route path="acces" element={<AdminAccessTracking />} />
-                  <Route path="rgpd-deletions" element={<RgpdDeletions />} />
+                  <Route path="rgpd-deletions" element={<AOBlockedRoute><RgpdDeletions /></AOBlockedRoute>} />
                   <Route path="pricing" element={<AdminPricing />} />
                   <Route path="tarifs" element={<AdminPricing />} />
                   <Route path="demandes" element={<AdminCustomRequests />} />
                   <Route path="provider-management" element={<AdminProviderManagement />} />
-                  <Route path="roles" element={<AdminRoles />} />
-                  <Route path="super-admin" element={<AdminSuperAdmin />} />
+                  <Route path="roles" element={<AOBlockedRoute><AdminRoles /></AOBlockedRoute>} />
+                  <Route path="super-admin" element={<AOBlockedRoute><AdminSuperAdmin /></AOBlockedRoute>} />
+                  <Route path="agents-operationnels" element={<AdminAgentsOperationnels />} />
                 </Route>
 
                 {/* Default: redirect to dashboard (or login if unauthenticated — AdminRoute handles that) */}

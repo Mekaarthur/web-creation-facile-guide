@@ -1,6 +1,8 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Badge } from "@/components/ui/badge";
 import { useAdminCounts } from "@/hooks/useAdminCounts";
+import { useAuth } from "@/hooks/useAuth";
+import { useInactivityTimeout } from "@/hooks/admin/useInactivityTimeout";
 import {
   SidebarProvider,
   Sidebar,
@@ -65,11 +67,11 @@ const navigationGroups = [
   {
     label: "Sécurité & Finance",
     items: [
-      { title: "Sécurité",         href: "/modern-admin/security",         icon: Lock },
-      { title: "Finance",          href: "/modern-admin/finance",           icon: Euro },
-      { title: "Urgences",         href: "/modern-admin/urgences",          icon: AlertTriangle },
-      { title: "Réclamations",     href: "/modern-admin/reclamations",      icon: MessageSquareWarning },
-      { title: "RGPD / Suppressions", href: "/modern-admin/rgpd-deletions", icon: ShieldCheck },
+      { title: "Sécurité",            href: "/modern-admin/security",         icon: Lock },
+      { title: "Finance",             href: "/modern-admin/finance",           icon: Euro,             aoBlocked: true },
+      { title: "Urgences",            href: "/modern-admin/urgences",          icon: AlertTriangle },
+      { title: "Réclamations",        href: "/modern-admin/reclamations",      icon: MessageSquareWarning },
+      { title: "RGPD / Suppressions", href: "/modern-admin/rgpd-deletions",    icon: ShieldCheck,      aoBlocked: true },
     ]
   },
   {
@@ -123,7 +125,7 @@ const navigationGroups = [
       { title: "Tarifs",       href: "/modern-admin/tarifs",         icon: Tag },
       { title: "Zones",        href: "/modern-admin/zones",          icon: MapPin },
       { title: "Marque",       href: "/modern-admin/marque",         icon: Palette },
-      { title: "Paramètres",   href: "/modern-admin/settings",       icon: Settings },
+      { title: "Paramètres",   href: "/modern-admin/settings",       icon: Settings,   aoBlocked: true },
       { title: "Rapports",     href: "/modern-admin/reports-data",   icon: TrendingUp },
     ]
   },
@@ -134,7 +136,13 @@ const navigationGroups = [
       { title: "Monitoring",       href: "/modern-admin/monitoring",        icon: Activity },
       { title: "Tests Critiques",  href: "/modern-admin/tests-critiques",  icon: FlaskConical },
       { title: "Tests Emails",     href: "/modern-admin/tests-emails",     icon: Mail },
-      { title: "Accès Admin",      href: "/modern-admin/acces",            icon: Clock },
+      { title: "Accès Admin",      href: "/modern-admin/acces",            icon: Clock,          aoBlocked: true },
+    ]
+  },
+  {
+    label: "Gouvernance",
+    items: [
+      { title: "Agents Opérationnels", href: "/modern-admin/agents-operationnels", icon: UserCog, aoBlocked: true },
     ]
   }
 ];
@@ -146,6 +154,8 @@ function AdminSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const { data: counts } = useAdminCounts();
+  const { hasRole } = useAuth();
+  const isAOOnly = hasRole('agent_operationnel') && !hasRole('admin');
 
   const isActive = (href: string) => {
     if (href === '/modern-admin') {
@@ -185,7 +195,12 @@ function AdminSidebar() {
         </Link>
 
         {/* Navigation */}
-        {navigationGroups.map((group, groupIndex) => (
+        {navigationGroups.map((group, groupIndex) => {
+          const visibleItems = isAOOnly
+            ? group.items.filter(item => !(item as any).aoBlocked)
+            : group.items;
+          if (visibleItems.length === 0) return null;
+          return (
           <SidebarGroup key={groupIndex}>
             {!collapsed && (
               <SidebarGroupLabel className="text-xs font-semibold text-foreground uppercase tracking-wide mb-1">
@@ -194,7 +209,7 @@ function AdminSidebar() {
             )}
             <SidebarGroupContent>
               <SidebarMenu className="space-y-0.5">
-                {group.items.map((item) => {
+                {visibleItems.map((item) => {
                   const active = isActive(item.href);
                   const countKey = (item as any).countKey as CountKey | null;
                   const badgeCount = countKey && counts ? counts[countKey] : 0;
@@ -231,13 +246,17 @@ function AdminSidebar() {
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
-        ))}
+          ); })}
       </SidebarContent>
     </Sidebar>
   );
 }
 
 export default function ModernAdminLayout() {
+  const { hasRole } = useAuth();
+  const isAOOnly = hasRole('agent_operationnel') && !hasRole('admin');
+  useInactivityTimeout(isAOOnly); // R-AO-06: timeout 8h pour les AO uniquement
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">

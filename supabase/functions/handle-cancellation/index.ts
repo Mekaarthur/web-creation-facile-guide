@@ -40,6 +40,28 @@ serve(async (req) => {
     let refundAmount = parsed.refundAmount;
     let refundPercentage = parsed.refundPercentage;
 
+    // R-AO-01: si l'appelant est Agent Opérationnel, le motif est obligatoire (≥10 chars)
+    const authHeader = req.headers.get('Authorization');
+    if (authHeader && cancelledBy === 'admin') {
+      const { data: { user: caller } } = await supabase.auth.getUser(
+        authHeader.replace('Bearer ', '')
+      );
+      if (caller) {
+        const { data: isAO } = await supabase.rpc('has_role', {
+          _user_id: caller.id, _role: 'agent_operationnel'
+        });
+        const { data: isAdmin } = await supabase.rpc('has_role', {
+          _user_id: caller.id, _role: 'admin'
+        });
+        if (isAO && !isAdmin && (!reason || reason.trim().length < 10)) {
+          return new Response(
+            JSON.stringify({ error: 'R-AO-01 : un motif documenté (min 10 caractères) est obligatoire pour annuler une réservation.' }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
+          );
+        }
+      }
+    }
+
     console.log('Processing cancellation:', { bookingId, cancelledBy, refundAmount, refundReason });
 
     // 1. Récupérer la réservation et le paiement
