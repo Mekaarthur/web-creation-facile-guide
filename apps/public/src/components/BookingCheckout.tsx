@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CreditCard, ArrowLeft, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { CreditCard, ArrowLeft, Loader2, UserPlus, UserCheck, Star } from "lucide-react";
 import { useBikawoCart } from "@/hooks/useBikawoCart";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,12 +20,16 @@ interface BookingCheckoutProps {
 const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
   const { cartItems, getCartTotal, hasIncompatibleServices, getSeparatedBookingsCount } = useBikawoCart();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [showUrssafDialog, setShowUrssafDialog] = useState(false);
   const [urssafEnabled, setUrssafEnabled] = useState(false);
   const [clientInfo, setClientInfo] = useState<ClientInfo>({ firstName: '', lastName: '', email: '', phone: '', address: '' });
+
+  // R-SEL-10: choix auth pour utilisateurs non-connectés ('pending' → choix affiché, 'guest' → continue sans compte)
+  const [authChoice, setAuthChoice] = useState<'pending' | 'guest' | null>(null);
 
   useEffect(() => {
     setIsVisible(true);
@@ -35,6 +41,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
+          // R-SEL-11: pré-remplissage depuis profil si connecté
           const profile = await profileService.getProfile(user.id);
           setClientInfo({
             email: user.email || '',
@@ -43,9 +50,13 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
             phone: profile?.phone || user.user_metadata?.phone || '',
             address: profile?.address || user.user_metadata?.address || '',
           });
+          setAuthChoice(null); // connecté → pas de choix à afficher
+        } else {
+          setAuthChoice('pending'); // non-connecté → afficher le choix R-SEL-10
         }
       } catch (error) {
         console.error('[CHECKOUT] Error loading profile:', error);
+        setAuthChoice('pending');
       }
     })();
   }, []);
@@ -176,6 +187,46 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
         </Card>
       </div>
 
+      {/* R-SEL-10: choix compte vs guest pour utilisateurs non-connectés */}
+      {authChoice === 'pending' && (
+        <Card className="border-primary/30 bg-primary/5 animate-fade-in">
+          <CardContent className="p-4 sm:p-6">
+            <h2 className="text-base sm:text-lg font-semibold mb-1">Comment souhaitez-vous continuer ?</h2>
+            <p className="text-sm text-muted-foreground mb-4">Choisissez votre mode de paiement pour finaliser votre réservation.</p>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <button
+                onClick={() => navigate('/auth?redirect=/panier')}
+                className="flex flex-col gap-2 p-4 rounded-lg border-2 border-primary bg-background hover:bg-primary/5 text-left transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <UserPlus className="w-5 h-5 text-primary" />
+                  <span className="font-semibold text-primary">Créer un compte</span>
+                  <Badge className="ml-auto text-xs">Recommandé</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">Suivez vos réservations, accédez à vos factures et attestations fiscales.</p>
+                <div className="flex items-center gap-1 text-xs text-green-600 font-medium">
+                  <Star className="w-3 h-3" />
+                  Parrainage, historique, espace personnel
+                </div>
+              </button>
+              <button
+                onClick={() => setAuthChoice('guest')}
+                className="flex flex-col gap-2 p-4 rounded-lg border-2 border-border hover:border-primary/50 hover:bg-muted/50 text-left transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <UserCheck className="w-5 h-5 text-muted-foreground" />
+                  <span className="font-semibold">Continuer sans compte</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Payez rapidement. Vous recevrez un email pour créer votre mot de passe après la réservation.</p>
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Formulaire visible après choix OU si déjà connecté */}
+      {(authChoice === 'guest' || authChoice === null) && (
+      <>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         <div className="lg:col-span-2 space-y-4 sm:space-y-6 animate-fade-in" style={{ animationDelay: '100ms' }}>
           <CheckoutClientInfoCard clientInfo={clientInfo} onChange={setClientInfo} isProcessing={isProcessing} />
@@ -225,6 +276,8 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
           <p className="text-xs text-muted-foreground text-center">🔒 Paiement sécurisé via Stripe</p>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 };

@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { profileService } from "@/services/profileService";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,6 +49,19 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
   const [showSuccessOptions, setShowSuccessOptions] = useState(false);
 
   const zoneCheck = useProviderZoneCheck(postalCode);
+
+  // R-SEL-11: pré-remplissage adresse depuis profil si connecté
+  useEffect(() => {
+    if (!isOpen) return;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const profile = await profileService.getProfile(user.id);
+      if (profile?.address && !address) {
+        setAddress(profile.address);
+      }
+    })();
+  }, [isOpen]);
 
   // R-SEL-06: J+1 minimum, J+90 maximum
   const minBookingDate = addDays(startOfDay(new Date()), 1);

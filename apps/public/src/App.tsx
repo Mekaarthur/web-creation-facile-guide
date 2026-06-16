@@ -163,7 +163,7 @@ const App = () => (
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/reservation" element={<Reservation />} />
                 <Route path="/reservation-confirmee" element={<ReservationConfirmee />} />
-                <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
+                <Route path="/payment" element={<Payment />} />
                 <Route path="/payment-success" element={<PaymentSuccess />} />
                 <Route path="/payment-canceled" element={<PaymentCanceled />} />
                 <Route path="/demande-personnalisee" element={<CustomRequest />} />
