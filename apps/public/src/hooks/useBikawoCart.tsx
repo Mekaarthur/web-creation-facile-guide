@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { addDays, startOfDay } from "date-fns";
 
 export interface BikawoCartItem {
   id: string;
@@ -20,6 +19,7 @@ export interface BikawoCartItem {
   notes?: string;
   financialCategory: string;
   urssaf_eligible: boolean;
+  slug?: string;
 }
 
 export interface CartCompatibilityRule {
@@ -248,18 +248,8 @@ export const useBikawoCart = () => {
       return;
     }
 
-    // R-SEL-06: date minimum J+1 (pas de réservation le jour même)
-    const itemDate = new Date(item.timeSlot.date);
-    const minDate = addDays(startOfDay(new Date()), 1);
-
-    if (itemDate < minDate) {
-      toast({
-        title: "❌ Date invalide",
-        description: "La réservation doit être effectuée au minimum pour le lendemain (J+1)",
-        variant: "destructive",
-      });
-      return;
-    }
+    // R-SEL-06 final: délai minimum (5h ouvrées) déjà validé en amont via getBookingValidation()
+    // avant l'appel à addToCart — pas de re-validation de date ici.
 
     // Validation : durée > 0
     const quantity = 'quantity' in item ? item.quantity : 1;

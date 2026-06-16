@@ -9,6 +9,7 @@ import {
   type ServiceType,
 } from "../_shared/pricing.ts";
 import { corsHeaders } from "../_shared/cors.ts";
+import { calculateWorkingHours, MIN_DELAY_HOURS, URGENT_THRESHOLD_HOURS, NIGHT_SERVICE_SLUGS } from "../_shared/workingHours.ts";
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
@@ -48,6 +49,33 @@ serve(async (req) => {
     // Reject more than 2 decimal places to avoid rounding issues
     if (Math.round(amount * 100) !== amount * 100) {
       throw new Error("Amount must have at most 2 decimal places");
+    }
+
+    // R-SEL-06 final: validation serveur du délai minimum (couche de sécurité, miroir du frontend)
+    let isUrgent = false;
+    if (metadata?.services) {
+      let parsedServices: any[];
+      try {
+        parsedServices = JSON.parse(metadata.services);
+      } catch {
+        throw new Error("Format de service invalide");
+      }
+      const now = new Date();
+      for (const s of parsedServices) {
+        if (!s.d || !s.t) continue;
+        const serviceDateTime = new Date(`${s.d}T${s.t}`);
+        const isNightService = s.sl && NIGHT_SERVICE_SLUGS.includes(s.sl);
+        const workingHours = calculateWorkingHours(now, serviceDateTime);
+        if (!isNightService && workingHours < MIN_DELAY_HOURS) {
+          return new Response(
+            JSON.stringify({ error: "Ce créneau n'est plus disponible." }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+          );
+        }
+        if (isNightService || workingHours < URGENT_THRESHOLD_HOURS) {
+          isUrgent = true;
+        }
+      }
     }
 
     // Charger les prix dynamiques depuis financial_rules (fallback sur PRICING)
@@ -155,6 +183,7 @@ serve(async (req) => {
       amount:       String(amount),
       ...splitData,
       ...(metadata || {}),
+      is_urgent: isUrgent ? "1" : "0",
     };
 
     const baseParams: any = {

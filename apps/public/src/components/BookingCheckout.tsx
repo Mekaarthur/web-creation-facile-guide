@@ -4,13 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CreditCard, ArrowLeft, Loader2, UserPlus, UserCheck, Star, ShieldCheck } from "lucide-react";
-import { addDays, startOfDay } from "date-fns";
 import { useBikawoCart } from "@/hooks/useBikawoCart";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { profileService } from "@/services/profileService";
 import { bookingService } from "@/services/bookingService";
 import { recurringBookingService } from "@/services/recurringBookingService";
+import { getBookingValidation, NIGHT_SERVICE_SLUGS } from "@/utils/workingHours";
 import { cn } from "@/lib/utils";
 import { CheckoutClientInfoCard, type ClientInfo } from "@/components/checkout/CheckoutClientInfoCard";
 import { UrssafSection } from "@/components/checkout/UrssafSection";
@@ -128,25 +128,17 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       return "Le montant de la réservation doit être supérieur à 0€.";
     }
 
-    const minDate = addDays(startOfDay(new Date()), 1);
+    // R-SEL-06 final: délai minimum de 5h ouvrées (8h-20h, 7j/7) — exempté pour les services nuit/urgence
     for (const item of cartItems) {
-      if (new Date(item.timeSlot.date) < minDate) {
-        return `La date de réservation pour "${item.serviceName}" doit être au minimum demain (J+1).`;
+      const isNightService = !!item.slug && NIGHT_SERVICE_SLUGS.includes(item.slug);
+      if (!isNightService) {
+        const validation = getBookingValidation(new Date(item.timeSlot.date), item.timeSlot.startTime);
+        if (!validation.isValid) {
+          return validation.errorMessage || `Ce créneau n'est plus disponible pour "${item.serviceName}".`;
+        }
       }
       if (!item.address?.trim()) {
         return `Adresse manquante pour "${item.serviceName}".`;
-      }
-    }
-
-    for (const item of cartItems) {
-      if (!item.postalCode) continue;
-      try {
-        const available = await bookingService.hasAvailableProviderInZone(item.postalCode);
-        if (!available) {
-          return `Aucun prestataire disponible dans votre secteur (${item.postalCode}) pour "${item.serviceName}". Contactez-nous au 06 09 08 53 90.`;
-        }
-      } catch {
-        // vérification technique non bloquante
       }
     }
 
@@ -188,8 +180,16 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
         price: item.price, quantity: item.quantity,
         financialCategory: item.financialCategory,
         urssaf_eligible: item.urssaf_eligible,
+        slug: item.slug,
         customBooking: { date: new Date(item.timeSlot.date).toISOString().split('T')[0], startTime: item.timeSlot.startTime, endTime: item.timeSlot.endTime, hours: item.quantity, notes: item.notes },
       }));
+
+      // R-SEL-06 final: créneau < 10h ouvrées (ou service nuit/urgence) → alerte admin priorité
+      const isUrgent = cartItems.some(item => {
+        const isNightService = !!item.slug && NIGHT_SERVICE_SLUGS.includes(item.slug);
+        if (isNightService) return true;
+        return getBookingValidation(new Date(item.timeSlot.date), item.timeSlot.startTime).isUrgent;
+      });
 
       const totalAmount = getCartTotal();
       // R-SEL-15: la réduction de 50% ne s'applique qu'aux services éligibles URSSAF
@@ -207,7 +207,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
           serviceName: cap(services.map(s => s.serviceName).join(', ')),
           guestEmail: clientInfo.email,
           metadata: {
-            services: cap(JSON.stringify(services.map(s => ({ n: s.serviceName, c: s.category, p: s.price, q: s.quantity, d: s.customBooking?.date, t: s.customBooking?.startTime, fc: s.financialCategory, ue: s.urssaf_eligible ? 1 : 0 })))),
+            services: cap(JSON.stringify(services.map(s => ({ n: s.serviceName, c: s.category, p: s.price, q: s.quantity, d: s.customBooking?.date, t: s.customBooking?.startTime, fc: s.financialCategory, ue: s.urssaf_eligible ? 1 : 0, sl: s.slug })))),
             client_name: cap(`${clientInfo.firstName} ${clientInfo.lastName}`),
             client_email: cap(clientInfo.email), client_phone: cap(clientInfo.phone || ''),
             address: cap(clientInfo.address || ''),
@@ -216,6 +216,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
             notes: cap(cartItems.map(item => item.notes).filter(Boolean).join('; ')),
             urssafEnabled: urssafEnabled.toString(), totalAmount: totalAmount.toString(),
             clientAmount: clientAmount.toString(), stateAmount: stateAmount.toString(),
+            is_urgent: isUrgent ? '1' : '0',
           },
         },
       });

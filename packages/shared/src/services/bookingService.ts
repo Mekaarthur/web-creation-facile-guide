@@ -159,17 +159,6 @@ export const bookingService = {
     return (data ?? []).length > 0;
   },
 
-  /** R-SEL-12: vérifie qu'au moins un prestataire vérifié couvre ce code postal */
-  async hasAvailableProviderInZone(postalCode: string): Promise<boolean> {
-    const { count, error } = await supabase
-      .from("providers")
-      .select("id", { count: "exact", head: true })
-      .eq("is_verified", true)
-      .contains("postal_codes", [postalCode]);
-    if (error) throw new ServiceError("Erreur lors de la vérification de la zone de couverture", error.code, error);
-    return (count ?? 0) > 0;
-  },
-
   async createCustomRequest(payload: {
     id: string;
     client_name: string;

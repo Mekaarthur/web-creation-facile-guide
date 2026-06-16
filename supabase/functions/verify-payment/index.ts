@@ -574,6 +574,21 @@ serve(async (req) => {
       }
     }
 
+    // R-SEL-06 final: alerte admin pour attribution prioritaire (créneau < 10h ouvrées ou service nuit/urgence)
+    if (metadata.is_urgent === '1' && bookingIds.length > 0) {
+      const firstService = services[0];
+      const firstCustom = firstService?.customBooking || {};
+      await supabaseAdmin.functions.invoke('create-admin-notification', {
+        body: {
+          type: 'urgent_booking',
+          title: '🚨 Réservation urgente — Attribution prioritaire',
+          message: `Réservation dans moins de 10h ouvrées.\nService: ${firstService?.serviceName || 'N/A'}\nDate: ${firstCustom.date || ''} à ${firstCustom.startTime || ''}\nClient: ${clientInfo.email}\nAttribution manuelle requise immédiatement.`,
+          priority: 'urgent',
+          data: { booking_id: bookingIds[0], booking_ids: bookingIds },
+        },
+      }).catch(() => {});
+    }
+
     // Mettre à jour les transactions financières
     // Le trigger DB crée la transaction ; on poll jusqu'à 5× avec backoff exponentiel.
     logStep('Attente création transactions financières par trigger...');

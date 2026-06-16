@@ -11,7 +11,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, Clock, MapPin, ShoppingCart, ArrowRight, Shield, Plus, AlertCircle, CheckCircle, Info } from "lucide-react";
+import { CalendarIcon, Clock, MapPin, ShoppingCart, ArrowRight, Shield, Plus, AlertCircle, Info } from "lucide-react";
 import { format, addDays, startOfDay } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useBikawoCart } from "@/hooks/useBikawoCart";
@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import { useSecureForm } from "@/hooks/useSecureForm";
 import { bookingSchema } from "@/lib/security-validation";
 import { z } from "zod";
-import { useProviderZoneCheck } from "@/hooks/useProviderZoneCheck";
+import { getBookingValidation, NIGHT_SERVICE_SLUGS } from "@/utils/workingHours";
 
 interface BikaServiceBookingProps {
   isOpen: boolean;
@@ -49,12 +49,11 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [showSuccessOptions, setShowSuccessOptions] = useState(false);
 
-  const zoneCheck = useProviderZoneCheck(postalCode);
-
   // R-SEL-17: sous-services spéciaux avec règles dédiées
   const isAvailable24_7 = service.slug === "urgences-24-7";
   const isNightSlotOnly = service.slug === "gardes-de-nuit-urgence";
   const isUrgentDelay = service.slug === "courses-urgentes-nuit";
+  const isNightService = !!service.slug && NIGHT_SERVICE_SLUGS.includes(service.slug);
   const isInNightWindow = (time: string) => {
     const h = parseInt(time.split(':')[0], 10);
     return h >= 20 || h < 8;
@@ -73,8 +72,8 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
     })();
   }, [isOpen]);
 
-  // R-SEL-06: J+1 minimum, J+90 maximum — R-SEL-17: courses urgentes de nuit autorisées le jour même
-  const minBookingDate = isUrgentDelay ? startOfDay(new Date()) : addDays(startOfDay(new Date()), 1);
+  // R-SEL-06 final: délai minimum géré par getBookingValidation (5h ouvrées) — le calendrier autorise dès aujourd'hui
+  const minBookingDate = startOfDay(new Date());
   const maxBookingDate = addDays(new Date(), 90);
 
   const { addToCart } = useBikawoCart();
@@ -118,6 +117,12 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
     return getBillableHours() * service.price;
   };
 
+  // R-SEL-06 final: validation générique (5h ouvrées minimum) — non applicable aux services nuit/urgence (R-SEL-17)
+  const genericBookingValidation = !isNightService && date && startTime
+    ? getBookingValidation(date, startTime)
+    : null;
+  const isUrgentSlot = isNightService ? false : (genericBookingValidation?.isUrgent ?? false);
+
   const handleAddToCart = () => {
     if (!date || !startTime || !endTime || !address || !postalCode) {
       toast({
@@ -128,14 +133,17 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
       return;
     }
 
-    // R-SEL-02 / R-SEL-04 : bloquer si aucun prestataire dans la zone
-    if (zoneCheck.data && !zoneCheck.data.available) {
-      toast({
-        title: "Zone non couverte",
-        description: "Aucun prestataire disponible dans votre secteur pour le moment.",
-        variant: "destructive",
-      });
-      return;
+    // R-SEL-06 final: délai minimum de 5h ouvrées (8h-20h, 7j/7) — exempté pour les services nuit/urgence
+    if (!isNightService) {
+      const validation = getBookingValidation(date, startTime);
+      if (!validation.isValid) {
+        toast({
+          title: "Créneau indisponible",
+          description: validation.errorMessage,
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     if (service.options && service.options.length > 0 && !selectedOption) {
@@ -174,15 +182,6 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
         variant: "destructive",
       });
       return;
-    }
-
-    // R-SEL-06: pas de réservation le dimanche (avertissement) — sauf service disponible 24h/24, 7j/7
-    if (date.getDay() === 0 && !isAvailable24_7) {
-      toast({
-        title: "Disponibilité limitée le dimanche",
-        description: "La disponibilité des prestataires le dimanche n'est pas garantie. Votre réservation sera confirmée sous réserve de disponibilité.",
-        duration: 6000,
-      });
     }
 
     // R-SEL-17: créneau nuit obligatoire (20h-8h) pour les gardes de nuit/urgence
@@ -246,6 +245,7 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
       notes: validatedData.notes,
       financialCategory: service.financialCategory,
       urssaf_eligible: service.urssaf_eligible,
+      slug: service.slug,
     });
 
     // Utiliser setTimeout pour éviter les updates pendant le render
@@ -488,6 +488,11 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
                             <span className="text-xs text-muted-foreground ml-1">(pause 30min incluse)</span>
                           )}
                         </span>
+                        {isUrgentSlot && (
+                          <Badge variant="outline" className="text-amber-600 border-amber-300 text-xs">
+                            Créneau prioritaire
+                          </Badge>
+                        )}
                       </div>
                       <span className="text-lg font-bold text-primary">
                         {getTotalPrice().toFixed(2)}€
@@ -539,21 +544,6 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
                     maxLength={5}
                     className="w-36"
                   />
-                  {zoneCheck.isLoading && (
-                    <span className="text-xs text-muted-foreground">Vérification...</span>
-                  )}
-                  {zoneCheck.data?.available && (
-                    <span className="flex items-center gap-1 text-xs text-green-600 font-medium">
-                      <CheckCircle className="w-3.5 h-3.5" />
-                      {zoneCheck.data.count} prestataire{zoneCheck.data.count > 1 ? 's' : ''} disponible{zoneCheck.data.count > 1 ? 's' : ''}
-                    </span>
-                  )}
-                  {zoneCheck.data && !zoneCheck.data.available && (
-                    <span className="flex items-center gap-1 text-xs text-amber-600 font-medium">
-                      <AlertCircle className="w-3.5 h-3.5" />
-                      Service disponible prochainement dans votre secteur
-                    </span>
-                  )}
                 </div>
               </div>
 
@@ -597,16 +587,6 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
 
         {!showSuccessOptions && (
           <div className="space-y-3">
-            {/* R-SEL-04: message zone non couverte */}
-            {zoneCheck.data && !zoneCheck.data.available && (
-              <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-                <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-                <div>
-                  <p className="font-medium">Service disponible prochainement dans votre secteur</p>
-                  <p className="text-xs mt-0.5">Nous étendons notre réseau de prestataires. Revenez prochainement ou contactez-nous au 06 09 08 53 90.</p>
-                </div>
-              </div>
-            )}
             <div className="flex gap-3">
               <Button variant="outline" onClick={onClose} className="flex-1">
                 Annuler
