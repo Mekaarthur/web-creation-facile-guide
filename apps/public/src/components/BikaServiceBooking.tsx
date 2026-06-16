@@ -33,6 +33,7 @@ interface BikaServiceBookingProps {
     options?: string[];
     financialCategory: string;
     urssaf_eligible: boolean;
+    slug?: string;
   };
   packageTitle: string;
 }
@@ -50,6 +51,15 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
 
   const zoneCheck = useProviderZoneCheck(postalCode);
 
+  // R-SEL-17: sous-services spéciaux avec règles dédiées
+  const isAvailable24_7 = service.slug === "urgences-24-7";
+  const isNightSlotOnly = service.slug === "gardes-de-nuit-urgence";
+  const isUrgentDelay = service.slug === "courses-urgentes-nuit";
+  const isInNightWindow = (time: string) => {
+    const h = parseInt(time.split(':')[0], 10);
+    return h >= 20 || h < 8;
+  };
+
   // R-SEL-11: pré-remplissage adresse depuis profil si connecté
   useEffect(() => {
     if (!isOpen) return;
@@ -63,8 +73,8 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
     })();
   }, [isOpen]);
 
-  // R-SEL-06: J+1 minimum, J+90 maximum
-  const minBookingDate = addDays(startOfDay(new Date()), 1);
+  // R-SEL-06: J+1 minimum, J+90 maximum — R-SEL-17: courses urgentes de nuit autorisées le jour même
+  const minBookingDate = isUrgentDelay ? startOfDay(new Date()) : addDays(startOfDay(new Date()), 1);
   const maxBookingDate = addDays(new Date(), 90);
 
   const { addToCart } = useBikawoCart();
@@ -81,10 +91,10 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
     rateLimitAction: 'add_to_cart'
   });
 
-  const availableTimeSlots = [
-    "08:00", "09:00", "10:00", "11:00", "12:00", "13:00",
-    "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"
-  ];
+  // R-SEL-17: créneau restreint à la nuit (20h-8h) pour les gardes de nuit/urgence
+  const availableTimeSlots = isNightSlotOnly
+    ? ["20:00", "21:00", "22:00", "23:00", "00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "08:00"]
+    : ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
 
   const calculateDuration = () => {
     if (!startTime || !endTime) return 0;
@@ -92,7 +102,10 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
     const startMinutes = parseInt(startTime.split(':')[1]);
     const endHour = parseInt(endTime.split(':')[0]);
     const endMinutes = parseInt(endTime.split(':')[1]);
-    return (endHour + endMinutes/60) - (startHour + startMinutes/60);
+    let duration = (endHour + endMinutes/60) - (startHour + startMinutes/60);
+    // R-SEL-17: créneau de nuit traversant minuit (ex: 22h-6h)
+    if (isNightSlotOnly && duration <= 0) duration += 24;
+    return duration;
   };
 
   // R-SEL-07: durée facturable (−30 min de pause si > 4h)
@@ -163,13 +176,39 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
       return;
     }
 
-    // R-SEL-06: pas de réservation le dimanche (avertissement)
-    if (date.getDay() === 0) {
+    // R-SEL-06: pas de réservation le dimanche (avertissement) — sauf service disponible 24h/24, 7j/7
+    if (date.getDay() === 0 && !isAvailable24_7) {
       toast({
         title: "Disponibilité limitée le dimanche",
         description: "La disponibilité des prestataires le dimanche n'est pas garantie. Votre réservation sera confirmée sous réserve de disponibilité.",
         duration: 6000,
       });
+    }
+
+    // R-SEL-17: créneau nuit obligatoire (20h-8h) pour les gardes de nuit/urgence
+    if (isNightSlotOnly && (!isInNightWindow(startTime) || !isInNightWindow(endTime))) {
+      toast({
+        title: "Créneau invalide",
+        description: "Ce service est disponible uniquement sur le créneau de nuit (20h-8h).",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // R-SEL-17: courses urgentes de nuit — intervention dans les 2h suivant la commande
+    if (isUrgentDelay && date.toDateString() === new Date().toDateString()) {
+      const [h, m] = startTime.split(':').map(Number);
+      const slotDate = new Date(date);
+      slotDate.setHours(h, m, 0, 0);
+      const diffHours = (slotDate.getTime() - Date.now()) / 3_600_000;
+      if (diffHours > 2) {
+        toast({
+          title: "Délai dépassé",
+          description: "Les courses urgentes de nuit doivent débuter dans les 2h suivant la commande.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     // Validate with secure form
@@ -202,6 +241,7 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
         endTime: endTime
       },
       address: validatedData.address,
+      postalCode: validatedData.postalCode,
       description: description,
       notes: validatedData.notes,
       financialCategory: service.financialCategory,
@@ -315,6 +355,25 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
                   <p className="text-xs text-muted-foreground flex items-center gap-1">
                     <Info className="w-3 h-3 text-green-600 shrink-0" />
                     *Prix après crédit d'impôt de 50% (art. 199 sexdecies CGI)
+                  </p>
+                )}
+                {/* R-SEL-17: sous-services spéciaux */}
+                {isAvailable24_7 && (
+                  <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3 shrink-0" />
+                    Disponible 24h/24, 7j/7 — majoration +50% incluse dans le tarif
+                  </p>
+                )}
+                {isNightSlotOnly && (
+                  <p className="text-xs text-indigo-600 font-medium flex items-center gap-1">
+                    <Clock className="w-3 h-3 shrink-0" />
+                    Créneau de nuit uniquement (20h-8h)
+                  </p>
+                )}
+                {isUrgentDelay && (
+                  <p className="text-xs text-amber-600 font-medium flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3 shrink-0" />
+                    Intervention possible le jour même, dans un délai max de 2h
                   </p>
                 )}
               </div>

@@ -1,13 +1,16 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, ArrowLeft, Loader2, UserPlus, UserCheck, Star } from "lucide-react";
+import { CreditCard, ArrowLeft, Loader2, UserPlus, UserCheck, Star, ShieldCheck } from "lucide-react";
+import { addDays, startOfDay } from "date-fns";
 import { useBikawoCart } from "@/hooks/useBikawoCart";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { profileService } from "@/services/profileService";
+import { bookingService } from "@/services/bookingService";
+import { recurringBookingService } from "@/services/recurringBookingService";
 import { cn } from "@/lib/utils";
 import { CheckoutClientInfoCard, type ClientInfo } from "@/components/checkout/CheckoutClientInfoCard";
 import { UrssafSection } from "@/components/checkout/UrssafSection";
@@ -27,6 +30,8 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
   const [showUrssafDialog, setShowUrssafDialog] = useState(false);
   const [urssafEnabled, setUrssafEnabled] = useState(false);
   const [clientInfo, setClientInfo] = useState<ClientInfo>({ firstName: '', lastName: '', email: '', phone: '', address: '' });
+  // R-SEL-18: réduction fidélité -5% à partir de la 3e réservation (2 réservations passées ou plus)
+  const [isLoyaltyEligible, setIsLoyaltyEligible] = useState(false);
 
   // R-SEL-10: choix auth pour utilisateurs non-connectés ('pending' → choix affiché, 'guest' → continue sans compte)
   const [authChoice, setAuthChoice] = useState<'pending' | 'guest' | null>(null);
@@ -51,6 +56,14 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
             address: profile?.address || user.user_metadata?.address || '',
           });
           setAuthChoice(null); // connecté → pas de choix à afficher
+
+          // R-SEL-18: réduction fidélité -5% à partir de la 3e réservation
+          try {
+            const completedCount = await recurringBookingService.getCompletedBookingsCount(user.id);
+            setIsLoyaltyEligible(completedCount >= 2);
+          } catch {
+            // vérification non bloquante
+          }
         } else {
           setAuthChoice('pending'); // non-connecté → afficher le choix R-SEL-10
         }
@@ -104,9 +117,70 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
     return true;
   };
 
+  // R-SEL-12: vérifications avant création de la session Stripe
+  const runPreflightChecks = async (): Promise<string | null> => {
+    const cartTimestamp = localStorage.getItem('bikawo-cart-timestamp');
+    if (cartTimestamp && Date.now() - parseInt(cartTimestamp, 10) > 30 * 60 * 1000) {
+      return "Votre panier a expiré (plus de 30 minutes). Veuillez recommencer votre sélection.";
+    }
+
+    if (!getCartTotal() || getCartTotal() <= 0) {
+      return "Le montant de la réservation doit être supérieur à 0€.";
+    }
+
+    const minDate = addDays(startOfDay(new Date()), 1);
+    for (const item of cartItems) {
+      if (new Date(item.timeSlot.date) < minDate) {
+        return `La date de réservation pour "${item.serviceName}" doit être au minimum demain (J+1).`;
+      }
+      if (!item.address?.trim()) {
+        return `Adresse manquante pour "${item.serviceName}".`;
+      }
+    }
+
+    for (const item of cartItems) {
+      if (!item.postalCode) continue;
+      try {
+        const available = await bookingService.hasAvailableProviderInZone(item.postalCode);
+        if (!available) {
+          return `Aucun prestataire disponible dans votre secteur (${item.postalCode}) pour "${item.serviceName}". Contactez-nous au 06 09 08 53 90.`;
+        }
+      } catch {
+        // vérification technique non bloquante
+      }
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    for (const item of cartItems) {
+      try {
+        const conflict = await bookingService.hasConflictingBooking({
+          userId: user?.id,
+          email: !user?.id ? clientInfo.email : undefined,
+          bookingDate: new Date(item.timeSlot.date).toISOString().split('T')[0],
+          startTime: item.timeSlot.startTime,
+          endTime: item.timeSlot.endTime,
+        });
+        if (conflict) {
+          return `Vous avez déjà une réservation sur ce créneau pour "${item.serviceName}". Modifiez la date ou l'heure.`;
+        }
+      } catch {
+        // vérification technique non bloquante
+      }
+    }
+
+    return null;
+  };
+
   const handleSubmitBooking = async () => {
     if (!validateForm()) return;
     setIsProcessing(true);
+
+    const preflightError = await runPreflightChecks();
+    if (preflightError) {
+      toast({ title: 'Vérification impossible', description: preflightError, variant: 'destructive' });
+      setIsProcessing(false);
+      return;
+    }
 
     try {
       const services = cartItems.map(item => ({
@@ -118,8 +192,12 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       }));
 
       const totalAmount = getCartTotal();
-      const clientAmount = urssafEnabled ? totalAmount * 0.5 : totalAmount;
-      const stateAmount = urssafEnabled ? totalAmount * 0.5 : 0;
+      // R-SEL-15: la réduction de 50% ne s'applique qu'aux services éligibles URSSAF
+      const eligibleAmount = cartItems.filter(i => i.urssaf_eligible).reduce((sum, i) => sum + i.price * i.quantity, 0);
+      const amountAfterUrssaf = urssafEnabled ? totalAmount - eligibleAmount * 0.5 : totalAmount;
+      // R-SEL-18: réduction fidélité -5% à partir de la 3e réservation, appliquée après l'avance URSSAF
+      const clientAmount = isLoyaltyEligible ? amountAfterUrssaf * 0.95 : amountAfterUrssaf;
+      const stateAmount = urssafEnabled ? eligibleAmount * 0.5 : 0;
       const cap = (v: string) => v.length > 490 ? v.substring(0, 490) : v;
 
       const { data: paymentData, error: paymentError } = await supabase.functions.invoke('create-payment', {
@@ -161,6 +239,13 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
     cartTotal: getCartTotal(),
     urssafEnabled,
   };
+
+  // R-SEL-15: l'option avance immédiate n'est proposée que si le panier contient des services éligibles
+  const hasEligibleItems = cartItems.some(i => i.urssaf_eligible);
+  const eligibleTotal = cartItems.filter(i => i.urssaf_eligible).reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const amountAfterUrssafDisplay = urssafEnabled ? getCartTotal() - eligibleTotal * 0.5 : getCartTotal();
+  // R-SEL-18: réduction fidélité -5% à partir de la 3e réservation
+  const payableNow = isLoyaltyEligible ? amountAfterUrssafDisplay * 0.95 : amountAfterUrssafDisplay;
 
   return (
     <div className={cn('max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-40 sm:pb-32 space-y-4 sm:space-y-6 transition-opacity duration-500 min-h-[100svh]', isVisible ? 'opacity-100' : 'opacity-0')}>
@@ -230,14 +315,17 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         <div className="lg:col-span-2 space-y-4 sm:space-y-6 animate-fade-in" style={{ animationDelay: '100ms' }}>
           <CheckoutClientInfoCard clientInfo={clientInfo} onChange={setClientInfo} isProcessing={isProcessing} />
-          <UrssafSection
-            cartTotal={getCartTotal()}
-            enabled={urssafEnabled}
-            onToggle={setUrssafEnabled}
-            dialogOpen={showUrssafDialog}
-            onDialogOpen={() => setShowUrssafDialog(true)}
-            onDialogClose={() => setShowUrssafDialog(false)}
-          />
+          {/* R-SEL-15: avance immédiate proposée uniquement si le panier contient des services éligibles */}
+          {hasEligibleItems && (
+            <UrssafSection
+              cartTotal={eligibleTotal}
+              enabled={urssafEnabled}
+              onToggle={setUrssafEnabled}
+              dialogOpen={showUrssafDialog}
+              onDialogOpen={() => setShowUrssafDialog(true)}
+              onDialogClose={() => setShowUrssafDialog(false)}
+            />
+          )}
         </div>
 
         {/* Desktop summary */}
@@ -251,10 +339,36 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
             </CardHeader>
             <CardContent className="space-y-4">
               <CartSummaryItems {...cartSummaryProps} showAddress maxHeight="max-h-96" />
+
+              {/* R-SEL-18: réduction fidélité -5% à partir de la 3e réservation */}
+              {isLoyaltyEligible && (
+                <div className="flex items-center gap-2 p-2.5 bg-primary/5 border border-primary/20 rounded-lg text-xs text-primary">
+                  <Star className="w-3.5 h-3.5 shrink-0" />
+                  <span>Réduction fidélité de -5% appliquée (client régulier)</span>
+                </div>
+              )}
+
+              {/* R-SEL-14: politique d'annulation visible avant paiement */}
+              <div className="flex items-start gap-2 p-3 bg-muted/40 rounded-lg text-xs text-muted-foreground">
+                <ShieldCheck className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+                <div className="space-y-0.5">
+                  <p className="font-medium text-foreground">Politique d'annulation</p>
+                  <p>Annulation gratuite jusqu'à 24h avant la prestation</p>
+                  <p>Entre 2h et 24h avant : 50% remboursé</p>
+                  <p>Moins de 2h avant : non remboursé</p>
+                </div>
+              </div>
+
               <Button onClick={handleSubmitBooking} className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-200 hover-scale" size="lg" disabled={isProcessing}>
-                {isProcessing ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Traitement en cours...</> : <><CreditCard className="w-4 h-4 mr-2" />Confirmer et payer {urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€</>}
+                {isProcessing ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Traitement en cours...</> : <><CreditCard className="w-4 h-4 mr-2" />Confirmer et payer {payableNow.toFixed(2)}€</>}
               </Button>
               <p className="text-xs text-muted-foreground text-center">Paiement sécurisé via Stripe • Un conseiller vous contactera sous 24h</p>
+              {/* R-SEL-13: liens CGV + politique d'annulation */}
+              <p className="text-xs text-muted-foreground text-center">
+                En confirmant, vous acceptez nos{' '}
+                <Link to="/cgu" target="_blank" className="underline hover:text-primary">CGV</Link>
+                {' '}et notre politique d'annulation.
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -266,14 +380,17 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
           <div className="flex justify-between items-center text-sm">
             <span className="font-medium">{urssafEnabled ? 'Votre part' : 'Total à payer'}</span>
             <div className="text-right">
-              {urssafEnabled && <div className="text-xs text-green-600 line-through">{getCartTotal()}€</div>}
-              <div className="font-bold text-primary text-lg">{urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€</div>
+              {urssafEnabled && eligibleTotal > 0 && <div className="text-xs text-green-600 line-through">{getCartTotal()}€</div>}
+              <div className="font-bold text-primary text-lg">{payableNow.toFixed(2)}€</div>
             </div>
           </div>
           <Button onClick={handleSubmitBooking} className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-200" size="lg" disabled={isProcessing}>
-            {isProcessing ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Traitement...</> : <><CreditCard className="w-4 h-4 mr-2" />Confirmer {urssafEnabled ? (getCartTotal() * 0.5).toFixed(2) : getCartTotal()}€</>}
+            {isProcessing ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Traitement...</> : <><CreditCard className="w-4 h-4 mr-2" />Confirmer {payableNow.toFixed(2)}€</>}
           </Button>
-          <p className="text-xs text-muted-foreground text-center">🔒 Paiement sécurisé via Stripe</p>
+          <p className="text-xs text-muted-foreground text-center">🔒 Paiement sécurisé • Annulation gratuite jusqu'à 24h avant</p>
+          <p className="text-xs text-muted-foreground text-center">
+            <Link to="/cgu" target="_blank" className="underline">CGV et politique d'annulation</Link>
+          </p>
         </div>
       </div>
       </>

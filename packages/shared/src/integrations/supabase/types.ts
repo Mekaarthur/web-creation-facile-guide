@@ -4127,6 +4127,75 @@ export type Database = {
         }
         Relationships: []
       }
+      recurring_bookings: {
+        Row: {
+          address: string
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          client_id: string
+          created_at: string
+          day_of_week: string | null
+          end_date: string | null
+          financial_category: string
+          frequency: string
+          id: string
+          origin_booking_id: string | null
+          package_title: string
+          postal_code: string | null
+          prefer_same_provider: boolean
+          price: number
+          service_name: string
+          start_date: string
+          status: string
+          updated_at: string
+          urssaf_eligible: boolean
+        }
+        Insert: {
+          address: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          client_id: string
+          created_at?: string
+          day_of_week?: string | null
+          end_date?: string | null
+          financial_category: string
+          frequency: string
+          id?: string
+          origin_booking_id?: string | null
+          package_title: string
+          postal_code?: string | null
+          prefer_same_provider?: boolean
+          price: number
+          service_name: string
+          start_date: string
+          status?: string
+          updated_at?: string
+          urssaf_eligible?: boolean
+        }
+        Update: {
+          address?: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          client_id?: string
+          created_at?: string
+          day_of_week?: string | null
+          end_date?: string | null
+          financial_category?: string
+          frequency?: string
+          id?: string
+          origin_booking_id?: string | null
+          package_title?: string
+          postal_code?: string | null
+          prefer_same_provider?: boolean
+          price?: number
+          service_name?: string
+          start_date?: string
+          status?: string
+          updated_at?: string
+          urssaf_eligible?: boolean
+        }
+        Relationships: []
+      }
       referrals: {
         Row: {
           completed_at: string | null

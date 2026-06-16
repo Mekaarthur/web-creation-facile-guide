@@ -15,6 +15,7 @@ export interface BikawoCartItem {
     endTime: string;
   };
   address: string;
+  postalCode?: string;
   description?: string;
   notes?: string;
   financialCategory: string;

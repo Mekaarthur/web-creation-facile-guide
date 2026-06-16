@@ -4,11 +4,13 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Loader2, Home, Calendar, AlertCircle } from "lucide-react";
+import { CheckCircle, Loader2, Home, Calendar, AlertCircle, RepeatIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { RecurringBookingOptions, defaultRecurringOptions, type RecurringOptions } from "@/components/booking/RecurringBookingOptions";
+import { recurringBookingService } from "@/services/recurringBookingService";
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
@@ -17,6 +19,48 @@ const PaymentSuccess = () => {
   const [isVerifying, setIsVerifying] = useState(true);
   const [verificationData, setVerificationData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // R-SEL-18: proposer la récurrence après la 1ère réservation (clients connectés uniquement)
+  const [userId, setUserId] = useState<string | null>(null);
+  const [recurringOptions, setRecurringOptions] = useState<RecurringOptions>(defaultRecurringOptions());
+  const [isSavingRecurrence, setIsSavingRecurrence] = useState(false);
+  const [recurrenceSaved, setRecurrenceSaved] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
+  }, []);
+
+  const handleConfirmRecurrence = async () => {
+    if (!userId) return;
+    const firstService = verificationData?.services?.[0];
+    const firstBooking = verificationData?.bookingIds?.[0];
+    if (!firstService) return;
+
+    setIsSavingRecurrence(true);
+    try {
+      await recurringBookingService.create({
+        client_id: userId,
+        origin_booking_id: firstBooking ?? null,
+        service_name: firstService.serviceName,
+        package_title: firstService.packageTitle,
+        financial_category: firstService.financialCategory,
+        urssaf_eligible: !!firstService.urssaf_eligible,
+        price: firstService.price,
+        frequency: recurringOptions.frequency,
+        day_of_week: recurringOptions.frequency !== 'monthly' ? recurringOptions.dayOfWeek : null,
+        prefer_same_provider: recurringOptions.preferSameProvider,
+        address: verificationData?.clientInfo?.address || '',
+        start_date: new Date().toISOString().split('T')[0],
+        end_date: recurringOptions.endDate || null,
+      });
+      setRecurrenceSaved(true);
+      toast({ title: "Récurrence activée", description: "Votre réservation récurrente a été enregistrée. Annulation possible sans frais avec 7 jours de préavis." });
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err.message || "Impossible d'activer la récurrence", variant: "destructive" });
+    } finally {
+      setIsSavingRecurrence(false);
+    }
+  };
 
   useEffect(() => {
     const verifyPayment = async () => {
@@ -269,6 +313,32 @@ const PaymentSuccess = () => {
                     </Badge>
                   ))}
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* R-SEL-18: proposer la récurrence après la 1ère réservation (clients connectés, non déjà traité) */}
+          {userId && !alreadyProcessed && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <RepeatIcon className="w-5 h-5 text-primary" />
+                  Réserver ce service régulièrement ?
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {recurrenceSaved ? (
+                  <p className="text-sm text-green-700">✅ Votre récurrence est activée. Annulation sans frais avec 7 jours de préavis.</p>
+                ) : (
+                  <>
+                    <RecurringBookingOptions value={recurringOptions} onChange={setRecurringOptions} />
+                    {recurringOptions.enabled && (
+                      <Button onClick={handleConfirmRecurrence} disabled={isSavingRecurrence} className="w-full">
+                        {isSavingRecurrence ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Activation...</> : "Activer la récurrence"}
+                      </Button>
+                    )}
+                  </>
+                )}
               </CardContent>
             </Card>
           )}

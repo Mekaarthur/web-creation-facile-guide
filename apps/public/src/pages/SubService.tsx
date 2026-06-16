@@ -126,6 +126,7 @@ const SubServicePage = () => {
           options: displayOptions,
           financialCategory: sub.financialCategory,
           urssaf_eligible: sub.urssaf_eligible,
+          slug: sub.slug,
         }}
         packageTitle={currentCategory.packageTitle}
       />

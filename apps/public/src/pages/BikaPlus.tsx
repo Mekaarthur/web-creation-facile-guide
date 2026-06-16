@@ -3,29 +3,25 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ServiceBreadcrumb from "@/components/ServiceBreadcrumb";
 import RelatedServices from "@/components/RelatedServices";
-import ServiceBookingForm from "@/components/ServiceBookingForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Shield, MapPin, Calculator, Heart, Star, Calendar, MessageCircle, Phone, Crown, CheckCircle, Briefcase, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { servicesData } from "@/utils/servicesData";
-import { useState } from "react";
 import CallToActionButtons from "@/components/CallToActionButtons";
 import { useAuth } from "@/hooks/useAuth";
 import servicePremiumImage from "@/assets/service-premium.jpg";
 
 const BikaPlus = () => {
   const navigate = useNavigate();
-  const [selectedService, setSelectedService] = useState(null);
-  const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
   const { user } = useAuth();
 
   const serviceData = servicesData.plus;
 
-  const handleOpenBooking = (service) => {
-    setSelectedService(service);
-    setIsBookingFormOpen(true);
+  // R-SEL-16: Bika Plus n'a pas de réservation en ligne directe — uniquement demande personnalisée + devis sous 24h
+  const handleOpenBooking = (service: { title: string }) => {
+    navigate(`/demande-personnalisee?service=${encodeURIComponent(service.title)}&category=plus`);
   };
 
   const features = [
@@ -263,9 +259,9 @@ const BikaPlus = () => {
             </div>
             
             <div className="text-center mt-12">
-              <Button 
+              <Button
                 size="lg"
-                onClick={() => setIsBookingFormOpen(true)}
+                onClick={() => navigate('/demande-personnalisee?category=plus')}
                 className="bg-gradient-accent hover:opacity-90 text-accent-foreground px-8 py-3"
               >
                 Découvrir Bika Plus
@@ -276,15 +272,6 @@ const BikaPlus = () => {
 
         <RelatedServices currentService="plus" />
       </main>
-
-      {/* Formulaire de réservation */}
-      {isBookingFormOpen && selectedService && (
-        <ServiceBookingForm
-          service={selectedService}
-          packageTitle="Bika Plus"
-          onClose={() => setIsBookingFormOpen(false)}
-        />
-      )}
 
       <Footer />
     </div>

@@ -13,6 +13,7 @@ interface CartItem {
   address?: string;
   notes?: string;
   timeSlot: { date: Date | string; startTime: string; endTime: string };
+  urssaf_eligible?: boolean;
 }
 
 interface Props {
@@ -31,6 +32,10 @@ const formatTimeSlot = (timeSlot: CartItem['timeSlot']) => {
 };
 
 export function CartSummaryItems({ cartItems, hasIncompatibleServices, separatedBookingsCount, cartTotal, urssafEnabled, showAddress = false, maxHeight = 'max-h-60' }: Props) {
+  // R-SEL-15: la réduction de 50% ne s'applique qu'aux services éligibles
+  const eligibleTotal = cartItems.filter(i => i.urssaf_eligible).reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const discount = urssafEnabled ? eligibleTotal * 0.5 : 0;
+
   return (
     <div className="space-y-3 sm:space-y-4">
       {hasIncompatibleServices && (
@@ -72,15 +77,15 @@ export function CartSummaryItems({ cartItems, hasIncompatibleServices, separated
           <span>Sous-total</span>
           <span className="font-medium">{cartTotal}€</span>
         </div>
-        {urssafEnabled && (
+        {urssafEnabled && discount > 0 && (
           <div className="flex justify-between items-center text-xs text-green-700 dark:text-green-400">
-            <span>Crédit d'impôt (-50%)</span>
-            <span>-{(cartTotal * 0.5).toFixed(2)}€</span>
+            <span>Crédit d'impôt (-50% sur services éligibles)</span>
+            <span>-{discount.toFixed(2)}€</span>
           </div>
         )}
         <div className="flex justify-between items-center text-lg sm:text-xl font-bold border-t pt-2">
           <span>{urssafEnabled ? 'Votre part' : 'Total'}</span>
-          <span className="text-primary">{urssafEnabled ? (cartTotal * 0.5).toFixed(2) : cartTotal}€</span>
+          <span className="text-primary">{(cartTotal - discount).toFixed(2)}€</span>
         </div>
       </div>
     </div>

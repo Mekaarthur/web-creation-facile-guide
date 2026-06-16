@@ -41,7 +41,7 @@ export function UrssafSection({ cartTotal, enabled, onToggle, dialogOpen, onDial
               <Switch checked={enabled} onCheckedChange={onToggle} />
             </div>
           </div>
-          {enabled && (
+          {enabled ? (
             <div className="space-y-2">
               <p className="text-xs text-green-700 dark:text-green-400">
                 ✅ Vous économisez {(cartTotal * 0.5).toFixed(2)}€ grâce au crédit d'impôt
@@ -51,6 +51,10 @@ export function UrssafSection({ cartTotal, enabled, onToggle, dialogOpen, onDial
                 Activer votre compte CESU sur cesu.urssaf.fr
               </a>
             </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Non activée : vous payez 100% maintenant et récupérez le crédit d'impôt (50%) en fin d'année via votre déclaration de revenus.
+            </p>
           )}
         </CardContent>
       </Card>

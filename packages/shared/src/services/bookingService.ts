@@ -142,6 +142,34 @@ export const bookingService = {
     });
   },
 
+  /** R-SEL-12: vérifie qu'aucune réservation active du client ne chevauche ce créneau (R7) */
+  async hasConflictingBooking(params: { userId?: string; email?: string; bookingDate: string; startTime: string; endTime: string }): Promise<boolean> {
+    if (!params.userId && !params.email) return false;
+    let query = supabase
+      .from("bookings")
+      .select("id, start_time, end_time")
+      .eq("booking_date", params.bookingDate)
+      .in("status", ["confirmed", "booking_confirmed", "pending_urssaf", "in_progress", "pending_provider"])
+      .lt("start_time", params.endTime)
+      .gt("end_time", params.startTime);
+    // Guest sans compte : pas de colonne email dédiée sur bookings, recherche via notes (cf. verify-payment)
+    query = params.userId ? query.eq("client_id", params.userId) : query.ilike("notes", `%Email: ${params.email!}%`);
+    const { data, error } = await query;
+    if (error) throw new ServiceError("Erreur lors de la vérification des réservations existantes", error.code, error);
+    return (data ?? []).length > 0;
+  },
+
+  /** R-SEL-12: vérifie qu'au moins un prestataire vérifié couvre ce code postal */
+  async hasAvailableProviderInZone(postalCode: string): Promise<boolean> {
+    const { count, error } = await supabase
+      .from("providers")
+      .select("id", { count: "exact", head: true })
+      .eq("is_verified", true)
+      .contains("postal_codes", [postalCode]);
+    if (error) throw new ServiceError("Erreur lors de la vérification de la zone de couverture", error.code, error);
+    return (count ?? 0) > 0;
+  },
+
   async createCustomRequest(payload: {
     id: string;
     client_name: string;
