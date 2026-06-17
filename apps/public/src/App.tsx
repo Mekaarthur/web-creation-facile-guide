@@ -74,9 +74,9 @@ const PolitiqueConfidentialite = lazy(() => import("./pages/PolitiqueConfidentia
 const AvanceImmediate = lazy(() => import("./pages/AvanceImmediate"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-const BikawoCartDemo = lazy(() => import("./components/BikawoCartDemo"));
 const AnalyticsSEO = lazy(() => import("./pages/AnalyticsSEO"));
 const ConfigMessages = lazy(() => import("./pages/ConfigMessages"));
+const RoleBasedRoute = lazy(() => import("./components/RoleBasedRoute"));
 
 // Protected routes
 const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
@@ -181,9 +181,8 @@ const App = () => (
                 <Route path="/mentions-legales" element={<MentionsLegales />} />
                 <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
                 <Route path="/avance-immediate" element={<AvanceImmediate />} />
-                <Route path="/panier-demo" element={<BikawoCartDemo />} />
-                <Route path="/analytics-seo" element={<AnalyticsSEO />} />
-                <Route path="/config-messages" element={<ConfigMessages />} />
+                <Route path="/analytics-seo" element={<RoleBasedRoute allowedRoles={['admin']}><AnalyticsSEO /></RoleBasedRoute>} />
+                <Route path="/config-messages" element={<RoleBasedRoute allowedRoles={['admin']}><ConfigMessages /></RoleBasedRoute>} />
                 <Route path="/modern-admin/*" element={<Navigate to="/auth" replace />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

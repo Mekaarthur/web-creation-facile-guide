@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { servicesData, ServiceCategoryKey } from "@/utils/servicesData";
@@ -60,14 +60,14 @@ const ServiceCard = ({ service, pricing }: ServiceCardProps) => {
             loading="lazy"
             onLoad={() => setImageLoaded(true)}
           />
-          {/* Badge prix */}
+          {/* Badge prix — R-SEL-01 */}
           <div className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-primary text-primary-foreground px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold shadow-lg">
             {hasCredit ? (
               <>
                 <span className="hidden sm:inline opacity-90">À partir de </span>
                 <span className="line-through opacity-70">{pricing.original}</span>
                 <span className="mx-0.5 sm:mx-1">→</span>
-                <span className="text-white font-bold">{pricing.afterCredit}</span>
+                <span className="text-white font-bold">{pricing.afterCredit} réel*</span>
               </>
             ) : (
               <span className="text-white font-bold"><span className="hidden sm:inline">À partir de </span>{pricing?.original}</span>
@@ -134,17 +134,24 @@ const ServicesGrid = () => {
     };
   });
 
-  // Prix de départ par service (avant et après crédit d'impôt)
-  const startingPrices: Record<string, { original: string; afterCredit?: string }> = {
-    kids: { original: "25€/h", afterCredit: "12,50€/h" },
-    maison: { original: "25€/h", afterCredit: "12,50€/h" },
-    vie: { original: "25€/h", afterCredit: "12,50€/h" },
-    travel: { original: "30€/h" },
-    animals: { original: "25€/h", afterCredit: "12,50€/h" },
-    seniors: { original: "30€/h", afterCredit: "15€/h" },
-    pro: { original: "40€/h" },
-    plus: { original: "40€/h" },
-  };
+  // R-SEL-01: prix dérivés de servicesData.ts — source unique de vérité
+  const startingPrices = useMemo(() => {
+    return Object.fromEntries(
+      Object.entries(servicesData).map(([key, cat]) => {
+        const hourly = cat.subservices.filter(s => s.price >= 10 && s.price <= 500);
+        if (hourly.length === 0) return [key, { original: "Sur devis" }];
+        const minPrice = Math.min(...hourly.map(s => s.price));
+        const eligible = hourly.filter(s => s.urssaf_eligible);
+        if (eligible.length === 0) return [key, { original: `${minPrice}€/h` }];
+        const minEligible = Math.min(...eligible.map(s => s.price));
+        const half = minEligible * 0.5;
+        const afterCredit = Number.isInteger(half)
+          ? `${half}€/h`
+          : `${half.toFixed(2).replace(".", ",")}€/h`;
+        return [key, { original: `${minPrice}€/h`, afterCredit }];
+      })
+    ) as Record<string, { original: string; afterCredit?: string }>;
+  }, []);
 
   // Afficher les skeletons pendant le chargement
   if (isLoading) {
@@ -158,15 +165,20 @@ const ServicesGrid = () => {
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-      {servicesList.map((service) => (
-        <ServiceCard
-          key={service.id}
-          service={service}
-          pricing={startingPrices[service.id]}
-        />
-      ))}
-    </div>
+    <>
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+        {servicesList.map((service) => (
+          <ServiceCard
+            key={service.id}
+            service={service}
+            pricing={startingPrices[service.id]}
+          />
+        ))}
+      </div>
+      <p className="text-xs text-muted-foreground mt-2 text-center">
+        *après crédit d'impôt 50% (art. 199 sexdecies CGI)
+      </p>
+    </>
   );
 };
 
