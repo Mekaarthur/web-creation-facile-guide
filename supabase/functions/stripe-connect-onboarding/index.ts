@@ -101,6 +101,60 @@ serve(async (req) => {
     );
 
     const token = authHeader.replace("Bearer ", "");
+    const body = await req.json().catch(() => null);
+    const action = body?.action;
+    const origin = req.headers.get("origin") || "https://bikawo.com";
+
+    // Admin shortcut: service_role JWT + action "admin_create_link" + provider_id
+    // The JWT role claim is trusted — Supabase infrastructure already verified the signature.
+    let isAdminCall = false;
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      if (payload?.role === "service_role") isAdminCall = true;
+    } catch { /* non-JWT token, not admin */ }
+
+    if (isAdminCall && action === "admin_create_link") {
+      const providerId = body?.provider_id;
+      if (!providerId) {
+        return respond(false, { error: "provider_id required for admin_create_link" });
+      }
+      const { data: provAdmin } = await supabaseClient
+        .from("providers")
+        .select("id, stripe_account_id, user_id")
+        .eq("id", providerId)
+        .single();
+      if (!provAdmin) {
+        return respond(false, { error: "Provider not found: " + providerId });
+      }
+      let stripeAccountId = provAdmin.stripe_account_id;
+      if (!stripeAccountId) {
+        const { data: { user: adminUser } } = await supabaseClient.auth.admin.getUserById(provAdmin.user_id);
+        const acct = await stripe.accounts.create({
+          type: "express",
+          country: "FR",
+          email: adminUser?.email,
+          capabilities: { transfers: { requested: true } },
+          business_type: "individual",
+          business_profile: { mcc: "7299", url: Deno.env.get("SITE_URL") ?? "https://bikawo.com" },
+        });
+        stripeAccountId = acct.id;
+        await supabaseClient.from("providers").update({ stripe_account_id: stripeAccountId }).eq("id", providerId);
+        console.log("Admin created Stripe Connect account:", stripeAccountId, "for provider:", providerId);
+      }
+      const siteUrl = Deno.env.get("SITE_URL") ?? "https://bikawo.com";
+      const link = await stripe.accountLinks.create({
+        account: stripeAccountId,
+        refresh_url: siteUrl + "/espace-prestataire?stripe=refresh",
+        return_url: siteUrl + "/espace-prestataire?stripe=success",
+        type: "account_onboarding",
+      });
+      return respond<StripeOnboardingResponse>(true, {
+        data: { url: link.url, accountId: stripeAccountId },
+        diagnostics: { error_stage: "admin_link_created", processing_time_ms: Date.now() - startTime },
+      });
+    }
+
+    // Normal prestataire flow
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
 
     if (userError || !user) {
@@ -113,9 +167,6 @@ serve(async (req) => {
       });
     }
 
-    const body = await req.json().catch(() => null);
-    const action = body?.action;
-
     if (action !== "create_account" && action !== "check_status") {
       return respond(false, {
         error: "Action invalide",
@@ -125,8 +176,6 @@ serve(async (req) => {
         },
       });
     }
-
-    const origin = req.headers.get("origin") || "https://bikawo.com";
 
     const { data: provider, error: providerError } = await supabaseClient
       .from("providers")

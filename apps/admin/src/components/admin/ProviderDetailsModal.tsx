@@ -16,7 +16,9 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Mail, Phone, MapPin, Calendar, Star,
   CheckCircle, XCircle, Ban, PlayCircle,
+  CreditCard, Copy, ExternalLink, Loader2,
 } from "lucide-react";
+import { useStripeConnect } from "@/components/admin/providers/useStripeConnect";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,6 +49,8 @@ interface ProviderDetail {
   average_rating?: number;
   total_missions?: number;
   total_earned?: number;
+  stripe_account_id?: string | null;
+  stripe_onboarding_complete?: boolean;
   services: any[];
   missions: any[];
   payments: any[];
@@ -87,6 +91,8 @@ async function fetchProviderDetails(providerId: string): Promise<ProviderDetail>
     average_rating: p.rating || 0,
     total_missions: p.missions_completed || 0,
     total_earned: p.total_earnings || 0,
+    stripe_account_id: p.stripe_account_id ?? null,
+    stripe_onboarding_complete: p.stripe_onboarding_complete ?? false,
     services: [],
     missions,
     payments: [],
@@ -102,6 +108,7 @@ export const ProviderDetailsModal = ({
   const [actionDialogOpen, setActionDialogOpen] = useState(false);
   const [actionType, setActionType] = useState<'approve' | 'reject' | 'suspend' | 'activate'>('approve');
   const { toast } = useToast();
+  const { generateLink, copyUrl, stripeUrl, isLoading: stripeLoading } = useStripeConnect(providerId);
 
   const { data: provider, isLoading: loading } = useQuery<ProviderDetail>({
     queryKey: PROVIDER_KEY(providerId!),
@@ -240,7 +247,7 @@ export const ProviderDetailsModal = ({
                         )}
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {provider.status !== 'active' && (
                         <Button size="sm" onClick={() => openActionDialog('approve')}>
                           <CheckCircle className="h-4 w-4 mr-2" />
@@ -265,6 +272,19 @@ export const ProviderDetailsModal = ({
                           Rejeter
                         </Button>
                       )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={generateLink}
+                        disabled={stripeLoading}
+                        className="border-violet-300 text-violet-700 hover:bg-violet-50"
+                      >
+                        {stripeLoading
+                          ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          : <CreditCard className="h-4 w-4 mr-2" />
+                        }
+                        {provider.stripe_account_id ? "Régénérer lien Stripe" : "Créer compte Stripe"}
+                      </Button>
                     </div>
                   </div>
                 </CardHeader>
@@ -291,6 +311,34 @@ export const ProviderDetailsModal = ({
                   </div>
                 </CardContent>
               </Card>
+
+              {stripeUrl && (
+                <Card className="border-violet-200 bg-violet-50">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm text-violet-800 flex items-center gap-2">
+                      <CreditCard className="h-4 w-4" />
+                      Lien d'onboarding Stripe — expire dans 24h
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <p className="text-xs text-violet-700 break-all font-mono bg-white rounded px-2 py-1 border border-violet-200">
+                      {stripeUrl}
+                    </p>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={copyUrl} className="border-violet-300">
+                        <Copy className="h-3 w-3 mr-1" />
+                        Copier
+                      </Button>
+                      <Button size="sm" variant="outline" asChild className="border-violet-300">
+                        <a href={stripeUrl} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-3 w-3 mr-1" />
+                          Ouvrir
+                        </a>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               <Tabs defaultValue="services" className="w-full">
                 <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
