@@ -1,6 +1,10 @@
 ﻿import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
+const logoHeader = `<div style="text-align:center;padding:20px 0 8px;background:#ffffff;"><img src="${LOGO_URL}" alt="Bikawo" width="130" style="display:block;margin:0 auto;" /></div>`;
+const wrapWithLogo = (html: string) => logoHeader + html;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -133,6 +137,7 @@ serve(async (req) => {
     console.log(`Processing ${type} email for ${recipientEmail}`);
 
     const { subject, html } = getEmailTemplate(type, data);
+    const wrappedHtml = wrapWithLogo(html);
 
     // Log dans la table communications
     const { error: logError } = await supabase
@@ -142,7 +147,7 @@ serve(async (req) => {
         destinataire_email: recipientEmail,
         template_name: type,
         sujet: subject,
-        contenu: html,
+        contenu: wrappedHtml,
         status: 'envoyé',
         sent_at: new Date().toISOString(),
       });

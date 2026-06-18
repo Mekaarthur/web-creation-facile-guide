@@ -1,4 +1,4 @@
-ï»¿import * as React from 'npm:react@18.3.1';
+import * as React from 'npm:react@18.3.1';
 import {
   Body,
   Container,
@@ -20,7 +20,7 @@ interface ProviderDocumentValidatedEmailProps {
   siteUrl?: string;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 export const ProviderDocumentValidatedEmail = ({
   providerName = 'Prestataire',
@@ -31,35 +31,35 @@ export const ProviderDocumentValidatedEmail = ({
   return (
     <Html>
       <Head />
-      <Preview>Vos documents ont Ã©tÃ© validÃ©s âœ“</Preview>
+      <Preview>Vos documents ont été validés ?</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={logoContainer}>
             <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
           </Section>
-          <Heading style={h1}>Documents validÃ©s âœ“</Heading>
+          <Heading style={h1}>Documents validés ?</Heading>
           
           <Text style={text}>Bonjour {providerName},</Text>
           
           <Text style={text}>
-            Excellente nouvelle ! Vos documents ({documentType}) ont Ã©tÃ© vÃ©rifiÃ©s et validÃ©s par notre Ã©quipe.
+            Excellente nouvelle ! Vos documents ({documentType}) ont été vérifiés et validés par notre équipe.
           </Text>
 
           <Section style={successBox}>
             <Text style={successText}>
-              âœ“ Validation rÃ©ussie
+              ? Validation réussie
             </Text>
           </Section>
 
           <Text style={text}>
-            <strong>Prochaine Ã©tape :</strong> {nextStep}
+            <strong>Prochaine étape :</strong> {nextStep}
           </Text>
 
           <Button
             href={`${siteUrl}/espace-prestataire`}
             style={button}
           >
-            AccÃ©der Ã  mon espace
+            Accéder à mon espace
           </Button>
 
           <Hr style={hr} />

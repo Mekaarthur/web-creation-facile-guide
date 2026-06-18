@@ -6,6 +6,10 @@ import { corsHeaders } from "../_shared/cors.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
+const logoHeader = `<div style="text-align:center;padding:20px 0 8px;background:#ffffff;"><img src="${LOGO_URL}" alt="Bikawo" width="130" style="display:block;margin:0 auto;" /></div>`;
+const wrapWithLogo = (html: string) => logoHeader + html;
+
 interface ModernNotificationRequest {
   type: 
     // Client notifications
@@ -1703,7 +1707,7 @@ serve(async (req) => {
       from: (template as any).from || "Bikawo - Votre assistant personnel au quotidien <notifications@bikawo.com>",
       to: [requestData.recipient.email],
       subject: template.subject,
-      html: template.html,
+      html: wrapWithLogo(template.html),
     };
     if ((template as any).replyTo) {
       (sendPayload as any).replyTo = (template as any).replyTo;

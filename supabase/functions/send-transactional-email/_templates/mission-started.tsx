@@ -1,4 +1,4 @@
-﻿import {
+import {
   Body,
   Container,
   Head,
@@ -18,7 +18,7 @@ interface MissionStartedEmailProps {
   startedAt: string;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 export const MissionStartedEmail = ({
   clientName,
@@ -28,14 +28,14 @@ export const MissionStartedEmail = ({
 }: MissionStartedEmailProps) => (
   <Html>
     <Head />
-    <Preview>Votre prestation a commencé</Preview>
+    <Preview>Votre prestation a commenc�</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoContainer}>
           <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
         </Section>
 
-        <Heading style={h1}>🚀 Prestation en cours</Heading>
+        <Heading style={h1}>?? Prestation en cours</Heading>
         
         <Text style={text}>
           Bonjour {clientName},
@@ -43,31 +43,31 @@ export const MissionStartedEmail = ({
         
         <Section style={startedBox}>
           <Text style={startedText}>
-            ✅ {providerName} a commencé votre prestation
+            ? {providerName} a commenc� votre prestation
           </Text>
           <Text style={timeText}>
-            Démarrage : {startedAt}
+            D�marrage : {startedAt}
           </Text>
         </Section>
 
         <Text style={text}>
-          Le prestataire est en train d'exécuter votre service "<strong>{serviceName}</strong>".
+          Le prestataire est en train d'ex�cuter votre service "<strong>{serviceName}</strong>".
         </Text>
 
         <Section style={infoBox}>
-          <Text style={infoTitle}>💬 Besoin de communiquer ?</Text>
+          <Text style={infoTitle}>?? Besoin de communiquer ?</Text>
           <Text style={infoText}>
-            Vous pouvez contacter le prestataire via la messagerie de votre espace client si nécessaire.
+            Vous pouvez contacter le prestataire via la messagerie de votre espace client si n�cessaire.
           </Text>
         </Section>
 
         <Text style={text}>
-          Vous recevrez une notification lorsque la prestation sera terminée.
+          Vous recevrez une notification lorsque la prestation sera termin�e.
         </Text>
 
         <Text style={footer}>
           Bikawo - Votre assistant personnel au quotidien<br />
-          📧 contact@bikawo.com | 📞 06 09 08 53 90
+          ?? contact@bikawo.com | ?? 06 09 08 53 90
         </Text>
       </Container>
     </Body>

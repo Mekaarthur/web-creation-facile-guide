@@ -1,4 +1,4 @@
-Ôªøimport {
+import {
   Body,
   Container,
   Head,
@@ -29,7 +29,7 @@ interface BookingModificationEmailProps {
   reason?: string;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 export const BookingModificationEmail = ({
   clientName = 'Client',
@@ -46,7 +46,7 @@ export const BookingModificationEmail = ({
   return (
     <Html>
       <Head />
-      <Preview>üìÖ Votre r√©servation a √©t√© modifi√©e</Preview>
+      <Preview>?? Votre rÈservation a ÈtÈ modifiÈe</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={logoContainer}>
@@ -54,8 +54,8 @@ export const BookingModificationEmail = ({
           </Section>
           
           <Section style={heroSection}>
-            <Text style={heroEmoji}>üìÖ</Text>
-            <Heading style={heading}>R√©servation modifi√©e</Heading>
+            <Text style={heroEmoji}>??</Text>
+            <Heading style={heading}>RÈservation modifiÈe</Heading>
           </Section>
 
           <Text style={paragraph}>
@@ -63,7 +63,7 @@ export const BookingModificationEmail = ({
           </Text>
 
           <Text style={paragraph}>
-            Votre r√©servation pour <strong>{serviceName}</strong> a √©t√© modifi√©e
+            Votre rÈservation pour <strong>{serviceName}</strong> a ÈtÈ modifiÈe
             {modifiedBy === 'provider' ? ' par votre prestataire' : ''}.
           </Text>
 
@@ -78,15 +78,15 @@ export const BookingModificationEmail = ({
           <Section style={comparisonContainer}>
             <Row>
               <Column style={oldColumn}>
-                <Text style={columnTitle}>‚ùå Ancienne date</Text>
+                <Text style={columnTitle}>? Ancienne date</Text>
                 <Text style={dateText}>{oldDate}</Text>
                 <Text style={timeText}>{oldTime}</Text>
               </Column>
               <Column style={arrowColumn}>
-                <Text style={arrow}>‚Üí</Text>
+                <Text style={arrow}>?</Text>
               </Column>
               <Column style={newColumn}>
-                <Text style={columnTitle}>‚úÖ Nouvelle date</Text>
+                <Text style={columnTitle}>? Nouvelle date</Text>
                 <Text style={dateText}>{newDate}</Text>
                 <Text style={timeText}>{newTime}</Text>
               </Column>
@@ -94,7 +94,7 @@ export const BookingModificationEmail = ({
           </Section>
 
           <Section style={detailsBox}>
-            <Text style={detailsTitle}>üìã D√©tails de la r√©servation</Text>
+            <Text style={detailsTitle}>?? DÈtails de la rÈservation</Text>
             <Text style={detailItem}>
               <strong>Service :</strong> {serviceName}
             </Text>
@@ -108,7 +108,7 @@ export const BookingModificationEmail = ({
 
           <Section style={buttonContainer}>
             <Button style={button} href="https://bikawo.com/espace-personnel">
-              Voir ma r√©servation
+              Voir ma rÈservation
             </Button>
           </Section>
 

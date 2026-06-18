@@ -1,4 +1,4 @@
-ï»¿import {
+import {
   Body,
   Container,
   Head,
@@ -23,7 +23,7 @@ interface EmergencyReplacementEmailProps {
   reason: string;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 export const EmergencyReplacementEmail = ({
   clientName = 'Client',
@@ -33,11 +33,11 @@ export const EmergencyReplacementEmail = ({
   address = 'Adresse',
   replacementProviderName = 'Prestataire',
   replacementProviderRating = 4.8,
-  reason = 'IndisponibilitÃ© de derniÃ¨re minute'
+  reason = 'Indisponibilité de dernière minute'
 }: EmergencyReplacementEmailProps) => (
   <Html>
     <Head />
-    <Preview>ğŸš¨ Changement de prestataire urgent - Nous gÃ©rons tout</Preview>
+    <Preview>?? Changement de prestataire urgent - Nous gérons tout</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoContainer}>
@@ -45,14 +45,14 @@ export const EmergencyReplacementEmail = ({
         </Section>
 
         <Section style={alertHeader}>
-          <Heading style={h1}>ğŸš¨ Changement urgent de prestataire</Heading>
+          <Heading style={h1}>?? Changement urgent de prestataire</Heading>
         </Section>
         
         <Text style={text}>Bonjour {clientName},</Text>
         
         <Section style={urgentBox}>
           <Text style={urgentText}>
-            âš ï¸ <strong>Situation imprÃ©vue</strong>
+            ?? <strong>Situation imprévue</strong>
           </Text>
           <Text style={urgentReason}>
             {reason}
@@ -60,21 +60,21 @@ export const EmergencyReplacementEmail = ({
         </Section>
 
         <Text style={text}>
-          ğŸ’› <strong>Pas de panique !</strong> Nous avons immÃ©diatement activÃ© notre protocole d'urgence et trouvÃ© un excellent prestataire de remplacement.
+          ?? <strong>Pas de panique !</strong> Nous avons immédiatement activé notre protocole d'urgence et trouvé un excellent prestataire de remplacement.
         </Text>
 
         <Section style={providerBox}>
           <Heading style={providerTitle}>Votre nouveau prestataire</Heading>
           <Text style={providerName}>
-            â­ {replacementProviderName}
+            ? {replacementProviderName}
           </Text>
           <Text style={providerRating}>
-            Note: {replacementProviderRating}/5 â­ - Prestataire vÃ©rifiÃ© âœ…
+            Note: {replacementProviderRating}/5 ? - Prestataire vérifié ?
           </Text>
         </Section>
 
         <Section style={detailsBox}>
-          <Text style={detailsTitle}>DÃ©tails de votre mission (inchangÃ©s)</Text>
+          <Text style={detailsTitle}>Détails de votre mission (inchangés)</Text>
           <table style={{ width: '100%' }}>
             <tr>
               <td style={detailLabel}>Service:</td>
@@ -82,7 +82,7 @@ export const EmergencyReplacementEmail = ({
             </tr>
             <tr>
               <td style={detailLabel}>Date:</td>
-              <td style={detailValue}>{bookingDate} Ã  {startTime}</td>
+              <td style={detailValue}>{bookingDate} à {startTime}</td>
             </tr>
             <tr>
               <td style={detailLabel}>Lieu:</td>
@@ -92,26 +92,26 @@ export const EmergencyReplacementEmail = ({
         </Section>
 
         <Text style={text}>
-          Le nouveau prestataire est informÃ© et sera prÃ©sent Ã  l'heure prÃ©vue. Votre mission se dÃ©roulera normalement.
+          Le nouveau prestataire est informé et sera présent à l'heure prévue. Votre mission se déroulera normalement.
         </Text>
 
         <Section style={ctaSection}>
           <Link href={`https://bikawo.com/espace-personnel`} style={button}>
-            Voir les dÃ©tails
+            Voir les détails
           </Link>
         </Section>
 
         <Section style={contactBox}>
           <Text style={contactText}>
-            ğŸ†˜ <strong>Besoin d'aide ?</strong><br />
-            Notre Ã©quipe est disponible au <strong>06 09 08 53 90</strong>
+            ?? <strong>Besoin d'aide ?</strong><br />
+            Notre équipe est disponible au <strong>06 09 08 53 90</strong>
           </Text>
         </Section>
 
         <Text style={signature}>
-          Nous sommes dÃ©solÃ©s pour ce contretemps,<br />
-          L'Ã©quipe Bikawo ğŸ’›<br />
-          ğŸ“§ contact@bikawo.com
+          Nous sommes désolés pour ce contretemps,<br />
+          L'équipe Bikawo ??<br />
+          ?? contact@bikawo.com
         </Text>
       </Container>
     </Body>

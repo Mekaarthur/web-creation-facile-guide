@@ -1,4 +1,4 @@
-ï»¿import {
+import {
   Body,
   Container,
   Head,
@@ -12,7 +12,7 @@
 } from 'npm:@react-email/components@0.0.22';
 import * as React from 'npm:react@18.3.1';
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 interface PasswordSetupEmailProps {
   clientName: string;
@@ -22,25 +22,25 @@ interface PasswordSetupEmailProps {
 export const PasswordSetupEmail = ({ clientName, setupLink = 'https://bikawo.com/update-password' }: PasswordSetupEmailProps) => (
   <Html>
     <Head />
-    <Preview>CrÃ©ez votre mot de passe</Preview>
+    <Preview>Créez votre mot de passe</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoContainer}>
           <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
         </Section>
-        <Heading style={h1}>ğŸ” CrÃ©ez votre mot de passe</Heading>
+        <Heading style={h1}>?? Créez votre mot de passe</Heading>
 
         <Text style={text}>Bonjour {clientName},</Text>
         <Text style={text}>
-          Pour sÃ©curiser votre compte, veuillez crÃ©er votre mot de passe en cliquant sur le bouton ci-dessous.
+          Pour sécuriser votre compte, veuillez créer votre mot de passe en cliquant sur le bouton ci-dessous.
         </Text>
 
         <Section style={ctaBox}>
-          <Button href={setupLink} style={button}>CrÃ©er mon mot de passe</Button>
+          <Button href={setupLink} style={button}>Créer mon mot de passe</Button>
           <Text style={hint}>Ce lien est valable pendant 24 heures.</Text>
         </Section>
 
-        <Text style={footer}>L'Ã©quipe Bikawo</Text>
+        <Text style={footer}>L'équipe Bikawo</Text>
       </Container>
     </Body>
   </Html>

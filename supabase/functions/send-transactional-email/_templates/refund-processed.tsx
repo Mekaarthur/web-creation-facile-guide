@@ -1,4 +1,4 @@
-Ôªøimport {
+import {
   Body,
   Container,
   Head,
@@ -13,7 +13,7 @@
 } from 'npm:@react-email/components@0.0.22';
 import * as React from 'npm:react@18.3.1';
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 interface RefundProcessedEmailProps {
   clientName?: string;
@@ -37,28 +37,28 @@ export const RefundProcessedEmail = ({
   return (
   <Html>
     <Head />
-    <Preview>Remboursement effectu√©</Preview>
+    <Preview>Remboursement effectuÈ</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoContainer}>
           <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
         </Section>
-        <Heading style={h1}>üí∞ Remboursement effectu√©</Heading>
+        <Heading style={h1}>?? Remboursement effectuÈ</Heading>
         
         <Text style={text}>
           Bonjour {clientName},
         </Text>
         
         <Text style={text}>
-          Nous vous confirmons que votre remboursement a √©t√© trait√© avec succ√®s.
+          Nous vous confirmons que votre remboursement a ÈtÈ traitÈ avec succËs.
         </Text>
 
         <Section style={refundBox}>
           <Heading style={refundTitle}>
-            {refundAmountValue.toFixed(2)}‚Ç¨
+            {refundAmountValue.toFixed(2)}Ä
           </Heading>
           <Text style={refundSubtext}>
-            Montant rembours√©
+            Montant remboursÈ
           </Text>
         </Section>
 
@@ -70,12 +70,12 @@ export const RefundProcessedEmail = ({
           
           <Row style={detailRow}>
             <Column style={detailLabel}>Montant initial :</Column>
-            <Column style={detailValue}>{originalAmountValue.toFixed(2)}‚Ç¨</Column>
+            <Column style={detailValue}>{originalAmountValue.toFixed(2)}Ä</Column>
           </Row>
           
           <Row style={detailRow}>
-            <Column style={detailLabel}>Montant rembours√© :</Column>
-            <Column style={detailValue}><strong>{refundAmountValue.toFixed(2)}‚Ç¨</strong></Column>
+            <Column style={detailLabel}>Montant remboursÈ :</Column>
+            <Column style={detailValue}><strong>{refundAmountValue.toFixed(2)}Ä</strong></Column>
           </Row>
           
           <Row style={detailRow}>
@@ -85,20 +85,20 @@ export const RefundProcessedEmail = ({
         </Section>
 
         <Section style={infoBox}>
-          <Text style={infoTitle}>‚ÑπÔ∏è D√©lai de traitement</Text>
+          <Text style={infoTitle}>?? DÈlai de traitement</Text>
           <Text style={infoText}>
-            Le remboursement appara√Ætra sur votre compte bancaire sous <strong>3 √† 5 jours ouvr√©s</strong>, 
-            selon votre √©tablissement bancaire.
+            Le remboursement apparaÓtra sur votre compte bancaire sous <strong>3 ‡ 5 jours ouvrÈs</strong>, 
+            selon votre Ètablissement bancaire.
           </Text>
         </Section>
 
         <Text style={text}>
-          Si vous avez des questions concernant ce remboursement, n'h√©sitez pas √† nous contacter.
+          Si vous avez des questions concernant ce remboursement, n'hÈsitez pas ‡ nous contacter.
         </Text>
 
         <Text style={footer}>
           Cordialement,<br />
-          L'√©quipe Bikawo<br />
+          L'Èquipe Bikawo<br />
           support@bikawo.com
         </Text>
       </Container>

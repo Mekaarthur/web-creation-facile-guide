@@ -1,4 +1,4 @@
-ï»¿import {
+import {
   Body,
   Container,
   Head,
@@ -35,17 +35,17 @@ export const ProviderRatingReceivedEmail = ({
   newAverageRating = 4.8,
   totalReviews = 10,
 }: ProviderRatingReceivedEmailProps) => {
-  const stars = 'â­'.repeat(rating);
-  const emptyStars = 'â˜†'.repeat(5 - rating);
+  const stars = '?'.repeat(rating);
+  const emptyStars = '?'.repeat(5 - rating);
   
   return (
     <Html>
       <Head />
-      <Preview>â­ Nouvel avis reÃ§u - {rating}/5 Ã©toiles</Preview>
+      <Preview>? Nouvel avis reçu - {rating}/5 étoiles</Preview>
       <Body style={main}>
         <Container style={container}>
           <Img
-            src="https://bikawo.com/logo.png"
+            src="https://bikawo.com/bikawo-logo.png"
             width="150"
             height="50"
             alt="Bikawo"
@@ -53,8 +53,8 @@ export const ProviderRatingReceivedEmail = ({
           />
           
           <Section style={heroSection}>
-            <Text style={heroEmoji}>{rating >= 4 ? 'ğŸŒŸ' : 'ğŸ“'}</Text>
-            <Heading style={heading}>Nouvel avis reÃ§u !</Heading>
+            <Text style={heroEmoji}>{rating >= 4 ? '??' : '??'}</Text>
+            <Heading style={heading}>Nouvel avis reçu !</Heading>
           </Section>
 
           <Text style={paragraph}>
@@ -62,7 +62,7 @@ export const ProviderRatingReceivedEmail = ({
           </Text>
 
           <Text style={paragraph}>
-            <strong>{clientName}</strong> vous a laissÃ© un avis suite Ã  votre 
+            <strong>{clientName}</strong> vous a laissé un avis suite à votre 
             mission du <strong>{missionDate}</strong>.
           </Text>
 
@@ -74,15 +74,15 @@ export const ProviderRatingReceivedEmail = ({
 
           {comment && (
             <Section style={commentBox}>
-              <Text style={commentTitle}>ğŸ’¬ Commentaire du client</Text>
+              <Text style={commentTitle}>?? Commentaire du client</Text>
               <Text style={commentText}>"{comment}"</Text>
             </Section>
           )}
 
           <Section style={statsBox}>
-            <Text style={statsTitle}>ğŸ“Š Votre profil</Text>
+            <Text style={statsTitle}>?? Votre profil</Text>
             <Text style={statItem}>
-              <strong>Note moyenne :</strong> {newAverageRating.toFixed(1)}/5 â­
+              <strong>Note moyenne :</strong> {newAverageRating.toFixed(1)}/5 ?
             </Text>
             <Text style={statItem}>
               <strong>Total des avis :</strong> {totalReviews} avis
@@ -92,15 +92,15 @@ export const ProviderRatingReceivedEmail = ({
           {rating >= 4 ? (
             <Section style={successMessage}>
               <Text style={successText}>
-                ğŸ‰ FÃ©licitations ! Cet excellent avis renforce votre visibilitÃ© 
+                ?? Félicitations ! Cet excellent avis renforce votre visibilité 
                 et vous permet d'obtenir plus de missions.
               </Text>
             </Section>
           ) : (
             <Section style={improvementMessage}>
               <Text style={improvementText}>
-                ğŸ’¡ Chaque avis est une opportunitÃ© d'amÃ©lioration. N'hÃ©sitez pas 
-                Ã  revoir les points mentionnÃ©s pour vos prochaines missions.
+                ?? Chaque avis est une opportunité d'amélioration. N'hésitez pas 
+                à revoir les points mentionnés pour vos prochaines missions.
               </Text>
             </Section>
           )}

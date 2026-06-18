@@ -1,4 +1,4 @@
-Ôªøimport {
+import {
   Body,
   Container,
   Head,
@@ -20,7 +20,7 @@ interface ReviewRequestEmailProps {
   reviewLink?: string;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 export const ReviewRequestEmail = ({
   clientName = 'Client',
@@ -31,20 +31,20 @@ export const ReviewRequestEmail = ({
 }: ReviewRequestEmailProps) => (
   <Html>
     <Head />
-    <Preview>Partagez votre exp√©rience avec {providerName}</Preview>
+    <Preview>Partagez votre expÈrience avec {providerName}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoContainer}>
           <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
         </Section>
-        <Heading style={h1}>‚≠ê Votre avis nous int√©resse</Heading>
+        <Heading style={h1}>? Votre avis nous intÈresse</Heading>
 
         <Text style={text}>Bonjour {clientName},</Text>
         <Text style={text}>
-          Votre prestation <strong>{serviceName}</strong> avec {providerName} s'est termin√©e le {bookingDate}.
+          Votre prestation <strong>{serviceName}</strong> avec {providerName} s'est terminÈe le {bookingDate}.
         </Text>
         <Text style={text}>
-          Votre retour est pr√©cieux pour nous aider √† am√©liorer nos services et guider d'autres clients.
+          Votre retour est prÈcieux pour nous aider ‡ amÈliorer nos services et guider d'autres clients.
         </Text>
 
         <Section style={ctaBox}>
@@ -55,15 +55,15 @@ export const ReviewRequestEmail = ({
         </Section>
 
         <Section style={benefitsBox}>
-          <Text style={benefitsTitle}>üí° Pourquoi donner votre avis ?</Text>
-          <Text style={benefitsText}>‚úì Aidez d'autres familles √† faire le bon choix</Text>
-          <Text style={benefitsText}>‚úì Valorisez le travail de nos prestataires</Text>
-          <Text style={benefitsText}>‚úì Contribuez √† am√©liorer nos services</Text>
+          <Text style={benefitsTitle}>?? Pourquoi donner votre avis ?</Text>
+          <Text style={benefitsText}>? Aidez d'autres familles ‡ faire le bon choix</Text>
+          <Text style={benefitsText}>? Valorisez le travail de nos prestataires</Text>
+          <Text style={benefitsText}>? Contribuez ‡ amÈliorer nos services</Text>
         </Section>
 
         <Text style={footer}>
           Merci de votre confiance,<br />
-          L'√©quipe Bikawo
+          L'Èquipe Bikawo
         </Text>
       </Container>
     </Body>

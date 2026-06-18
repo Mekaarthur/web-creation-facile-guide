@@ -1,4 +1,4 @@
-ï»¿import {
+import {
   Body,
   Container,
   Head,
@@ -25,7 +25,7 @@ interface BookingConfirmationEmailProps {
   bookingId: string;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 export const BookingConfirmationEmail = ({
   clientName,
@@ -39,25 +39,25 @@ export const BookingConfirmationEmail = ({
 }: BookingConfirmationEmailProps) => (
   <Html>
     <Head />
-    <Preview>Votre rÃ©servation {serviceName} est confirmÃ©e</Preview>
+    <Preview>Votre réservation {serviceName} est confirmée</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoContainer}>
           <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
         </Section>
 
-        <Heading style={h1}>âœ… RÃ©servation confirmÃ©e</Heading>
+        <Heading style={h1}>? Réservation confirmée</Heading>
         
         <Text style={text}>
           Bonjour {clientName},
         </Text>
         
         <Text style={text}>
-          Votre rÃ©servation a bien Ã©tÃ© enregistrÃ©e. Nous sommes en train de vous assigner le meilleur prestataire disponible.
+          Votre réservation a bien été enregistrée. Nous sommes en train de vous assigner le meilleur prestataire disponible.
         </Text>
 
         <Section style={detailsBox}>
-          <Heading style={h2}>DÃ©tails de votre rÃ©servation</Heading>
+          <Heading style={h2}>Détails de votre réservation</Heading>
           
           <Row style={detailRow}>
             <Column style={detailLabel}>Service :</Column>
@@ -83,30 +83,30 @@ export const BookingConfirmationEmail = ({
           
           <Row style={detailRow}>
             <Column style={detailLabel}><strong>Prix total :</strong></Column>
-            <Column style={priceValue}><strong>{totalPrice.toFixed(2)}â‚¬</strong></Column>
+            <Column style={priceValue}><strong>{totalPrice.toFixed(2)}€</strong></Column>
           </Row>
         </Section>
 
         <Section style={infoBox}>
           <Text style={infoText}>
-            ðŸ“± <strong>Prochaines Ã©tapes :</strong>
+            ?? <strong>Prochaines étapes :</strong>
           </Text>
           <Text style={infoText}>
-            1. Vous recevrez un email dÃ¨s qu'un prestataire sera assignÃ©<br />
-            2. Le prestataire confirmera sa disponibilitÃ©<br />
+            1. Vous recevrez un email dès qu'un prestataire sera assigné<br />
+            2. Le prestataire confirmera sa disponibilité<br />
             3. Vous recevrez un rappel 24h avant la prestation
           </Text>
         </Section>
 
         <Text style={text}>
-          Vous pouvez suivre l'Ã©tat de votre rÃ©servation dans votre espace client.
+          Vous pouvez suivre l'état de votre réservation dans votre espace client.
         </Text>
 
         <Text style={footer}>
-          NumÃ©ro de rÃ©servation : {bookingId}<br />
+          Numéro de réservation : {bookingId}<br />
           <br />
           Bikawo - Votre assistant personnel au quotidien<br />
-          ðŸ“§ contact@bikawo.com | ðŸ“ž 06 09 08 53 90
+          ?? contact@bikawo.com | ?? 06 09 08 53 90
         </Text>
       </Container>
     </Body>

@@ -1,4 +1,4 @@
-ï»¿import {
+import {
   Body,
   Container,
   Head,
@@ -23,20 +23,20 @@ interface PaymentFailedEmailProps {
   retryUrl: string;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 export const PaymentFailedEmail = ({
   clientName = 'Client',
   serviceName = 'Service',
-  amount = '50,00â‚¬',
+  amount = '50,00€',
   bookingDate = '01/01/2024',
-  errorReason = 'Carte refusÃ©e',
+  errorReason = 'Carte refusée',
   retryUrl = 'https://bikawo.com/payment',
 }: PaymentFailedEmailProps) => {
   return (
     <Html>
       <Head />
-      <Preview>âš ï¸ Action requise : Ã‰chec de paiement</Preview>
+      <Preview>?? Action requise : Échec de paiement</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={logoContainer}>
@@ -44,8 +44,8 @@ export const PaymentFailedEmail = ({
           </Section>
           
           <Section style={heroSection}>
-            <Text style={heroEmoji}>âš ï¸</Text>
-            <Heading style={heading}>Ã‰chec de paiement</Heading>
+            <Text style={heroEmoji}>??</Text>
+            <Heading style={heading}>Échec de paiement</Heading>
           </Section>
 
           <Text style={paragraph}>
@@ -53,11 +53,11 @@ export const PaymentFailedEmail = ({
           </Text>
 
           <Text style={paragraph}>
-            Nous n'avons pas pu traiter votre paiement pour la rÃ©servation suivante :
+            Nous n'avons pas pu traiter votre paiement pour la réservation suivante :
           </Text>
 
           <Section style={bookingBox}>
-            <Text style={bookingTitle}>ğŸ“‹ DÃ©tails de la rÃ©servation</Text>
+            <Text style={bookingTitle}>?? Détails de la réservation</Text>
             <Text style={bookingItem}>
               <strong>Service :</strong> {serviceName}
             </Text>
@@ -70,44 +70,44 @@ export const PaymentFailedEmail = ({
           </Section>
 
           <Section style={errorBox}>
-            <Text style={errorTitle}>âŒ Raison de l'Ã©chec</Text>
+            <Text style={errorTitle}>? Raison de l'échec</Text>
             <Text style={errorText}>{errorReason}</Text>
           </Section>
 
           <Text style={paragraph}>
-            <strong>Votre rÃ©servation est en attente.</strong> Pour la confirmer, 
-            veuillez mettre Ã  jour vos informations de paiement ou rÃ©essayer avec 
+            <strong>Votre réservation est en attente.</strong> Pour la confirmer, 
+            veuillez mettre à jour vos informations de paiement ou réessayer avec 
             une autre carte.
           </Text>
 
           <Section style={buttonContainer}>
             <Button style={button} href={retryUrl}>
-              RÃ©essayer le paiement
+              Réessayer le paiement
             </Button>
           </Section>
 
           <Section style={tipsBox}>
-            <Text style={tipsTitle}>ğŸ’¡ Conseils</Text>
-            <Text style={tipItem}>â€¢ VÃ©rifiez que votre carte n'a pas expirÃ©</Text>
-            <Text style={tipItem}>â€¢ Assurez-vous d'avoir un solde suffisant</Text>
-            <Text style={tipItem}>â€¢ VÃ©rifiez que les achats en ligne sont autorisÃ©s</Text>
-            <Text style={tipItem}>â€¢ Essayez une autre carte de paiement</Text>
+            <Text style={tipsTitle}>?? Conseils</Text>
+            <Text style={tipItem}>• Vérifiez que votre carte n'a pas expiré</Text>
+            <Text style={tipItem}>• Assurez-vous d'avoir un solde suffisant</Text>
+            <Text style={tipItem}>• Vérifiez que les achats en ligne sont autorisés</Text>
+            <Text style={tipItem}>• Essayez une autre carte de paiement</Text>
           </Section>
 
           <Text style={urgentText}>
-            â° <strong>Important :</strong> Votre rÃ©servation sera automatiquement 
-            annulÃ©e si le paiement n'est pas effectuÃ© dans les 24 heures.
+            ? <strong>Important :</strong> Votre réservation sera automatiquement 
+            annulée si le paiement n'est pas effectué dans les 24 heures.
           </Text>
 
           <Hr style={hr} />
 
           <Text style={helpText}>
-            Besoin d'aide ? Notre Ã©quipe est disponible pour vous accompagner.
+            Besoin d'aide ? Notre équipe est disponible pour vous accompagner.
           </Text>
 
           <Section style={buttonContainer}>
             <Button style={secondaryButton} href="tel:+33609085390">
-              ğŸ“ Nous appeler
+              ?? Nous appeler
             </Button>
           </Section>
 

@@ -1,4 +1,4 @@
-Ôªøimport {
+import {
   Body,
   Container,
   Head,
@@ -12,7 +12,7 @@
 } from 'npm:@react-email/components@0.0.22';
 import * as React from 'npm:react@18.3.1';
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 interface ProviderMissionConfirmedEmailProps {
   providerName?: string;
@@ -35,36 +35,36 @@ export const ProviderMissionConfirmedEmail = ({
 }: ProviderMissionConfirmedEmailProps) => (
   <Html>
     <Head />
-    <Preview>Mission confirm√©e par le client</Preview>
+    <Preview>Mission confirmÈe par le client</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoContainer}>
           <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
         </Section>
-        <Heading style={h1}>‚úÖ Mission confirm√©e</Heading>
+        <Heading style={h1}>? Mission confirmÈe</Heading>
 
         <Text style={text}>Bonjour {providerName},</Text>
         <Text style={text}>
-          Excellente nouvelle ! Le client {clientName} a confirm√© votre mission.
+          Excellente nouvelle ! Le client {clientName} a confirmÈ votre mission.
         </Text>
 
         <Section style={confirmedBox}>
-          <Text style={confirmedIcon}>‚úì</Text>
-          <Text style={confirmedTitle}>Mission valid√©e</Text>
+          <Text style={confirmedIcon}>?</Text>
+          <Text style={confirmedTitle}>Mission validÈe</Text>
           <Text style={confirmedText}>{serviceName}</Text>
-          <Text style={confirmedDate}>{bookingDate} √† {startTime}</Text>
+          <Text style={confirmedDate}>{bookingDate} ‡ {startTime}</Text>
         </Section>
 
         <Section style={infoBox}>
-          <Text style={infoTitle}>üìç Adresse de la mission</Text>
+          <Text style={infoTitle}>?? Adresse de la mission</Text>
           <Text style={infoText}>{address}</Text>
         </Section>
 
         <Section style={reminderBox}>
-          <Text style={reminderTitle}>‚ö†Ô∏è Rappels importants</Text>
-          <Text style={reminderText}>‚Ä¢ Arrivez √† l'heure pr√©vue</Text>
-          <Text style={reminderText}>‚Ä¢ Confirmez votre arriv√©e via l'app</Text>
-          <Text style={reminderText}>‚Ä¢ Contactez le client si besoin</Text>
+          <Text style={reminderTitle}>?? Rappels importants</Text>
+          <Text style={reminderText}>ï Arrivez ‡ l'heure prÈvue</Text>
+          <Text style={reminderText}>ï Confirmez votre arrivÈe via l'app</Text>
+          <Text style={reminderText}>ï Contactez le client si besoin</Text>
         </Section>
 
         <Section style={ctaBox}>
@@ -75,7 +75,7 @@ export const ProviderMissionConfirmedEmail = ({
 
         <Text style={footer}>
           Bonne mission !<br />
-          L'√©quipe Bikawo
+          L'Èquipe Bikawo
         </Text>
       </Container>
     </Body>

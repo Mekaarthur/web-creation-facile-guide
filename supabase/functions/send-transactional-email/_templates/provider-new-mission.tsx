@@ -1,4 +1,4 @@
-Ôªøimport {
+import {
   Body,
   Container,
   Head,
@@ -14,7 +14,7 @@
 } from 'npm:@react-email/components@0.0.22';
 import * as React from 'npm:react@18.3.1';
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 interface ProviderNewMissionEmailProps {
   providerName?: string;
@@ -45,45 +45,45 @@ export const ProviderNewMissionEmail = ({
         <Section style={logoContainer}>
           <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
         </Section>
-        <Heading style={h1}>üéØ Nouvelle mission disponible</Heading>
+        <Heading style={h1}>?? Nouvelle mission disponible</Heading>
 
         <Text style={text}>Bonjour {providerName},</Text>
         <Text style={text}>
-          Une nouvelle mission correspond √† votre profil et vous a √©t√© attribu√©e.
+          Une nouvelle mission correspond ‡ votre profil et vous a ÈtÈ attribuÈe.
         </Text>
 
         <Section style={missionBox}>
           <Text style={missionTitle}>{serviceName}</Text>
           <Row style={detailRow}>
-            <Column style={detailLabel}>üìÖ Date :</Column>
+            <Column style={detailLabel}>?? Date :</Column>
             <Column style={detailValue}>{bookingDate}</Column>
           </Row>
           <Row style={detailRow}>
-            <Column style={detailLabel}>‚è∞ Horaires :</Column>
+            <Column style={detailLabel}>? Horaires :</Column>
             <Column style={detailValue}>{startTime} - {endTime}</Column>
           </Row>
           <Row style={detailRow}>
-            <Column style={detailLabel}>üìç Lieu :</Column>
+            <Column style={detailLabel}>?? Lieu :</Column>
             <Column style={detailValue}>{address}</Column>
           </Row>
         </Section>
 
         {clientNotes && (
           <Section style={notesBox}>
-            <Text style={notesTitle}>üí¨ Notes du client</Text>
+            <Text style={notesTitle}>?? Notes du client</Text>
             <Text style={notesText}>{clientNotes}</Text>
           </Section>
         )}
 
         <Section style={ctaBox}>
           <Button href={missionLink} style={button}>
-            Voir les d√©tails de la mission
+            Voir les dÈtails de la mission
           </Button>
-          <Text style={hint}>Veuillez confirmer votre disponibilit√© dans les 2 heures</Text>
+          <Text style={hint}>Veuillez confirmer votre disponibilitÈ dans les 2 heures</Text>
         </Section>
 
         <Text style={footer}>
-          L'√©quipe Bikawo<br />
+          L'Èquipe Bikawo<br />
           support@bikawo.com
         </Text>
       </Container>

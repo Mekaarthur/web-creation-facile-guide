@@ -1,4 +1,4 @@
-ï»¿import {
+import {
   Body,
   Container,
   Head,
@@ -23,7 +23,7 @@ interface CancellationEmailProps {
   refundPercentage: number;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 export const CancellationEmail = ({
   clientName,
@@ -36,14 +36,14 @@ export const CancellationEmail = ({
 }: CancellationEmailProps) => (
   <Html>
     <Head />
-    <Preview>Votre rÃ©servation a Ã©tÃ© annulÃ©e</Preview>
+    <Preview>Votre réservation a été annulée</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoContainer}>
           <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
         </Section>
 
-        <Heading style={h1}>âŒ RÃ©servation annulÃ©e</Heading>
+        <Heading style={h1}>? Réservation annulée</Heading>
         
         <Text style={text}>
           Bonjour {clientName},
@@ -51,12 +51,12 @@ export const CancellationEmail = ({
         
         <Text style={text}>
           {cancelledBy === 'client' 
-            ? 'Nous avons bien reÃ§u votre demande d\'annulation.'
-            : 'Le prestataire a dÃ» annuler votre rÃ©servation. Nous en sommes sincÃ¨rement dÃ©solÃ©s.'}
+            ? 'Nous avons bien reçu votre demande d\'annulation.'
+            : 'Le prestataire a dû annuler votre réservation. Nous en sommes sincèrement désolés.'}
         </Text>
 
         <Section style={detailsBox}>
-          <Heading style={h2}>RÃ©servation annulÃ©e</Heading>
+          <Heading style={h2}>Réservation annulée</Heading>
           
           <Row style={detailRow}>
             <Column style={detailLabel}>Service :</Column>
@@ -69,7 +69,7 @@ export const CancellationEmail = ({
           </Row>
           
           <Row style={detailRow}>
-            <Column style={detailLabel}>AnnulÃ© par :</Column>
+            <Column style={detailLabel}>Annulé par :</Column>
             <Column style={detailValue}>{cancelledBy === 'client' ? 'Vous' : 'Le prestataire'}</Column>
           </Row>
           
@@ -81,12 +81,12 @@ export const CancellationEmail = ({
 
         {refundAmount > 0 && (
           <Section style={refundBox}>
-            <Heading style={h2}>ğŸ’° Remboursement</Heading>
+            <Heading style={h2}>?? Remboursement</Heading>
             <Text style={refundText}>
-              Montant remboursÃ© : <strong>{refundAmount.toFixed(2)}â‚¬</strong> ({refundPercentage}%)
+              Montant remboursé : <strong>{refundAmount.toFixed(2)}€</strong> ({refundPercentage}%)
             </Text>
             <Text style={refundInfo}>
-              Le remboursement sera effectuÃ© sous 3-5 jours ouvrÃ©s sur votre moyen de paiement original.
+              Le remboursement sera effectué sous 3-5 jours ouvrés sur votre moyen de paiement original.
             </Text>
           </Section>
         )}
@@ -94,10 +94,10 @@ export const CancellationEmail = ({
         {refundAmount === 0 && (
           <Section style={warningBox}>
             <Text style={warningText}>
-              âš ï¸ Aucun remboursement applicable selon nos conditions d'annulation.
+              ?? Aucun remboursement applicable selon nos conditions d'annulation.
             </Text>
             <Text style={warningInfo}>
-              Les annulations moins de 2 heures avant la prestation ne donnent pas droit Ã  un remboursement.
+              Les annulations moins de 2 heures avant la prestation ne donnent pas droit à un remboursement.
             </Text>
           </Section>
         )}
@@ -108,15 +108,15 @@ export const CancellationEmail = ({
               <strong>Nous recherchons un nouveau prestataire pour vous.</strong>
             </Text>
             <Text style={infoText}>
-              Vous pouvez Ã©galement effectuer une nouvelle rÃ©servation si vous le souhaitez.
-              Vous recevrez un remboursement intÃ©gral.
+              Vous pouvez également effectuer une nouvelle réservation si vous le souhaitez.
+              Vous recevrez un remboursement intégral.
             </Text>
           </Section>
         )}
 
         <Text style={footer}>
           Bikawo - Votre assistant personnel au quotidien<br />
-          ğŸ“§ contact@bikawo.com | ğŸ“ 06 09 08 53 90
+          ?? contact@bikawo.com | ?? 06 09 08 53 90
         </Text>
       </Container>
     </Body>

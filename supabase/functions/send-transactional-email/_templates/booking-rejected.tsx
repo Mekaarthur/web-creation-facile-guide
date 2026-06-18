@@ -1,4 +1,4 @@
-ï»¿import {
+import {
   Body,
   Container,
   Head,
@@ -20,7 +20,7 @@ interface BookingRejectedEmailProps {
   reason?: string;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 export const BookingRejectedEmail = ({
   clientName = 'Client',
@@ -31,7 +31,7 @@ export const BookingRejectedEmail = ({
 }: BookingRejectedEmailProps) => (
   <Html>
     <Head />
-    <Preview>Votre demande nÃ©cessite notre attention ğŸ’›</Preview>
+    <Preview>Votre demande nécessite notre attention ??</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoContainer}>
@@ -43,17 +43,17 @@ export const BookingRejectedEmail = ({
         <Text style={text}>Bonjour {clientName},</Text>
         
         <Text style={text}>
-          Le prestataire initialement sÃ©lectionnÃ© ne peut finalement pas assurer votre <strong>{serviceName}</strong> prÃ©vu le <strong>{bookingDate}</strong> Ã  <strong>{startTime}</strong>.
+          Le prestataire initialement sélectionné ne peut finalement pas assurer votre <strong>{serviceName}</strong> prévu le <strong>{bookingDate}</strong> à <strong>{startTime}</strong>.
         </Text>
 
         <Section style={reasonBox}>
           <Text style={reasonText}>
-            ğŸ“ Raison: {reason}
+            ?? Raison: {reason}
           </Text>
         </Section>
 
         <Text style={text}>
-          ğŸ’› <strong>Pas d'inquiÃ©tude !</strong> Nous mettons tout en Å“uvre pour vous trouver un autre prestataire qualifiÃ© dans les plus brefs dÃ©lais.
+          ?? <strong>Pas d'inquiétude !</strong> Nous mettons tout en œuvre pour vous trouver un autre prestataire qualifié dans les plus brefs délais.
         </Text>
 
         <Section style={ctaSection}>
@@ -63,13 +63,13 @@ export const BookingRejectedEmail = ({
         </Section>
 
         <Text style={footer}>
-          Vous recevrez une notification dÃ¨s qu'un nouveau prestataire sera disponible.
+          Vous recevrez une notification dès qu'un nouveau prestataire sera disponible.
         </Text>
 
         <Text style={signature}>
           Avec toute notre attention,<br />
-          L'Ã©quipe Bikawo ğŸ’›<br />
-          ğŸ“§ contact@bikawo.com | ğŸ“ 06 09 08 53 90
+          L'équipe Bikawo ??<br />
+          ?? contact@bikawo.com | ?? 06 09 08 53 90
         </Text>
       </Container>
     </Body>

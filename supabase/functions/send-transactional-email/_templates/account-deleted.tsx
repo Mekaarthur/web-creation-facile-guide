@@ -1,4 +1,4 @@
-ï»¿import {
+import {
   Body,
   Container,
   Head,
@@ -16,36 +16,36 @@ interface AccountDeletedEmailProps {
   deletionDate?: string;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 export const AccountDeletedEmail = ({ clientName, deletionDate = new Date().toLocaleDateString('fr-FR') }: AccountDeletedEmailProps) => (
   <Html>
     <Head />
-    <Preview>Votre compte a Ã©tÃ© supprimÃ©</Preview>
+    <Preview>Votre compte a été supprimé</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoContainer}>
           <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
         </Section>
 
-        <Heading style={h1}>ğŸ—‘ï¸ Compte supprimÃ©</Heading>
+        <Heading style={h1}>??? Compte supprimé</Heading>
 
         <Text style={text}>Bonjour {clientName},</Text>
         <Text style={text}>
-          Nous vous confirmons que votre compte Bikawo a Ã©tÃ© supprimÃ© le {deletionDate}.
+          Nous vous confirmons que votre compte Bikawo a été supprimé le {deletionDate}.
         </Text>
         <Text style={text}>
-          Si cette action n'est pas de votre initiative, contactez immÃ©diatement notre support.
+          Si cette action n'est pas de votre initiative, contactez immédiatement notre support.
         </Text>
 
         <Section style={infoBox}>
-          <Text style={infoTitle}>Que devient vos donnÃ©es ?</Text>
-          <Text style={infoText}>ConformÃ©ment Ã  notre politique, vos donnÃ©es seront supprimÃ©es ou anonymisÃ©es.</Text>
+          <Text style={infoTitle}>Que devient vos données ?</Text>
+          <Text style={infoText}>Conformément à notre politique, vos données seront supprimées ou anonymisées.</Text>
         </Section>
 
         <Text style={footer}>
           Bikawo - Votre assistant personnel au quotidien<br />
-          ğŸ“§ contact@bikawo.com | ğŸ“ 06 09 08 53 90
+          ?? contact@bikawo.com | ?? 06 09 08 53 90
         </Text>
       </Container>
     </Body>

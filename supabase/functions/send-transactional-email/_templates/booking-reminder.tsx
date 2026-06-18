@@ -1,4 +1,4 @@
-ï»¿import {
+import {
   Body,
   Container,
   Head,
@@ -22,7 +22,7 @@ interface BookingReminderEmailProps {
   providerName: string;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 export const BookingReminderEmail = ({
   clientName,
@@ -41,14 +41,14 @@ export const BookingReminderEmail = ({
           <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
         </Section>
 
-        <Heading style={h1}>â° Rappel de prestation</Heading>
+        <Heading style={h1}>? Rappel de prestation</Heading>
         
         <Text style={text}>
           Bonjour {clientName},
         </Text>
         
         <Text style={highlightText}>
-          Votre prestation est prÃ©vue demain !
+          Votre prestation est prévue demain !
         </Text>
 
         <Section style={detailsBox}>
@@ -79,28 +79,28 @@ export const BookingReminderEmail = ({
         </Section>
 
         <Section style={infoBox}>
-          <Text style={infoTitle}>ğŸ“‹ PrÃ©parez la prestation :</Text>
+          <Text style={infoTitle}>?? Préparez la prestation :</Text>
           <Text style={infoText}>
-            â€¢ Assurez-vous d'Ãªtre prÃ©sent Ã  l'adresse indiquÃ©e<br />
-            â€¢ PrÃ©parez l'espace si nÃ©cessaire<br />
-            â€¢ Vous recevrez une notification quand le prestataire arrivera
+            • Assurez-vous d'être présent à l'adresse indiquée<br />
+            • Préparez l'espace si nécessaire<br />
+            • Vous recevrez une notification quand le prestataire arrivera
           </Text>
         </Section>
 
         <Section style={warningBox}>
           <Text style={warningText}>
-            âš ï¸ <strong>Besoin d'annuler ?</strong>
+            ?? <strong>Besoin d'annuler ?</strong>
           </Text>
           <Text style={warningInfo}>
-            Les annulations moins de 24h avant donnent droit Ã  un remboursement de 50%. 
+            Les annulations moins de 24h avant donnent droit à un remboursement de 50%. 
             Moins de 2h avant : aucun remboursement.
           </Text>
         </Section>
 
         <Text style={footer}>
-          Ã€ demain !<br />
+          À demain !<br />
           Bikawo - Votre assistant personnel au quotidien<br />
-          ğŸ“§ contact@bikawo.com | ğŸ“ 06 09 08 53 90
+          ?? contact@bikawo.com | ?? 06 09 08 53 90
         </Text>
       </Container>
     </Body>

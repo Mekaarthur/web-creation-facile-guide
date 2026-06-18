@@ -1,4 +1,4 @@
-ï»¿import {
+import {
   Body,
   Container,
   Head,
@@ -20,7 +20,7 @@ interface MissionCompletedEmailProps {
   bookingId: string;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 export const MissionCompletedEmail = ({
   clientName,
@@ -31,14 +31,14 @@ export const MissionCompletedEmail = ({
 }: MissionCompletedEmailProps) => (
   <Html>
     <Head />
-    <Preview>Prestation terminÃ©e - Partagez votre avis</Preview>
+    <Preview>Prestation terminée - Partagez votre avis</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoContainer}>
           <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
         </Section>
 
-        <Heading style={h1}>âœ… Prestation terminÃ©e</Heading>
+        <Heading style={h1}>? Prestation terminée</Heading>
         
         <Text style={text}>
           Bonjour {clientName},
@@ -46,21 +46,21 @@ export const MissionCompletedEmail = ({
         
         <Section style={completedBox}>
           <Text style={completedText}>
-            ğŸ‰ Votre prestation est terminÃ©e !
+            ?? Votre prestation est terminée !
           </Text>
           <Text style={timeText}>
-            TerminÃ© le : {completedAt}
+            Terminé le : {completedAt}
           </Text>
         </Section>
 
         <Text style={text}>
-          {providerName} a terminÃ© votre service "<strong>{serviceName}</strong>".
+          {providerName} a terminé votre service "<strong>{serviceName}</strong>".
         </Text>
 
         <Section style={reviewBox}>
-          <Heading style={reviewTitle}>â­ Donnez votre avis</Heading>
+          <Heading style={reviewTitle}>? Donnez votre avis</Heading>
           <Text style={reviewText}>
-            Votre retour est prÃ©cieux ! Il aide les autres utilisateurs et permet aux prestataires de s'amÃ©liorer.
+            Votre retour est précieux ! Il aide les autres utilisateurs et permet aux prestataires de s'améliorer.
           </Text>
           <Button
             href={`https://bikawo.com/espace-personnel`}
@@ -71,19 +71,19 @@ export const MissionCompletedEmail = ({
         </Section>
 
         <Section style={infoBox}>
-          <Text style={infoTitle}>ğŸ“„ Facture disponible</Text>
+          <Text style={infoTitle}>?? Facture disponible</Text>
           <Text style={infoText}>
             Votre facture est maintenant disponible dans votre espace client.
           </Text>
         </Section>
 
         <Text style={text}>
-          Merci d'avoir choisi Bikawo ! Nous espÃ©rons vous revoir bientÃ´t.
+          Merci d'avoir choisi Bikawo ! Nous espérons vous revoir bientôt.
         </Text>
 
         <Text style={footer}>
           Bikawo - Votre assistant personnel au quotidien<br />
-          ğŸ“§ contact@bikawo.com | ğŸ“ 06 09 08 53 90
+          ?? contact@bikawo.com | ?? 06 09 08 53 90
         </Text>
       </Container>
     </Body>

@@ -1,4 +1,4 @@
-﻿import {
+import {
   Body,
   Container,
   Head,
@@ -12,7 +12,7 @@
 } from 'npm:@react-email/components@0.0.22';
 import * as React from 'npm:react@18.3.1';
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 interface ProviderReminderEmailProps {
   providerName?: string;
@@ -43,40 +43,40 @@ export const ProviderReminderEmail = ({
         <Section style={logoContainer}>
           <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
         </Section>
-        <Heading style={h1}>⏰ Rappel : Mission demain</Heading>
+        <Heading style={h1}>? Rappel : Mission demain</Heading>
 
         <Text style={text}>Bonjour {providerName},</Text>
         <Text style={text}>
-          Nous vous rappelons que vous avez une mission prévue <strong>demain</strong>.
+          Nous vous rappelons que vous avez une mission pr�vue <strong>demain</strong>.
         </Text>
 
         <Section style={missionBox}>
-          <Text style={missionTitle}>📋 {serviceName}</Text>
-          <Text style={missionDetail}>📅 {bookingDate}</Text>
-          <Text style={missionDetail}>⏰ {startTime} - {endTime}</Text>
-          <Text style={missionDetail}>📍 {address}</Text>
+          <Text style={missionTitle}>?? {serviceName}</Text>
+          <Text style={missionDetail}>?? {bookingDate}</Text>
+          <Text style={missionDetail}>? {startTime} - {endTime}</Text>
+          <Text style={missionDetail}>?? {address}</Text>
           {clientPhone && (
-            <Text style={missionDetail}>📞 {clientPhone}</Text>
+            <Text style={missionDetail}>?? {clientPhone}</Text>
           )}
         </Section>
 
         <Section style={checklistBox}>
-          <Text style={checklistTitle}>✓ Checklist avant la mission</Text>
-          <Text style={checklistItem}>□ Confirmer votre trajet et prévoir le temps de transport</Text>
-          <Text style={checklistItem}>□ Préparer le matériel nécessaire</Text>
-          <Text style={checklistItem}>□ Vérifier les notes du client</Text>
-          <Text style={checklistItem}>□ Avoir votre téléphone chargé pour le check-in</Text>
+          <Text style={checklistTitle}>? Checklist avant la mission</Text>
+          <Text style={checklistItem}>? Confirmer votre trajet et pr�voir le temps de transport</Text>
+          <Text style={checklistItem}>? Pr�parer le mat�riel n�cessaire</Text>
+          <Text style={checklistItem}>? V�rifier les notes du client</Text>
+          <Text style={checklistItem}>? Avoir votre t�l�phone charg� pour le check-in</Text>
         </Section>
 
         <Section style={ctaBox}>
           <Button href={missionLink} style={button}>
-            Voir les détails
+            Voir les d�tails
           </Button>
         </Section>
 
         <Text style={footer}>
           Bonne mission !<br />
-          L'équipe Bikawo
+          L'�quipe Bikawo
         </Text>
       </Container>
     </Body>

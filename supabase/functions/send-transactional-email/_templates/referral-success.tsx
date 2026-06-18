@@ -1,4 +1,4 @@
-ï»¿import {
+import {
   Body,
   Container,
   Head,
@@ -30,11 +30,11 @@ export const ReferralSuccessEmail = ({
   return (
     <Html>
       <Head />
-      <Preview>ğŸ‰ FÃ©licitations ! Votre parrainage est validÃ©</Preview>
+      <Preview>?? Félicitations ! Votre parrainage est validé</Preview>
       <Body style={main}>
         <Container style={container}>
           <Img
-            src="https://bikawo.com/logo.png"
+            src="https://bikawo.com/bikawo-logo.png"
             width="150"
             height="50"
             alt="Bikawo"
@@ -42,8 +42,8 @@ export const ReferralSuccessEmail = ({
           />
           
           <Section style={heroSection}>
-            <Text style={heroEmoji}>ğŸŠ</Text>
-            <Heading style={heading}>Parrainage rÃ©ussi !</Heading>
+            <Text style={heroEmoji}>??</Text>
+            <Heading style={heading}>Parrainage réussi !</Heading>
           </Section>
 
           <Text style={paragraph}>
@@ -51,33 +51,33 @@ export const ReferralSuccessEmail = ({
           </Text>
 
           <Text style={paragraph}>
-            Excellente nouvelle ! <strong>{referredName}</strong> a validÃ© ses 10 heures de service 
-            grÃ¢ce Ã  votre parrainage.
+            Excellente nouvelle ! <strong>{referredName}</strong> a validé ses 10 heures de service 
+            grâce à votre parrainage.
           </Text>
 
           <Section style={rewardBox}>
-            <Text style={rewardTitle}>ğŸ Votre rÃ©compense</Text>
+            <Text style={rewardTitle}>?? Votre récompense</Text>
             <Text style={rewardAmount}>{rewardValue}</Text>
             <Text style={rewardDescription}>
-              {rewardType} offert(es) Ã  utiliser sur votre prochaine rÃ©servation
+              {rewardType} offert(es) à utiliser sur votre prochaine réservation
             </Text>
           </Section>
 
           <Text style={paragraph}>
-            Cette rÃ©compense est automatiquement ajoutÃ©e Ã  votre compte et sera appliquÃ©e 
-            lors de votre prochaine rÃ©servation.
+            Cette récompense est automatiquement ajoutée à votre compte et sera appliquée 
+            lors de votre prochaine réservation.
           </Text>
 
           <Section style={buttonContainer}>
             <Button style={button} href="https://bikawo.com/services">
-              RÃ©server maintenant
+              Réserver maintenant
             </Button>
           </Section>
 
           <Hr style={hr} />
 
           <Text style={paragraph}>
-            Continuez Ã  parrainer vos proches ! Chaque nouveau filleul vous rapporte 
+            Continuez à parrainer vos proches ! Chaque nouveau filleul vous rapporte 
             des heures de service gratuites.
           </Text>
 

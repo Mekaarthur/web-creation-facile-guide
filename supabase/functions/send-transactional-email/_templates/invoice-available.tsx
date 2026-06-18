@@ -1,4 +1,4 @@
-ï»¿import {
+import {
   Body,
   Container,
   Head,
@@ -21,7 +21,7 @@ interface InvoiceAvailableEmailProps {
   invoiceLink?: string;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 export const InvoiceAvailableEmail = ({
   clientName = 'Client',
@@ -40,7 +40,7 @@ export const InvoiceAvailableEmail = ({
           <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
         </Section>
 
-        <Heading style={h1}>ðŸ“„ Facture disponible</Heading>
+        <Heading style={h1}>?? Facture disponible</Heading>
 
         <Text style={text}>Bonjour {clientName},</Text>
         <Text style={text}>
@@ -48,34 +48,34 @@ export const InvoiceAvailableEmail = ({
         </Text>
 
         <Section style={invoiceBox}>
-          <Text style={invoiceIcon}>ðŸ§¾</Text>
-          <Text style={invoiceNumberStyle}>Facture NÂ° {invoiceNumber}</Text>
+          <Text style={invoiceIcon}>??</Text>
+          <Text style={invoiceNumberStyle}>Facture N° {invoiceNumber}</Text>
           <Text style={invoiceDateStyle}>Date : {invoiceDate}</Text>
-          <Text style={invoiceAmount}>{totalAmount.toFixed(2)}â‚¬ TTC</Text>
+          <Text style={invoiceAmount}>{totalAmount.toFixed(2)}€ TTC</Text>
         </Section>
 
         <Section style={ctaBox}>
           <Button href={invoiceLink} style={button}>
-            TÃ©lÃ©charger ma facture
+            Télécharger ma facture
           </Button>
         </Section>
 
         <Section style={infoBox}>
-          <Text style={infoTitle}>ðŸ’¡ Bon Ã  savoir</Text>
+          <Text style={infoTitle}>?? Bon à savoir</Text>
           <Text style={infoText}>
-            â€¢ Votre facture est disponible 24/7 dans votre espace personnel
+            • Votre facture est disponible 24/7 dans votre espace personnel
           </Text>
           <Text style={infoText}>
-            â€¢ Elle peut Ãªtre utilisÃ©e pour vos demandes de remboursement CAF/employeur
+            • Elle peut être utilisée pour vos demandes de remboursement CAF/employeur
           </Text>
           <Text style={infoText}>
-            â€¢ Un duplicata est toujours disponible en cas de besoin
+            • Un duplicata est toujours disponible en cas de besoin
           </Text>
         </Section>
 
         <Text style={footer}>
           Bikawo - Votre assistant personnel au quotidien<br />
-          ðŸ“§ contact@bikawo.com | ðŸ“ž 06 09 08 53 90
+          ?? contact@bikawo.com | ?? 06 09 08 53 90
         </Text>
       </Container>
     </Body>

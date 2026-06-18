@@ -1,4 +1,4 @@
-ï»¿import * as React from 'npm:react@18.3.1';
+import * as React from 'npm:react@18.3.1';
 import {
   Body,
   Container,
@@ -13,7 +13,7 @@ import {
   Hr,
 } from 'npm:@react-email/components@0.0.22';
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 interface ProviderAccountActivatedEmailProps {
   providerName: string;
@@ -29,13 +29,13 @@ export const ProviderAccountActivatedEmail = ({
   return (
     <Html>
       <Head />
-      <Preview>ğŸ‰ Votre compte est activÃ© ! Bienvenue chez Bikawo</Preview>
+      <Preview>?? Votre compte est activé ! Bienvenue chez Bikawo</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={logoContainer}>
             <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
           </Section>
-          <Heading style={h1}>ğŸ‰ Bienvenue dans l'Ã©quipe Bikawo !</Heading>
+          <Heading style={h1}>?? Bienvenue dans l'équipe Bikawo !</Heading>
           
           <Text style={text}>Bonjour {providerName},</Text>
           
@@ -45,7 +45,7 @@ export const ProviderAccountActivatedEmail = ({
 
           <Section style={celebrationBox}>
             <Text style={celebrationText}>
-              âœ“ Compte 100% activÃ©
+              ? Compte 100% activé
             </Text>
             <Text style={subText}>
               Vous pouvez maintenant recevoir des missions !
@@ -53,38 +53,38 @@ export const ProviderAccountActivatedEmail = ({
           </Section>
 
           <Text style={text}>
-            <strong>Vos prochaines Ã©tapes :</strong>
+            <strong>Vos prochaines étapes :</strong>
           </Text>
 
           <ul style={list}>
-            <li style={listItem}>ğŸ“‹ Consultez les missions disponibles</li>
-            <li style={listItem}>ğŸ“… Configurez vos disponibilitÃ©s</li>
-            <li style={listItem}>ğŸ’° Suivez vos revenus en temps rÃ©el</li>
-            <li style={listItem}>â­ Construisez votre rÃ©putation</li>
+            <li style={listItem}>?? Consultez les missions disponibles</li>
+            <li style={listItem}>?? Configurez vos disponibilités</li>
+            <li style={listItem}>?? Suivez vos revenus en temps réel</li>
+            <li style={listItem}>? Construisez votre réputation</li>
           </ul>
 
           <Button
             href={`${siteUrl}/espace-prestataire`}
             style={button}
           >
-            AccÃ©der Ã  mon espace
+            Accéder à mon espace
           </Button>
 
           <Hr style={hr} />
 
           <Section style={supportBox}>
             <Text style={supportText}>
-              Une question ? Notre Ã©quipe est disponible pour vous accompagner.
+              Une question ? Notre équipe est disponible pour vous accompagner.
             </Text>
             <Text style={supportContact}>
-              ğŸ“§ support@bikawo.com | ğŸ“ 06 09 08 53 90
+              ?? support@bikawo.com | ?? 06 09 08 53 90
             </Text>
           </Section>
 
           <Hr style={hr} />
 
           <Text style={footer}>
-            Bikawo - Ensemble, construisons votre rÃ©ussite
+            Bikawo - Ensemble, construisons votre réussite
           </Text>
         </Container>
       </Body>

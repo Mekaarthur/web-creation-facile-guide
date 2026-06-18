@@ -1,4 +1,4 @@
-Ôªøimport {
+import {
   Body,
   Container,
   Head,
@@ -14,7 +14,7 @@
 } from 'npm:@react-email/components@0.0.22';
 import * as React from 'npm:react@18.3.1';
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 interface ProviderAssignedEmailProps {
   clientName: string;
@@ -35,26 +35,26 @@ export const ProviderAssignedEmail = ({
 }: ProviderAssignedEmailProps) => (
   <Html>
     <Head />
-    <Preview>Un prestataire a √©t√© assign√© √† votre r√©servation</Preview>
+    <Preview>Un prestataire a ÈtÈ assignÈ ‡ votre rÈservation</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoContainer}>
           <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
         </Section>
-        <Heading style={h1}>üë§ Prestataire assign√©</Heading>
+        <Heading style={h1}>?? Prestataire assignÈ</Heading>
         
         <Text style={text}>
           Bonjour {clientName},
         </Text>
         
         <Text style={text}>
-          Excellente nouvelle ! Nous avons trouv√© le prestataire id√©al pour votre demande.
+          Excellente nouvelle ! Nous avons trouvÈ le prestataire idÈal pour votre demande.
         </Text>
 
         <Section style={providerBox}>
           <Heading style={h2}>{providerName}</Heading>
           <Text style={rating}>
-            ‚≠ê Note moyenne : {providerRating.toFixed(1)}/5
+            ? Note moyenne : {providerRating.toFixed(1)}/5
           </Text>
           
           <Hr style={hr} />
@@ -66,13 +66,13 @@ export const ProviderAssignedEmail = ({
           
           <Row style={detailRow}>
             <Column style={detailLabel}>Date :</Column>
-            <Column style={detailValue}>{bookingDate} √† {startTime}</Column>
+            <Column style={detailValue}>{bookingDate} ‡ {startTime}</Column>
           </Row>
         </Section>
 
         <Section style={infoBox}>
           <Text style={infoText}>
-            ‚ÑπÔ∏è <strong>Le prestataire a 2 heures pour confirmer sa disponibilit√©.</strong>
+            ?? <strong>Le prestataire a 2 heures pour confirmer sa disponibilitÈ.</strong>
           </Text>
           <Text style={infoText}>
             Si le prestataire ne peut pas confirmer, nous vous en assignerons automatiquement un autre.
@@ -80,11 +80,11 @@ export const ProviderAssignedEmail = ({
         </Section>
 
         <Text style={text}>
-          Vous serez notifi√© d√®s que le prestataire aura confirm√©. Vous pourrez ensuite discuter avec lui via la messagerie de votre espace client.
+          Vous serez notifiÈ dËs que le prestataire aura confirmÈ. Vous pourrez ensuite discuter avec lui via la messagerie de votre espace client.
         </Text>
 
         <Text style={footer}>
-          L'√©quipe Bikawo
+          L'Èquipe Bikawo
         </Text>
       </Container>
     </Body>

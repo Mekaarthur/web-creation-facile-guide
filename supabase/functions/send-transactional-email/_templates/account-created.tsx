@@ -1,4 +1,4 @@
-ï»¿import {
+import {
   Body,
   Container,
   Head,
@@ -17,7 +17,7 @@ interface AccountCreatedEmailProps {
   appUrl?: string;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 export const AccountCreatedEmail = ({ clientName, appUrl = 'https://bikawo.com' }: AccountCreatedEmailProps) => (
   <Html>
@@ -29,11 +29,11 @@ export const AccountCreatedEmail = ({ clientName, appUrl = 'https://bikawo.com' 
           <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
         </Section>
 
-        <Heading style={h1}>ğŸ‰ Compte crÃ©Ã© avec succÃ¨s</Heading>
+        <Heading style={h1}>?? Compte créé avec succès</Heading>
 
         <Text style={text}>Bonjour {clientName},</Text>
         <Text style={text}>
-          Votre compte Bikawo a Ã©tÃ© crÃ©Ã© avec succÃ¨s. Vous pouvez dÃ¨s maintenant vous connecter et complÃ©ter votre profil.
+          Votre compte Bikawo a été créé avec succès. Vous pouvez dès maintenant vous connecter et compléter votre profil.
         </Text>
 
         <Section style={ctaBox}>
@@ -42,12 +42,12 @@ export const AccountCreatedEmail = ({ clientName, appUrl = 'https://bikawo.com' 
 
         <Section style={infoBox}>
           <Text style={infoTitle}>Besoin d'aide ?</Text>
-          <Text style={infoText}>RÃ©pondez simplement Ã  cet email, nous sommes lÃ  pour vous aider.</Text>
+          <Text style={infoText}>Répondez simplement à cet email, nous sommes là pour vous aider.</Text>
         </Section>
 
         <Text style={footer}>
           Bikawo - Votre assistant personnel au quotidien<br />
-          ğŸ“§ contact@bikawo.com | ğŸ“ 06 09 08 53 90
+          ?? contact@bikawo.com | ?? 06 09 08 53 90
         </Text>
       </Container>
     </Body>

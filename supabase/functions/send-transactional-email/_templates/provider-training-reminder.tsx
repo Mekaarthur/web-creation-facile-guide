@@ -1,4 +1,4 @@
-ï»¿import * as React from 'npm:react@18.3.1';
+import * as React from 'npm:react@18.3.1';
 import {
   Body,
   Container,
@@ -13,7 +13,7 @@ import {
   Hr,
 } from 'npm:@react-email/components@0.0.22';
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 interface ProviderTrainingReminderEmailProps {
   providerName: string;
@@ -29,7 +29,7 @@ export const ProviderTrainingReminderEmail = ({
   return (
     <Html>
       <Head />
-      <Preview>N'oubliez pas de complÃ©ter votre formation</Preview>
+      <Preview>N'oubliez pas de compléter votre formation</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={logoContainer}>
@@ -40,7 +40,7 @@ export const ProviderTrainingReminderEmail = ({
           <Text style={text}>Bonjour {providerName},</Text>
           
           <Text style={text}>
-            Nous remarquons que vous n'avez pas encore complÃ©tÃ© la formation obligatoire Bikawo.
+            Nous remarquons que vous n'avez pas encore complété la formation obligatoire Bikawo.
           </Text>
 
           <Section style={progressBox}>
@@ -57,9 +57,9 @@ export const ProviderTrainingReminderEmail = ({
           </Text>
 
           <ul style={list}>
-            <li style={listItem}>âœ“ Comprendre nos standards de qualitÃ©</li>
-            <li style={listItem}>âœ“ ConnaÃ®tre vos droits et obligations</li>
-            <li style={listItem}>âœ“ Activer votre compte prestataire</li>
+            <li style={listItem}>? Comprendre nos standards de qualité</li>
+            <li style={listItem}>? Connaître vos droits et obligations</li>
+            <li style={listItem}>? Activer votre compte prestataire</li>
           </ul>
 
           <Button

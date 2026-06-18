@@ -1,4 +1,4 @@
-ï»¿import {
+import {
   Body,
   Container,
   Head,
@@ -23,7 +23,7 @@ interface BookingRescheduledEmailProps {
   reason?: string;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 export const BookingRescheduledEmail = ({
   clientName = 'Client',
@@ -37,7 +37,7 @@ export const BookingRescheduledEmail = ({
 }: BookingRescheduledEmailProps) => (
   <Html>
     <Head />
-    <Preview>Votre rÃ©servation a Ã©tÃ© reportÃ©e ğŸ“…</Preview>
+    <Preview>Votre réservation a été reportée ??</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoContainer}>
@@ -49,13 +49,13 @@ export const BookingRescheduledEmail = ({
         <Text style={text}>Bonjour {clientName},</Text>
         
         <Text style={text}>
-          Votre <strong>{serviceName}</strong> avec {providerName} a Ã©tÃ© reportÃ©.
+          Votre <strong>{serviceName}</strong> avec {providerName} a été reporté.
         </Text>
 
         {reason && (
           <Section style={reasonBox}>
             <Text style={reasonText}>
-              ğŸ“ Raison: {reason}
+              ?? Raison: {reason}
             </Text>
           </Section>
         )}
@@ -66,16 +66,16 @@ export const BookingRescheduledEmail = ({
               <td style={dateCell}>
                 <Text style={dateLabel}>Ancienne date</Text>
                 <Text style={dateValue}>
-                  âŒ {oldDate} Ã  {oldTime}
+                  ? {oldDate} à {oldTime}
                 </Text>
               </td>
               <td style={arrowCell}>
-                <Text style={arrow}>â†’</Text>
+                <Text style={arrow}>?</Text>
               </td>
               <td style={dateCell}>
                 <Text style={dateLabel}>Nouvelle date</Text>
                 <Text style={dateValueNew}>
-                  âœ… {newDate} Ã  {newTime}
+                  ? {newDate} à {newTime}
                 </Text>
               </td>
             </tr>
@@ -83,23 +83,23 @@ export const BookingRescheduledEmail = ({
         </Section>
 
         <Text style={text}>
-          ğŸ’› Nous nous excusons pour ce changement et ferons tout notre possible pour que cette nouvelle date vous convienne parfaitement.
+          ?? Nous nous excusons pour ce changement et ferons tout notre possible pour que cette nouvelle date vous convienne parfaitement.
         </Text>
 
         <Section style={ctaSection}>
           <Link href={`https://bikawo.com/espace-personnel`} style={button}>
-            Voir ma rÃ©servation
+            Voir ma réservation
           </Link>
         </Section>
 
         <Text style={footer}>
-          Si cette nouvelle date ne vous convient pas, n'hÃ©sitez pas Ã  nous contacter.
+          Si cette nouvelle date ne vous convient pas, n'hésitez pas à nous contacter.
         </Text>
 
         <Text style={signature}>
-          Avec toute notre comprÃ©hension,<br />
-          L'Ã©quipe Bikawo ğŸ’›<br />
-          ğŸ“§ contact@bikawo.com | ğŸ“ 06 09 08 53 90
+          Avec toute notre compréhension,<br />
+          L'équipe Bikawo ??<br />
+          ?? contact@bikawo.com | ?? 06 09 08 53 90
         </Text>
       </Container>
     </Body>

@@ -1,4 +1,4 @@
-Ôªøimport * as React from 'npm:react@18.3.1';
+import * as React from 'npm:react@18.3.1';
 import {
   Body,
   Container,
@@ -20,7 +20,7 @@ interface ProviderDocumentRejectedEmailProps {
   siteUrl?: string;
 }
 
-const LOGO_URL = 'https://bikawo.com/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png';
+const LOGO_URL = 'https://bikawo.com/bikawo-logo.png';
 
 export const ProviderDocumentRejectedEmail = ({
   providerName = 'Prestataire',
@@ -31,18 +31,18 @@ export const ProviderDocumentRejectedEmail = ({
   return (
     <Html>
       <Head />
-      <Preview>Action requise : Document √† renvoyer</Preview>
+      <Preview>Action requise : Document ‡ renvoyer</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={logoContainer}>
             <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
           </Section>
-          <Heading style={h1}>Document √† renouveler</Heading>
+          <Heading style={h1}>Document ‡ renouveler</Heading>
           
           <Text style={text}>Bonjour {providerName},</Text>
           
           <Text style={text}>
-            Nous avons examin√© votre document ({documentType}) mais nous ne pouvons malheureusement pas le valider.
+            Nous avons examinÈ votre document ({documentType}) mais nous ne pouvons malheureusement pas le valider.
           </Text>
 
           <Section style={warningBox}>
@@ -64,7 +64,7 @@ export const ProviderDocumentRejectedEmail = ({
           <Hr style={hr} />
 
           <Text style={footer}>
-            Bikawo - Nous sommes l√† pour vous accompagner
+            Bikawo - Nous sommes l‡ pour vous accompagner
           </Text>
         </Container>
       </Body>
