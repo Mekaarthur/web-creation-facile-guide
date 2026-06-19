@@ -29,14 +29,16 @@ import {
 // ─── R01 — ProtectedRoute → spinner puis redirect si non connecté ─────────────
 
 test.describe('R01 — ProtectedRoute sans session', () => {
-  test('R01: /payment sans session → redirect /auth', async ({ page }) => {
+  test('R01: /payment sans session → rendue normalement (R-SEL-09 non protégée)', async ({ page }) => {
     await page.route('**/auth/v1/**', stubEmpty);
     await page.route('**/rest/v1/**', stubEmpty);
     await page.route('**/functions/v1/**', json(200, {}));
 
     await page.goto('/payment');
 
-    await expect(page).toHaveURL(/\/auth/, { timeout: 5000 });
+    // R-SEL-09: /payment est intentionnellement non protégée par ProtectedRoute
+    await expect(page).not.toHaveURL(/\/auth/, { timeout: 5000 });
+    await expect(page.locator('body')).toBeVisible();
   });
 
   test('R01b: contenu protégé jamais visible avant redirect (no flash)', async ({ page }) => {

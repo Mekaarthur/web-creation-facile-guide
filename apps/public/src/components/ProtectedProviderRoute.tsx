@@ -34,7 +34,7 @@ const ProtectedProviderRoute = ({ children, redirectTo = '/auth/provider', requi
       });
   }, [user, requireVerified, primaryRole]);
 
-  if (loading || checkingVerified) {
+  if (loading || checkingVerified || (requireVerified && !!user && hasRole('provider') && isVerified === null)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -98,7 +98,7 @@ const ProtectedProviderRoute = ({ children, redirectTo = '/auth/provider', requi
   }
 
   // Si requireVerified et provider non vérifié → rediriger vers onboarding
-  if (requireVerified && isVerified === false) {
+  if (requireVerified && isVerified !== true) {
     return <Navigate to="/provider-onboarding" replace />;
   }
 

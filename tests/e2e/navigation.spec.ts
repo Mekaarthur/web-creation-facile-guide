@@ -122,23 +122,23 @@ test.describe('N02 — Route inconnue → 404', () => {
   });
 });
 
-// ─── N03 — /payment sans session → /auth ─────────────────────────────────────
+// ─── N03 — /payment accessible sans session (R-SEL-09) ───────────────────────
 
-test.describe('N03 — /payment sans session', () => {
-  test('N03: redirige vers /auth quand non authentifié', async ({ page }) => {
+test.describe('N03 — /payment accessible sans session (R-SEL-09)', () => {
+  test('N03: /payment accessible sans session (route non protégée R-SEL-09)', async ({ page }) => {
     await stubSupabaseNoSession(page);
     await page.goto('/payment');
 
-    // ProtectedRoute redirects unauthenticated users to /auth
-    await expect(page).toHaveURL(/\/auth/, { timeout: 8000 });
+    // R-SEL-09: /payment est intentionnellement non protégée par ProtectedRoute
+    await expect(page).not.toHaveURL(/\/auth/, { timeout: 8000 });
+    await expect(page.getByText(/paiement sécurisé/i)).toBeVisible({ timeout: 8000 });
   });
 
-  test('N03b: la page /auth est rendue (pas de page blanche)', async ({ page }) => {
+  test('N03b: /payment rendue sans page blanche (pas de redirect)', async ({ page }) => {
     await stubSupabaseNoSession(page);
     await page.goto('/payment');
 
-    await expect(page).toHaveURL(/\/auth/, { timeout: 8000 });
-    // Auth page should have some visible content
+    await expect(page).not.toHaveURL(/\/auth/, { timeout: 8000 });
     await expect(page.locator('body')).not.toBeEmpty();
   });
 });

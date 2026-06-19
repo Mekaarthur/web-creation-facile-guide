@@ -73,10 +73,20 @@ const json = (status: number, body: unknown): Handler =>
 
 const mockSignupSuccess: Handler     = json(200, mockSessionBody());
 const mockSignupGhostUser: Handler   = json(200, {
-  // Supabase returns 200 with identities: [] when the email is already registered
-  // but unconfirmed ("ghost user" pattern).
-  ...mockSessionBody(false),
-  user: { ...mockSessionBody(false).user, identities: [] },
+  // Réponse réelle Supabase ghost user : user sans session (pas d'access_token).
+  // Sans access_token, le SDK ne fire pas SIGNED_IN → la page /auth ne redirige pas.
+  id:                 MOCK_USER_ID,
+  aud:                'authenticated',
+  role:               'authenticated',
+  email:              MOCK_EMAIL,
+  email_confirmed_at: null,
+  confirmed_at:       null,
+  phone:              '',
+  app_metadata:       {},
+  user_metadata:      { first_name: 'Marie', last_name: 'Dupont', user_type: 'client' },
+  identities:         [],
+  created_at:         new Date().toISOString(),
+  updated_at:         new Date().toISOString(),
 });
 const mockLoginSuccess: Handler      = json(200, mockSessionBody());
 const mockLoginInvalid: Handler      = json(400, {
@@ -342,12 +352,11 @@ test.describe('Flux A — Inscription client', () => {
     });
 
     test('A06 — email déjà utilisé (ghost user) affiche le toast d\'erreur', async ({ page }) => {
-      // auth/v1/** catch-all returns 401 → SIGNED_OUT after ghost user SIGNED_IN
-      // → /auth guard stays neutral, toast remains visible
-      await page.route('**/auth/v1/**',     json(401, { error: 'no session' }));
-      await page.route('**/rest/v1/**',     json(200, []));
-      await page.route(/\/auth\/v1\/signup/, mockSignupGhostUser);
+      // Ordre LIFO Playwright : catch-alls en premier (priorité basse), signup mock en dernier (priorité haute).
       await page.route('**/functions/v1/**', mockEdgeFn200);
+      await page.route('**/rest/v1/**',      json(200, []));
+      await page.route('**/auth/v1/**',      json(401, { error: 'no session' }));
+      await page.route(/\/auth\/v1\/signup/, mockSignupGhostUser);
       await fillSignupFields(page);
       await tickConsents(page);
       await page.getByRole('button', { name: /Créer mon compte client/i }).click();
@@ -414,9 +423,11 @@ test.describe('Flux A — Inscription client', () => {
 
   test.describe('N03/N04/R01 — Routes protégées sans session', () => {
 
-    test('N03 — /payment sans session redirige vers /auth', async ({ page }) => {
+    test('N03 — /payment accessible sans session (R-SEL-09)', async ({ page }) => {
+      // R-SEL-09: /payment est intentionnellement non protégée par ProtectedRoute
       await page.goto('/payment');
-      await expect(page).toHaveURL(/\/auth/, { timeout: 8_000 });
+      await expect(page).not.toHaveURL(/\/auth/, { timeout: 8_000 });
+      await expect(page.locator('body')).toBeVisible();
     });
 
     test('N04 — /espace-personnel sans session redirige vers /auth', async ({ page }) => {
@@ -451,11 +462,11 @@ test.describe('Flux A — Inscription client', () => {
       expect(protectedRendered).toBe(false);
     });
 
-    test('N03b — /payment sans session préserve la query string dans la redirect', async ({ page }) => {
-      // Certaines implémentations de ProtectedRoute passent l'URL cible via ?redirect=
+    test('N03b — /payment sans session rendue normalement avec query string (R-SEL-09)', async ({ page }) => {
+      // R-SEL-09: /payment non protégée, la query string est préservée sur la page de paiement
       await page.goto('/payment?service=Ménage&price=50');
-      await expect(page).toHaveURL(/\/auth/, { timeout: 8_000 });
-      // L'URL de destination est /auth (le reste est géré côté composant)
+      await expect(page).not.toHaveURL(/\/auth/, { timeout: 8_000 });
+      await expect(page.locator('body')).toBeVisible();
     });
   });
 

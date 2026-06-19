@@ -464,6 +464,10 @@ test.describe('Flux B — Guards ProtectedProviderRoute', () => {
 
   test('G04 — provider non vérifié sur /espace-prestataire (requireVerified) redirige vers /provider-onboarding', async ({ page }) => {
     await injectSession(page, makeProviderSession());
+    // Mocks auth : catch-all 401 + /user 200 pour éviter que le SDK invalide le JWT de test via le vrai serveur
+    // (LAST registered = highest priority in Playwright)
+    await page.route('**/auth/v1/**',     json(401, { error: 'no session' }));
+    await page.route('**/auth/v1/user**', json(200, makeProviderSession().user));
     // AuthProvider: rôle provider
     await page.route('**/rest/v1/user_roles*', mockUserRolesProvider);
     // ProtectedProviderRoute requireVerified → query providers → is_verified=false

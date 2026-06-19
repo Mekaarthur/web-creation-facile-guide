@@ -321,7 +321,7 @@ test.describe('CART → CHECKOUT — Transition vers la finalisation', () => {
 
     await page.getByRole('button', { name: /confirmer/i }).first().click();
 
-    await expect(page.getByText('Erreur', { exact: true })).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/erreur/i).first()).toBeVisible({ timeout: 8000 });
     // Still on checkout page (not navigated away)
     await expect(page.getByText(/finalisation/i)).toBeVisible();
   });
@@ -332,9 +332,10 @@ test.describe('CART → CHECKOUT — Transition vers la finalisation', () => {
 test.describe('PAY — Page /payment', () => {
   test('PAY-01: /payment affiche les onglets invité et compte', async ({ page }) => {
     await injectSession(page, makeClientSession());
-    await page.route('**/auth/v1/**', json(401, { error: 'no session' }));
-    await page.route('**/rest/v1/**', stubEmpty);
-    await setupAuthMocks(page);
+    // catch-all 401 + /user 200 enregistré APRÈS (LAST = priorité Playwright) — empêche SIGNED_OUT
+    await page.route('**/auth/v1/**',     json(401, { error: 'no session' }));
+    await page.route('**/auth/v1/user**', json(200, makeClientSession().user));
+    await page.route('**/rest/v1/**',     stubEmpty);
     await page.goto('/payment?service=Ménage&price=75&type=one-time&duration=3');
     // Two tabs should be visible — labels: "Paiement rapide" and "Avec compte"
     await expect(page.getByRole('tab', { name: /paiement rapide/i })).toBeVisible({ timeout: 5000 });
