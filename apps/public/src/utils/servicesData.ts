@@ -41,6 +41,7 @@ export type SubService = {
   title: string;
   price: number;
   priceDisplay?: string;
+  isForfait?: boolean;
   image: string;
   description: string;
   options?: string[];
@@ -209,7 +210,8 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         slug: "produits-menage",
         title: "Produits de ménage",
         price: 2.5,
-        priceDisplay: "2,50€",
+        priceDisplay: "2,50€ (forfait)",
+        isForfait: true,
         image: serviceHomeCleaning,
         description: "Fourniture de produits de ménage pour les prestations de nettoyage.",
         options: [

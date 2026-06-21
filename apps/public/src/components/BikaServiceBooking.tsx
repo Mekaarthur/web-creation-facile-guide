@@ -34,6 +34,7 @@ interface BikaServiceBookingProps {
     financialCategory: string;
     urssaf_eligible: boolean;
     slug?: string;
+    isForfait?: boolean;
   };
   packageTitle: string;
 }
@@ -108,12 +109,15 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
   };
 
   // R-SEL-07: durée facturable (−30 min de pause si > 4h)
+  // R-SRV-01: forfait → 1h fixe (jamais multiplié par les heures)
   const getBillableHours = () => {
+    if (service.isForfait) return 1;
     const dur = calculateDuration();
     return dur > 4 ? dur - 0.5 : dur;
   };
 
   const getTotalPrice = () => {
+    if (service.isForfait) return service.price;
     return getBillableHours() * service.price;
   };
 
@@ -252,7 +256,9 @@ const BikaServiceBooking = ({ isOpen, onClose, service, packageTitle }: BikaServ
     setTimeout(() => {
       toast({
         title: "✅ Service ajouté au panier",
-        description: `${service.name} - ${getBillableHours()}h pour ${getTotalPrice().toFixed(2)}€`,
+        description: service.isForfait
+          ? `${service.name} - forfait ${service.price.toFixed(2)}€`
+          : `${service.name} - ${getBillableHours()}h pour ${getTotalPrice().toFixed(2)}€`,
         duration: 5000,
       });
 

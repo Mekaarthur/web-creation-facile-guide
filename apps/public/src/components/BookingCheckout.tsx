@@ -207,7 +207,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
           serviceName: cap(services.map(s => s.serviceName).join(', ')),
           guestEmail: clientInfo.email,
           metadata: {
-            services: cap(JSON.stringify(services.map(s => ({ n: s.serviceName, c: s.category, p: s.price, q: s.quantity, d: s.customBooking?.date, t: s.customBooking?.startTime, fc: s.financialCategory, ue: s.urssaf_eligible ? 1 : 0, sl: s.slug })))),
+            services: cap(JSON.stringify(services.map(s => ({ n: s.serviceName, c: s.category, p: s.price, q: s.quantity, d: s.customBooking?.date, t: s.customBooking?.startTime, et: s.customBooking?.endTime, h: s.customBooking?.hours, fc: s.financialCategory, ue: s.urssaf_eligible ? 1 : 0, sl: s.slug })))),
             client_name: cap(`${clientInfo.firstName} ${clientInfo.lastName}`),
             client_email: cap(clientInfo.email), client_phone: cap(clientInfo.phone || ''),
             address: cap(clientInfo.address || ''),

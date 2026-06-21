@@ -207,6 +207,16 @@ Ne jamais importer `activeCorsHeaders` depuis `_shared/cors.ts` dans une nouvell
 - **R-PROV-06** : L'itinéraire ouvre `https://maps.google.com/?q={booking.address}` dans un nouvel onglet. Affiché uniquement si `booking.address` est renseigné.
 - **R-PROV-07** : Les photos sont uploadées dans le bucket `provider-documents`, chemin `missions/{booking_id}/{timestamp}_{filename}`. Contraintes : max 10 MB, formats PDF/JPEG/PNG/WebP uniquement (enforced par migration `20260614000003`).
 
+## R-SRV-01 — Produits de ménage (FORFAIT)
+
+- slug: `produits-menage`
+- price: **2.50€ fixe** — JAMAIS multiplié par les heures
+- quantity: toujours 1, `isForfait: true` dans `servicesData.ts` et `BikawoCartItem`
+- `getBillableHours()` et `getTotalPrice()` court-circuitent si `service.isForfait`
+- `verify-payment` : `normalizeService` force `quantity=1` si `slug='produits-menage'`
+- `total_price` en DB = 2.50€ (via `effectiveTotalPrice`)
+- Tous les autres services sont **horaires** (`price × hours`)
+
 ## CLIENT SPACE RULES
 
 - **R-CLI-01** : Attestation fiscale disponible uniquement pour les bookings `status = 'completed'` ET `services.urssaf_eligible = true`. Document distinct de la facture — généré via EF `generate-attestation-pdf`. Ne jamais rediriger vers l'onglet attestations globales à la place.

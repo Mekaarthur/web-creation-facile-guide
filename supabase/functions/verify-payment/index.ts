@@ -81,21 +81,28 @@ serve(async (req) => {
     }
 
     // services : normalise les clés abrégées (n/c/p/q/d/t) vers noms complets
-    const normalizeService = (s: any) => ({
-      serviceName:       s.serviceName       ?? s.n  ?? '',
-      category:          s.category          ?? s.c  ?? '',
-      price:             s.price             ?? s.p  ?? 0,
-      quantity:          s.quantity          ?? s.q  ?? 1,
-      financialCategory: s.financialCategory ?? s.fc ?? 'bika_maison',
-      urssaf_eligible:   s.ue !== undefined ? (s.ue !== 0 && s.ue !== false) : (s.urssaf_eligible ?? true),
-      customBooking: s.customBooking ?? {
-        date:      s.d ?? '',
-        startTime: s.t ?? '09:00',
-        endTime:   '17:00',
-        hours:     s.q ?? 1,
-        notes:     '',
-      },
-    });
+    const normalizeService = (s: any) => {
+      const isForfait = s.sl === 'produits-menage';
+      const quantity  = isForfait ? 1 : (s.quantity ?? s.q ?? 1);
+      const price     = s.price ?? s.p ?? 0;
+      return {
+        serviceName:       s.serviceName ?? s.n ?? '',
+        category:          s.category    ?? s.c ?? '',
+        slug:              s.sl          ?? s.slug ?? '',
+        price,
+        quantity,
+        isForfait,
+        financialCategory: s.financialCategory ?? s.fc ?? 'bika_maison',
+        urssaf_eligible:   s.ue !== undefined ? (s.ue !== 0 && s.ue !== false) : (s.urssaf_eligible ?? true),
+        customBooking: s.customBooking ?? {
+          date:      s.d  ?? '',
+          startTime: s.t  ?? '09:00',
+          endTime:   s.et ?? s.endTime ?? '17:00',
+          hours:     s.h  ?? s.hours  ?? quantity,
+          notes:     '',
+        },
+      };
+    };
     const services = metadata.services
       ? (JSON.parse(metadata.services) as any[]).map(normalizeService)
       : [];
@@ -196,8 +203,18 @@ serve(async (req) => {
           });
 
           if (createError) {
-            logStep('Erreur création utilisateur', { error: createError });
-            throw createError;
+            logStep('Erreur création utilisateur — fallback listUsers', { error: createError });
+            const errMsg = String(createError).toLowerCase();
+            if (errMsg.includes('already registered') || errMsg.includes('already exists') || errMsg.includes('already been registered')) {
+              const { data: listData } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+              const found = (listData?.users ?? []).find((u: any) => u.email === clientInfo!.email);
+              if (found) {
+                userId = found.id;
+                logStep('User récupéré via listUsers (createUser already-registered)', { userId });
+              }
+            } else {
+              logStep('Erreur createUser inattendue — booking créé sans userId (guest)', { error: String(createError) });
+            }
           }
 
           if (newUser.user) {
@@ -310,10 +327,55 @@ serve(async (req) => {
         }
       }
 
+      // Slug-based lookup (colonne slug ajoutée en FIX D-A)
+      if (!serviceId && service.slug) {
+        const { data: slugSvc } = await supabaseAdmin
+          .from('services').select('id').eq('slug', service.slug).maybeSingle();
+        if (slugSvc) {
+          serviceId = slugSvc.id;
+          logStep('Service via slug', { slug: service.slug, serviceId });
+        }
+      }
+
+      // Fallback catégorie : financialCategory → DB category (ordre croissant prix)
+      if (!serviceId && service.financialCategory) {
+        const categoryMap: Record<string, string> = {
+          bika_maison:    'BIKA Maison',
+          bika_kids:      'BIKA Kids',
+          bika_animals:   'BIKA Animals',
+          bika_seniors:   'BIKA Seniors',
+          bika_vie:       'BIKA Vie',
+          bika_pro:       'BIKA Pro',
+          bika_travel:    'BIKA Travel',
+          bika_plus:      'BIKA Plus',
+          bika_bricolage: 'BIKA Bricolage',
+        };
+        const dbCategory = categoryMap[service.financialCategory];
+        if (dbCategory) {
+          const { data: catSvc } = await supabaseAdmin
+            .from('services').select('id')
+            .eq('category', dbCategory).eq('is_active', true)
+            .order('price_per_hour', { ascending: true })
+            .limit(1).maybeSingle();
+          if (catSvc) {
+            serviceId = catSvc.id;
+            logStep('Service via catégorie (fallback)', { category: dbCategory, serviceId });
+          }
+        }
+      }
+
       if (!serviceId) {
         logStep('Service introuvable en base — booking créé sans service_id (assignation admin requise)', { name: service.serviceName });
         serviceUnmapped = true;
       }
+
+      // FIX E — total_price effectif : intègre remises URSSAF/fidélité via clientAmount
+      const rawServiceTotal = service.isForfait ? service.price : service.price * service.quantity;
+      const allServicesRaw = services.reduce((sum: number, s: any) =>
+        sum + (s.isForfait ? s.price : s.price * s.quantity), 0);
+      const effectiveTotalPrice = clientAmount > 0 && allServicesRaw > 0
+        ? Math.round(clientAmount * (rawServiceTotal / allServicesRaw) * 100) / 100
+        : rawServiceTotal;
 
       // R7 — Double-booking prevention : prestataires déjà occupés sur ce créneau
       const { data: busyData } = await supabaseAdmin
@@ -386,10 +448,10 @@ serve(async (req) => {
             booking_date: bookingDate,
             start_time: startTime,
             end_time: endTime,
-            total_price: service.price * service.quantity,
+            total_price: effectiveTotalPrice,
             status: 'pending_provider',
             address: clientInfo.address,
-            notes: `stripe_session:${sessionId}\nEmail: ${clientInfo.email}\nTél: ${clientInfo.phone}\nNom: ${clientInfo.firstName} ${clientInfo.lastName}\n⚠️ AUCUN PRESTATAIRE DISPONIBLE — assignation manuelle requise${serviceUnmapped ? `\n⚠️ SERVICE NON IDENTIFIÉ: "${service.serviceName}" — assignation service requise` : ''}`,
+            notes: `stripe_session:${sessionId}\nEmail: ${clientInfo.email}\nTel: ${clientInfo.phone}\nNom: ${clientInfo.firstName} ${clientInfo.lastName}\n⚠️ AUCUN PRESTATAIRE DISPONIBLE — assignation manuelle requise${serviceUnmapped ? `\n⚠️ SERVICE NON IDENTIFIÉ: "${service.serviceName}" — assignation service requise` : ''}`,
             custom_duration: hours,
             hourly_rate: service.price,
           } as any)
@@ -465,11 +527,11 @@ serve(async (req) => {
           booking_date: bookingDate,
           start_time: startTime,
           end_time: endTime,
-          total_price: service.price * service.quantity,
+          total_price: effectiveTotalPrice,
           status: initialStatus,
           confirmed_at: urssafEnabled ? null : new Date().toISOString(),
           address: clientInfo.address,
-          notes: `stripe_session:${sessionId}\nEmail: ${clientInfo.email}\nTél: ${clientInfo.phone}\nNom: ${clientInfo.firstName} ${clientInfo.lastName}${unmappedNote}${urssafEnabled ? '\nURSSAF: en attente de déclaration' : ''}${customBooking.notes ? '\n' + customBooking.notes : ''}`,
+          notes: `stripe_session:${sessionId}\nEmail: ${clientInfo.email}\nTel: ${clientInfo.phone}\nNom: ${clientInfo.firstName} ${clientInfo.lastName}${unmappedNote}${urssafEnabled ? '\nURSSAF: en attente de déclaration' : ''}${customBooking.notes ? '\n' + customBooking.notes : ''}`,
           custom_duration: hours,
           hourly_rate: service.price,
         })
@@ -739,7 +801,7 @@ serve(async (req) => {
               .update({ 
                 status: 'confirmed', 
                 confirmed_at: new Date().toISOString(),
-                notes: `stripe_session:${sessionId}\nEmail: ${clientInfo.email}\nTél: ${clientInfo.phone}\nNom: ${clientInfo.firstName} ${clientInfo.lastName}\nURSSAF: déclaration envoyée - ref ${urssafData?.registrationId || 'N/A'}`,
+                notes: `stripe_session:${sessionId}\nEmail: ${clientInfo.email}\nTel: ${clientInfo.phone}\nNom: ${clientInfo.firstName} ${clientInfo.lastName}\nURSSAF: déclaration envoyée - ref ${urssafData?.registrationId || 'N/A'}`,
               })
               .eq('id', bookingId);
           }

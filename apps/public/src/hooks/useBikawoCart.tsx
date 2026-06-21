@@ -20,6 +20,7 @@ export interface BikawoCartItem {
   financialCategory: string;
   urssaf_eligible: boolean;
   slug?: string;
+  isForfait?: boolean;
 }
 
 export interface CartCompatibilityRule {
@@ -222,7 +223,8 @@ export const useBikawoCart = () => {
         }
       });
 
-      const totalPrice = compatibleItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const totalPrice = compatibleItems.reduce((sum, item) =>
+        sum + (item.isForfait ? item.price : item.price * item.quantity), 0);
       
       bookings.push({
         id: `booking-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -352,7 +354,8 @@ export const useBikawoCart = () => {
 
   // Obtenir le total du panier
   const getCartTotal = useCallback(() => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    return cartItems.reduce((total, item) =>
+      total + (item.isForfait ? item.price : item.price * item.quantity), 0);
   }, [cartItems]);
 
   // Obtenir le nombre d'items
