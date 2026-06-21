@@ -39,25 +39,25 @@ export const BookingConfirmationEmail = ({
 }: BookingConfirmationEmailProps) => (
   <Html>
     <Head />
-    <Preview>Votre réservation {serviceName} est confirmée</Preview>
+    <Preview>Votre rï¿½servation {serviceName} est confirmï¿½e</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoContainer}>
           <Img src={LOGO_URL} width="180" height="auto" alt="Bikawo" style={logo} />
         </Section>
 
-        <Heading style={h1}>? Réservation confirmée</Heading>
+        <Heading style={h1}>? Rï¿½servation confirmï¿½e</Heading>
         
         <Text style={text}>
           Bonjour {clientName},
         </Text>
         
         <Text style={text}>
-          Votre réservation a bien été enregistrée. Nous sommes en train de vous assigner le meilleur prestataire disponible.
+          Votre rï¿½servation a bien ï¿½tï¿½ enregistrï¿½e. Nous sommes en train de vous assigner le meilleur prestataire disponible.
         </Text>
 
         <Section style={detailsBox}>
-          <Heading style={h2}>Détails de votre réservation</Heading>
+          <Heading style={h2}>Dï¿½tails de votre rï¿½servation</Heading>
           
           <Row style={detailRow}>
             <Column style={detailLabel}>Service :</Column>
@@ -83,27 +83,40 @@ export const BookingConfirmationEmail = ({
           
           <Row style={detailRow}>
             <Column style={detailLabel}><strong>Prix total :</strong></Column>
-            <Column style={priceValue}><strong>{totalPrice.toFixed(2)}€</strong></Column>
+            <Column style={priceValue}><strong>{totalPrice.toFixed(2)}ï¿½</strong></Column>
           </Row>
+        </Section>
+
+        <Section style={urssafBox}>
+          <Text style={urssafTitle}>ðŸ’° CrÃ©dit d'impÃ´t 50%</Text>
+          <Text style={urssafText}>
+            Ce service est Ã©ligible au crÃ©dit d'impÃ´t emploi Ã  domicile.
+            Conservez cet email et tÃ©lÃ©chargez votre attestation fiscale depuis
+            votre espace personnel pour votre dÃ©claration de revenus.
+          </Text>
+          <Text style={urssafFooter}>
+            ðŸ“„ Attestation disponible dans :<br />
+            <strong>Mon compte â†’ Attestations fiscales</strong>
+          </Text>
         </Section>
 
         <Section style={infoBox}>
           <Text style={infoText}>
-            ?? <strong>Prochaines étapes :</strong>
+            ?? <strong>Prochaines ï¿½tapes :</strong>
           </Text>
           <Text style={infoText}>
-            1. Vous recevrez un email dès qu'un prestataire sera assigné<br />
-            2. Le prestataire confirmera sa disponibilité<br />
+            1. Vous recevrez un email dï¿½s qu'un prestataire sera assignï¿½<br />
+            2. Le prestataire confirmera sa disponibilitï¿½<br />
             3. Vous recevrez un rappel 24h avant la prestation
           </Text>
         </Section>
 
         <Text style={text}>
-          Vous pouvez suivre l'état de votre réservation dans votre espace client.
+          Vous pouvez suivre l'ï¿½tat de votre rï¿½servation dans votre espace client.
         </Text>
 
         <Text style={footer}>
-          Numéro de réservation : {bookingId}<br />
+          Numï¿½ro de rï¿½servation : {bookingId}<br />
           <br />
           Bikawo - Votre assistant personnel au quotidien<br />
           ?? contact@bikawo.com | ?? 06 09 08 53 90
@@ -216,6 +229,34 @@ const footer = {
   lineHeight: '20px',
   margin: '32px 20px',
   textAlign: 'center' as const,
+};
+
+const urssafBox = {
+  backgroundColor: '#f0fdf4',
+  border: '1px solid #86efac',
+  borderRadius: '8px',
+  margin: '16px 20px',
+  padding: '16px',
+};
+
+const urssafTitle = {
+  color: '#166534',
+  fontWeight: '600' as const,
+  margin: '0 0 8px 0',
+  fontSize: '15px',
+};
+
+const urssafText = {
+  color: '#15803d',
+  fontSize: '14px',
+  margin: '0 0 8px 0',
+  lineHeight: '1.5',
+};
+
+const urssafFooter = {
+  color: '#166534',
+  fontSize: '13px',
+  margin: '0',
 };
 
 export default BookingConfirmationEmail;

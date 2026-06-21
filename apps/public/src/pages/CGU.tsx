@@ -155,7 +155,7 @@ Le Partenaire demeure seul responsable, notamment des produits utilisés, de son
 
 Les prix sont indiqués en euros toutes taxes comprises (TTC). TVA non applicable — article 293B du CGI.
 
-Le prix des prestations est affiché sur la Plateforme. Le Client règle les Prestations par carte bancaire, via l'avance immédiate URSSAF, ou tout autre moyen proposé sur la Plateforme.
+Le prix des prestations est affiché sur la Plateforme. Le Client règle les Prestations par carte bancaire ou tout autre moyen proposé sur la Plateforme.
 
 Bikawo se réserve le droit de modifier les prix affichés, sans affecter les Commandes déjà confirmées.
 
@@ -165,8 +165,6 @@ La rémunération de Bikawo correspond à la différence entre le prix accepté 
 8.2. Paiement des Prestations
 
 Le paiement fait l'objet d'une pré-autorisation bancaire 24h avant le début de la Prestation et est débité dans les 24h suivant sa réalisation.
-
-Dans le cadre de l'avance immédiate de crédit d'impôt, les montants dus au titre des prestations sont prélevés par l'URSSAF Caisse nationale sur le compte bancaire du Client.
 
 La rémunération du Partenaire est reversée via Stripe par Bikawo sur le compte bancaire indiqué par le Partenaire.
 
@@ -184,14 +182,13 @@ Les factures Client sont disponibles dans le Compte dans les 24h suivant la Pres
 
 Le Partenaire donne mandat exprès à Bikawo, qui l'accepte, pour établir en son nom et pour son compte les factures relatives aux Prestations. Le Partenaire demeure seul responsable de ses obligations légales et fiscales, notamment en matière de TVA.
 
-8.5. Avance immédiate du crédit d'impôt
+8.5. Crédit d'impôt emploi à domicile
 
-Les Clients peuvent bénéficier de l'avance immédiate de crédit d'impôt. Pour en bénéficier, le Client doit :
-• disposer d'une adresse en France ;
-• appartenir à un foyer fiscal ayant déjà déclaré ses revenus et être à jour ;
-• disposer d'un mandat SEPA actif au bénéfice de l'URSSAF ;
-• avoir accès à son compte www.particulier.urssaf.fr ;
-• disposer de fonds suffisants pour payer la Prestation.`
+Les services à la personne éligibles ouvrent droit à un crédit d'impôt de 50% des dépenses engagées (art. 199 sexdecies du CGI), dans la limite de 12 000€ de dépenses annuelles (soit 6 000€ de crédit d'impôt maximum).
+
+Bikawo n'est pas mandataire URSSAF pour l'avance immédiate du crédit d'impôt. Le crédit d'impôt s'applique lors de votre déclaration annuelle de revenus.
+
+Une attestation fiscale annuelle est mise à votre disposition dans votre espace personnel au mois de janvier de chaque année, récapitulant l'ensemble de vos dépenses éligibles.`
     },
     {
       id: "engagements-bikawo",

@@ -176,7 +176,12 @@ const ServicesGrid = () => {
         ))}
       </div>
       <p className="text-xs text-muted-foreground mt-2 text-center">
-        *après crédit d'impôt 50% (art. 199 sexdecies CGI)
+        *après crédit d'impôt annuel 50% (art. 199 sexdecies CGI)
+      </p>
+      <p className="text-xs text-gray-400 text-center mt-4 px-4">
+        * Crédit d'impôt 50% récupérable lors de votre déclaration annuelle de revenus
+        (art. 199 sexdecies du CGI). Bikawo vous fournit l'attestation fiscale
+        en janvier de chaque année.
       </p>
     </>
   );
