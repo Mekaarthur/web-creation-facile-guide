@@ -111,6 +111,21 @@ serve(async (req) => {
     const amount = Number(booking.total_price ?? 0);
     const creditEstimate = (amount * 0.5).toFixed(2);
 
+    // P5 — référence document unique
+    const docRef = `ATT-${new Date().getFullYear()}-${bookingId.substring(0, 8).toUpperCase()}`;
+
+    // P4 — date de génération
+    const generationDate = new Date().toLocaleDateString("fr-FR", {
+      day: "2-digit", month: "long", year: "numeric"
+    });
+
+    // P8 — durée en heures
+    const [sh, sm] = booking.start_time.split(":").map(Number);
+    const [eh, em] = booking.end_time.split(":").map(Number);
+    const durationHours = ((eh * 60 + em) - (sh * 60 + sm)) / 60;
+    const durationStr = Number.isInteger(durationHours)
+      ? `${durationHours}h` : `${durationHours.toFixed(1)}h`;
+
     // ── EN-TÊTE BIKAWO ────────────────────────────────────────────────
     doc.setFontSize(18);
     doc.setFont("helvetica", "bold");
@@ -124,6 +139,7 @@ serve(async (req) => {
     doc.text(BIKAWO_ADDRESS, margin, 41);
     doc.text(`SIRET : ${BIKAWO_SIRET}`, margin, 47);
     doc.text(`contact@bikawo.com  |  ${BIKAWO_PHONE}`, margin, 53);
+    doc.text(`N° SAP : ${BIKAWO_SIRET}`, margin, 59); // P9
 
     // ── TITRE DU DOCUMENT ─────────────────────────────────────────────
     doc.setFontSize(16);
@@ -136,6 +152,9 @@ serve(async (req) => {
     doc.setTextColor(80, 80, 80);
     doc.text("Services à la Personne", pageW - margin - 80, 36);
     doc.text(`Année fiscale : ${year}`, pageW - margin - 80, 43);
+    doc.setFontSize(8);
+    doc.text(`Réf. : ${docRef}`, pageW - margin - 80, 50); // P5
+    doc.text(`Généré le : ${generationDate}`, pageW - margin - 80, 56); // P4
 
     // ── SÉPARATEUR ────────────────────────────────────────────────────
     doc.setDrawColor(200, 200, 200);
@@ -193,6 +212,7 @@ serve(async (req) => {
         `${booking.start_time.slice(0, 5)} – ${booking.end_time.slice(0, 5)}`,
         135, tableTop + 9
       );
+      doc.text(durationStr, 135, tableTop + 16); // P8 — durée
     }
     doc.text(`${amount.toFixed(2)} €`, 167, tableTop + 9);
 
@@ -261,7 +281,7 @@ serve(async (req) => {
       headers: {
         ...corsHeaders,
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="attestation-fiscale-${safeClient}-${year}.pdf"`,
+        "Content-Disposition": `attachment; filename="attestation-fiscale-${year}-${safeClient}-${docRef}.pdf"`,
       },
     });
   } catch (error) {

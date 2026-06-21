@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,14 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { 
-  FileText, 
-  Download, 
-  Search, 
-  Calendar,
+  FileText,
+  Download,
+  Search,
   Receipt,
   Building2,
   Baby,
-  Filter
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -33,6 +32,7 @@ interface Attestation {
 const AttestationsManager = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [attestations, setAttestations] = useState<Attestation[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -261,9 +261,19 @@ const AttestationsManager = () => {
               ))}
             
             {filteredAttestations.filter(att => att.type === 'credit_impot').length === 0 && (
-              <div className="text-center py-8">
+              <div className="text-center py-8 space-y-2">
                 <Building2 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">Aucune attestation crédit d'impôt disponible</p>
+                <p className="text-gray-600 font-medium">
+                  📄 Vos attestations fiscales annuelles seront disponibles ici en janvier 2027.
+                </p>
+                <p className="text-gray-500 text-sm">
+                  En attendant, téléchargez votre attestation par prestation depuis l'onglet
+                  "Mes prestations" → bouton "Attestation" sur chaque prestation complétée.
+                </p>
+                <Button variant="default" className="mt-4"
+                  onClick={() => navigate('/espace-personnel?tab=rendez-vous')}>
+                  Voir mes prestations
+                </Button>
               </div>
             )}
           </div>
@@ -318,7 +328,7 @@ const AttestationsManager = () => {
             {filteredAttestations.filter(att => att.type === 'caf').length === 0 && (
               <div className="text-center py-8">
                 <Baby className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">Aucune attestation CAF disponible</p>
+                <p className="text-gray-500 text-sm">Aucune attestation CAF disponible pour le moment.</p>
               </div>
             )}
           </div>

@@ -56,7 +56,7 @@ async function fetchBookings(userId: string): Promise<Booking[]> {
     .select(`
       id, order_number, booking_date, start_time, end_time, status, total_price, address,
       service_id, provider_id, completed_at, cancelled_at,
-      services:service_id ( name, category ),
+      services:service_id ( name, category, urssaf_eligible ),
       providers:provider_id ( business_name, user_id ),
       invoices ( id, invoice_number, status )
     `)
@@ -218,11 +218,13 @@ export const ClientPrestationsHistory = () => {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error || 'Génération de l\'attestation échouée');
       }
+      const disposition = res.headers.get('Content-Disposition') || '';
+      const match = disposition.match(/filename="([^"]+)"/);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `attestation-fiscale.pdf`;
+      a.download = match ? match[1] : `attestation-fiscale.pdf`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (e: any) {
@@ -416,7 +418,7 @@ export const ClientPrestationsHistory = () => {
                               </Button>
                             )}
                             {/* R-CLI-01: attestation uniquement sur completed + urssaf_eligible */}
-                            {b.status === 'completed' && (
+                            {b.status === 'completed' && (b.services as any)?.urssaf_eligible !== false && (
                               <Button size="sm" variant="outline" onClick={() => handleDownloadAttestation(b.id)} className="gap-1.5">
                                 <Award className="w-3.5 h-3.5" /> Attestation
                               </Button>
