@@ -315,7 +315,7 @@ const ProviderAuth = () => {
           </Link>
           <Link to="/" className="flex items-center gap-2">
             <img 
-              src="/lovable-uploads/4c766686-0c19-4be4-b410-bc4ee2dc5c59.png" 
+              src="/images/bikawo-logo.png" 
               alt="Bikawo" 
               className="h-8 w-auto"
             />

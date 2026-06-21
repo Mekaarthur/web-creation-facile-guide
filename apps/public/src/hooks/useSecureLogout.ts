@@ -11,9 +11,6 @@ export const useSecureLogout = () => {
 
   const handleLogout = async () => {
     try {
-      console.log('[SecureLogout] Logging out user');
-      
-      // Appeler la méthode signOut qui nettoie tout
       await signOut();
       
       // Nettoyer le localStorage de toute donnée résiduelle
@@ -24,12 +21,9 @@ export const useSecureLogout = () => {
       );
       
       keysToRemove.forEach(key => localStorage.removeItem(key));
-      
-      // Nettoyer sessionStorage aussi
+
       sessionStorage.clear();
-      
-      console.log('[SecureLogout] Session cleared successfully');
-      
+
       toast.success('Déconnexion réussie', {
         description: 'À bientôt sur Bikawo !'
       });

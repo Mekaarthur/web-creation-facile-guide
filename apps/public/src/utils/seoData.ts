@@ -34,7 +34,7 @@ export const seoStructuredData = {
     "url": "https://bikawo.com",
     "logo": {
       "@type": "ImageObject",
-      "url": "https://bikawo.com/lovable-uploads/3496ff80-ec42-436d-8734-200bcb42494f.png",
+      "url": "https://bikawo.com/images/bikawo-logo.png",
       "width": 512,
       "height": 512
     },
@@ -68,11 +68,11 @@ export const seoStructuredData = {
     "email": "contact@bikawo.com",
     "logo": {
       "@type": "ImageObject",
-      "url": "https://bikawo.com/lovable-uploads/3496ff80-ec42-436d-8734-200bcb42494f.png",
+      "url": "https://bikawo.com/images/bikawo-logo.png",
       "width": 512,
       "height": 512
     },
-    "image": "https://bikawo.com/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png",
+    "image": "https://bikawo.com/images/bikawo-hero.png",
     "address": {
       "@type": "PostalAddress",
       "addressLocality": "Paris",
@@ -296,7 +296,7 @@ export const generateArticleStructuredData = (article: {
     "name": "Bikawo",
     "logo": {
       "@type": "ImageObject",
-      "url": "https://bikawo.com/lovable-uploads/3496ff80-ec42-436d-8734-200bcb42494f.png",
+      "url": "https://bikawo.com/images/bikawo-logo.png",
       "width": 512,
       "height": 512
     }

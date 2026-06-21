@@ -29,17 +29,13 @@ const PaymentMethodsManager = () => {
 
 const fetchPaymentMethods = async () => {
   try {
-    console.log('Début de la récupération des méthodes de paiement');
     const { data, error } = await supabase.functions.invoke('get-payment-methods');
-    
-    console.log('Réponse de get-payment-methods:', { data, error });
-    
+
     if (error) {
       console.error('Erreur fonction edge:', error);
       throw error;
     }
     
-    console.log('Méthodes de paiement récupérées:', data?.paymentMethods?.length || 0);
     setPaymentMethods(data?.paymentMethods || []);
   } catch (error) {
     console.error('Erreur lors du chargement des méthodes de paiement:', error);

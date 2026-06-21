@@ -81,7 +81,7 @@ const Hero = () => {
           <div className={`relative ${isInView ? 'animate-fade-in' : 'opacity-0'}`} style={{animationDelay: '0.3s'}}>
             <div className="relative max-w-lg mx-auto">
               <img
-                src="/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png"
+                src="/images/bikawo-hero.png"
                 alt="Famille sereine grâce à Bikawo"
                 className="w-full h-auto rounded-2xl shadow-glow"
                 loading="eager"

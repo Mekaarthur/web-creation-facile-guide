@@ -17,7 +17,7 @@ const SEOComponent = ({
   title = "Bikawo - La charge mentale en moins, la sérénité en plus",
   description = "Services d'assistance familiale combinés avec un seul prestataire de confiance. Préparation culinaire / batch cooking, garde d'enfants, aide administrative. Réactivité et flexibilité garanties.",
   keywords = "charge mentale, assistance familiale, garde enfants, préparation culinaire, batch cooking, services à domicile, délégation tâches, conciergerie familiale, Paris, France",
-  image = "/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png",
+  image = "/images/bikawo-hero.png",
   url = "https://bikawo.com",
   type = "website",
   publishedTime,

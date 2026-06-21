@@ -41,10 +41,8 @@ const AttestationsManager = () => {
 
   useEffect(() => {
     if (user) {
-      console.log('Utilisateur connecté, chargement des attestations...');
       loadAttestations();
     } else {
-      console.log("Pas d'utilisateur connecté");
       setLoading(false);
     }
   }, [user]);
@@ -56,8 +54,6 @@ const AttestationsManager = () => {
         setLoading(false);
         return;
       }
-      console.log('Chargement des attestations (DB) pour:', user.id);
-
       const { data, error } = await (supabase as any)
         .from('attestations')
         .select('*')
@@ -66,7 +62,6 @@ const AttestationsManager = () => {
 
       if (error) throw error;
 
-      console.log('Attestations récupérées:', data?.length || 0);
       setAttestations((data || []) as Attestation[]);
     } catch (error) {
       console.error('Erreur lors du chargement des attestations:', error);

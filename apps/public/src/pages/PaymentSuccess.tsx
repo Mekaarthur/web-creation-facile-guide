@@ -73,8 +73,6 @@ const PaymentSuccess = () => {
       }
 
       try {
-        console.log('[PaymentSuccess] Vérification paiement session:', sessionId);
-
         const timeoutPromise = new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error("La vérification a expiré, veuillez rafraîchir la page")), 15000)
         );
@@ -94,7 +92,6 @@ const PaymentSuccess = () => {
           throw new Error(data?.error || "Erreur lors de la vérification du paiement");
         }
 
-        console.log('[PaymentSuccess] Paiement vérifié:', data);
         setVerificationData(data);
 
         // Nettoyer le panier localStorage

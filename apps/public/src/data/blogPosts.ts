@@ -23,7 +23,7 @@ export const blogPosts: BlogPost[] = [
     readTime: "15 min",
     publishedAt: "2025-01-18",
     author: "Anita - Co-fondatrice Bikawo",
-    image: "/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png",
+    image: "/images/bikawo-hero.png",
     featured: true
   },
   {
@@ -36,7 +36,7 @@ export const blogPosts: BlogPost[] = [
     readTime: "8 min",
     publishedAt: "2025-01-25",
     author: "Anita - Co-fondatrice Bikawo",
-    image: "/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png",
+    image: "/images/bikawo-hero.png",
     featured: false
   },
   {
@@ -49,7 +49,7 @@ export const blogPosts: BlogPost[] = [
     readTime: "12 min",
     publishedAt: "2025-02-01",
     author: "Anita - Co-fondatrice Bikawo",
-    image: "/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png",
+    image: "/images/bikawo-hero.png",
     featured: false
   },
   {
@@ -62,7 +62,7 @@ export const blogPosts: BlogPost[] = [
     readTime: "10 min",
     publishedAt: "2025-02-08",
     author: "Arthur - Co-fondateur Bikawo",
-    image: "/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png",
+    image: "/images/bikawo-hero.png",
     featured: true
   },
   {
@@ -75,7 +75,7 @@ export const blogPosts: BlogPost[] = [
     readTime: "8 min",
     publishedAt: "2025-02-15",
     author: "Arthur - Co-fondateur Bikawo",
-    image: "/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png",
+    image: "/images/bikawo-hero.png",
     featured: true
   },
   {
@@ -88,7 +88,7 @@ export const blogPosts: BlogPost[] = [
     readTime: "12 min",
     publishedAt: "2025-02-22",
     author: "Anita - Co-fondatrice Bikawo",
-    image: "/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png",
+    image: "/images/bikawo-hero.png",
     featured: false
   },
   {
@@ -101,7 +101,7 @@ export const blogPosts: BlogPost[] = [
     readTime: "10 min",
     publishedAt: "2025-03-01",
     author: "Anita - Co-fondatrice Bikawo",
-    image: "/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png",
+    image: "/images/bikawo-hero.png",
     featured: false
   },
   {
@@ -114,7 +114,7 @@ export const blogPosts: BlogPost[] = [
     readTime: "15 min",
     publishedAt: "2025-03-08",
     author: "Anita - Co-fondatrice Bikawo",
-    image: "/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png",
+    image: "/images/bikawo-hero.png",
     featured: false
   },
   {
@@ -127,7 +127,7 @@ export const blogPosts: BlogPost[] = [
     readTime: "10 min",
     publishedAt: "2025-03-15",
     author: "Arthur - Co-fondateur Bikawo",
-    image: "/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png",
+    image: "/images/bikawo-hero.png",
     featured: false
   }
 ];

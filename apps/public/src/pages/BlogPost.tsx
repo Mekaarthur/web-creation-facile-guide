@@ -17,7 +17,7 @@ const blogContent = {
     readTime: "8 min",
     publishedAt: "2024-01-15",
     author: "Dr. Marie Dubois",
-    image: "/lovable-uploads/89199702-071c-4c4a-9b41-72fb5742cbee.png",
+    image: "/images/bikawo-hero.png",
     content: `
       <h2>Qu'est-ce que la charge mentale ?</h2>
       <p>La charge mentale représente tout ce travail invisible de planification, d'organisation et de coordination qui incombe souvent aux femmes dans la gestion du foyer et de la famille. Cette préoccupation constante peut devenir épuisante.</p>
@@ -78,7 +78,7 @@ const blogContent = {
     readTime: "12 min",
     publishedAt: "2024-01-10",
     author: "Sophie Martin",
-    image: "/lovable-uploads/7289c795-0ba4-4e3f-86dc-cd0e3310a306.png",
+    image: "/images/blog-delegation.png",
     content: `
       <h2>Pourquoi culpabilisons-nous de déléguer ?</h2>
       
@@ -189,7 +189,7 @@ const blogContent = {
     readTime: "10 min",
     publishedAt: "2024-01-05",
     author: "Jean Dupont",
-    image: "/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png",
+    image: "/images/bikawo-logo.png",
     content: `
       <h2>L'équation temps = argent dans le contexte familial</h2>
       
@@ -343,7 +343,7 @@ const blogContent = {
     readTime: "15 min",
     publishedAt: "2024-01-01",
     author: "Claire Rousseau",
-    image: "/lovable-uploads/1ac09068-74a1-4d44-bdc6-d342fcb10cd4.png",
+    image: "/images/blog-garde-enfants.png",
     content: `
       <h2>Les différents types de garde d'enfants</h2>
       

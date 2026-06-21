@@ -18,7 +18,7 @@ import { ClientSignupForm } from '@/components/auth/ClientSignupForm';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 // Logo Bikawo officiel
-const bikawoLogo = "/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png";
+const bikawoLogo = "/images/bikawo-logo.png";
 
 type UserType = 'client' | 'prestataire' | 'admin' | null;
 type AuthStep = 'userType' | 'login' | 'signup';

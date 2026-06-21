@@ -23,7 +23,7 @@ import { SecureLogout } from "@/components/SecureLogout";
 import { servicesData } from "@/utils/servicesData";
 import { GlobalSearch } from "@/components/search/GlobalSearch";
 // Logo Bikawo officiel
-const bikawoLogo = "/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png";
+const bikawoLogo = "/images/bikawo-logo.png";
 // Import service images
 import serviceKids from '@/assets/service-kids.jpg';
 import serviceMaison from '@/assets/service-maison.jpg';

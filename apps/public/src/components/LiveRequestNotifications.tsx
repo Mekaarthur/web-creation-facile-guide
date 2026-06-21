@@ -60,7 +60,7 @@ export const LiveRequestNotifications = () => {
           if ('Notification' in window && Notification.permission === 'granted') {
             new Notification('Nouvelle demande Bikawô', {
               body: notification.message,
-              icon: '/lovable-uploads/4a8ac677-6a3b-48a7-8b21-5c9953137147.png'
+              icon: '/images/bikawo-logo.png'
             });
           }
         }
