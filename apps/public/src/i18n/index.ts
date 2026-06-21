@@ -48,7 +48,7 @@ const resources = {
       "footer.status": "Status",
       "footer.copyright": "© 2024 Bikawô. Tous droits réservés.",
       "footer.privacy": "Confidentialité",
-      "footer.terms": "CGU",
+      "footer.terms": "CGV & CGU",
       "footer.legal": "Mentions légales",
       "footer.support24": "Support 24h/7j",
       

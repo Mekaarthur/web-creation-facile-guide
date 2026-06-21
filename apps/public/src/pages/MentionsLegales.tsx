@@ -62,6 +62,9 @@ const MentionsLegales = () => {
                   Le site <strong className="text-primary">https://bikawo.com/</strong> est édité par <strong>Bikawo</strong>,
                   entreprise individuelle (auto-entreprise), immatriculée sous le numéro <strong>880 491 436</strong>.
                 </p>
+                <p className="text-muted-foreground text-sm">
+                  TVA non applicable en vertu de l'article 293B du CGI.
+                </p>
 
                 <div className="border-l-4 border-primary pl-4 space-y-1">
                   <p className="font-semibold text-foreground">Directeur de la publication :</p>
@@ -189,10 +192,37 @@ const MentionsLegales = () => {
                 </div>
               </div>
               <div className="bg-muted/30 rounded-xl p-6 space-y-1">
-                <p className="font-semibold text-foreground">IONOS SARL</p>
-                <p className="text-muted-foreground">7 place de la Gare, BP 70109, 57201 Sarreguemines Cedex</p>
-                <p className="text-muted-foreground">Tél : 09 70 808 911</p>
-                <a href="https://www.ionos.fr" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm">www.ionos.fr</a>
+                <p className="font-semibold text-foreground">Vercel Inc.</p>
+                <p className="text-muted-foreground">440 N Barranca Ave #4133, Covina, CA 91723, États-Unis</p>
+                <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm">vercel.com</a>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Prestataire de paiement */}
+          <Card className="border-0 shadow-lg">
+            <CardContent className="p-8">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Shield className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground mb-2">
+                    Prestataire de paiement
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Traitement sécurisé des transactions
+                  </p>
+                </div>
+              </div>
+              <div className="bg-muted/30 rounded-xl p-6 space-y-1">
+                <p className="font-semibold text-foreground">Stripe Payments Europe, Ltd.</p>
+                <p className="text-muted-foreground">1 Grand Canal Street Lower, Dublin 2, Irlande</p>
+                <a href="https://stripe.com/fr" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm">stripe.com/fr</a>
+                <p className="text-muted-foreground text-sm mt-2">
+                  Les données bancaires des utilisateurs sont transmises à Stripe pour le traitement des paiements,
+                  conformément à notre politique de confidentialité. Stripe est certifié PCI-DSS niveau 1.
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -200,7 +230,7 @@ const MentionsLegales = () => {
           {/* Date de mise à jour */}
           <div className="text-center pt-8 border-t border-border">
             <p className="text-sm text-muted-foreground">
-              Dernière mise à jour : 20 janvier 2026
+              Dernière mise à jour : 21 juin 2026
             </p>
           </div>
         </div>

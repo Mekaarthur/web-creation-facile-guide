@@ -135,13 +135,12 @@ Lorsqu'une Commande est validée plus de quatorze (14) jours à l'avance, le Cli
 
 Lorsqu'une Commande est validée moins de quatorze (14) jours à l'avance, le Client demande l'exécution de la Prestation avant la fin du délai de rétractation et reconnaît renoncer expressément à ce droit.
 
-Lorsque le Client a renoncé à la rétractation et annule la Commande, les frais suivants s'appliquent :
-• annulation plus de 24h avant : aucun frais ;
-• annulation entre 8h et 24h : frais forfaitaires de 5 € ;
-• annulation entre 4h et 8h : frais forfaitaires de 10 € ;
-• annulation entre 2h et 4h : 50 % du montant (plafond 15 €) ;
-• annulation entre 2h et l'heure du rendez-vous : 80 % (plafond 25 €) ;
-• annulation après l'heure prévue, ou absence 30 minutes après : 100 % (plafond 30 €).
+Politique d'annulation :
+• Annulation plus de 24h avant la prestation : remboursement intégral du montant payé.
+• Annulation entre 2h et 24h avant la prestation : remboursement de 50 % du montant payé. Les frais de traitement bancaire (1,5 % + 0,25 €) sont déduits du remboursement.
+• Annulation moins de 2h avant la prestation ou absence le jour J : aucun remboursement. Le prestataire est indemnisé à hauteur de 50 % de sa rémunération prévue.
+
+Le délai est calculé à partir de l'heure de début de la prestation telle que confirmée lors de la réservation.
 
 7.4. Déroulement des Prestations
 
@@ -153,6 +152,8 @@ Le Partenaire demeure seul responsable, notamment des produits utilisés, de son
       id: "conditions-financieres",
       title: "8. Conditions financières",
       content: `8.1. Prix des Prestations
+
+Les prix sont indiqués en euros toutes taxes comprises (TTC). TVA non applicable — article 293B du CGI.
 
 Le prix des prestations est affiché sur la Plateforme. Le Client règle les Prestations par carte bancaire, via l'avance immédiate URSSAF, ou tout autre moyen proposé sur la Plateforme.
 

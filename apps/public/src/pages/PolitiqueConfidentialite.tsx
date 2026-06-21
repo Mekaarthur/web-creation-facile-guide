@@ -158,11 +158,23 @@ const PolitiqueConfidentialite = () => {
                   <strong> coresponsables du traitement</strong>, conformément au RGPD. Cette configuration découle du mode 
                   de fonctionnement de notre service.
                 </p>
-                <div className="bg-muted/30 rounded-xl p-6 mt-4">
-                  <p className="text-muted-foreground">
-                    En application de l'article 26 du RGPD, cette répartition des responsabilités a été officialisée 
-                    dans un accord accessible sur demande.
-                  </p>
+                <div className="bg-muted/30 rounded-xl p-6 mt-4 space-y-3">
+                  <p className="text-sm font-semibold text-foreground">Accord de coresponsabilité (art. 26 RGPD)</p>
+                  <ul className="text-sm text-muted-foreground space-y-2">
+                    <li className="flex items-start gap-2">
+                      <span className="mt-1 w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
+                      <span><strong>Bikawo</strong> est votre interlocuteur principal pour l'exercice de vos droits.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-1 w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
+                      <span>Le Partenaire traite vos données (nom, adresse, téléphone) uniquement pour réaliser la prestation commandée.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-1 w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
+                      <span>Le Partenaire ne peut pas utiliser vos données à d'autres fins ni les transmettre à des tiers.</span>
+                    </li>
+                  </ul>
+                  <p className="text-xs text-muted-foreground">L'accord complet est disponible sur demande à <a href="mailto:contact@bikawo.com" className="text-primary hover:underline">contact@bikawo.com</a>.</p>
                 </div>
               </div>
             </CardContent>
@@ -581,6 +593,16 @@ const PolitiqueConfidentialite = () => {
                   </div>
                   <p className="text-sm text-muted-foreground">
                     Saisir la CNIL si vous estimez que vos droits ne sont pas respectés.
+                  </p>
+                </div>
+
+                <div className="bg-muted/30 rounded-xl p-5 md:col-span-2">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Shield className="h-5 w-5 text-primary" />
+                    <h3 className="font-semibold text-foreground">Droit de retrait du consentement (art. 7(3) RGPD)</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Lorsque le traitement est fondé sur votre consentement, vous pouvez le retirer à tout moment — aussi simplement qu'il a été donné — sans que cela remette en cause la licéité des traitements effectués avant ce retrait. Contactez-nous à <a href="mailto:contact@bikawo.com" className="text-primary hover:underline">contact@bikawo.com</a> ou gérez vos préférences depuis votre espace personnel.
                   </p>
                 </div>
               </div>

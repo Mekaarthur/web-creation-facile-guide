@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 const CookiePolicy = () => {
   const openCookieSettings = () => {
@@ -10,6 +12,7 @@ const CookiePolicy = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Navbar />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6">
           <ArrowLeft className="w-4 h-4" />
@@ -17,7 +20,7 @@ const CookiePolicy = () => {
         </Link>
 
         <h1 className="text-4xl font-bold mb-4">Politique de Cookies</h1>
-        <p className="text-muted-foreground mb-8">Dernière mise à jour : 7 mai 2025</p>
+        <p className="text-muted-foreground mb-8">Dernière mise à jour : 21 juin 2026</p>
 
         <div className="space-y-8">
           <Card className="p-6">
@@ -130,6 +133,7 @@ const CookiePolicy = () => {
           </Card>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

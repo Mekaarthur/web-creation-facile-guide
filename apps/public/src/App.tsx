@@ -177,6 +177,7 @@ const App = () => (
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/politique-cookies" element={<CookiePolicy />} />
                 <Route path="/cgu" element={<CGU />} />
+                <Route path="/cgv" element={<Navigate to="/cgu" replace />} />
                 <Route path="/information-consommateurs" element={<InformationConsommateurs />} />
                 <Route path="/mentions-legales" element={<MentionsLegales />} />
                 <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
