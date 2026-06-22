@@ -90,10 +90,7 @@ export const useClientDashboard = () => {
         .select(`
           *,
           services(name, category),
-          providers(
-            business_name,
-            profiles(first_name, last_name, avatar_url)
-          )
+          providers(business_name)
         `)
         .eq('client_id', user.id)
         .in('status', ['confirmed', 'pending_provider'])

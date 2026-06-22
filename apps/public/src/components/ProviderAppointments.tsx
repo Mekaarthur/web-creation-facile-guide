@@ -78,7 +78,7 @@ const ProviderAppointments = () => {
           .select(`
             *,
             services(name, category),
-            profiles!bookings_client_id_fkey(first_name, last_name, email, phone)
+            profiles!bookings_client_profile_fkey(first_name, last_name, email, phone)
           `)
           .eq('provider_id', providerData.id)
           .order('booking_date', { ascending: true })

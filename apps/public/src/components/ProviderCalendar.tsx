@@ -80,7 +80,7 @@ const ProviderCalendar = () => {
           .select(`
             *,
             services(name),
-            profiles!bookings_client_id_fkey(first_name, last_name)
+            profiles!bookings_client_profile_fkey(first_name, last_name)
           `)
           .eq('provider_id', providerData.id)
           .gte('booking_date', format(new Date(), 'yyyy-MM-dd'))
