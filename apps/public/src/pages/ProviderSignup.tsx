@@ -110,7 +110,9 @@ const ProviderSignup = () => {
         siret_document_url: uploadedDocs.siret_document_url,
         identity_document_url: uploadedDocs.identity_document_url,
         criminal_record_url: uploadedDocs.criminal_record_url,
-        criminal_record_date: data.criminal_record_date?.toISOString(),
+        criminal_record_date: data.criminal_record_date
+          ? data.criminal_record_date.toISOString().split('T')[0]
+          : null,
         rib_iban_url: uploadedDocs.rib_iban_url,
         certifications_url: uploadedDocs.certification_nova_url || uploadedDocs.certifications_url,
         documents_complete: true,
