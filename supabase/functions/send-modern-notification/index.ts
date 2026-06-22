@@ -1478,7 +1478,7 @@ const getModernEmailTemplate = (type: string, recipient: any, data: any) => {
                 ${data.services ? `<li><strong>Services :</strong> ${data.services}</li>` : ''}
               </ul>
               <div style="text-align: center; margin-top: 20px;">
-                <a href="${Deno.env.get('SITE_URL') || 'https://bikawo.com'}/admin/applications"
+                <a href="https://admin.bikawo.com/modern-admin/applications"
                    style="background: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">
                   Voir dans l'admin
                 </a>
