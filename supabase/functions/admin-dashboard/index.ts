@@ -281,13 +281,13 @@ async function getTopProviders(supabase: any, { searchTerm = '', limit = 10 }: a
           .from('profiles')
           .select('first_name, last_name, phone, email')
           .eq('user_id', provider.user_id)
-          .single();
+          .maybeSingle();
 
         // Récupérer le premier service du prestataire
         const { data: services } = await supabase
           .from('provider_services')
           .select(`
-            services(name, category)
+            services!provider_services_service_id_fkey(name, category)
           `)
           .eq('provider_id', provider.id)
           .eq('is_active', true)
@@ -372,9 +372,9 @@ async function getRecentActivities(supabase: any, { limit = 20 }: any) {
 
     // Paiements récents
     const { data: recentPayments } = await supabase
-      .from('payments')
-      .select('id, created_at, amount, status')
-      .eq('status', 'payé')
+      .from('financial_transactions')
+      .select('id, created_at, client_price, payment_status')
+      .eq('payment_status', 'completed')
       .order('created_at', { ascending: false })
       .limit(5);
 
@@ -382,10 +382,10 @@ async function getRecentActivities(supabase: any, { limit = 20 }: any) {
       activities.push({
         id: `payment-${payment.id}`,
         type: 'payment',
-        message: `Paiement reçu - ${payment.amount}€`,
+        message: `Paiement reçu - ${payment.client_price}€`,
         time: getTimeAgo(payment.created_at),
         status: 'success',
-        amount: `${payment.amount}€`
+        amount: `${payment.client_price}€`
       });
     });
 
@@ -557,15 +557,18 @@ async function contactProvider(supabase: any, { providerId, message }: any) {
 async function exportDashboardData(supabase: any, { format = 'json' }: any) {
   try {
     // Récupérer les données principales
-    const { data: stats } = await getDashboardStats(supabase, { timeRange: '30d' });
-    const { data: providers } = await getTopProviders(supabase, { limit: 100 });
-    const { data: activities } = await getRecentActivities(supabase, { limit: 100 });
+    const statsRes = await getDashboardStats(supabase, { timeRange: '30d' });
+    const statsJson = await statsRes.json();
+    const providersRes = await getTopProviders(supabase, { limit: 100 });
+    const providersJson = await providersRes.json();
+    const activitiesRes = await getRecentActivities(supabase, { limit: 100 });
+    const activitiesJson = await activitiesRes.json();
 
     const exportData = {
       generated_at: new Date().toISOString(),
-      stats,
-      providers,
-      activities
+      stats: statsJson.stats,
+      providers: providersJson.providers,
+      activities: activitiesJson.activities
     };
 
     return new Response(
@@ -800,30 +803,30 @@ async function getPaymentsSummary(supabase: any, { }: any) {
     
     // Paiements en attente
     const { data: pendingPayments } = await supabase
-      .from('payments')
-      .select('amount')
-      .eq('status', 'en_attente');
+      .from('financial_transactions')
+      .select('client_price')
+      .eq('payment_status', 'pending');
 
-    const pendingAmount = pendingPayments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+    const pendingAmount = pendingPayments?.reduce((sum, p) => sum + (p.client_price || 0), 0) || 0;
 
     // Paiements du jour
     const today = new Date().toISOString().split('T')[0];
     const { data: todayPayments } = await supabase
-      .from('payments')
-      .select('amount')
-      .eq('status', 'payé')
-      .gte('payment_date', `${today}T00:00:00.000Z`)
-      .lt('payment_date', `${today}T23:59:59.999Z`);
+      .from('financial_transactions')
+      .select('client_price')
+      .eq('payment_status', 'completed')
+      .gte('created_at', `${today}T00:00:00.000Z`)
+      .lt('created_at', `${today}T23:59:59.999Z`);
 
-    const todayAmount = todayPayments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+    const todayAmount = todayPayments?.reduce((sum, p) => sum + (p.client_price || 0), 0) || 0;
 
     // Paiements échoués
     const { data: failedPayments } = await supabase
-      .from('payments')
-      .select('id, amount')
-      .eq('status', 'échoué');
+      .from('financial_transactions')
+      .select('id, client_price')
+      .eq('payment_status', 'failed');
 
-    const failedAmount = failedPayments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+    const failedAmount = failedPayments?.reduce((sum, p) => sum + (p.client_price || 0), 0) || 0;
 
     console.log('Payments summary calculated');
 
