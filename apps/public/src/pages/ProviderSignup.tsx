@@ -62,19 +62,20 @@ const ProviderSignup = () => {
   };
 
   const onSubmit = async (data: ProviderCandidateForm) => {
+    // FIX 3 — Upload phase (isolated: failure shows specific message)
+    const applicationId = crypto.randomUUID();
+    const uploadedDocs: Record<string, string> = {};
+
+    const documentsToUpload = [
+      { file: data.identity_document, key: 'identity_document_url', folder: 'identity' },
+      { file: data.criminal_record, key: 'criminal_record_url', folder: 'criminal_record' },
+      { file: data.siret_document, key: 'siret_document_url', folder: 'siret_document' },
+      { file: data.rib_iban, key: 'rib_iban_url', folder: 'rib' },
+      { file: data.certification_nova, key: 'certification_nova_url', folder: 'certification_nova' },
+      ...(data.certifications ? [{ file: data.certifications, key: 'certifications_url', folder: 'certifications' }] : []),
+    ];
+
     try {
-      const applicationId = crypto.randomUUID();
-      const uploadedDocs: Record<string, string> = {};
-
-      const documentsToUpload = [
-        { file: data.identity_document, key: 'identity_document_url', folder: 'identity' },
-        { file: data.criminal_record, key: 'criminal_record_url', folder: 'criminal_record' },
-        { file: data.siret_document, key: 'siret_document_url', folder: 'siret_document' },
-        { file: data.rib_iban, key: 'rib_iban_url', folder: 'rib' },
-        { file: data.certification_nova, key: 'certification_nova_url', folder: 'certification_nova' },
-        ...(data.certifications ? [{ file: data.certifications, key: 'certifications_url', folder: 'certifications' }] : []),
-      ];
-
       for (const doc of documentsToUpload) {
         if (doc.file instanceof File) {
           const fileExt = doc.file.name.split('.').pop()?.toLowerCase() || 'pdf';
@@ -82,18 +83,28 @@ const ProviderSignup = () => {
           const { error: uploadError } = await supabase.storage
             .from('provider-applications')
             .upload(safeFileName, doc.file, { cacheControl: '3600', upsert: false, contentType: doc.file.type || 'application/octet-stream' });
-          if (uploadError) throw new Error(`Erreur upload ${doc.folder}: ${uploadError.message}`);
+          if (uploadError) throw new Error(uploadError.message);
           uploadedDocs[doc.key] = safeFileName;
         }
       }
+    } catch (uploadError) {
+      toast({
+        title: "Erreur lors de l'upload des documents",
+        description: "Vérifiez que vos fichiers font moins de 10 MB et sont au format PDF, JPEG ou PNG.",
+        variant: "destructive",
+      });
+      return;
+    }
 
+    // FIX 3 — Insert phase (isolated: failure shows specific message)
+    try {
       const { error } = await supabase.from('job_applications').insert({
         first_name: data.first_name, last_name: data.last_name,
         email: data.email, phone: data.phone,
         city: data.city, postal_code: data.postal_code,
         service_categories: data.services,
         availability: data.availability,
-        motivation: data.motivation || '',
+        motivation: data.motivation || null,
         coverage_address: `${data.address}, ${data.city} ${data.postal_code}`,
         coverage_radius: 20, status: 'pending', category: 'multi-services',
         siret_document_url: uploadedDocs.siret_document_url,
@@ -106,26 +117,27 @@ const ProviderSignup = () => {
       });
 
       if (error) {
-        toast({ title: "Erreur", description: "Une erreur est survenue lors de l'envoi de votre candidature.", variant: "destructive" });
+        toast({ title: "Erreur", description: "Une erreur est survenue lors de l'envoi de votre candidature. Veuillez réessayer.", variant: "destructive" });
         return;
       }
-
-      const servicesText = data.services.map(s => SERVICES.find(sv => sv.id === s)?.label).join(', ');
-
-      await Promise.all([
-        supabase.functions.invoke('send-modern-notification', {
-          body: { type: 'provider_signup_candidate', recipient: { email: data.email, name: data.first_name, firstName: data.first_name }, data: { services: servicesText, clientName: `${data.first_name} ${data.last_name}` } },
-        }),
-        supabase.functions.invoke('send-modern-notification', {
-          body: { type: 'provider_signup_admin', recipient: { email: 'contact@bikawo.com', name: 'Admin Bikawo' }, data: { clientName: `${data.first_name} ${data.last_name}`, contactEmail: data.email, services: servicesText } },
-        }),
-      ]);
-
-      setSubmittedEmail(data.email);
-      toast({ title: "Candidature envoyée !", description: "Nous vous recontacterons sous 48h. Vérifiez vos emails." });
-    } catch (error) {
-      toast({ title: "Erreur", description: error instanceof Error ? error.message : "Une erreur inattendue est survenue.", variant: "destructive" });
+    } catch (insertError) {
+      toast({ title: "Erreur", description: "Une erreur est survenue lors de l'envoi de votre candidature. Veuillez réessayer.", variant: "destructive" });
+      return;
     }
+
+    // FIX 2 — Notifications non-bloquantes : un échec ne cache jamais la confirmation
+    const servicesText = data.services.map(s => SERVICES.find(sv => sv.id === s)?.label).join(', ');
+    await Promise.allSettled([
+      supabase.functions.invoke('send-modern-notification', {
+        body: { type: 'provider_signup_candidate', recipient: { email: data.email, name: data.first_name, firstName: data.first_name }, data: { services: servicesText, clientName: `${data.first_name} ${data.last_name}` } },
+      }),
+      supabase.functions.invoke('send-modern-notification', {
+        body: { type: 'provider_signup_admin', recipient: { email: 'contact@bikawo.com', name: 'Admin Bikawo' }, data: { clientName: `${data.first_name} ${data.last_name}`, contactEmail: data.email, services: servicesText } },
+      }),
+    ]);
+
+    setSubmittedEmail(data.email);
+    toast({ title: "Candidature envoyée !", description: "Nous vous recontacterons sous 48h. Vérifiez vos emails." });
   };
 
   if (submittedEmail) {
