@@ -69,7 +69,7 @@ export const useRewards = () => {
         .from('providers')
         .select('id')
         .eq('user_id', user!.id)
-        .single();
+        .maybeSingle();
       if (!providerData) return [] as ProviderReward[];
 
       const { data, error } = await supabase
