@@ -3,12 +3,15 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.2';
 import { sanitizeSearch } from '../_shared/sanitize.ts';
 import { getAdminCorsHeaders } from '../_shared/cors.ts';
 
-// Updated admin dashboard functions - version 1.2
-
-
+// Module-level — mis à jour par chaque requête dans serve() avant tout appel de sous-fonction
+let corsHeaders: Record<string, string> = {
+  "Access-Control-Allow-Origin": "https://bikawo.com",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+};
 
 serve(async (req) => {
-  const corsHeaders = getAdminCorsHeaders(req.headers.get('origin'));
+  corsHeaders = getAdminCorsHeaders(req.headers.get('origin'));
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -99,11 +102,13 @@ serve(async (req) => {
         throw new Error(`Action non reconnue: ${action}`);
     }
   } catch (error) {
-    console.error('Erreur dans admin-dashboard:', error);
+    const err = error as Error;
+    console.error('ADMIN-DASHBOARD FATAL:', err.message, err.stack);
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message || 'Une erreur est survenue'
+        error: err.message || 'Une erreur est survenue',
+        stack: err.stack
       }),
       {
         status: 500,
@@ -161,7 +166,7 @@ async function getDashboardStats(supabase: any, { timeRange = '7d' }: any) {
     const { data: activeMissions } = await supabase
       .from('bookings')
       .select('id, status')
-      .in('status', ['pending', 'assigned', 'confirmed', 'in_progress'])
+      .in('status', ['pending', 'pending_provider', 'confirmed', 'in_progress'])
       .gte('created_at', startDate.toISOString());
 
     // Satisfaction globale

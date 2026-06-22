@@ -3,10 +3,15 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.2';
 import { sanitizeSearch } from '../_shared/sanitize.ts';
 import { getAdminCorsHeaders } from '../_shared/cors.ts';
 
-
+// Module-level — mis à jour par chaque requête dans serve() avant tout appel de sous-fonction
+let corsHeaders: Record<string, string> = {
+  "Access-Control-Allow-Origin": "https://bikawo.com",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+};
 
 serve(async (req) => {
-  const corsHeaders = getAdminCorsHeaders(req.headers.get('origin'));
+  corsHeaders = getAdminCorsHeaders(req.headers.get('origin'));
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -73,11 +78,13 @@ serve(async (req) => {
         throw new Error(`Action non reconnue: ${action}`);
     }
   } catch (error) {
-    console.error('Erreur dans admin-providers:', error);
+    const err = error as Error;
+    console.error('ADMIN-PROVIDERS FATAL:', err.message, err.stack);
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message || 'Une erreur est survenue'
+        error: err.message || 'Une erreur est survenue',
+        stack: err.stack
       }),
       {
         status: 500,
@@ -135,7 +142,7 @@ async function listProviders(supabase: any, { status = 'all', limit = 50, offset
           const { data: services } = await supabase
             .from('provider_services')
             .select(`
-              services(name, category)
+              services!provider_services_service_id_fkey(name, category)
             `)
             .eq('provider_id', provider.id)
             .eq('is_active', true);
@@ -477,16 +484,20 @@ async function getProviderDetails(supabase: any, { providerId }: any) {
       .from('providers')
       .select('*')
       .eq('id', providerId)
-      .single();
+      .maybeSingle();
 
     if (providerError) throw providerError;
+    if (!provider) return new Response(
+      JSON.stringify({ success: false, error: 'Prestataire introuvable' }),
+      { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
 
     // Récupérer le profil utilisateur
     const { data: profile } = await supabase
       .from('profiles')
       .select('first_name, last_name, avatar_url, phone, email')
       .eq('user_id', provider.user_id)
-      .single();
+      .maybeSingle();
 
     // Récupérer les réservations
     const { data: bookings } = await supabase
