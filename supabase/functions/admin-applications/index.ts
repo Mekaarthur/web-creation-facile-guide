@@ -33,6 +33,21 @@ async function approveApplication(
 
   if (fetchError) throw fetchError;
 
+  // Level 2 — vérification des documents obligatoires côté serveur avant approbation
+  const mandatoryDocFields: Array<{ field: string; label: string }> = [
+    { field: 'identity_document_url', label: "Pièce d'identité" },
+    { field: 'siret_document_url', label: 'Justificatif SIRET' },
+    { field: 'rib_iban_url', label: 'RIB/IBAN' },
+  ];
+  const missingDocs = mandatoryDocFields.filter(d => !application[d.field]);
+  if (missingDocs.length > 0) {
+    const labels = missingDocs.map(d => d.label).join(', ');
+    return new Response(
+      JSON.stringify({ error: `Documents obligatoires manquants : ${labels}` }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
+  }
+
   const { data: existingProfile } = await supabase
     .from('profiles')
     .select('user_id')
@@ -89,6 +104,42 @@ async function approveApplication(
     .single();
 
   if (providerError) throw providerError;
+
+  // Copier les documents de la candidature vers provider_documents (Level 3 — no double upload)
+  const docMapping: Array<{ field: string; type: string }> = [
+    { field: 'identity_document_url', type: 'identity_document' },
+    { field: 'siret_document_url', type: 'siret_document' },
+    { field: 'rib_iban_url', type: 'rib_iban' },
+    { field: 'criminal_record_url', type: 'criminal_record' },
+    { field: 'certification_nova_url', type: 'certification' },
+    { field: 'rc_pro_url', type: 'insurance' },
+    { field: 'certifications_url', type: 'certifications_other' },
+  ];
+  const docsToInsert = docMapping
+    .filter(m => application[m.field])
+    .map(m => ({
+      provider_id: provider.id,
+      document_type: m.type,
+      file_url: application[m.field] as string,
+      file_name: (application[m.field] as string).split('/').pop() ?? m.type,
+      status: 'pending',
+      upload_date: new Date().toISOString(),
+    }));
+
+  if (docsToInsert.length > 0) {
+    const { error: docCopyError } = await supabase
+      .from('provider_documents')
+      .insert(docsToInsert);
+    if (docCopyError) {
+      console.error('Error copying docs to provider_documents (non-blocking):', docCopyError);
+    } else {
+      // Marquer documents_submitted pour que l'onboarding saute l'étape upload
+      await supabase
+        .from('providers')
+        .update({ documents_submitted: true, documents_submitted_at: new Date().toISOString() })
+        .eq('id', provider.id);
+    }
+  }
 
   const serviceCategories = application.service_categories || [application.category];
   if (serviceCategories.length > 0) {
@@ -186,11 +237,11 @@ async function approveApplication(
           'Authorization': `Bearer ${supabaseKey}`,
         },
         body: JSON.stringify({
-          type: 'password_setup',
+          type: 'provider_application_approved',
           recipientEmail: application.email,
           recipientName: `${application.first_name} ${application.last_name}`,
           data: {
-            clientName: application.first_name,
+            providerName: application.first_name,
             setupLink: setupLink,
           },
         }),

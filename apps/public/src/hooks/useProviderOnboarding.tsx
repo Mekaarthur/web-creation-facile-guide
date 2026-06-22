@@ -14,7 +14,6 @@ export interface OnboardingStep {
 const STEPS_BASE: OnboardingStep[] = [
   { id: 'documents', label: 'Documents', description: 'Téléchargez vos documents officiels', completed: false, required: true },
   { id: 'mandate', label: 'Mandat de facturation', description: 'Signez le mandat de facturation électronique', completed: false, required: true },
-  { id: 'training', label: 'Formation', description: 'Suivez la formation obligatoire (30 min)', completed: false, required: true },
   { id: 'identity', label: "Vérification d'identité", description: 'Validation de votre identité par nos équipes', completed: false, required: true },
 ];
 
@@ -34,7 +33,7 @@ const fetchOnboardingStatus = async (userId: string) => {
     .eq('provider_id', providerData.id)
     .eq('status', 'approved');
 
-  const requiredDocs = ['identity_document', 'siret_document', 'rib_iban', 'certification'];
+  const requiredDocs = ['identity_document', 'siret_document', 'rib_iban'];
   const hasAllDocs = requiredDocs.every(type =>
     documentsData?.some((doc: any) => doc.document_type === type)
   );
@@ -43,7 +42,6 @@ const fetchOnboardingStatus = async (userId: string) => {
   const steps: OnboardingStep[] = STEPS_BASE.map(step => {
     if (step.id === 'documents') return { ...step, completed: hasAllDocs };
     if (step.id === 'mandate') return { ...step, completed: providerData.mandat_facturation_accepte || false };
-    if (step.id === 'training') return { ...step, completed: providerAny.formation_completed || false };
     if (step.id === 'identity') return { ...step, completed: providerAny.identity_verified || false };
     return step;
   });
@@ -75,9 +73,6 @@ export const useProviderOnboarding = () => {
       if (stepId === 'mandate') {
         updateData.mandat_facturation_accepte = true;
         updateData.mandat_signature_date = new Date().toISOString();
-      } else if (stepId === 'training') {
-        updateData.formation_completed = true;
-        updateData.formation_completed_at = new Date().toISOString();
       }
       if (Object.keys(updateData).length > 0) {
         const { error } = await supabase.from('providers').update(updateData).eq('id', provider.id);

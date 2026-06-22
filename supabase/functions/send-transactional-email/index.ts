@@ -31,6 +31,7 @@ import { ProviderDocumentRejectedEmail } from './_templates/provider-document-re
 import { ProviderTrainingReminderEmail } from './_templates/provider-training-reminder.tsx';
 import { ProviderAccountActivatedEmail } from './_templates/provider-account-activated.tsx';
 import { ProviderRatingReceivedEmail } from './_templates/provider-rating-received.tsx';
+import { ProviderApplicationApprovedEmail } from './_templates/provider-application-approved.tsx';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const supabase = createClient(
@@ -67,7 +68,8 @@ interface EmailRequest {
     | 'provider_document_rejected'
     | 'provider_training_reminder'
     | 'provider_account_activated'
-    | 'provider_rating_received';
+    | 'provider_rating_received'
+    | 'provider_application_approved';
   data: any;
   recipientEmail: string;
   recipientName?: string;
@@ -101,6 +103,7 @@ const getEmailTemplate = async (type: string, data: any) => {
     'provider_training_reminder': ProviderTrainingReminderEmail,
     'provider_account_activated': ProviderAccountActivatedEmail,
     'provider_rating_received': ProviderRatingReceivedEmail,
+    'provider_application_approved': ProviderApplicationApprovedEmail,
   };
 
   const TemplateComponent = templates[type];
@@ -139,6 +142,7 @@ const getEmailSubject = (type: string): string => {
     'provider_training_reminder': '📚 Complétez votre formation',
     'provider_account_activated': '🎉 Votre compte est activé',
     'provider_rating_received': '⭐ Nouvel avis reçu',
+    'provider_application_approved': '🎉 Votre candidature Bikawo est approuvée',
   };
 
   return subjects[type] || 'Notification Bikawo';

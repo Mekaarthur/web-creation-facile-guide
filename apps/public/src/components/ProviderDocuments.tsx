@@ -14,7 +14,7 @@ const DOCUMENT_REQUIREMENTS: DocumentRequirement[] = [
   { type: 'criminal_record', label: 'Casier judiciaire (moins de 3 mois)', description: 'Extrait de casier judiciaire (bulletin n°3) — facultatif', icon: Shield, required: false },
   { type: 'siret_document', label: 'Justificatif auto-entrepreneur', description: 'Attestation URSSAF, extrait KBIS ou certificat d\'inscription', icon: Building, required: true },
   { type: 'rib_iban', label: 'RIB / IBAN', description: 'Relevé d\'identité bancaire pour recevoir vos paiements', icon: Building, required: true },
-  { type: 'certification', label: 'Agrément Nova', description: 'Agrément Nova ou accréditation officielle (obligatoire)', icon: Shield, required: true },
+  { type: 'certification', label: 'Agrément NOVA (optionnel)', description: "Requis uniquement si vous souhaitez bénéficier de l'avance immédiate URSSAF", icon: Shield, required: false },
   { type: 'certifications_other', label: 'Certifications', description: 'Diplômes, formations, certificats professionnels (optionnel)', icon: Award, required: false },
   { type: 'insurance', label: 'Assurance RC Pro', description: 'Attestation d\'assurance responsabilité civile professionnelle', icon: Award, required: false },
 ];

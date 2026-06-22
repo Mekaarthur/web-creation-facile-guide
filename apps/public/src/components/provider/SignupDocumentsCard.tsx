@@ -2,14 +2,14 @@ import { Control } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { FileText, Upload, AlertCircle } from 'lucide-react';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import type { ProviderCandidateForm } from '@/lib/validations';
 
 interface Props {
   control: Control<ProviderCandidateForm>;
 }
 
-type DocFieldName = 'identity_document' | 'criminal_record' | 'siret_document' | 'rib_iban' | 'certification_nova' | 'certifications';
+type DocFieldName = 'identity_document' | 'criminal_record' | 'siret_document' | 'rib_iban' | 'certification_nova' | 'rc_pro' | 'certifications';
 
 interface DocField {
   name: DocFieldName;
@@ -20,10 +20,11 @@ interface DocField {
 
 const DOC_FIELDS: DocField[] = [
   { name: 'identity_document', label: "Pièce d'identité (CNI, passeport)", required: true },
-  { name: 'criminal_record', label: 'Casier judiciaire (moins de 3 mois) — facultatif', required: false },
   { name: 'siret_document', label: 'Justificatif auto-entrepreneur (SIREN/SIRET)', required: true, hint: "Attestation URSSAF, extrait KBIS ou certificat d'inscription auto-entrepreneur" },
   { name: 'rib_iban', label: 'RIB / IBAN', required: true },
-  { name: 'certification_nova', label: 'Agrément Nova', required: true },
+  { name: 'criminal_record', label: 'Casier judiciaire (facultatif)', required: false },
+  { name: 'certification_nova', label: 'Agrément NOVA (optionnel)', required: false, hint: "Requis uniquement si vous souhaitez bénéficier de l'avance immédiate URSSAF" },
+  { name: 'rc_pro', label: 'Assurance RC Pro (optionnel)', required: false },
   { name: 'certifications', label: 'Certifications (optionnel)', required: false, hint: 'Diplômes, formations, certificats professionnels...' },
 ];
 

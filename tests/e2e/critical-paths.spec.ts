@@ -118,13 +118,12 @@ test.describe('TC-PROV-01 — Provider non vérifié sur route requireVerified',
 // ─── C03 / TC-MANDAT-01 ────────────────────────────────────────────────────────
 
 test.describe('TC-MANDAT-01 — MandateSignature : validation + payload', () => {
-  test('soumission sans dessin → toast "Veuillez signer le mandat"', async ({ page }) => {
+  test('soumission sans cocher la case → bouton disabled, pas de PATCH', async ({ page }) => {
     const pageErrors: Error[] = [];
     page.on('pageerror', err => pageErrors.push(err));
 
     await injectSession(page, makeProviderSession());
 
-    // catch-alls first (LIFO), specific mocks last
     await page.route('**/auth/v1/**', stubEmpty);
     await page.route('**/rest/v1/**', stubEmpty);
     await page.route('**/functions/v1/**', json(200, {}));
@@ -134,33 +133,27 @@ test.describe('TC-MANDAT-01 — MandateSignature : validation + payload', () => 
       aud: 'authenticated', app_metadata: {},
     }));
     await page.route('**/rest/v1/user_roles*', mockUserRolesProvider);
-    // Provider à l'étape 2 (mandat) — documents soumis + tous approuvés
     await page.route('**/rest/v1/providers*', json(200, PROVIDER_STEP2));
     await page.route('**/rest/v1/provider_documents*', json(200, APPROVED_DOCS));
 
     await page.goto('/provider-onboarding');
 
-    // Étape 2 : MandateSignature
-    await expect(page.getByText(/signature du mandat/i)).toBeVisible({ timeout: 10000 });
+    // Étape 2 : MandateSignature (checkbox uniquement, plus de pad de signature)
+    await expect(page.getByText(/mandat de facturation/i).first()).toBeVisible({ timeout: 10000 });
 
-    // Cocher la case d'acceptation pour activer le bouton
-    await page.locator('#accept-mandate').click();
-    await expect(page.locator('#accept-mandate')).toBeChecked();
-
-    // Clic sans dessin → toast de validation
-    await page.getByRole('button', { name: /signer le mandat/i }).click();
-    await expect(page.getByText(/veuillez signer le mandat/i).first()).toBeVisible({ timeout: 5000 });
+    // La case n'est pas cochée → le bouton est disabled
+    const acceptBtn = page.getByRole('button', { name: /accepter le mandat/i });
+    await expect(acceptBtn).toBeDisabled();
 
     expect(pageErrors).toHaveLength(0);
   });
 
-  test('dessin + checkbox + soumission → payload envoyé, "Mandat signé" affiché', async ({ page }) => {
+  test('checkbox + soumission → payload envoyé, "Mandat accepté" affiché', async ({ page }) => {
     const pageErrors: Error[] = [];
     page.on('pageerror', err => pageErrors.push(err));
 
     await injectSession(page, makeProviderSession());
 
-    // catch-alls first (LIFO), specific mocks last
     await page.route('**/auth/v1/**', stubEmpty);
     await page.route('**/rest/v1/**', stubEmpty);
     await page.route('**/functions/v1/**', json(200, {}));
@@ -173,7 +166,6 @@ test.describe('TC-MANDAT-01 — MandateSignature : validation + payload', () => 
     await page.route('**/rest/v1/provider_documents*', json(200, APPROVED_DOCS));
     await page.route('**/rest/v1/communications*', json(201, [{}]));
 
-    // Capturer le payload du PATCH pour vérifier la taille du base64
     let mandatePayload: Record<string, unknown> | null = null;
     await page.route('**/rest/v1/providers*', async (route) => {
       if (route.request().method() === 'PATCH') {
@@ -185,43 +177,22 @@ test.describe('TC-MANDAT-01 — MandateSignature : validation + payload', () => 
     });
 
     await page.goto('/provider-onboarding');
-    await expect(page.getByText(/signature du mandat/i)).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(/mandat de facturation/i).first()).toBeVisible({ timeout: 10000 });
 
-    // Dessiner sur le canvas SignaturePad (simule une signature réelle)
-    const canvas = page.locator('canvas').first();
-    await canvas.waitFor({ state: 'visible' });
-    const box = await canvas.boundingBox();
-    if (!box) throw new Error('Canvas not found');
-
-    // Injecter les événements directement dans le DOM pour que SignaturePad._data soit peuplé.
-    // page.mouse.* n'atteint pas les listeners document-level de SignaturePad (mousemove/mouseup).
-    await page.evaluate(([x, y]) => {
-      const canvas = document.querySelector('canvas') as HTMLCanvasElement;
-      canvas.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, buttons: 1, clientX: x + 50, clientY: y + 60 }));
-      for (let i = 0; i < 15; i++) {
-        document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, buttons: 1, clientX: x + 50 + i * 8, clientY: y + 60 + i * 3 }));
-      }
-      document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, clientX: x + 170, clientY: y + 105 }));
-    }, [box.x, box.y] as [number, number]);
-
-    // Cocher la case
+    // Cocher la case d'acceptation
     await page.locator('#accept-mandate').click();
+    await expect(page.locator('#accept-mandate')).toBeChecked();
 
     // Soumettre
-    await page.getByRole('button', { name: /signer le mandat/i }).click();
+    await page.getByRole('button', { name: /accepter le mandat/i }).click();
 
-    // Succès : composant affiche "Mandat signé"
-    await expect(page.getByText(/mandat signé/i)).toBeVisible({ timeout: 8000 });
+    // Succès : composant affiche "Mandat accepté"
+    await expect(page.getByText(/mandat accepté/i)).toBeVisible({ timeout: 8000 });
 
-    // Vérifier que le payload a bien été envoyé avec la signature
+    // Vérifier le payload
     expect(mandatePayload).not.toBeNull();
     expect(mandatePayload!['mandat_facturation_accepte']).toBe(true);
-    expect(typeof mandatePayload!['mandat_signature_data']).toBe('string');
-
-    // AVERTISSEMENT C03 : pas de validation taille côté client
-    // Un base64 PNG complexe peut dépasser 8 KB (limite Supabase text par défaut)
-    const signatureDataSize = (mandatePayload!['mandat_signature_data'] as string).length;
-    console.log(`[TC-MANDAT-01] mandat_signature_data size: ${signatureDataSize} chars (~${Math.round(signatureDataSize * 0.75 / 1024)} KB)`);
+    expect(mandatePayload!['mandat_signature_date']).toBeDefined();
 
     expect(pageErrors).toHaveLength(0);
   });

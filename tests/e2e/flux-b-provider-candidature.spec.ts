@@ -63,15 +63,15 @@ async function fillCandidatureForm(page: Page) {
 }
 
 /**
- * Upload a minimal PDF to all required file inputs in order:
- * identity, siret, rib, certification_nova.
+ * Upload a minimal PDF to all required file inputs in order.
+ * New DOC_FIELDS order: identity(0), siret(1), rib(2), criminal_record(3), certification_nova(4), rc_pro(5), certifications(6)
  */
 async function uploadRequiredDocs(page: Page) {
   const pdf = minimalPdfBuffer();
   const fileInputs = page.locator('input[type="file"]');
   const count = await fileInputs.count();
-  // Required: identity (0), skip criminal_record (1), siret (2), rib (3), certification_nova (4)
-  const requiredIndexes = [0, 2, 3, 4];
+  // Required: identity (0), siret (1), rib (2)
+  const requiredIndexes = [0, 1, 2];
   for (const i of requiredIndexes) {
     if (i < count) {
       await fileInputs.nth(i).setInputFiles({
@@ -208,6 +208,7 @@ test.describe('Flux B — Formulaire candidature prestataire', () => {
     await page.locator('#bika_kids').click();
     await page.getByRole('combobox').click();
     await page.getByRole('option', { name: 'Flexible selon les besoins' }).click();
+    await uploadRequiredDocs(page);
     await page.getByRole('button', { name: /Envoyer ma candidature/i }).click();
     await expect(page.getByText(email)).toBeVisible({ timeout: 15_000 });
   });
@@ -218,6 +219,7 @@ test.describe('Flux B — Formulaire candidature prestataire', () => {
     await page.route('**/functions/v1/**',                  stub200);
     await goToNousRecrutons(page);
     await fillCandidatureForm(page);
+    await uploadRequiredDocs(page);
     await page.getByRole('button', { name: /Envoyer ma candidature/i }).click();
     await expect(page.getByText('Erreur', { exact: true })).toBeVisible({ timeout: 10_000 });
     // La page de succès NE doit PAS apparaître

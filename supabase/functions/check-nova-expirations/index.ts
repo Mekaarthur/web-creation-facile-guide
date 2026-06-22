@@ -17,6 +17,15 @@ serve(async (req) => {
   }
 
   try {
+    // Si NOVA_REQUIRED=false, la gestion des expirations est désactivée
+    if (Deno.env.get("NOVA_REQUIRED") !== "true") {
+      logStep("NOVA_REQUIRED is not 'true' — skipping expiration check");
+      return new Response(JSON.stringify({ success: true, skipped: true, reason: "NOVA_REQUIRED=false" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
     logStep("Function started - daily Nova expiration check");
 
     const supabaseAdmin = createClient(

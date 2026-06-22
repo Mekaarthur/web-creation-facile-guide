@@ -14,12 +14,19 @@ interface ApplicationDetailsProps {
   loading?: boolean;
 }
 
-export const ApplicationDetails = ({ 
-  application, 
-  onApprove, 
+export const ApplicationDetails = ({
+  application,
+  onApprove,
   onReject,
-  loading = false 
+  loading = false
 }: ApplicationDetailsProps) => {
+  const mandatoryDocs = [
+    { field: 'identity_document_url', label: "Pièce d'identité" },
+    { field: 'siret_document_url', label: 'Justificatif SIRET' },
+    { field: 'rib_iban_url', label: 'RIB/IBAN' },
+  ];
+  const missingMandatoryDocs = mandatoryDocs.filter(d => !application[d.field]);
+  const canApprove = missingMandatoryDocs.length === 0;
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { variant: any; label: string; icon: any }> = {
       pending: { variant: 'secondary', label: 'En attente', icon: Clock },
@@ -176,24 +183,33 @@ export const ApplicationDetails = ({
 
       {/* Actions */}
       {application.status === 'pending' && (
-        <div className="flex gap-3">
-          <Button
-            onClick={onApprove}
-            disabled={loading}
-            className="flex-1"
-          >
-            <CheckCircle className="h-4 w-4 mr-2" />
-            Approuver & Créer prestataire
-          </Button>
-          <Button
-            onClick={onReject}
-            disabled={loading}
-            variant="destructive"
-            className="flex-1"
-          >
-            <XCircle className="h-4 w-4 mr-2" />
-            Rejeter
-          </Button>
+        <div className="space-y-3">
+          {!canApprove && (
+            <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+              <strong>Approbation bloquée</strong> — documents obligatoires manquants :{' '}
+              {missingMandatoryDocs.map(d => d.label).join(', ')}
+            </div>
+          )}
+          <div className="flex gap-3">
+            <Button
+              onClick={onApprove}
+              disabled={loading || !canApprove}
+              className="flex-1"
+              title={!canApprove ? 'Documents obligatoires manquants' : undefined}
+            >
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Approuver & Créer prestataire
+            </Button>
+            <Button
+              onClick={onReject}
+              disabled={loading}
+              variant="destructive"
+              className="flex-1"
+            >
+              <XCircle className="h-4 w-4 mr-2" />
+              Rejeter
+            </Button>
+          </div>
         </div>
       )}
 

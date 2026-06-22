@@ -226,6 +226,15 @@ test.describe('F06 — ProviderApplicationForm candidature complète', () => {
     await availTrigger.click().catch(() => {});
     await page.getByRole('option').first().click().catch(() => {});
 
+    // Upload les 3 docs obligatoires (identity=0, siret=1, rib=2 dans le nouvel ordre)
+    const minPdf = Buffer.from('%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj 3 0 obj<</Type/Page/MediaBox[0 0 3 3]>>endobj\nxref\n0 4\n0000000000 65535 f\n0000000009 00000 n\n0000000058 00000 n\n0000000115 00000 n\ntrailer<</Size 4/Root 1 0 R>>\nstartxref\n190\n%%EOF');
+    const fileInputs = page.locator('input[type="file"]');
+    for (const i of [0, 1, 2]) {
+      if (await fileInputs.nth(i).count() > 0) {
+        await fileInputs.nth(i).setInputFiles({ name: `doc-${i}.pdf`, mimeType: 'application/pdf', buffer: minPdf });
+      }
+    }
+
     await page.getByRole('button', { name: /envoyer|soumettre|candidature/i }).first().click();
 
     // Toast success — use .first() to avoid strict mode violation when success heading also visible
@@ -250,63 +259,55 @@ async function goToMandateStep(page: Page) {
   }));
   // ProtectedProviderRoute checks user_roles
   await page.route('**/rest/v1/user_roles*', mockUserRolesProvider);
-  // Provider: docs submitted, mandat NOT accepted → step 2
+  // Provider: docs submitted=true, mandat NOT accepted → step 2
   await page.route('**/rest/v1/providers*', json(200, {
     id: MOCK_PROVIDER_ID, user_id: MOCK_USER_ID,
     is_verified: false, status: 'pending',
     business_name: 'Test Provider',
     documents_submitted: true,
     mandat_facturation_accepte: false,
-    formation_completed: false,
   }));
-  // Provider documents: all 4 required types approved → docs step done
+  // Provider documents: 3 required types present (certification no longer required)
   await page.route('**/rest/v1/provider_documents*', json(200, [
     { document_type: 'identity_document' },
     { document_type: 'siret_document'    },
     { document_type: 'rib_iban'          },
-    { document_type: 'certification'     },
   ]));
 
   await page.goto('/provider-onboarding');
 
-  // Wait for MandateSignature component to be visible
-  await expect(page.getByRole('heading', { name: /Signature du mandat/i })).toBeVisible({ timeout: 10000 });
+  // Wait for MandateSignature component to be visible (title: "Mandat de facturation")
+  await expect(page.getByText(/mandat de facturation/i).first()).toBeVisible({ timeout: 10000 });
 }
 
 test.describe('F07 — MandateSignature sans signature', () => {
-  test('F07: toast "Veuillez signer" si canvas vide', async ({ page }) => {
-    await goToMandateStep(page);
-
-    // The submit button is disabled until checkbox is checked.
-    // Tick the checkbox first to enable the button.
-    await page.getByLabel(/certifie avoir lu|j.autorise/i)
-      .or(page.locator('#accept-mandate'))
-      .check();
-
-    // Click "Signer le mandat" WITHOUT drawing
-    await page.getByRole('button', { name: /signer le mandat/i }).click();
-
-    // Toast: "Veuillez signer le mandat"
-    await expect(page.getByText(/veuillez signer/i)).toBeVisible({ timeout: 5000 });
-  });
-
-  test('F07b: bouton "Signer" désactivé tant que checkbox non cochée', async ({ page }) => {
+  test('F07: bouton "Accepter le mandat" désactivé tant que case non cochée', async ({ page }) => {
     await goToMandateStep(page);
 
     // Without checkbox, button should be disabled
-    const signBtn = page.getByRole('button', { name: /signer le mandat/i });
-    await expect(signBtn).toBeDisabled({ timeout: 5000 });
+    const acceptBtn = page.getByRole('button', { name: /accepter le mandat/i });
+    await expect(acceptBtn).toBeDisabled({ timeout: 5000 });
+  });
+
+  test('F07b: cocher la case active le bouton "Accepter le mandat"', async ({ page }) => {
+    await goToMandateStep(page);
+
+    const acceptBtn = page.getByRole('button', { name: /accepter le mandat/i });
+    await expect(acceptBtn).toBeDisabled({ timeout: 5000 });
+
+    // Tick checkbox → button becomes enabled
+    await page.locator('#accept-mandate').check();
+    await expect(acceptBtn).toBeEnabled({ timeout: 3000 });
   });
 });
 
 // ─── F08 — MandateSignature avec signature ────────────────────────────────────
 
-test.describe('F08 — MandateSignature signature complète', () => {
-  test('F08: UPDATE providers.mandat_facturation_accepte=true après signature valide', async ({ page }) => {
+test.describe('F08 — MandateSignature acceptation complète', () => {
+  test('F08: UPDATE providers.mandat_facturation_accepte=true après acceptation', async ({ page }) => {
     let updateCalled = false;
     await injectSession(page, makeProviderSession());
 
-    // catch-alls first (checked last in LIFO), specific mocks last (checked first)
     await page.route('**/rest/v1/**',      stubEmpty);
     await page.route('**/functions/v1/**', json(200, {}));
     await page.route('**/auth/v1/user**', json(200, {
@@ -320,7 +321,7 @@ test.describe('F08 — MandateSignature signature complète', () => {
       const providerData = {
         id: MOCK_PROVIDER_ID, user_id: MOCK_USER_ID,
         is_verified: false, status: 'pending', business_name: 'Test Provider',
-        documents_submitted: true, mandat_facturation_accepte: false, formation_completed: false,
+        documents_submitted: true, mandat_facturation_accepte: false,
       };
       route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(providerData) });
     });
@@ -328,36 +329,20 @@ test.describe('F08 — MandateSignature signature complète', () => {
       { document_type: 'identity_document' },
       { document_type: 'siret_document'    },
       { document_type: 'rib_iban'          },
-      { document_type: 'certification'     },
     ]));
     await page.route('**/rest/v1/communications*', json(201, {}));
 
     await page.goto('/provider-onboarding');
-    await expect(page.getByRole('heading', { name: /Signature du mandat/i })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(/mandat de facturation/i).first()).toBeVisible({ timeout: 10000 });
 
-    // Draw on the signature canvas
-    const canvas = page.locator('canvas').first();
-    await canvas.scrollIntoViewIfNeeded();
-    const box = await canvas.boundingBox();
-    if (box) {
-      await page.mouse.move(box.x + 40,  box.y + 60);
-      await page.mouse.down();
-      await page.mouse.move(box.x + 100, box.y + 60);
-      await page.mouse.move(box.x + 160, box.y + 70);
-      await page.mouse.move(box.x + 200, box.y + 50);
-      await page.mouse.up();
-    }
+    // Cocher la case d'acceptation
+    await page.locator('#accept-mandate').check();
 
-    // Tick checkbox
-    await page.getByLabel(/certifie avoir lu|j.autorise/i)
-      .or(page.locator('#accept-mandate'))
-      .check();
+    // Accepter le mandat
+    await page.getByRole('button', { name: /accepter le mandat/i }).click();
 
-    // Submit signature
-    await page.getByRole('button', { name: /signer le mandat/i }).click();
-
-    // Wait for success
-    await expect(page.getByText(/mandat signé|succès|signé avec succès/i)).toBeVisible({ timeout: 8000 });
+    // Succès : "Mandat accepté" affiché
+    await expect(page.getByText(/mandat accepté|succès|accepté avec succès/i)).toBeVisible({ timeout: 8000 });
     expect(updateCalled).toBe(true);
   });
 });

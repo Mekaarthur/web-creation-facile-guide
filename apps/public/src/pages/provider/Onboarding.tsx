@@ -7,8 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { DocumentUploadSection } from '@/components/provider/DocumentUploadSection';
 import { MandateSignature } from '@/components/provider/MandateSignature';
-import { TrainingModule } from '@/components/provider/TrainingModule';
-import { CheckCircle, Loader2, ArrowLeft, FileText, PenLine, GraduationCap, BadgeCheck } from 'lucide-react';
+import { CheckCircle, Loader2, ArrowLeft, FileText, PenLine, BadgeCheck } from 'lucide-react';
 
 interface OnboardingData {
   provider: any;
@@ -36,20 +35,18 @@ async function fetchOnboardingData(): Promise<OnboardingData | null> {
     .eq('provider_id', data.id)
     .eq('status', 'approved');
 
-  const requiredDocTypes = ['identity_document', 'siret_document', 'rib_iban', 'certification'];
+  const requiredDocTypes = ['identity_document', 'siret_document', 'rib_iban'];
   const documentsApproved = requiredDocTypes.every(type =>
     approvedDocs?.some((doc: any) => doc.document_type === type)
   );
 
   let currentStep: number;
-  if (!data.documents_submitted || !documentsApproved) {
+  if (!data.documents_submitted && !documentsApproved) {
     currentStep = 1;
   } else if (!data.mandat_facturation_accepte) {
     currentStep = 2;
-  } else if (!data.formation_completed) {
-    currentStep = 3;
   } else {
-    currentStep = 4;
+    currentStep = 3;
   }
 
   return { provider: data, currentStep };
@@ -100,8 +97,7 @@ const ProviderOnboarding = () => {
   const steps = [
     { id: 1, title: 'Documents', icon: FileText, completed: currentStep > 1 },
     { id: 2, title: 'Mandat', icon: PenLine, completed: provider.mandat_facturation_accepte },
-    { id: 3, title: 'Formation', icon: GraduationCap, completed: provider.formation_completed },
-    { id: 4, title: 'Validation', icon: BadgeCheck, completed: provider.status === 'active' }
+    { id: 3, title: 'Validation', icon: BadgeCheck, completed: provider.status === 'active' }
   ];
 
   const completedSteps = steps.filter(s => s.completed).length;
@@ -142,7 +138,7 @@ const ProviderOnboarding = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-2 sm:gap-4 mb-8">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-8">
           {steps.map((step) => {
             const StepIcon = step.icon;
             const isActive = step.id === currentStep;
@@ -213,16 +209,6 @@ const ProviderOnboarding = () => {
           )}
 
           {currentStep === 3 && (
-            <TrainingModule
-              providerId={provider.id}
-              onCompleted={() => {
-                refetch();
-                setCurrentStep(4);
-              }}
-            />
-          )}
-
-          {currentStep === 4 && (
             <Card className="p-8 text-center space-y-4">
               <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
                 <Loader2 className="h-8 w-8 text-primary animate-spin" />

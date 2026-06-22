@@ -90,15 +90,16 @@ export const providerCandidateSchema = z.object({
   coverage_zone: z.string().min(3, "Zone géographique requise"),
   availability: z.string().min(1, "Disponibilités requises"),
   motivation: z.string().optional(),
-  // Documents obligatoires
-  identity_document: z.any().refine((file) => file instanceof File || file === null, "Pièce d'identité requise"),
-  criminal_record: z.any().optional(),
-  criminal_record_date: z.date().optional(),
-  siret_document: z.any().refine((file) => file instanceof File || file === null, "Justificatif auto-entrepreneur requis"),
-  rib_iban: z.any().refine((file) => file instanceof File || file === null, "RIB/IBAN requis"),
-  certification_nova: z.any().refine((file) => file instanceof File || file === null, "Agrément Nova requis"),
+  // Documents obligatoires (z.instanceof bloque si fichier absent)
+  identity_document: z.instanceof(File, { message: "La pièce d'identité est obligatoire" }),
+  siret_document: z.instanceof(File, { message: "Le justificatif SIRET est obligatoire" }),
+  rib_iban: z.instanceof(File, { message: "Le RIB/IBAN est obligatoire" }),
   // Documents optionnels
-  certifications: z.any().optional(),
+  criminal_record: z.instanceof(File).optional().nullable(),
+  criminal_record_date: z.date().optional(),
+  certification_nova: z.instanceof(File).optional().nullable(),
+  rc_pro: z.instanceof(File).optional().nullable(),
+  certifications: z.instanceof(File).optional().nullable(),
 });
 
 export const contactSchema = z.object({

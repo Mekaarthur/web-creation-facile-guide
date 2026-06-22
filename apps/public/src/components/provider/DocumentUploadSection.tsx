@@ -30,7 +30,7 @@ const DOCUMENT_TYPES = [
   { value: 'criminal_record', label: 'Casier judiciaire (moins de 3 mois)', required: false },
   { value: 'siret_document', label: 'Justificatif auto-entrepreneur (attestation URSSAF, KBIS)', required: true },
   { value: 'rib_iban', label: 'RIB / IBAN', required: true },
-  { value: 'certification', label: 'Agrément Nova', required: true },
+  { value: 'certification', label: 'Agrément NOVA (optionnel)', required: false },
   { value: 'certifications_other', label: 'Certifications (diplômes, formations, certificats)', required: false },
   { value: 'insurance', label: 'Assurance RC Pro', required: false },
 ];

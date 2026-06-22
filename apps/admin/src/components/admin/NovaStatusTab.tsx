@@ -81,6 +81,18 @@ const NovaStatusTab = () => {
 
   return (
     <div className="space-y-4">
+      {/* Bannière info — NOVA_REQUIRED=false actuellement */}
+      <div className="flex items-start gap-3 rounded-md border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+        <Shield className="h-5 w-5 flex-shrink-0 mt-0.5 text-blue-500" />
+        <div>
+          <strong>Agrément NOVA non requis actuellement</strong>
+          <p className="mt-1 text-blue-700">
+            Le flag <code className="font-mono text-xs bg-blue-100 px-1 rounded">NOVA_REQUIRED=false</code> est actif.
+            L'agrément NOVA est optionnel pour les prestataires. Le cron d'expiration est désactivé.
+            Les informations ci-dessous sont conservées à titre de suivi.
+          </p>
+        </div>
+      </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setFilter("validated")}>
           <CardContent className="p-4 text-center"><CheckCircle className="h-6 w-6 text-green-500 mx-auto mb-1" /><p className="text-2xl font-bold">{stats.validated}</p><p className="text-xs text-muted-foreground">Nova validé</p></CardContent>
