@@ -38,7 +38,7 @@ export const useClientDashboard = () => {
       // Récupérer les réservations
       const { data: bookings } = await supabase
         .from('bookings')
-        .select('*, services(name, price)')
+        .select('*, services(name)')
         .eq('client_id', user.id);
 
       // Récupérer les évaluations
@@ -96,7 +96,7 @@ export const useClientDashboard = () => {
           )
         `)
         .eq('client_id', user.id)
-        .in('status', ['confirmed', 'assigned'])
+        .in('status', ['confirmed', 'pending_provider'])
         .gte('booking_date', new Date().toISOString().split('T')[0])
         .order('booking_date', { ascending: true })
         .limit(5);
