@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Search, RefreshCw, GraduationCap } from "lucide-react";
+import { Search, RefreshCw } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -76,9 +76,19 @@ async function fetchAll(): Promise<UnifiedPerson[]> {
     supabase.from("providers").select("*").order("created_at", { ascending: false }).limit(500),
     supabase.from("provider_documents").select("*").order("created_at", { ascending: false }).limit(500),
     supabase.from("application_document_validations").select("*").limit(500),
-    supabase.from("provider_services").select("*, services(id, name, category)").limit(500),
+    supabase.from("provider_services").select("*, services!provider_services_service_id_fkey(id, name, category)").limit(500),
     supabase.from("profiles").select("user_id, email, first_name, last_name"),
-  ]);
+  ]).catch(err => {
+    console.error('[fetchAll] Promise.all rejected:', err);
+    throw err;
+  });
+
+  if (appsRes.error) console.error('[fetchAll] job_applications:', appsRes.error);
+  if (providersRes.error) console.error('[fetchAll] providers:', providersRes.error);
+  if (provDocsRes.error) console.error('[fetchAll] provider_documents:', provDocsRes.error);
+  if (validationsRes.error) console.error('[fetchAll] application_document_validations:', validationsRes.error);
+  if (provServicesRes.error) console.error('[fetchAll] provider_services:', provServicesRes.error);
+  if (profilesRes.error) console.error('[fetchAll] profiles:', profilesRes.error);
 
   const apps = appsRes.data || [], providers = providersRes.data || [], provDocs = provDocsRes.data || [];
   const validations = validationsRes.data || [], provServices = provServicesRes.data || [], profiles = profilesRes.data || [];

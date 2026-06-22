@@ -514,7 +514,7 @@ async function contactProvider(supabase: any, { providerId, message }: any) {
       .from('profiles')
       .select('email, first_name, last_name')
       .eq('user_id', provider.user_id)
-      .single();
+      .maybeSingle();
 
 
     // Créer une notification
