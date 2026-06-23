@@ -1655,6 +1655,37 @@ const getModernEmailTemplate = (type: string, recipient: any, data: any) => {
     },
 
     // 🌟 TEMPLATE PAR DÉFAUT
+    provider_request_optional_docs: {
+      subject: `📋 Complétez votre dossier prestataire Bikawo`,
+      html: `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 25px; text-align: center; border-radius: 12px 12px 0 0;">
+            <h1 style="margin: 0; font-size: 22px;">✅ Votre candidature a été acceptée !</h1>
+          </div>
+          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+            <p style="font-size: 16px; color: #374151;">Bonjour ${firstName},</p>
+            <p style="font-size: 16px; line-height: 1.6; color: #374151;">
+              Nous sommes ravis de vous accueillir dans l'équipe Bikawo ! Pour compléter votre dossier,
+              nous vous invitons à nous transmettre les documents suivants :
+            </p>
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 20px; margin: 20px 0;">
+              <ul style="color: #374151; line-height: 2; margin: 0; padding-left: 20px;">
+                <li><strong>Agrément Nova</strong> <span style="color: #6b7280; font-size: 14px;">(optionnel)</span></li>
+                <li><strong>Casier judiciaire (bulletin n°3)</strong> <span style="color: #6b7280; font-size: 14px;">(optionnel)</span></li>
+              </ul>
+              <p style="color: #6b7280; font-size: 14px; margin: 12px 0 0 0;">
+                Ces documents ne sont pas bloquants pour votre activation, mais ils nous permettent de mieux vous accompagner et de vous proposer plus d'opportunités.
+              </p>
+            </div>
+            <p style="font-size: 15px; color: #374151;">
+              Vous pouvez nous les envoyer en réponse à cet email ou via votre espace prestataire.
+            </p>
+            ${bikawoSignature}
+          </div>
+        </div>
+      `
+    },
+
     default: {
       subject: `📧 Notification Bikawo`,
       html: `

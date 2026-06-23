@@ -26,7 +26,7 @@ const DOC_LABELS: Record<string, string> = {
   insurance:         "Assurance",
 };
 
-const REQUIRED_APPLICATION_DOCUMENT_TYPES = ["identity_document", "siret_document", "rib_iban", "certifications"];
+const REQUIRED_APPLICATION_DOCUMENT_TYPES = ["identity_document", "siret_document", "rib_iban"];
 const REQUIRED_PROVIDER_DOCUMENT_TYPES    = ["identity_document", "siret_document", "rib_iban", "certification"];
 
 const normalizeKey = (value?: string | null) =>
@@ -237,6 +237,22 @@ export const UnifiedProviderPipeline = () => {
     }
   };
 
+  const handleRequestOptionalDocs = async (person: UnifiedPerson) => {
+    if (!person.application) return;
+    try {
+      await supabase.functions.invoke("send-modern-notification", {
+        body: {
+          type: "provider_request_optional_docs",
+          recipient: { email: person.email, name: person.name, firstName: person.name.split(" ")[0] },
+          data: { providerName: person.name },
+        },
+      });
+      toast.success("Email envoyé — documents optionnels demandés");
+    } catch (error: any) {
+      toast.error("Erreur envoi email : " + (error.message || "Erreur inconnue"));
+    }
+  };
+
   const handleApproveDoc = async (doc: DocumentItem, person: UnifiedPerson) => {
     try {
       if (doc.source === "provider") {
@@ -343,6 +359,7 @@ export const UnifiedProviderPipeline = () => {
               onRejectApp={handleRejectApplication}
               onActivate={handleActivateProvider}
               onApproveDoc={handleApproveDoc}
+              onRequestOptionalDocs={handleRequestOptionalDocs}
               onOpenRejectDialog={setRejectDialog}
               onViewDoc={viewDocument}
             />

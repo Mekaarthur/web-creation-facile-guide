@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import {
   FileText, Clock, CheckCircle, XCircle, UserCheck, ExternalLink,
-  ChevronDown, ChevronUp, User, Shield, Building, CreditCard, Award,
+  ChevronDown, ChevronUp, User, Shield, Building, CreditCard, Award, Mail,
 } from 'lucide-react';
 
 export type PipelineStage = 'candidature' | 'documents' | 'onboarding' | 'actif';
@@ -58,7 +58,8 @@ const DOC_ICONS: Record<string, any> = {
   certification: Award, certifications: Award, insurance: Shield,
 };
 
-const REQUIRED_APPLICATION_DOCUMENT_TYPES = ['identity_document', 'siret_document', 'rib_iban', 'certifications'];
+const REQUIRED_APPLICATION_DOCUMENT_TYPES = ['identity_document', 'siret_document', 'rib_iban'];
+const OPTIONAL_APPLICATION_DOCUMENT_TYPES = ['criminal_record', 'cv', 'certifications'];
 
 interface Props {
   person: UnifiedPerson;
@@ -70,9 +71,10 @@ interface Props {
   onApproveDoc: (doc: DocumentItem, person: UnifiedPerson) => void;
   onOpenRejectDialog: (state: RejectDialogState) => void;
   onViewDoc: (url: string, source: string) => void;
+  onRequestOptionalDocs?: (person: UnifiedPerson) => void;
 }
 
-export function PersonPipelineCard({ person, isExpanded, onToggle, onApproveApp, onRejectApp, onActivate, onApproveDoc, onOpenRejectDialog, onViewDoc }: Props) {
+export function PersonPipelineCard({ person, isExpanded, onToggle, onApproveApp, onRejectApp, onActivate, onApproveDoc, onOpenRejectDialog, onViewDoc, onRequestOptionalDocs }: Props) {
   const stageCfg   = STAGE_CONFIG[person.stage];
   const StageIcon  = stageCfg.icon;
   const docsCount  = person.allDocuments.length;
@@ -207,7 +209,11 @@ export function PersonPipelineCard({ person, isExpanded, onToggle, onApproveApp,
                           {doc.status === 'approved' && <CheckCircle className="w-4 h-4 text-emerald-600" />}
                           {doc.status === 'rejected' && <XCircle className="w-4 h-4 text-destructive" />}
                           {doc.status === 'pending'  && <Clock className="w-4 h-4 text-amber-500" />}
-                          {doc.status === 'missing'  && <span className="text-xs text-muted-foreground">Manquant</span>}
+                          {doc.status === 'missing' && (
+                            OPTIONAL_APPLICATION_DOCUMENT_TYPES.includes(doc.type)
+                              ? <span className="text-xs text-muted-foreground italic">Manquant (optionnel)</span>
+                              : <Badge variant="destructive" className="text-xs">Manquant</Badge>
+                          )}
                           {doc.url && (
                             <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => onViewDoc(doc.url!, doc.source)}>
                               <ExternalLink className="w-3 h-3" />
@@ -262,6 +268,17 @@ export function PersonPipelineCard({ person, isExpanded, onToggle, onApproveApp,
                 </Button>
                 <Button size="sm" onClick={() => onApproveApp(person)} className="gap-1">
                   <CheckCircle className="w-3 h-3" /> Approuver candidature
+                </Button>
+              </div>
+            )}
+            {person.stage === 'onboarding' && person.application?.status === 'approved' &&
+              onRequestOptionalDocs &&
+              OPTIONAL_APPLICATION_DOCUMENT_TYPES.some(type =>
+                person.allDocuments.some(d => d.source === 'application' && d.type === type && d.status === 'missing')
+              ) && (
+              <div className="flex justify-end pt-2">
+                <Button size="sm" variant="outline" onClick={() => onRequestOptionalDocs(person)} className="gap-1">
+                  <Mail className="w-3 h-3" /> Demander docs optionnels
                 </Button>
               </div>
             )}
