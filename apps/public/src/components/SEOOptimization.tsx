@@ -69,9 +69,13 @@ const SEOOptimization = ({
       {/* Mobile optimization */}
       <meta name="application-name" content="Bikawo" />
       
-      {/* Preload critical resources */}
-      <link rel="preload" href="/hero-mobile.webp" as="image" type="image/webp" media="(max-width: 767px)" />
-      <link rel="preload" href="/hero-desktop.webp" as="image" type="image/webp" media="(min-width: 768px)" />
+      {/* Preload critical resources — hero uniquement sur la home */}
+      {typeof window !== 'undefined' && window.location.pathname === '/' && (
+        <>
+          <link rel="preload" href="/hero-mobile.webp" as="image" type="image/webp" media="(max-width: 767px)" />
+          <link rel="preload" href="/hero-desktop.webp" as="image" type="image/webp" media="(min-width: 768px)" />
+        </>
+      )}
       
       {/* DNS prefetch */}
       <link rel="dns-prefetch" href="//fonts.googleapis.com" />
