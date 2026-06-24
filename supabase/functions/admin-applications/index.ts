@@ -25,11 +25,17 @@ async function approveApplication(
   supabaseUrl: string,
   supabaseKey: string,
 ): Promise<Response> {
+  console.log('=== APPROVE START ===');
+  console.log('applicationId:', applicationId);
+  console.log('adminUserId:', adminUserId);
+
+  console.log('Step 1: fetching application...');
   const { data: application, error: fetchError } = await supabase
     .from('job_applications')
     .select('*')
     .eq('id', applicationId)
     .single();
+  console.log('Step 1 result — email:', application?.email, '| fetchError:', fetchError?.message ?? null);
 
   if (fetchError) throw fetchError;
 
@@ -40,6 +46,7 @@ async function approveApplication(
     { field: 'rib_iban_url', label: 'RIB/IBAN' },
   ];
   const missingDocs = mandatoryDocFields.filter(d => !application[d.field]);
+  console.log('Step 2: mandatory docs check — missing:', missingDocs.map(d => d.field));
   if (missingDocs.length > 0) {
     const labels = missingDocs.map(d => d.label).join(', ');
     return new Response(
@@ -48,15 +55,19 @@ async function approveApplication(
     );
   }
 
-  const { data: existingProfile } = await supabase
+  console.log('Step 3: checking existing profile by email...');
+  const { data: existingProfile, error: profileLookupError } = await supabase
     .from('profiles')
     .select('user_id')
     .eq('email', application.email)
-    .single();
+    .maybeSingle();
+  console.log('Step 3 result — existingProfile:', existingProfile, '| profileLookupError:', profileLookupError?.message ?? null);
 
   let userId = existingProfile?.user_id;
+  console.log('Step 3: userId from profile:', userId ?? 'NOT FOUND');
 
   if (!userId) {
+    console.log('Step 4: no existing user — calling createUser...');
     const tempPassword = crypto.randomUUID().slice(0, 16) + 'A1!';
     const { data: newUser, error: createUserError } = await supabase.auth.admin.createUser({
       email: application.email,
@@ -67,13 +78,15 @@ async function approveApplication(
         last_name: application.last_name,
       },
     });
+    console.log('Step 4 createUser — newUser id:', newUser?.user?.id ?? null, '| createUserError:', createUserError?.message ?? null, '| code:', (createUserError as any)?.code ?? null);
 
     if (createUserError) {
-      // Any createUser error: attempt to find existing auth user before giving up
-      const { data: { users } } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+      console.log('Step 4 fallback: createUser failed — listing auth users to find existing...');
+      const { data: { users }, error: listError } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+      console.log('Step 4 listUsers — total:', users?.length ?? 0, '| listError:', listError?.message ?? null);
       const found = users?.find((u: { id: string; email?: string }) => u.email?.toLowerCase() === application.email.toLowerCase());
+      console.log('Step 4 fallback found user:', found?.id ?? 'NOT FOUND');
       if (found) {
-        console.log('createUser failed, reusing existing user:', found.id, '-', createUserError.message);
         userId = found.id;
       } else {
         throw createUserError;
@@ -82,6 +95,7 @@ async function approveApplication(
       userId = newUser.user.id;
     }
 
+    console.log('Step 5: updating profile for userId:', userId);
     const { error: profileError } = await supabase
       .from('profiles')
       .update({
@@ -91,12 +105,14 @@ async function approveApplication(
         phone: application.phone,
       })
       .eq('user_id', userId);
+    console.log('Step 5 profile update error:', profileError?.message ?? null);
 
     if (profileError) {
       console.error('Profile update error (non-blocking):', profileError);
     }
   }
 
+  console.log('Step 6: inserting provider for userId:', userId);
   const { data: provider, error: providerError } = await supabase
     .from('providers')
     .insert({
@@ -113,6 +129,7 @@ async function approveApplication(
     })
     .select()
     .single();
+  console.log('Step 6 provider insert — provider id:', provider?.id ?? null, '| providerError:', providerError?.message ?? null, '| code:', (providerError as any)?.code ?? null);
 
   if (providerError) throw providerError;
 
@@ -193,12 +210,23 @@ async function approveApplication(
     }
   }
 
-  const { error: roleError } = await supabase
+  // user_roles has no UNIQUE(user_id, role) constraint — upsert onConflict would throw 42P10
+  // Use select-then-insert to avoid duplicate without relying on a missing constraint
+  const { data: existingRole } = await supabase
     .from('user_roles')
-    .upsert({ user_id: userId, role: 'provider' }, { onConflict: 'user_id,role', ignoreDuplicates: true });
-
-  if (roleError) {
-    console.error('Error assigning provider role:', roleError);
+    .select('id')
+    .eq('user_id', userId)
+    .eq('role', 'provider')
+    .maybeSingle();
+  if (!existingRole) {
+    const { error: roleError } = await supabase
+      .from('user_roles')
+      .insert({ user_id: userId, role: 'provider' });
+    if (roleError) {
+      console.error('Error assigning provider role:', roleError);
+    }
+  } else {
+    console.log('provider role already exists for userId:', userId);
   }
 
   await supabase
@@ -489,10 +517,22 @@ serve(async (req) => {
     throw new Error('Invalid action');
 
   } catch (error) {
-    console.error('Error in admin-applications:', error);
-    return new Response(JSON.stringify({ error: (error as Error).message }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    const err = error as any;
+    console.error('=== APPROVE FATAL ERROR ===');
+    console.error('message:', err?.message);
+    console.error('code:', err?.code);
+    console.error('status:', err?.status);
+    console.error('details:', err?.details);
+    console.error('hint:', err?.hint);
+    console.error('stack:', err?.stack);
+    return new Response(
+      JSON.stringify({
+        error: err?.message || 'Une erreur est survenue',
+        code: err?.code,
+        details: err?.details,
+        hint: err?.hint,
+      }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
   }
 });
