@@ -131,6 +131,16 @@ Ces vulnérabilités sont présentes dans `pnpm audit` mais n'affectent pas le r
 - **W5 — URSSAF async non-atomique** : Le booking est confirmé avant l'envoi de la déclaration URSSAF. Si `urssaf-register-service` échoue, le booking existe sans déclaration. Monitoring manuel requis : vérifier la table `urssaf_declarations` chaque semaine pour les entrées `status='error'`.
 - **W6 — `service_id` null sur certains bookings** : Si le nom de service dans les métadonnées Stripe ne correspond pas à la base, le booking est créé avec `service_id=null`. Une notification admin est créée. Vérifier les notifications admin quotidiennement pour les alertes "SERVICE NON IDENTIFIÉ".
 
+## Triggers DB — en attente de révision (ne pas toucher sans investigation)
+
+Audit du 2026-06-24 : 5 triggers DANGEROUS supprimés (migration `20260624000002`). Les 5 suivants nécessitent une investigation complémentaire avant décision :
+
+- **`trigger_generate_provider_invoice`** (`generate_provider_invoice_on_completion`) : Génère un record `provider_invoices` quand `booking.status = 'completed'`. Utilise 70% hardcodé au lieu de `financial_transactions.provider_payment`. À investiguer : `transfer-provider-payment` ne crée pas les records — ce trigger est peut-être nécessaire. Fix requis : remplacer les 70% par une jointure sur `financial_transactions`.
+- **`trigger_compensate_provider_late_cancel`** (`compensate_provider_on_late_cancellation`) : Insère dans `provider_compensations` (30% hardcodé) pour annulations < 2h. Chevauchement possible avec `handle-cancellation` EF (R9). Vérifier si `provider_compensations` est utilisé en frontend avant de supprimer.
+- **`trigger_send_provider_assigned`** (`send_provider_assigned_email`) : Envoie `type='provider_assigned'` au client quand `provider_id` change sur UPDATE. `verify-payment` envoie une notification prestataire distincte — pas clairement doublon. Utile pour les réassignations admin.
+- **`trigger_send_review_request`** (`send_review_request_on_completion`) : Appelle `send-review-request` EF sur `status='completed'`. `send-mission-status-update` (ligne 190) fait de même. **Doublon probable** — double demande d'avis au client. À confirmer selon le flow provider exact.
+- **`create_prestation_on_completion`** (`create_prestation_from_booking`) : Crée un record `prestations_realisees` sur completion (17€/hr hardcodé). Double update de `providers.total_earnings` avec `update_provider_earnings_trigger`. `prestations_realisees` non utilisé en frontend (grep 2026-06-24). Candidat DROP.
+
 ## Règles métier Bikawo — non négociables
 
 ### Paiements (R1–R5)
