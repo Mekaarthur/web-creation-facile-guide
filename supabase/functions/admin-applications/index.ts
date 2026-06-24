@@ -69,16 +69,12 @@ async function approveApplication(
     });
 
     if (createUserError) {
-      const msg = createUserError.message?.toLowerCase() ?? '';
-      if (msg.includes('already') || msg.includes('exists') || msg.includes('registered')) {
-        // Email already in auth.users but not found via profiles.email — find and reuse
-        const { data: { users } } = await supabase.auth.admin.listUsers({ perPage: 1000 });
-        const found = users?.find((u: { id: string; email?: string }) => u.email?.toLowerCase() === application.email.toLowerCase());
-        if (found) {
-          userId = found.id;
-        } else {
-          throw createUserError;
-        }
+      // Any createUser error: attempt to find existing auth user before giving up
+      const { data: { users } } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+      const found = users?.find((u: { id: string; email?: string }) => u.email?.toLowerCase() === application.email.toLowerCase());
+      if (found) {
+        console.log('createUser failed, reusing existing user:', found.id, '-', createUserError.message);
+        userId = found.id;
       } else {
         throw createUserError;
       }
