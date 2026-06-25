@@ -125,13 +125,16 @@ export const ProviderDetailsModal = ({
         .eq('id', provider.id);
       if (error) throw error;
 
-      await supabase.from('communications').insert({
-        type: 'email',
-        destinataire_id: providerId,
-        sujet: 'Dossier approuvé - Bienvenue sur Bikawo !',
-        contenu: `Félicitations ! Votre dossier a été approuvé. Vous pouvez maintenant commencer à recevoir des missions.`,
-        status: 'en_attente'
-      });
+      if (provider.email) {
+        supabase.functions.invoke('send-transactional-email', {
+          body: {
+            type: 'provider_account_activated',
+            recipientEmail: provider.email,
+            recipientName: provider.business_name,
+            data: { providerName: provider.business_name },
+          },
+        }).then(null, (e) => console.error('Activation email error:', e));
+      }
 
       toast({ title: "Succès", description: "Le prestataire a été approuvé" });
       onProviderUpdated();
@@ -187,9 +190,21 @@ export const ProviderDetailsModal = ({
     try {
       const { error } = await supabase
         .from('providers')
-        .update({ status: 'active' })
+        .update({ status: 'active', is_verified: true })
         .eq('id', provider.id);
       if (error) throw error;
+
+      if (provider.email) {
+        supabase.functions.invoke('send-transactional-email', {
+          body: {
+            type: 'provider_account_activated',
+            recipientEmail: provider.email,
+            recipientName: provider.business_name,
+            data: { providerName: provider.business_name },
+          },
+        }).then(null, (e) => console.error('Activation email error:', e));
+      }
+
       toast({ title: "Succès", description: "Le prestataire a été réactivé" });
       onProviderUpdated();
       onClose();

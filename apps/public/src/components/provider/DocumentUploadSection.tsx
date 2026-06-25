@@ -209,7 +209,7 @@ export const DocumentUploadSection = ({ providerId, onDocumentsUpdated }: Docume
                     onClick={async () => {
                       const { data, error } = await supabase.storage
                         .from('provider-documents')
-                        .createSignedUrl(doc.file_url, 60);
+                        .createSignedUrl(doc.file_url, 3600);
                       if (error || !data?.signedUrl) {
                         toast.error('Impossible d\'ouvrir le document');
                         return;

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -5,6 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import {
   FileText, Upload, Eye, CheckCircle, AlertCircle, X, Loader2, Trash2,
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Document {
   id: string;
@@ -79,6 +81,16 @@ export function DocumentCard({ requirement, document, uploading, uploadProgress,
   const Icon = requirement.icon;
   const isUploading = uploading === requirement.type;
 
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!document?.file_url) return;
+    supabase.storage
+      .from('provider-documents')
+      .createSignedUrl(document.file_url, 3600)
+      .then(({ data }) => { if (data?.signedUrl) setSignedUrl(data.signedUrl); });
+  }, [document?.file_url]);
+
   return (
     <Card className="relative">
       <CardContent className="p-6">
@@ -117,9 +129,9 @@ export function DocumentCard({ requirement, document, uploading, uploadProgress,
                     </span>
                   </div>
 
-                  {document.file_url && (document.file_name.endsWith('.jpg') || document.file_name.endsWith('.jpeg') || document.file_name.endsWith('.png')) && (
+                  {signedUrl && isImage(document.file_name) && (
                     <div className="relative w-32 h-32 rounded-lg overflow-hidden border-2 border-border">
-                      <img src={document.file_url} alt={document.file_name} className="w-full h-full object-cover" />
+                      <img src={signedUrl} alt={document.file_name} className="w-full h-full object-cover" />
                     </div>
                   )}
 
@@ -128,8 +140,9 @@ export function DocumentCard({ requirement, document, uploading, uploadProgress,
                       <Eye className="w-4 h-4" />
                       {previewDocId === document.id ? 'Masquer' : 'Aperçu'}
                     </Button>
-                    <Button variant="outline" size="sm" asChild className="gap-1">
-                      <a href={document.file_url} target="_blank" rel="noopener noreferrer">Télécharger</a>
+                    <Button variant="outline" size="sm" asChild className="gap-1" disabled={!signedUrl}>
+                      <a href={signedUrl || '#'} target="_blank" rel="noopener noreferrer"
+                         onClick={e => !signedUrl && e.preventDefault()}>Télécharger</a>
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => onDelete(document)} className="gap-1 text-destructive hover:text-destructive hover:bg-destructive/10">
                       <Trash2 className="w-4 h-4" /> Supprimer
@@ -139,7 +152,7 @@ export function DocumentCard({ requirement, document, uploading, uploadProgress,
                   {previewDocId === document.id && (
                     <div className="mt-3 border rounded-lg overflow-hidden">
                       {isImage(document.file_name) ? (
-                        <img src={previewUrls[document.id] || document.file_url} alt={document.file_name} className="w-full max-h-[480px] object-contain bg-muted" />
+                        <img src={previewUrls[document.id] || signedUrl || ''} alt={document.file_name} className="w-full max-h-[480px] object-contain bg-muted" />
                       ) : isPdf(document.file_name) ? (
                         <iframe src={previewUrls[document.id]} className="w-full h-[520px] bg-muted" title={`Aperçu ${document.file_name}`} />
                       ) : (
