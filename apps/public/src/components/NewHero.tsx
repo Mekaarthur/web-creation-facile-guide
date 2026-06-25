@@ -29,7 +29,7 @@ const NewHero = () => {
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* Urgency Badge */}
         <div className="inline-flex items-center gap-2 bg-accent/90 text-accent-foreground px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 sm:mb-6 shadow-lg">
-          <span className="text-xs sm:text-sm font-semibold">💰 50% d'avance immédiate sur vos impôts</span>
+          <span className="text-xs sm:text-sm font-semibold">💰 50% de crédit d'impôt sur vos services à domicile</span>
         </div>
 
         <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 leading-tight">

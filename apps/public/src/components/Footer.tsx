@@ -139,7 +139,7 @@ const Footer = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block"
-                  aria-label="URSSAF - Avance immédiate"
+                  aria-label="URSSAF"
                 >
                   <LogoUrssaf
                     width={80}
@@ -221,7 +221,7 @@ const Footer = () => {
                     {t("footer.legal")}
                   </Link>
                   <Link to="/avance-immediate" className="hover:text-white transition-colors">
-                    Avance Immédiate
+                    Crédit d'impôt
                   </Link>
                   <Link to="/politique-cookies" className="hover:text-white transition-colors">
                     Politique de cookies

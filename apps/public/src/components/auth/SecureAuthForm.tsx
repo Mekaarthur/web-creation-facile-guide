@@ -90,33 +90,6 @@ export const SecureAuthForm = ({ mode, userType, onSuccess }: SecureAuthFormProp
         throw new Error('Cet email est déjà utilisé');
       }
 
-      // Déclencher l'envoi de l'email de confirmation personnalisé
-      if (authData.user && !authData.user.email_confirmed_at) {
-        try {
-          const { error: emailError } = await supabase.functions.invoke('send-confirmation-email', {
-            body: {
-              userEmail: validatedData.email,
-              userId: authData.user.id
-            }
-          });
-          if (emailError) {
-            console.error('Erreur email confirmation:', emailError);
-            toast({
-              title: "Inscription réussie mais...",
-              description: "L'email de confirmation n'a pas pu être envoyé. Contactez le support.",
-              variant: "destructive"
-            });
-          }
-        } catch (emailError) {
-          console.error('Erreur lors de l\'envoi de l\'email de confirmation:', emailError);
-          toast({
-            title: "Inscription réussie mais...",
-            description: "L'email de confirmation n'a pas pu être envoyé. Contactez le support.",
-            variant: "destructive"
-          });
-        }
-      }
-
       // Si inscription prestataire, créer automatiquement l'entrée provider
       if (userType === 'prestataire' && authData.user) {
         try {

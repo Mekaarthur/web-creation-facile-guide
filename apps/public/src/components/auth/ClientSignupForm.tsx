@@ -142,20 +142,6 @@ export const ClientSignupForm = () => {
         }
       }
 
-      // Envoyer l'email de confirmation personnalisé
-      if (authData.user && !authData.user.email_confirmed_at) {
-        try {
-          await supabase.functions.invoke('send-confirmation-email', {
-            body: {
-              userEmail: normalizedEmail,
-              userId: authData.user.id
-            }
-          });
-        } catch (emailError) {
-          console.error('Erreur lors de l\'envoi de l\'email de confirmation:', emailError);
-        }
-      }
-
       toast({
         title: "Inscription réussie ! 🎉",
         description: "Un email de confirmation a été envoyé. Vérifiez votre boîte mail.",

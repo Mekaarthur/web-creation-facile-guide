@@ -32,7 +32,7 @@ const HOME_TUTORIAL_STEPS: TutorialStep[] = [
     id: 'cart',
     target: '[data-tutorial="cart"]',
     title: 'Votre panier',
-    content: 'Ajoutez des services à votre panier et finalisez votre réservation en quelques clics. Profitez de 50% d\'avance immédiate sur vos impôts !',
+    content: 'Ajoutez des services à votre panier et finalisez votre réservation en quelques clics. Profitez du crédit d\'impôt 50% sur vos services à domicile !',
     position: 'left',
   },
 ];

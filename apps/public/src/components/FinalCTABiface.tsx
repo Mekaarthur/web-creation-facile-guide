@@ -44,7 +44,7 @@ const FinalCTABiface = () => {
           </p>
           
           <p className="text-lg mb-8 opacity-80 animate-fade-in">
-            💰 <strong>50% d'avance immédiate</strong> sur vos impôts
+            💰 <strong>50% de crédit d'impôt</strong> sur vos services à domicile
           </p>
 
           {/* CTA Button */}

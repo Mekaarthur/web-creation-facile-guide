@@ -43,7 +43,7 @@ const FAQ = () => {
         },
         {
           question: "Quels modes de paiement acceptez-vous ?",
-          answer: "Carte bancaire et avance immédiate de crédit d'impôt (URSSAF). Le montant est prélevé après la prestation pour votre tranquillité d'esprit."
+          answer: "Carte bancaire. Le montant est prélevé après la prestation pour votre tranquillité d'esprit. Vous bénéficiez du crédit d'impôt 50% (art. 199 sexdecies CGI) lors de votre déclaration fiscale annuelle."
         },
         {
           question: "Y a-t-il des frais cachés ?",

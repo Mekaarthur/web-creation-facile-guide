@@ -24,7 +24,7 @@ const HowItWorks = () => {
       icon: CreditCard,
       step: '4',
       title: 'Paiement sécurisé',
-      description: 'Payez en ligne en toute sécurité. Bénéficiez de l\'avance immédiate : l\'État prend en charge 50% directement.',
+      description: 'Payez en ligne en toute sécurité. Bénéficiez du crédit d\'impôt 50% : récupérez la moitié de vos dépenses lors de votre déclaration fiscale annuelle.',
     },
   ];
 
