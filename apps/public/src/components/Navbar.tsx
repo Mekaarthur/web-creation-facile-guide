@@ -52,6 +52,7 @@ const Navbar = () => {
   }, []);
 
   const navItems = [
+    { name: "Bikawo Pro", href: "/bika-pro", label: "nav.bika_pro" },
     { name: t('nav.about'), href: "/a-propos-de-nous", label: "nav.about" },
     { name: t('nav.contact'), href: "/contact", label: "nav.contact" },
   ];

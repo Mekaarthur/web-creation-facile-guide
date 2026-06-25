@@ -1,4 +1,6 @@
 import { lazy, Suspense } from 'react';
+import { Link } from "react-router-dom";
+import { Building2, ArrowRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import NewHero from "@/components/NewHero";
 import SEOOptimization from "@/components/SEOOptimization";
@@ -113,6 +115,29 @@ const Index = () => {
         </section>
       </main>
       
+      {/* Bandeau entreprise */}
+      <section className="bg-slate-900 text-white py-10 px-4">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <Building2 className="w-10 h-10 text-primary flex-shrink-0" />
+            <div>
+              <p className="font-bold text-lg">Vous êtes une entreprise ?</p>
+              <p className="text-slate-300 text-sm">
+                Ménage de bureaux, assistance administrative, conciergerie — devis sous 24h.
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/bika-pro"
+            className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white font-semibold
+              px-6 py-3 rounded-lg transition-colors whitespace-nowrap flex-shrink-0"
+          >
+            Découvrir Bikawo Pro
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </section>
+
       <footer className="bg-muted/50">
         <Suspense fallback={<SectionSkeleton height="h-48" />}>
           <Footer />

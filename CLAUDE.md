@@ -262,6 +262,15 @@ Ne jamais importer `activeCorsHeaders` depuis `_shared/cors.ts` dans une nouvell
   - `courses-urgentes-nuit` (maison) : réservation le jour même autorisée (J+1 non appliqué via `isUrgentDelay`), le créneau doit débuter dans les 2h suivant la commande si la date choisie est aujourd'hui.
 - **R-SEL-18** : Récurrence proposée après la 1ère réservation, sur `PaymentSuccess.tsx` (clients connectés uniquement), via le composant `RecurringBookingOptions` déjà existant. Persistée dans la table `recurring_bookings` (migration `20260616000001`) via `recurringBookingService.create()`. Réduction fidélité -5% à partir de la 3e réservation (`recurringBookingService.getCompletedBookingsCount() >= 2`), appliquée dans `BookingCheckout.tsx` après l'avance URSSAF (`isLoyaltyEligible`). Annulation de la récurrence sans frais si demandée ≥7 jours avant la prochaine occurrence (`recurringBookingService.cancel()`). **Hors périmètre** : génération automatique des réservations futures et facturation récurrente (nécessiterait un cron + Edge Function dédiés).
 
+## B2B Enterprise — règles non négociables
+
+- **R-B2B-01** : `bika_pro` (`/bika-pro`) est EXCLUSIVEMENT réservé aux entreprises. Aucun formulaire de réservation individuelle n'y apparaît. Tous les CTA redirigent vers le formulaire devis (`EnterpriseQuoteForm`) ou vers `/devis-confirme` après soumission.
+- **R-B2B-02** : Les bookings B2B utilisent la table `entreprise_bookings` (séparée de `bookings`). Pas de Stripe, pas de machine d'état individuelle — flux contrat → planning → intervention géré côté admin.
+- **R-B2B-03** : La commission B2B est 27 % Bikawo / 73 % prestataire (`bika_entreprise` dans `financial_rules`). Ne jamais appliquer le split 50 % URSSAF sur les prestations entreprise (`urssaf_eligible = false`).
+- **R-B2B-04** : L'EF `submit-enterprise-quote` utilise `SUPABASE_SERVICE_ROLE_KEY` (endpoint non anon — la soumission n'est pas liée à une session). Rate limit : 3 demandes / heure / IP. Validation server-side obligatoire : `company_name`, `contact_name`, `contact_email`, `address`, `city`, `postal_code`, `service_type` requis + email regex + allowlist `service_type`. Le `message` est limité à 1 000 caractères.
+- **R-B2B-05** : Le numéro de devis est généré par le trigger DB `set_quote_number` via la séquence `public.quote_number_seq` au format `DEV-YYYY-NNNN`. Ne jamais générer côté client.
+- **R-B2B-06** : La page `/devis-confirme` reçoit `{ quoteNumber, email }` via `useLocation().state`. Si ces données sont absentes (accès direct), afficher un message générique sans erreur. Ne jamais stocker ces données en localStorage.
+
 ## Recrutement prestataire — règles non négociables
 
 - **R-RECR-01** : Documents obligatoires pour candidature : `identity_document`, `siret_document`, `rib_iban`. Schéma `z.instanceof(File)` dans `validations.ts` (pas de `.refine()` qui laisse passer `null`). Documents optionnels : `criminal_record`, `certification_nova`, `rc_pro`, `certifications`.

@@ -60,6 +60,7 @@ const PaymentCanceled = lazy(() => import("./pages/PaymentCanceled"));
 const Reservation = lazy(() => import("./pages/Reservation"));
 const ReservationConfirmee = lazy(() => import("./pages/ReservationConfirmee"));
 const CustomRequest = lazy(() => import("./pages/CustomRequest"));
+const DevisConfirme = lazy(() => import("./pages/DevisConfirme"));
 
 // Content pages - lazy loaded
 const ContactPage = lazy(() => import("./pages/Contact"));
@@ -166,6 +167,7 @@ const App = () => (
                 <Route path="/payment" element={<Payment />} />
                 <Route path="/payment-success" element={<PaymentSuccess />} />
                 <Route path="/payment-canceled" element={<PaymentCanceled />} />
+                <Route path="/devis-confirme" element={<DevisConfirme />} />
                 <Route path="/demande-personnalisee" element={<CustomRequest />} />
                 <Route path="/custom-request" element={<CustomRequest />} />
                 

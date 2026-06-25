@@ -25,7 +25,7 @@ const Footer = () => {
         { name: "Bika Animals", href: "/bika-animals" },
         { name: "Bika Vie", href: "/bika-vie" },
         { name: "Bika Travel", href: "/bika-travel" },
-        { name: "Bika Pro", href: "/bika-pro" },
+        { name: "Bikawo Pro", href: "/bika-pro" },
         { name: "Bika Plus", href: "/bika-plus" },
       ],
     },
