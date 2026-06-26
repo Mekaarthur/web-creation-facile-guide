@@ -1,5 +1,6 @@
 ﻿// Validation schemas avec Zod pour edge functions
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { corsHeaders as defaultCorsHeaders } from "./cors.ts";
 
 // ============================================
 // SCHEMAS DE VALIDATION
@@ -167,10 +168,7 @@ export function createErrorResponse(
   details?: any,
   customCorsHeaders?: Record<string, string>
 ): Response {
-  const corsHeaders = customCorsHeaders ?? {
-    'Access-Control-Allow-Origin': 'https://bikawo.com',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  };
+  const corsHeaders = customCorsHeaders ?? defaultCorsHeaders;
 
   return new Response(
     JSON.stringify({

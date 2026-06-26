@@ -44,3 +44,10 @@ export function getAdminCorsHeaders(origin: string | null): Record<string, strin
     "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
   };
 }
+
+/**
+ * Variante prenant directement la Request — évite un module-level `let corsHeaders`.
+ */
+export function getCorsHeaders(req: Request): Record<string, string> {
+  return getAdminCorsHeaders(req.headers.get("origin"));
+}

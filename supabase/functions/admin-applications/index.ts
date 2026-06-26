@@ -169,6 +169,18 @@ async function approveApplication(
     }
   }
 
+  // Mapping explicite slug job_application → catégorie(s) DB
+  const SLUG_TO_CATEGORIES: Record<string, string[]> = {
+    'bika_maison':     ['BIKA Maison'],
+    'bika_kids':       ['BIKA Kids'],
+    'bika_seniors':    ['BIKA Seniors', 'BIKA Personnes Âgées'],
+    'bika_animals':    ['BIKA Animals'],
+    'bika_vie':        ['BIKA Vie'],
+    'bika_travel':     ['BIKA Travel'],
+    'bika_pro':        ['BIKA Pro', 'BIKA Entreprise'],
+    'bika_bricolage':  ['BIKA Bricolage'],
+  };
+
   const serviceCategories = application.service_categories || [application.category];
   if (serviceCategories.length > 0) {
     const { data: matchingServices } = await supabase
@@ -178,18 +190,11 @@ async function approveApplication(
 
     if (matchingServices && matchingServices.length > 0) {
       const serviceInserts = [];
-      for (const cat of serviceCategories) {
-        const matched = matchingServices.filter(s =>
-          s.category.toLowerCase().includes(cat.toLowerCase()) ||
-          cat.toLowerCase().includes(s.category.toLowerCase()) ||
-          s.name.toLowerCase().includes(cat.toLowerCase())
-        );
+      for (const slug of serviceCategories) {
+        const validCategories = SLUG_TO_CATEGORIES[slug?.toLowerCase()] ?? [];
+        const matched = matchingServices.filter((s: { id: string; category: string; name: string }) => validCategories.includes(s.category));
         for (const svc of matched) {
-          serviceInserts.push({
-            provider_id: provider.id,
-            service_id: svc.id,
-            is_active: true,
-          });
+          serviceInserts.push({ provider_id: provider.id, service_id: svc.id, is_active: true });
         }
       }
 
