@@ -8,17 +8,15 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import jsPDF from "https://esm.sh/jspdf@2.5.1";
+import { getAdminCorsHeaders } from "../_shared/cors.ts";
 
 const BIKAWO_SIRET   = Deno.env.get("BIKAWO_SIRET")   ?? "À compléter";
 const BIKAWO_ADDRESS = Deno.env.get("BIKAWO_ADDRESS")  ?? "Paris, France";
 const BIKAWO_PHONE   = Deno.env.get("BIKAWO_PHONE")    ?? "À compléter";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://bikawo.com",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
 serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getAdminCorsHeaders(origin);
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }

@@ -83,11 +83,18 @@ export function DocumentCard({ requirement, document, uploading, uploadProgress,
 
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
 
+  const extractStoragePath = (url: string): string => {
+    const marker = '/storage/v1/object/public/provider-documents/';
+    const idx = url.indexOf(marker);
+    return idx !== -1 ? decodeURIComponent(url.substring(idx + marker.length)) : url;
+  };
+
   useEffect(() => {
     if (!document?.file_url) return;
+    const path = extractStoragePath(document.file_url);
     supabase.storage
       .from('provider-documents')
-      .createSignedUrl(document.file_url, 3600)
+      .createSignedUrl(path, 3600)
       .then(({ data }) => { if (data?.signedUrl) setSignedUrl(data.signedUrl); });
   }, [document?.file_url]);
 

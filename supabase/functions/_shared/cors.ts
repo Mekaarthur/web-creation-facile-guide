@@ -25,6 +25,8 @@ export const activeCorsHeaders = isDev ? corsHeadersDev : corsHeaders;
 export const ALLOWED_ORIGINS_ADMIN = [
   "https://bikawo.com",
   "https://admin.bikawo.com",
+  "http://localhost:5173",
+  "http://localhost:5174",
 ];
 
 /**

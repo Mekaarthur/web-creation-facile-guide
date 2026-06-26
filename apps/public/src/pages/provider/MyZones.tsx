@@ -193,7 +193,6 @@ const MyZones = () => {
         ...(detectedZone && {
           latitude: detectedZone.lat,
           longitude: detectedZone.lon,
-          zone_name: detectedZone.department,
         }),
       };
 
@@ -217,7 +216,8 @@ const MyZones = () => {
       setEditingZone(null);
       setFormData(DEFAULT_FORM);
       invalidate();
-    } catch {
+    } catch (error) {
+      console.error('Zone save error:', error);
       toast({ title: "Erreur", description: "Impossible de sauvegarder la zone", variant: "destructive" });
     }
   };

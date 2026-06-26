@@ -39,7 +39,7 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
 
-import { corsHeaders } from "../_shared/cors.ts";
+import { getAdminCorsHeaders } from "../_shared/cors.ts";
 
 interface EmailRequest {
   type: 
@@ -149,6 +149,8 @@ const getEmailSubject = (type: string): string => {
 };
 
 serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getAdminCorsHeaders(origin);
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
