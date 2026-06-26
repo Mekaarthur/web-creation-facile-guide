@@ -264,7 +264,7 @@ Ne jamais importer `activeCorsHeaders` depuis `_shared/cors.ts` dans une nouvell
 
 ## B2B Enterprise — règles non négociables
 
-- **R-B2B-01** : `bika_pro` (`/bika-pro`) est EXCLUSIVEMENT réservé aux entreprises. Aucun formulaire de réservation individuelle n'y apparaît. Tous les CTA redirigent vers le formulaire devis (`EnterpriseQuoteForm`) ou vers `/devis-confirme` après soumission.
+- **R-B2B-01** : `/bika-pro`, `/bika-pro-clean` et `/bika-pro-admin` sont EXCLUSIVEMENT réservés aux entreprises. Aucun formulaire de réservation individuelle (`BikaServiceBooking`) n'y apparaît. Tous les CTA "Demander un devis" redirigent vers `EnterpriseQuoteForm` (ancre `#devis` sur `/bika-pro`). Le bouton `onReserveOverride` de `ServiceSubgrid` navigate vers `/bika-pro#devis`.
 - **R-B2B-02** : Les bookings B2B utilisent la table `entreprise_bookings` (séparée de `bookings`). Pas de Stripe, pas de machine d'état individuelle — flux contrat → planning → intervention géré côté admin.
 - **R-B2B-03** : La commission B2B est 27 % Bikawo / 73 % prestataire (`bika_entreprise` dans `financial_rules`). Ne jamais appliquer le split 50 % URSSAF sur les prestations entreprise (`urssaf_eligible = false`).
 - **R-B2B-04** : L'EF `submit-enterprise-quote` utilise `SUPABASE_SERVICE_ROLE_KEY` (endpoint non anon — la soumission n'est pas liée à une session). Rate limit : 3 demandes / heure / IP. Validation server-side obligatoire : `company_name`, `contact_name`, `contact_email`, `address`, `city`, `postal_code`, `service_type` requis + email regex + allowlist `service_type`. Le `message` est limité à 1 000 caractères.

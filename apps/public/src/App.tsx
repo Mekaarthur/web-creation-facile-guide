@@ -50,6 +50,8 @@ const BikaAnimals = lazy(() => import("./pages/BikaAnimals"));
 const BikaSeniors = lazy(() => import("./pages/BikaSeniors"));
 const CGU = lazy(() => import("./pages/CGU"));
 const BikaPro = lazy(() => import("./pages/BikaPro"));
+const BikaProClean = lazy(() => import("./pages/BikaProClean"));
+const BikaProAdmin = lazy(() => import("./pages/BikaProAdmin"));
 const ServicePageRouter = lazy(() => import("./pages/ServicePageRouter"));
 
 // Booking & Payment - lazy loaded
@@ -150,6 +152,8 @@ const App = () => (
                 <Route path="/bika-animals" element={<BikaAnimals />} />
                 <Route path="/bika-seniors" element={<BikaSeniors />} />
                 <Route path="/bika-pro" element={<BikaPro />} />
+                <Route path="/bika-pro-clean" element={<BikaProClean />} />
+                <Route path="/bika-pro-admin" element={<BikaProAdmin />} />
                 <Route path="/bika-kids-ile-de-france" element={<BikaKids />} />
                 <Route path="/bika-maison-ile-de-france" element={<BikaMaison />} />
                 <Route path="/bika-vie-ile-de-france" element={<BikaVie />} />

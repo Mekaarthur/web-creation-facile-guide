@@ -24,6 +24,8 @@ const imageMap: Record<ServiceCategoryKey, string> = {
   animals: serviceAnimals,
   seniors: serviceSeniors,
   pro: serviceBusiness,
+  "pro-clean": serviceBusiness,
+  "pro-admin": serviceBusiness,
   plus: servicePlus,
 };
 

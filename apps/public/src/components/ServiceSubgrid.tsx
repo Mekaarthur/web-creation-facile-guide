@@ -10,9 +10,11 @@ import { useServicePrices } from "@/hooks/useServicePrices";
 
 interface ServiceSubgridProps {
   categoryKey: ServiceCategoryKey;
+  reserveLabel?: string;
+  onReserveOverride?: (s: SubService) => void;
 }
 
-const ServiceSubgrid = ({ categoryKey }: ServiceSubgridProps) => {
+const ServiceSubgrid = ({ categoryKey, reserveLabel, onReserveOverride }: ServiceSubgridProps) => {
   const [selected, setSelected] = useState<SubService | null>(null);
   const [selectedEffectivePrice, setSelectedEffectivePrice] = useState<number>(0);
   const [open, setOpen] = useState(false);
@@ -22,6 +24,10 @@ const ServiceSubgrid = ({ categoryKey }: ServiceSubgridProps) => {
   const category = servicesData[categoryKey];
 
   const onReserve = (s: SubService) => {
+    if (onReserveOverride) {
+      onReserveOverride(s);
+      return;
+    }
     const effective = getPrice(s.slug, s.price);
     setSelectedEffectivePrice(typeof effective === "number" ? effective : s.price);
     setSelected(s);
@@ -59,7 +65,7 @@ const ServiceSubgrid = ({ categoryKey }: ServiceSubgridProps) => {
                         <Link to={`/services/${category.key}/${s.slug}`}>{t('serviceSubgrid.details')}</Link>
                       </Button>
                       <Button size="sm" className="flex-1" onClick={() => onReserve(s)} data-testid="btn-reserver-grid">
-                        {t('serviceSubgrid.reserve')}
+                        {reserveLabel ?? t('serviceSubgrid.reserve')}
                       </Button>
                     </div>
                   </CardContent>
@@ -70,7 +76,7 @@ const ServiceSubgrid = ({ categoryKey }: ServiceSubgridProps) => {
         </div>
       </section>
 
-      {selected && (
+      {!onReserveOverride && selected && (
         <BikaServiceBooking
           isOpen={open}
           onClose={() => setOpen(false)}

@@ -57,6 +57,8 @@ export type ServiceCategoryKey =
   | "animals"
   | "seniors"
   | "pro"
+  | "pro-clean"
+  | "pro-admin"
   | "plus";
 
 export type ServiceCategory = {
@@ -627,6 +629,159 @@ export const servicesData: Record<ServiceCategoryKey, ServiceCategory> = {
         priceDisplay: "30€/h",
         image: serviceAdmin,
         description: "Gestion du courrier, classement, archivage, saisie de données, permanence téléphonique",
+        financialCategory: "bika_entreprise",
+        urssaf_eligible: false,
+        isForfait: false,
+      },
+    ],
+  },
+  "pro-clean": {
+    key: "pro-clean",
+    title: "🧹 BIKA PRO CLEAN - Entretien de bureaux",
+    packageTitle: "Bika Pro Clean",
+    subservices: [
+      {
+        slug: "menage-bureaux-small",
+        title: "Ménage bureaux (≤100m²)",
+        price: 25,
+        priceDisplay: "25€/h",
+        image: serviceBusiness,
+        description: "Entretien complet de vos bureaux jusqu'à 100m² — espaces de travail, parties communes et sanitaires",
+        options: [
+          "Dépoussiérage et aspiration",
+          "Nettoyage des surfaces de travail",
+          "Entretien des parties communes",
+          "Nettoyage des sanitaires",
+          "Vidage des corbeilles"
+        ],
+        financialCategory: "bika_entreprise",
+        urssaf_eligible: false,
+        isForfait: false,
+      },
+      {
+        slug: "menage-bureaux-medium",
+        title: "Ménage bureaux (100-200m²)",
+        price: 28,
+        priceDisplay: "28€/h",
+        image: serviceBusinessFull,
+        description: "Entretien complet de vos bureaux de 100 à 200m² — espaces de travail, plateaux open-space et sanitaires",
+        options: [
+          "Dépoussiérage et aspiration grandes surfaces",
+          "Nettoyage plateaux open-space",
+          "Entretien des espaces communs",
+          "Nettoyage des sanitaires et cuisines",
+          "Vidage et tri des déchets"
+        ],
+        financialCategory: "bika_entreprise",
+        urssaf_eligible: false,
+        isForfait: false,
+      },
+      {
+        slug: "materiel-entreprise",
+        title: "Matériel de ménage professionnel",
+        price: 5,
+        priceDisplay: "5€ (forfait)",
+        image: serviceBusinessAdmin,
+        description: "Fourniture de produits ménagers certifiés professionnels pour chaque intervention",
+        options: [
+          "Produits certifiés professionnels",
+          "Matériel nettoyage haute performance",
+          "Fourni à chaque intervention",
+          "Éco-responsable et certifié"
+        ],
+        financialCategory: "bika_entreprise",
+        urssaf_eligible: false,
+        isForfait: true,
+      },
+      {
+        slug: "menage-bureaux-devis",
+        title: "Ménage bureaux (>200m²)",
+        price: 0,
+        priceDisplay: "Sur devis",
+        image: serviceBusiness,
+        description: "Devis personnalisé pour les grands espaces, centres commerciaux et entrepôts de plus de 200m²",
+        options: [
+          "Visite de site incluse",
+          "Devis personnalisé sous 24h",
+          "Équipe dédiée",
+          "Tarif négocié à l'usage"
+        ],
+        financialCategory: "bika_entreprise",
+        urssaf_eligible: false,
+        isForfait: false,
+      },
+    ],
+  },
+  "pro-admin": {
+    key: "pro-admin",
+    title: "💼 BIKA PRO ADMIN - Services administratifs",
+    packageTitle: "Bika Pro Admin",
+    subservices: [
+      {
+        slug: "support-administratif",
+        title: "Support administratif",
+        price: 40,
+        priceDisplay: "40€/h",
+        image: serviceBusinessAdmin,
+        description: "Gestion administrative complète, secrétariat et prise de rendez-vous, organisation de réunions et événements, gestion des déplacements professionnels, interface avec partenaires et clients.",
+        options: [
+          "Gestion administrative complète",
+          "Secrétariat et prise de rendez-vous",
+          "Organisation de réunions et événements",
+          "Gestion des déplacements professionnels",
+          "Interface avec partenaires et clients"
+        ],
+        financialCategory: "bika_pro",
+        urssaf_eligible: false,
+      },
+      {
+        slug: "assistance-dirigeants",
+        title: "Assistance dirigeants",
+        price: 60,
+        priceDisplay: "60€/h",
+        image: serviceBusinessExecutive,
+        description: "Assistance personnalisée cadres supérieurs, gestion des priorités et planning, coordination projets stratégiques, gestion réservations et logistique, interface avec partenaires externes.",
+        options: [
+          "Assistance personnalisée cadres supérieurs",
+          "Gestion des priorités et planning",
+          "Coordination projets stratégiques",
+          "Gestion réservations et logistique",
+          "Interface avec partenaires externes"
+        ],
+        financialCategory: "bika_pro",
+        urssaf_eligible: false,
+      },
+      {
+        slug: "conciergerie-entreprise",
+        title: "Conciergerie d'entreprise",
+        price: 50,
+        priceDisplay: "à partir de 50€/h",
+        image: serviceBusiness,
+        description: "Services personnels pour employés, pressing et petites courses, réservations restaurants d'affaires, organisation cadeaux clients/partenaires, gestion des urgences personnelles salariés.",
+        options: [
+          "Services personnels pour employés",
+          "Pressing et petites courses",
+          "Réservations restaurants d'affaires",
+          "Organisation cadeaux clients/partenaires",
+          "Gestion des urgences personnelles salariés"
+        ],
+        financialCategory: "bika_pro",
+        urssaf_eligible: false,
+      },
+      {
+        slug: "assistance-administrative-pro",
+        title: "Assistance administrative",
+        price: 30,
+        priceDisplay: "30€/h",
+        image: serviceBusinessAdmin,
+        description: "Gestion du courrier, classement, archivage, saisie de données, permanence téléphonique",
+        options: [
+          "Gestion du courrier entrant/sortant",
+          "Classement et archivage",
+          "Saisie de données",
+          "Permanence téléphonique",
+          "Gestion des agendas"
+        ],
         financialCategory: "bika_entreprise",
         urssaf_eligible: false,
         isForfait: false,
