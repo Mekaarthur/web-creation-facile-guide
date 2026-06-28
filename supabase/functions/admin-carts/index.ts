@@ -66,15 +66,7 @@ serve(async (req) => {
         .from('carts')
         .select(`
           *,
-          profiles!carts_client_id_fkey(first_name, last_name),
-          cart_items(
-            id,
-            service_id,
-            quantity,
-            unit_price,
-            total_price,
-            services(name)
-          )
+          cart_items(id, service_id, quantity, unit_price, total_price, services(name))
         `)
         .order('created_at', { ascending: false })
         .range(offset, offset + limit - 1);
@@ -84,6 +76,16 @@ serve(async (req) => {
 
       const { data: carts, error } = await query;
       if (error) throw error;
+
+      // Enrichir avec les profils (carts_client_id_fkey → auth.users, pas profiles → enrichissement manuel)
+      const clientIds = [...new Set((carts || []).map((c: any) => c.client_id).filter(Boolean))];
+      const profilesMap: Record<string, { first_name: string; last_name: string }> = {};
+      if (clientIds.length > 0) {
+        const { data: profilesData } = await supabaseClient
+          .from('profiles').select('user_id, first_name, last_name').in('user_id', clientIds);
+        (profilesData || []).forEach((p: any) => { profilesMap[p.user_id] = p; });
+      }
+      const enrichedCarts = (carts || []).map((c: any) => ({ ...c, profiles: profilesMap[c.client_id] ?? null }));
 
       // Compter le total
       let countQuery = supabaseClient
@@ -95,11 +97,11 @@ serve(async (req) => {
 
       const { count } = await countQuery;
 
-      return new Response(JSON.stringify({ 
-        carts, 
-        pagination: { 
-          page, 
-          limit, 
+      return new Response(JSON.stringify({
+        carts: enrichedCarts,
+        pagination: {
+          page,
+          limit,
           total: count || 0,
           totalPages: Math.ceil((count || 0) / limit)
         }
@@ -147,11 +149,7 @@ serve(async (req) => {
 
         let query = supabaseClient
           .from('carts')
-          .select(`
-            *,
-            profiles!carts_client_id_fkey(first_name, last_name),
-            cart_items(id, service_id, quantity, unit_price, total_price, services(name))
-          `)
+          .select(`*, cart_items(id, service_id, quantity, unit_price, total_price, services(name))`)
           .order('created_at', { ascending: false })
           .range(offset, offset + limit - 1);
 
@@ -160,6 +158,16 @@ serve(async (req) => {
         const { data: carts, error } = await query;
         if (error) throw error;
 
+        // Enrichir profils manuellement (carts_client_id_fkey → auth.users, pas profiles)
+        const clientIds = [...new Set((carts || []).map((c: any) => c.client_id).filter(Boolean))];
+        const profilesMap: Record<string, { first_name: string; last_name: string }> = {};
+        if (clientIds.length > 0) {
+          const { data: profilesData } = await supabaseClient
+            .from('profiles').select('user_id, first_name, last_name').in('user_id', clientIds);
+          (profilesData || []).forEach((p: any) => { profilesMap[p.user_id] = p; });
+        }
+        const enrichedCarts = (carts || []).map((c: any) => ({ ...c, profiles: profilesMap[c.client_id] ?? null }));
+
         let countQuery = supabaseClient
           .from('carts')
           .select('*', { count: 'exact', head: true });
@@ -167,7 +175,7 @@ serve(async (req) => {
         const { count } = await countQuery;
 
         return new Response(JSON.stringify({
-          carts,
+          carts: enrichedCarts,
           pagination: { page, limit, total: count ?? 0, totalPages: Math.ceil((count ?? 0) / limit) }
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
