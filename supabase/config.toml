@@ -1,1 +1,5 @@
 project_id = "cgrosjzmbgxmtvwxictr"
+
+# Stripe webhooks n'envoient pas de JWT — désactiver la vérification JWT obligatoire
+[functions.stripe-webhook]
+verify_jwt = false
