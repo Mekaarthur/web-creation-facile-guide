@@ -29,15 +29,21 @@ export const dateSchema = z.string().datetime({ message: "Date invalide" });
 // ============================================
 
 export const validateCartActionSchema = z.object({
-  action: z.enum(['validate', 'expire', 'expire-old'], { 
+  action: z.enum(['list', 'validate', 'expire', 'expire-old'], {
     errorMap: () => ({ message: "Action invalide" })
   }),
   cartId: z.string().uuid().optional(),
   notes: z.string().max(500).optional(),
-  reason: z.string().max(500).optional()
+  reason: z.string().max(500).optional(),
+  filters: z.object({
+    status: z.string().optional(),
+    search: z.string().optional(),
+    page: z.number().int().positive().optional(),
+    limit: z.number().int().positive().max(100).optional(),
+  }).optional(),
 }).refine(
   (data) => {
-    if (data.action !== 'expire-old' && !data.cartId) {
+    if (data.action !== 'expire-old' && data.action !== 'list' && !data.cartId) {
       return false;
     }
     return true;

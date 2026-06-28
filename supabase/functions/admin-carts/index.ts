@@ -1,9 +1,9 @@
 ﻿import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { validateRequest, validateCartActionSchema, extractClientIp, createErrorResponse } from "../_shared/validation.ts";
-import { getAdminCorsHeaders } from '../_shared/cors.ts';
+import { getCorsHeaders } from '../_shared/cors.ts';
 
-
+let corsHeaders: Record<string, string> = {};
 
 const supabaseClient = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
@@ -24,7 +24,7 @@ const logAdminAction = async (adminUserId: string, actionType: string, entityTyp
 };
 
 serve(async (req) => {
-  const corsHeaders = getAdminCorsHeaders(req.headers.get('origin'));
+  corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -134,9 +134,46 @@ serve(async (req) => {
         return createErrorResponse(validation.error, 400, validation.details, corsHeaders);
       }
 
-      const body = validation.data;
+      const body = validation.data as any;
       const action = body.action;
       const cartId = body.cartId;
+
+      if (action === "list") {
+        const filters = body.filters ?? {};
+        const status = filters.status;
+        const page = parseInt(filters.page ?? 1);
+        const limit = parseInt(filters.limit ?? 20);
+        const offset = (page - 1) * limit;
+
+        let query = supabaseClient
+          .from('carts')
+          .select(`
+            *,
+            profiles!carts_client_id_fkey(first_name, last_name),
+            cart_items(id, service_id, quantity, unit_price, total_price, services(name))
+          `)
+          .order('created_at', { ascending: false })
+          .range(offset, offset + limit - 1);
+
+        if (status) query = query.eq('status', status);
+
+        const { data: carts, error } = await query;
+        if (error) throw error;
+
+        let countQuery = supabaseClient
+          .from('carts')
+          .select('*', { count: 'exact', head: true });
+        if (status) countQuery = countQuery.eq('status', status);
+        const { count } = await countQuery;
+
+        return new Response(JSON.stringify({
+          carts,
+          pagination: { page, limit, total: count ?? 0, totalPages: Math.ceil((count ?? 0) / limit) }
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
 
       if (action === "validate") {
         // Valider un panier et créer les réservations

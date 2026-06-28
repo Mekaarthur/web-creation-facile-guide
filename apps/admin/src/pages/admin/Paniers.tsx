@@ -30,6 +30,7 @@ interface Cart {
 async function fetchCarts(statusFilter: string, searchTerm: string): Promise<Cart[]> {
   const { data, error } = await supabase.functions.invoke('admin-carts', {
     body: {
+      action: 'list',
       filters: {
         status: statusFilter !== 'all' ? statusFilter : undefined,
         search: searchTerm || undefined,
