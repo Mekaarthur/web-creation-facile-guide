@@ -31,7 +31,7 @@ async function fetchRealtimeData(): Promise<RealtimeData> {
     { data: recentBookings },
     { data: recentApplications },
   ] = await Promise.all([
-    supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('last_login', thirtyDaysAgo),
+    supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('updated_at', thirtyDaysAgo),
     supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
     supabase.from('internal_messages').select('id', { count: 'exact', head: true }).eq('is_read', false),
     supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('booking_date', new Date().toISOString().split('T')[0]),
