@@ -27,9 +27,12 @@ async function fillBookingForm(page: Page) {
   // Sélectionner la première option de prestation (garde-enfants a des options)
   await dialog.locator('input[name="service-option"]').first().click();
 
-  // Ouvrir le calendrier et choisir une date dans le mois suivant — garantit > 5h ouvrées
+  // Ouvrir le calendrier et choisir une date dans 2 mois — garantit > 5h ouvrées
   // d'avance quel que soit l'horaire d'exécution du test (R-SEL-06 final : délai minimum 5h ouvrées)
+  // 2 navigations (pas 1) : évite les "outside days" du mois précédent visibles dans le calendrier
+  // (ex : juin 28 apparaît en premier dans la vue juillet quand c'est un dimanche de fin de mois)
   await dialog.getByRole('button', { name: /choisir une date/i }).click();
+  await page.getByRole('button', { name: /next month/i }).click();
   await page.getByRole('button', { name: /next month/i }).click();
   // react-day-picker v8 : les jours activables sont des <button> non désactivés dans le grid
   await page.locator('table[role="grid"] button:not([disabled]):not([aria-disabled="true"])').first().click();
