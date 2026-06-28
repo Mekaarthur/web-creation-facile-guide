@@ -22,13 +22,13 @@ const AdminPayments = () => {
         .from('financial_transactions')
         .select(`
           *,
-          bookings:booking_id (
+          bookings!financial_transactions_booking_id_fkey(
             id,
             booking_date,
             start_time,
             end_time,
             status,
-            services:service_id (name)
+            services!bookings_service_id_fkey(name)
           )
         `)
         .order('created_at', { ascending: false });
