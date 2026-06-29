@@ -9,7 +9,6 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { profileService } from "@/services/profileService";
 import { bookingService } from "@/services/bookingService";
-import { recurringBookingService } from "@/services/recurringBookingService";
 import { getBookingValidation, NIGHT_SERVICE_SLUGS } from "@/utils/workingHours";
 import { cn } from "@/lib/utils";
 import { CheckoutClientInfoCard, type ClientInfo } from "@/components/checkout/CheckoutClientInfoCard";
@@ -30,9 +29,6 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
   const [showUrssafDialog, setShowUrssafDialog] = useState(false);
   const [urssafEnabled, setUrssafEnabled] = useState(false);
   const [clientInfo, setClientInfo] = useState<ClientInfo>({ firstName: '', lastName: '', email: '', phone: '', address: '' });
-  // R-SEL-18: réduction fidélité -5% à partir de la 3e réservation (2 réservations passées ou plus)
-  const [isLoyaltyEligible, setIsLoyaltyEligible] = useState(false);
-
   // R-SEL-10: choix auth pour utilisateurs non-connectés ('pending' → choix affiché, 'guest' → continue sans compte)
   const [authChoice, setAuthChoice] = useState<'pending' | 'guest' | null>(null);
 
@@ -57,13 +53,6 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
           });
           setAuthChoice(null); // connecté → pas de choix à afficher
 
-          // R-SEL-18: réduction fidélité -5% à partir de la 3e réservation
-          try {
-            const completedCount = await recurringBookingService.getCompletedBookingsCount(user.id);
-            setIsLoyaltyEligible(completedCount >= 2);
-          } catch {
-            // vérification non bloquante
-          }
         } else {
           setAuthChoice('pending'); // non-connecté → afficher le choix R-SEL-10
         }
@@ -195,8 +184,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
       // R-SEL-15: la réduction de 50% ne s'applique qu'aux services éligibles URSSAF
       const eligibleAmount = cartItems.filter(i => i.urssaf_eligible).reduce((sum, i) => sum + i.price * i.quantity, 0);
       const amountAfterUrssaf = urssafEnabled ? totalAmount - eligibleAmount * 0.5 : totalAmount;
-      // R-SEL-18: réduction fidélité -5% à partir de la 3e réservation, appliquée après l'avance URSSAF
-      const clientAmount = isLoyaltyEligible ? amountAfterUrssaf * 0.95 : amountAfterUrssaf;
+      const clientAmount = amountAfterUrssaf;
       const stateAmount = urssafEnabled ? eligibleAmount * 0.5 : 0;
       const cap = (v: string) => v.length > 490 ? v.substring(0, 490) : v;
 
@@ -245,8 +233,7 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
   const hasEligibleItems = cartItems.some(i => i.urssaf_eligible);
   const eligibleTotal = cartItems.filter(i => i.urssaf_eligible).reduce((sum, i) => sum + i.price * i.quantity, 0);
   const amountAfterUrssafDisplay = urssafEnabled ? getCartTotal() - eligibleTotal * 0.5 : getCartTotal();
-  // R-SEL-18: réduction fidélité -5% à partir de la 3e réservation
-  const payableNow = isLoyaltyEligible ? amountAfterUrssafDisplay * 0.95 : amountAfterUrssafDisplay;
+  const payableNow = amountAfterUrssafDisplay;
 
   return (
     <div className={cn('max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-40 sm:pb-32 space-y-4 sm:space-y-6 transition-opacity duration-500 min-h-[100svh]', isVisible ? 'opacity-100' : 'opacity-0')}>
@@ -340,14 +327,6 @@ const BookingCheckout = ({ onBack }: BookingCheckoutProps) => {
             </CardHeader>
             <CardContent className="space-y-4">
               <CartSummaryItems {...cartSummaryProps} showAddress maxHeight="max-h-96" />
-
-              {/* R-SEL-18: réduction fidélité -5% à partir de la 3e réservation */}
-              {isLoyaltyEligible && (
-                <div className="flex items-center gap-2 p-2.5 bg-primary/5 border border-primary/20 rounded-lg text-xs text-primary">
-                  <Star className="w-3.5 h-3.5 shrink-0" />
-                  <span>Réduction fidélité de -5% appliquée (client régulier)</span>
-                </div>
-              )}
 
               {/* R-SEL-14: politique d'annulation visible avant paiement */}
               <div className="flex items-start gap-2 p-3 bg-muted/40 rounded-lg text-xs text-muted-foreground">
