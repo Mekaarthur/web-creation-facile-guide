@@ -1,17 +1,9 @@
-﻿import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { getAdminCorsHeaders } from '../_shared/cors.ts';
 
-
-
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-// Client avec clé service pour accès admin
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: { persistSession: false }
-});
+type SupabaseClient = ReturnType<typeof createClient>;
 
 // Validation schema
 const userActionSchema = z.object({
@@ -20,7 +12,7 @@ const userActionSchema = z.object({
   }),
   userId: z.string().uuid().optional()
 }).refine(
-  (data) => {
+  (data: { action: string; userId?: string }) => {
     if (data.action !== 'list' && !data.userId) {
       return false;
     }
@@ -31,18 +23,22 @@ const userActionSchema = z.object({
 
 const handler = async (req: Request): Promise<Response> => {
   const corsHeaders = getAdminCorsHeaders(req.headers.get('origin'));
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
     const body = await req.json();
-    
+
     // Validate input
     const validated = userActionSchema.parse(body);
     const { action, userId } = validated;
-    
+
     // Vérifier que l'utilisateur est admin
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
@@ -51,7 +47,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-    
+
     if (authError || !user) {
       throw new Error('Non autorisé');
     }
@@ -62,7 +58,7 @@ const handler = async (req: Request): Promise<Response> => {
       .select('role')
       .eq('user_id', user.id);
 
-    const isAdmin = userRoles?.some(role => role.role === 'admin');
+    const isAdmin = userRoles?.some((role: { role: string }) => role.role === 'admin');
     if (!isAdmin) {
       throw new Error('Permissions insuffisantes');
     }
@@ -71,24 +67,24 @@ const handler = async (req: Request): Promise<Response> => {
 
     switch (action) {
       case 'list':
-        result = await listUsers();
+        result = await listUsers(supabaseAdmin);
         break;
-      
+
       case 'examine':
         if (!userId) throw new Error('userId requis pour examine');
-        result = await examineUser(userId);
+        result = await examineUser(supabaseAdmin, userId);
         break;
-      
+
       case 'activate':
         if (!userId) throw new Error('userId requis pour activate');
-        result = await activateUser(userId);
+        result = await activateUser(supabaseAdmin, userId);
         break;
-      
+
       case 'suspend':
         if (!userId) throw new Error('userId requis pour suspend');
-        result = await suspendUser(userId);
+        result = await suspendUser(supabaseAdmin, userId);
         break;
-      
+
       default:
         throw new Error('Action non supportée');
     }
@@ -103,13 +99,12 @@ const handler = async (req: Request): Promise<Response> => {
 
   } catch (error: any) {
     console.error('Erreur dans admin-users-management:', error);
-    
-    // Handle validation errors
+
     if (error instanceof z.ZodError) {
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: "Validation error",
-          details: error.errors.map(e => ({
+          details: error.errors.map((e: { path: string[]; message: string }) => ({
             field: e.path.join('.'),
             message: e.message
           }))
@@ -120,7 +115,7 @@ const handler = async (req: Request): Promise<Response> => {
         }
       );
     }
-    
+
     return new Response(
       JSON.stringify({ error: error.message }),
       {
@@ -131,16 +126,14 @@ const handler = async (req: Request): Promise<Response> => {
   }
 };
 
-async function listUsers() {
-  // Récupérer tous les utilisateurs via l'API admin
+async function listUsers(supabaseAdmin: SupabaseClient) {
   const { data: authUsers, error: authError } = await supabaseAdmin.auth.admin.listUsers();
-  
+
   if (authError) {
     throw new Error(`Erreur auth: ${authError.message}`);
   }
 
-  // Récupérer les profiles correspondants
-  const userIds = authUsers.users.map(u => u.id);
+  const userIds = authUsers.users.map((u: { id: string }) => u.id);
   const { data: profiles, error: profilesError } = await supabaseAdmin
     .from('profiles')
     .select('*')
@@ -150,9 +143,8 @@ async function listUsers() {
     throw new Error(`Erreur profiles: ${profilesError.message}`);
   }
 
-  // Combiner les données
-  const users = authUsers.users.map(authUser => {
-    const profile = profiles?.find(p => p.user_id === authUser.id);
+  const users = authUsers.users.map((authUser: { id: string; email?: string; created_at: string; banned_until?: string | null; email_confirmed_at?: string | null }) => {
+    const profile = profiles?.find((p: { user_id: string }) => p.user_id === authUser.id);
     return {
       id: authUser.id,
       email: authUser.email,
@@ -170,28 +162,25 @@ async function listUsers() {
   return { users };
 }
 
-async function examineUser(userId: string) {
-  // Récupérer les détails de l'utilisateur
+async function examineUser(supabaseAdmin: SupabaseClient, userId: string) {
   const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.getUserById(userId);
-  
+
   if (authError) {
     throw new Error(`Erreur auth: ${authError.message}`);
   }
 
-  // Récupérer le profil
-  const { data: profile, error: profileError } = await supabaseAdmin
+  const { data: profile } = await supabaseAdmin
     .from('profiles')
     .select('*')
     .eq('user_id', userId)
     .single();
 
-  // Récupérer les réservations récentes
-  const { data: bookings, error: bookingsError } = await supabaseAdmin
+  const { data: bookings } = await supabaseAdmin
     .from('bookings')
     .select(`
-      id, 
-      status, 
-      booking_date, 
+      id,
+      status,
+      booking_date,
       total_price,
       services (name)
     `)
@@ -212,9 +201,8 @@ async function examineUser(userId: string) {
   };
 }
 
-async function activateUser(userId: string) {
-  // Réactiver l'utilisateur
-  const { data, error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+async function activateUser(supabaseAdmin: SupabaseClient, userId: string) {
+  const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
     ban_duration: 'none'
   });
 
@@ -222,7 +210,6 @@ async function activateUser(userId: string) {
     throw new Error(`Erreur activation: ${error.message}`);
   }
 
-  // Logger l'action
   await supabaseAdmin
     .from('admin_actions_log')
     .insert({
@@ -235,9 +222,8 @@ async function activateUser(userId: string) {
   return { success: true, message: 'Utilisateur activé avec succès' };
 }
 
-async function suspendUser(userId: string) {
-  // Suspendre l'utilisateur (bannir pour 100 ans)
-  const { data, error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+async function suspendUser(supabaseAdmin: SupabaseClient, userId: string) {
+  const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
     ban_duration: '876000h' // 100 ans
   });
 
@@ -245,7 +231,6 @@ async function suspendUser(userId: string) {
     throw new Error(`Erreur suspension: ${error.message}`);
   }
 
-  // Logger l'action
   await supabaseAdmin
     .from('admin_actions_log')
     .insert({
