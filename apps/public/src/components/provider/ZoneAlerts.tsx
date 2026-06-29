@@ -40,7 +40,7 @@ async function fetchZoneData(userId: string): Promise<ZoneData> {
     supabase.from('prestataire_zones')
       .select('rayon_km, statut, latitude, longitude')
       .eq('prestataire_id', providerData.id)
-      .single(),
+      .maybeSingle(),
     supabase.from('client_requests')
       .select('id, service_type, location, created_at, client_name, city')
       .eq('status', 'pending')

@@ -84,9 +84,20 @@ export function DocumentCard({ requirement, document, uploading, uploadProgress,
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
 
   const extractStoragePath = (url: string): string => {
-    const marker = '/storage/v1/object/public/provider-documents/';
-    const idx = url.indexOf(marker);
-    return idx !== -1 ? decodeURIComponent(url.substring(idx + marker.length)) : url;
+    const signMarker = '/storage/v1/object/sign/provider-documents/';
+    const pubMarker = '/storage/v1/object/public/provider-documents/';
+
+    const signIdx = url.indexOf(signMarker);
+    if (signIdx !== -1) {
+      return decodeURIComponent(url.substring(signIdx + signMarker.length).split('?')[0]);
+    }
+
+    const pubIdx = url.indexOf(pubMarker);
+    if (pubIdx !== -1) {
+      return decodeURIComponent(url.substring(pubIdx + pubMarker.length));
+    }
+
+    return url;
   };
 
   useEffect(() => {
