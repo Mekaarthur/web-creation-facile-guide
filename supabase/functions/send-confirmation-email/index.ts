@@ -1,17 +1,13 @@
-﻿import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.2';
 import { Resend } from "npm:resend@2.0.0";
 import React from 'npm:react@18.3.1';
 import { renderAsync } from 'npm:@react-email/components@0.0.22';
 import { ConfirmationEmail } from './_templates/confirmation-email.tsx';
 
-// Initialize clients
-const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-
 import { corsHeaders } from "../_shared/cors.ts";
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 interface EmailRequest {
   userEmail?: string; // legacy key support
@@ -28,8 +24,13 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
     const body = (await req.json()) as EmailRequest;
-    
+
     // Handle test mode
     if (body.test === true) {
       console.log('🧪 Test mode - returning success');
@@ -38,7 +39,7 @@ const handler = async (req: Request): Promise<Response> => {
         { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
     }
-    
+
     const rawEmail = (body.email || body.userEmail || '').trim().toLowerCase();
 
     if (!rawEmail) {
@@ -53,11 +54,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Try to generate magic link instead of signup link (works for existing users)
     let confirmationUrl: string;
-    
+
     try {
       // First, check if user exists
       const { data: existingUser } = await supabase.auth.admin.getUserByEmail(rawEmail);
-      
+
       if (existingUser?.user) {
         // User exists - generate magic link
         const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({

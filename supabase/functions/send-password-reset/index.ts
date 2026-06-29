@@ -1,4 +1,4 @@
-﻿import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.2';
 import { sanitizeSearch } from '../_shared/sanitize.ts';
 import { Resend } from "npm:resend@2.0.0";
@@ -6,10 +6,6 @@ import React from 'npm:react@18.3.1';
 import { renderAsync } from 'npm:@react-email/components@0.0.22';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 import { corsHeaders } from "../_shared/cors.ts";
 
@@ -40,14 +36,14 @@ const PasswordResetEmail = ({ resetUrl, userEmail }: { resetUrl: string; userEma
             }
           }, '🔄 Créer un nouveau mot de passe')
         ),
-        React.createElement('p', { style: { fontSize: '14px', color: '#666' } }, 
+        React.createElement('p', { style: { fontSize: '14px', color: '#666' } },
           '⏱️ Ce lien expire dans 24 heures pour votre sécurité.'
         ),
-        React.createElement('p', { style: { fontSize: '14px', color: '#666' } }, 
+        React.createElement('p', { style: { fontSize: '14px', color: '#666' } },
           '❗ Si vous n\'avez pas fait cette demande, vous pouvez ignorer cet email en toute sécurité.'
         ),
         React.createElement('hr', { style: { margin: '30px 0' } }),
-        React.createElement('p', { style: { fontSize: '12px', color: '#999', textAlign: 'center' } }, 
+        React.createElement('p', { style: { fontSize: '12px', color: '#999', textAlign: 'center' } },
           'Cet email a été envoyé par Bikawo - Votre plateforme de services à domicile.'
         )
       )
@@ -64,8 +60,13 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
     const { email, resetUrl }: PasswordResetRequest = await req.json();
-    
+
     console.log('🔑 Processing password reset request...');
 
     // Vérifier que l'email existe en base
@@ -78,10 +79,10 @@ const handler = async (req: Request): Promise<Response> => {
       console.log('❌ No account found for provided email (not revealed to caller)');
       // Ne pas révéler si l'email existe ou non pour la sécurité
       return new Response(
-        JSON.stringify({ 
-          success: true, 
+        JSON.stringify({
+          success: true,
           message: 'Si cet email existe, un lien de réinitialisation a été envoyé'
-        }), 
+        }),
         {
           status: 200,
           headers: {
@@ -118,11 +119,11 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('✅ Password reset email sent successfully:', emailResponse.data);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         message: 'Email de réinitialisation envoyé',
-        emailId: emailResponse.data?.id 
-      }), 
+        emailId: emailResponse.data?.id
+      }),
       {
         status: 200,
         headers: {
@@ -134,17 +135,17 @@ const handler = async (req: Request): Promise<Response> => {
 
   } catch (error: any) {
     console.error("❌ Error in send-password-reset function:", error);
-    
+
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message || "Erreur lors de l'envoi de l'email" 
+      JSON.stringify({
+        success: false,
+        error: error.message || "Erreur lors de l'envoi de l'email"
       }),
       {
         status: 500,
-        headers: { 
-          "Content-Type": "application/json", 
-          ...corsHeaders 
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders
         },
       }
     );

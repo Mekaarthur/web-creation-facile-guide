@@ -1,10 +1,7 @@
-﻿import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
-const supabase = createClient(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-);
+type SupabaseClient = ReturnType<typeof createClient>;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,8 +20,13 @@ serve(async (req) => {
   }
 
   try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
     console.log('🕐 Starting scheduled emails job');
-    
+
     const results = {
       reminders: 0,
       reviewRequests: 0,
@@ -32,10 +34,10 @@ serve(async (req) => {
     };
 
     // 1. Rappels 24h avant la prestation
-    await sendBookingReminders(results);
+    await sendBookingReminders(supabase, results);
 
     // 2. Demandes d'avis pour missions terminées depuis 24h
-    await sendReviewRequests(results);
+    await sendReviewRequests(supabase, results);
 
     console.log('✅ Scheduled emails completed:', results);
 
@@ -61,7 +63,7 @@ serve(async (req) => {
   }
 });
 
-async function sendBookingReminders(results: any) {
+async function sendBookingReminders(supabase: SupabaseClient, results: any) {
   try {
     // Récupérer les réservations confirmées pour demain
     const tomorrow = new Date();
@@ -103,7 +105,7 @@ async function sendBookingReminders(results: any) {
           .eq('user_id', provider?.user_id)
           .single();
 
-        const providerName = provider?.business_name || 
+        const providerName = provider?.business_name ||
           `${providerProfile?.first_name || ''} ${providerProfile?.last_name || ''}`.trim() ||
           'Votre prestataire';
 
@@ -142,7 +144,7 @@ async function sendBookingReminders(results: any) {
   }
 }
 
-async function sendReviewRequests(results: any) {
+async function sendReviewRequests(supabase: SupabaseClient, results: any) {
   try {
     // Récupérer les missions terminées il y a 24h sans avis
     const yesterday = new Date();

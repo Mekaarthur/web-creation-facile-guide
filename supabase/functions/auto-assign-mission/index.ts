@@ -1,4 +1,4 @@
-﻿import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 import { getAdminCorsHeaders } from "../_shared/cors.ts";
@@ -11,24 +11,28 @@ interface AutoAssignRequest {
   requestedDate?: string;
 }
 
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-);
+type SupabaseClient = ReturnType<typeof createClient>;
 
 const handler = async (req: Request): Promise<Response> => {
+  const corsHeaders = getAdminCorsHeaders(req.headers.get('origin'));
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const supabase: SupabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
     const { clientRequestId, serviceType, location, postalCode, requestedDate }: AutoAssignRequest = await req.json();
 
     console.log('Starting auto-assignment for request:', clientRequestId);
 
     // 1. Trouver les prestataires éligibles avec filtrage géographique amélioré
     console.log('Searching providers for:', { serviceType, location, postalCode, requestedDate });
-    
+
     const { data: eligibleProviders, error: providersError } = await supabase.rpc('find_eligible_providers', {
       p_service_type: serviceType,
       p_location: location,
@@ -43,7 +47,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!eligibleProviders || eligibleProviders.length === 0) {
       console.log('No eligible providers found');
-      
+
       // Marquer la demande comme non pourvue
       await supabase
         .from('client_requests')
@@ -60,8 +64,8 @@ const handler = async (req: Request): Promise<Response> => {
         }
       });
 
-      return new Response(JSON.stringify({ 
-        success: false, 
+      return new Response(JSON.stringify({
+        success: false,
         message: 'No eligible providers found',
         eligibleCount: 0
       }), {
@@ -98,7 +102,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // 3. Envoyer les notifications aux prestataires éligibles
     let notificationsSent = 0;
-    
+
     for (const provider of eligibleProviders) {
       try {
         // Récupérer les informations du prestataire
@@ -180,52 +184,15 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
   } catch (error: any) {
+    const corsHeaders = getAdminCorsHeaders(req.headers.get('origin'));
     console.error('Error in auto-assign-mission:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message 
+    return new Response(JSON.stringify({
+      error: error.message
     }), {
       status: 500,
       headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   }
 };
-
-async function checkMissionTimeout(assignmentId: string) {
-  try {
-    console.log('Checking timeout for assignment:', assignmentId);
-
-    const { data: assignment } = await supabase
-      .from('missions')
-      .select('*, client_requests(*)')
-      .eq('id', assignmentId)
-      .single();
-
-    if (!assignment || assignment.assigned_provider_id) {
-      console.log('Assignment already processed or assigned');
-      return;
-    }
-
-    // Marquer comme non pourvue si pas de réponse
-    await supabase
-      .from('client_requests')
-      .update({ status: 'unmatched' })
-      .eq('id', assignment.client_request_id);
-
-    // Notifier l'admin
-    await supabase.functions.invoke('send-notification-email', {
-      body: {
-        email: 'admin@bikawo.com',
-        name: 'Admin',
-        subject: 'Mission expirée sans réponse',
-        message: `La mission ${assignment.client_request_id} a expiré sans qu'aucun prestataire ne réponde.`
-      }
-    });
-
-    console.log('Mission marked as unmatched due to timeout');
-
-  } catch (error) {
-    console.error('Error in checkMissionTimeout:', error);
-  }
-}
 
 serve(handler);

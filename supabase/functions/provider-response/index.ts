@@ -1,4 +1,4 @@
-﻿import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 import { getAdminCorsHeaders } from "../_shared/cors.ts";
@@ -9,17 +9,19 @@ interface ProviderResponseRequest {
   responseType: 'accept' | 'decline';
 }
 
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-);
-
 const handler = async (req: Request): Promise<Response> => {
+  const corsHeaders = getAdminCorsHeaders(req.headers.get('origin'));
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
     const { assignmentId, providerId, responseType }: ProviderResponseRequest = await req.json();
 
     console.log(`Provider ${providerId} responding ${responseType} to assignment ${assignmentId}`);
@@ -57,7 +59,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // 2. Enregistrer la réponse
     const responseTime = new Date(Date.now() - new Date(assignment.created_at).getTime());
-    
+
     const { error: responseError } = await supabase
       .from('candidatures_prestataires')
       .insert({
@@ -165,11 +167,11 @@ const handler = async (req: Request): Promise<Response> => {
             subject: 'Prestataire trouvé pour votre demande',
             message: `
               Bonne nouvelle ! Un prestataire a accepté votre demande.
-              
+
               Prestataire : ${providerData?.business_name || 'Prestataire'}
               Service : ${assignment.client_requests.service_type}
               Lieu : ${assignment.client_requests.location}
-              
+
               Connectez-vous à votre espace pour voir les détails et confirmer.
             `
           }
@@ -178,7 +180,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       // Notifier les autres prestataires que la mission est prise
       const otherProviders = assignment.eligible_providers.filter((id: string) => id !== providerId);
-      
+
       for (const otherProviderId of otherProviders) {
         await supabase
           .from('provider_notifications')
@@ -240,9 +242,10 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
   } catch (error: any) {
+    const corsHeaders = getAdminCorsHeaders(req.headers.get('origin'));
     console.error('Error in provider-response:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message 
+    return new Response(JSON.stringify({
+      error: error.message
     }), {
       status: 500,
       headers: { 'Content-Type': 'application/json', ...corsHeaders },

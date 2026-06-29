@@ -1,11 +1,6 @@
-﻿import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.2';
 import { Resend } from "npm:resend@2.0.0";
-
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-);
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -49,6 +44,11 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
     // Calculer la date de demain
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -98,7 +98,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (!bookings || bookings.length === 0) {
       return new Response(
         JSON.stringify({ message: 'No bookings found for tomorrow' }),
-        { 
+        {
           status: 200,
           headers: { "Content-Type": "application/json", ...corsHeaders }
         }
@@ -120,9 +120,9 @@ const handler = async (req: Request): Promise<Response> => {
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <h2 style="color: #2563eb;">Rappel de votre service</h2>
                 <p>Bonjour ${booking.profiles.first_name} ${booking.profiles.last_name},</p>
-                
+
                 <p>Nous vous rappelons que vous avez un service prévu demain :</p>
-                
+
                 <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
                   <h3 style="margin: 0 0 15px 0; color: #1e40af;">📅 Détails du service</h3>
                   <p><strong>Service :</strong> ${booking.services.name}</p>
@@ -132,11 +132,11 @@ const handler = async (req: Request): Promise<Response> => {
                   <p><strong>Prestataire :</strong> ${booking.providers.business_name}</p>
                   ${booking.notes ? `<p><strong>Notes :</strong> ${booking.notes}</p>` : ''}
                 </div>
-                
+
                 <p>Si vous avez des questions, n'hésitez pas à nous contacter :</p>
                 <p>📞 <strong>06 09 08 53 90</strong></p>
                 <p>✉️ contact@bikawo.com</p>
-                
+
                 <p>À bientôt,<br>L'équipe Bikawo</p>
               </div>
             `,
@@ -160,9 +160,9 @@ const handler = async (req: Request): Promise<Response> => {
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <h2 style="color: #2563eb;">Rappel de votre mission</h2>
                 <p>Bonjour ${booking.providers.business_name},</p>
-                
+
                 <p>Nous vous rappelons que vous avez une mission prévue demain :</p>
-                
+
                 <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
                   <h3 style="margin: 0 0 15px 0; color: #1e40af;">📋 Détails de la mission</h3>
                   <p><strong>Service :</strong> ${booking.services.name}</p>
@@ -174,11 +174,11 @@ const handler = async (req: Request): Promise<Response> => {
                   ${booking.notes ? `<p><strong>Instructions :</strong> ${booking.notes}</p>` : ''}
                   <p><strong>Montant :</strong> ${booking.total_price}€</p>
                 </div>
-                
+
                 <p>Pour toute question, contactez-nous :</p>
                 <p>📞 <strong>06 09 08 53 90</strong></p>
                 <p>✉️ contact@bikawo.com</p>
-                
+
                 <p>Bonne mission !<br>L'équipe Bikawo</p>
               </div>
             `,
@@ -225,7 +225,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('Reminder notifications sent successfully:', notifications);
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         message: 'Reminder notifications processed',
         bookings_processed: bookings.length,
         notifications

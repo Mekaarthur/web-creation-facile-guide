@@ -1,4 +1,4 @@
-﻿import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.2';
 import { getAdminCorsHeaders } from "../_shared/cors.ts";
 
@@ -16,23 +16,18 @@ interface CriticalSMSRequest {
   };
 }
 
-const supabase = createClient(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-);
-
 const getSMSTemplate = (type: string, data: any): string => {
   const templates: Record<string, (d: any) => string> = {
-    emergency_cancellation: (d) => 
+    emergency_cancellation: (d) =>
       `🚨 URGENT - Bikawo\n\nVotre ${d.serviceName} du ${d.bookingDate} à ${d.startTime} est annulée.\nRaison: ${d.reason}\n\nContactez-nous: 01 XX XX XX XX`,
-    
-    late_provider_absence: (d) => 
+
+    late_provider_absence: (d) =>
       `🚨 URGENT - Bikawo\n\nVotre prestataire ne peut plus assurer votre ${d.serviceName} du ${d.bookingDate} à ${d.startTime}.\n${d.replacementProviderName ? `Un remplaçant (${d.replacementProviderName}) arrive.` : 'Nous cherchons un remplaçant.'}\n\nContactez-nous: 01 XX XX XX XX`,
-    
-    urgent_replacement: (d) => 
+
+    urgent_replacement: (d) =>
       `🚨 MISSION URGENTE - Bikawo\n\n${d.serviceName}\n📅 ${d.bookingDate} à ${d.startTime}\n📍 ${d.address}\n\nAcceptez MAINTENANT dans votre app`,
-    
-    security_alert: (d) => 
+
+    security_alert: (d) =>
       `🔐 ALERTE SÉCURITÉ - Bikawo\n\n${d.reason}\n\nSi ce n'est pas vous, contactez-nous immédiatement: 01 XX XX XX XX`
   };
 
@@ -48,6 +43,11 @@ serve(async (req) => {
   }
 
   try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
     const request: CriticalSMSRequest = await req.json();
     console.log('📱 Sending critical SMS:', request.type, 'to', request.recipientPhone);
 
@@ -58,7 +58,7 @@ serve(async (req) => {
 
     if (!twilioAccountSid || !twilioAuthToken || !twilioPhoneNumber) {
       console.warn('⚠️ Twilio not configured, SMS will be logged only');
-      
+
       // Logger dans la base de données
       await supabase.from('notification_logs').insert({
         user_email: `sms:${request.recipientPhone}`,
@@ -134,7 +134,7 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("❌ Error sending SMS:", error);
-    
+
     return new Response(
       JSON.stringify({
         error: error.message,

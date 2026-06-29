@@ -1,17 +1,13 @@
-﻿import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { validateRequest, validateCartActionSchema, extractClientIp, createErrorResponse } from "../_shared/validation.ts";
 import { getCorsHeaders } from '../_shared/cors.ts';
 
 let corsHeaders: Record<string, string> = {};
 
-const supabaseClient = createClient(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-  { auth: { persistSession: false } }
-);
+type SupabaseClient = ReturnType<typeof createClient>;
 
-const logAdminAction = async (adminUserId: string, actionType: string, entityType: string, entityId: string, oldData?: any, newData?: any, description?: string) => {
+const logAdminAction = async (supabaseClient: SupabaseClient, adminUserId: string, actionType: string, entityType: string, entityId: string, oldData?: any, newData?: any, description?: string) => {
   await supabaseClient.from("admin_actions_log").insert({
     admin_user_id: adminUserId,
     action_type: actionType,
@@ -30,6 +26,12 @@ serve(async (req) => {
   }
 
   try {
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      { auth: { persistSession: false } }
+    );
+
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("Authorization header required");
 
@@ -196,8 +198,8 @@ serve(async (req) => {
 
         if (validateError) throw validateError;
 
-        return new Response(JSON.stringify({ 
-          success: true, 
+        return new Response(JSON.stringify({
+          success: true,
           message: `Panier validé - ${result.bookings_created} réservation(s) créée(s)`,
           data: result
         }), {
@@ -229,6 +231,7 @@ serve(async (req) => {
 
         // Logger l'action admin
         await logAdminAction(
+          supabaseClient,
           user.id,
           'expire_cart',
           'cart',

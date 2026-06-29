@@ -1,21 +1,15 @@
-﻿import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { getAdminCorsHeaders } from '../_shared/cors.ts';
 
-
-
-const supabaseClient = createClient(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-  { auth: { persistSession: false } }
-);
+type SupabaseClient = ReturnType<typeof createClient>;
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
   apiVersion: "2025-08-27.basil",
 });
 
-const logAdminAction = async (adminUserId: string, actionType: string, entityType: string, entityId: string, oldData?: any, newData?: any, description?: string) => {
+const logAdminAction = async (supabaseClient: SupabaseClient, adminUserId: string, actionType: string, entityType: string, entityId: string, oldData?: any, newData?: any, description?: string) => {
   await supabaseClient.from("admin_actions_log").insert({
     admin_user_id: adminUserId,
     action_type: actionType,
@@ -34,6 +28,12 @@ serve(async (req) => {
   }
 
   try {
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      { auth: { persistSession: false } }
+    );
+
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("Authorization header required");
 
@@ -61,7 +61,7 @@ serve(async (req) => {
       if (action === "export") {
         // Exporter les données en CSV
         const format = url.searchParams.get('format') || 'csv';
-        
+
         const { data: exportData, error: exportError } = await supabaseClient
           .from('payments')
           .select('*')
@@ -138,7 +138,7 @@ serve(async (req) => {
       if (action === "recent_transactions") {
         // Récupérer les transactions récentes
         const limit = parseInt(url.searchParams.get('limit') || '10');
-        
+
         const { data: transactions } = await supabaseClient
           .from('payments')
           .select('*')
@@ -179,7 +179,7 @@ serve(async (req) => {
 
         const totalPending = pendingTransactions?.reduce((sum, p) => sum + (p.provider_payment || 0), 0) || 0;
 
-        return new Response(JSON.stringify({ 
+        return new Response(JSON.stringify({
           payments: formattedPayments,
           total: totalPending
         }), {
@@ -235,8 +235,8 @@ serve(async (req) => {
 
         const { data: updatedPayment, error: updateError } = await supabaseClient
           .from('payments')
-          .update({ 
-            status: 'payé', 
+          .update({
+            status: 'payé',
             payment_date: new Date().toISOString(),
             admin_notes: body.notes || null,
             updated_at: new Date().toISOString()
@@ -248,6 +248,7 @@ serve(async (req) => {
         if (updateError) throw updateError;
 
         await logAdminAction(
+          supabaseClient,
           user.id,
           'confirm_payment',
           'payment',
@@ -290,8 +291,8 @@ serve(async (req) => {
 
         const { data: updatedPayment, error: updateError } = await supabaseClient
           .from('payments')
-          .update({ 
-            status: 'remboursé', 
+          .update({
+            status: 'remboursé',
             refund_date: new Date().toISOString(),
             refund_amount: body.amount,
             admin_notes: body.reason || null,
@@ -304,6 +305,7 @@ serve(async (req) => {
         if (updateError) throw updateError;
 
         await logAdminAction(
+          supabaseClient,
           user.id,
           'refund_payment',
           'payment',
@@ -313,7 +315,7 @@ serve(async (req) => {
           body.reason || 'Paiement remboursé par admin'
         );
 
-        return new Response(JSON.stringify({ 
+        return new Response(JSON.stringify({
           payment: updatedPayment,
           stripe_refund: stripeRefund
         }), {
@@ -336,7 +338,7 @@ serve(async (req) => {
 
         const { data: updatedPayment, error: updateError } = await supabaseClient
           .from('payments')
-          .update({ 
+          .update({
             status: 'en_attente',
             admin_notes: body.notes || null,
             updated_at: new Date().toISOString()
@@ -348,6 +350,7 @@ serve(async (req) => {
         if (updateError) throw updateError;
 
         await logAdminAction(
+          supabaseClient,
           user.id,
           'retry_payment',
           'payment',
@@ -377,7 +380,7 @@ serve(async (req) => {
 
         const { data: updatedTransaction, error: updateError } = await supabaseClient
           .from('financial_transactions')
-          .update({ 
+          .update({
             payment_status: 'provider_paid',
             provider_paid_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
@@ -389,6 +392,7 @@ serve(async (req) => {
         if (updateError) throw updateError;
 
         await logAdminAction(
+          supabaseClient,
           user.id,
           'process_provider_payment',
           'financial_transaction',
@@ -418,7 +422,7 @@ serve(async (req) => {
         for (const transaction of pendingTransactions) {
           const { data: updatedTransaction } = await supabaseClient
             .from('financial_transactions')
-            .update({ 
+            .update({
               payment_status: 'provider_paid',
               provider_paid_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
@@ -430,8 +434,9 @@ serve(async (req) => {
           if (updatedTransaction) {
             processedTransactions.push(updatedTransaction);
             totalAmount += transaction.provider_payment || 0;
-            
+
             await logAdminAction(
+              supabaseClient,
               user.id,
               'bulk_process_provider_payment',
               'financial_transaction',
@@ -443,7 +448,7 @@ serve(async (req) => {
           }
         }
 
-        return new Response(JSON.stringify({ 
+        return new Response(JSON.stringify({
           processed: processedTransactions.length,
           total_amount: totalAmount
         }), {

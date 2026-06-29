@@ -1,4 +1,4 @@
-﻿import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 import { getAdminCorsHeaders } from "../_shared/cors.ts";
@@ -16,18 +16,20 @@ interface ExternalJob {
   availability: string[];
 }
 
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-);
-
 const handler = async (req: Request): Promise<Response> => {
+  const corsHeaders = getAdminCorsHeaders(req.headers.get('origin'));
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
     // Verify user authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
@@ -40,7 +42,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Verify the JWT token
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
+
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: 'Invalid authentication' }),
@@ -49,25 +51,26 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const { category } = await req.json();
-    
+
     // Securely fetch external jobs using server-side API keys
     const jobs = await fetchExternalJobsSecurely(category);
-    
+
     return new Response(
       JSON.stringify({ jobs }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
 
   } catch (error) {
+    const corsHeaders = getAdminCorsHeaders(req.headers.get('origin'));
     console.error('Error in secure-external-jobs function:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }
@@ -75,13 +78,13 @@ const handler = async (req: Request): Promise<Response> => {
 
 async function fetchExternalJobsSecurely(category?: string): Promise<ExternalJob[]> {
   const jobs: ExternalJob[] = [];
-  
+
   try {
     // Use server-side environment variables for API keys (secure)
     const brigadKey = Deno.env.get('BRIGAD_API_KEY');
     const qapaKey = Deno.env.get('QAPA_API_KEY');
     const cornerJobKey = Deno.env.get('CORNERJOB_API_KEY');
-    
+
     // Example: Fetch from Brigad API if key is available
     if (brigadKey) {
       try {
@@ -91,7 +94,7 @@ async function fetchExternalJobsSecurely(category?: string): Promise<ExternalJob
             'Content-Type': 'application/json'
           }
         });
-        
+
         if (response.ok) {
           const data = await response.json();
           const brigadJobs = data.jobs?.map((job: any) => ({
@@ -106,21 +109,21 @@ async function fetchExternalJobsSecurely(category?: string): Promise<ExternalJob
             externalUrl: job.external_url,
             availability: job.time_slots || []
           })) || [];
-          
+
           jobs.push(...brigadJobs);
         }
       } catch (error) {
         console.error('Error fetching Brigad jobs:', error);
       }
     }
-    
+
     // Similar implementations for other platforms...
     // Add Qapa and Corner Job integrations here using their respective API keys
-    
+
   } catch (error) {
     console.error('Error in fetchExternalJobsSecurely:', error);
   }
-  
+
   return jobs;
 }
 

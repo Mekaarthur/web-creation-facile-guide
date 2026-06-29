@@ -1,4 +1,4 @@
-﻿import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
@@ -8,11 +8,6 @@ import { getAdminCorsHeaders } from "../_shared/cors.ts";
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
   apiVersion: "2025-08-27.basil",
 });
-
-const supabase = createClient(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-);
 
 // Validation schema
 const refundSchema = z.object({
@@ -28,8 +23,13 @@ serve(async (req) => {
   }
 
   try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
     const body = await req.json();
-    
+
     // Validate input
     const validated = refundSchema.parse(body);
     const { paymentIntentId, refundAmount, reason } = validated;
@@ -71,11 +71,11 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("Error in process-refund:", error);
-    
+
     // Handle validation errors
     if (error instanceof z.ZodError) {
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: "Validation error",
           details: error.errors.map(e => ({
             field: e.path.join('.'),
@@ -88,9 +88,9 @@ serve(async (req) => {
         }
       );
     }
-    
+
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: error.message,
         type: error.type || 'unknown_error'
       }),

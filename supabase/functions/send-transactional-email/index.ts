@@ -1,4 +1,4 @@
-﻿import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.2';
 import { Resend } from "npm:resend@4.0.0";
 import React from 'npm:react@18.3.1';
@@ -33,16 +33,12 @@ import { ProviderAccountActivatedEmail } from './_templates/provider-account-act
 import { ProviderRatingReceivedEmail } from './_templates/provider-rating-received.tsx';
 import { ProviderApplicationApprovedEmail } from './_templates/provider-application-approved.tsx';
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-const supabase = createClient(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-);
-
 import { getAdminCorsHeaders } from "../_shared/cors.ts";
 
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+
 interface EmailRequest {
-  type: 
+  type:
     // Client emails
     | 'booking_confirmation'
     | 'provider_assigned'
@@ -156,6 +152,11 @@ serve(async (req) => {
   }
 
   try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
     const { type, data, recipientEmail, recipientName }: EmailRequest = await req.json();
 
     console.log('📧 Sending email:', { type, recipientEmail });
@@ -213,7 +214,7 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("Error sending email:", error);
-    
+
     return new Response(
       JSON.stringify({
         error: error.message
