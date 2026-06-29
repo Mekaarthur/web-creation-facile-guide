@@ -39,18 +39,11 @@ const RULES = [
 ];
 
 async function callSC(action: string, payload?: Record<string, unknown>) {
-  const { data: { session } } = await supabase.auth.getSession();
-  const res = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-support-client`,
-    {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${session?.access_token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action, ...payload }),
-    }
-  );
-  const json = await res.json();
-  if (!res.ok) throw new Error(json.error || 'Erreur serveur');
-  return json;
+  const { data, error } = await supabase.functions.invoke('admin-support-client', {
+    body: { action, ...payload },
+  });
+  if (error) throw error;
+  return data;
 }
 
 function ExpiryBadge({ expiresAt }: { expiresAt: string | null }) {
