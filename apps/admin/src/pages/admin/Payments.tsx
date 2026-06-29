@@ -20,17 +20,7 @@ const AdminPayments = () => {
       // Récupérer les transactions financières avec les détails des bookings
       const { data, error } = await supabase
         .from('financial_transactions')
-        .select(`
-          *,
-          bookings!financial_transactions_booking_id_fkey(
-            id,
-            booking_date,
-            start_time,
-            end_time,
-            status,
-            services!bookings_service_id_fkey(name)
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
